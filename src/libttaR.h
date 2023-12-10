@@ -261,7 +261,7 @@ extern int libttaR_tta_decode(
 //              calculates the size of the private state struct             //
 //                                                                          //
 // return:                                                                  //
-//              the size of the struct, or 0 on failure                     //
+//              the size of the struct, or 0 on failure (bad parameter)     //
 //                                                                          //
 // parameters:                                                              //
 //              nchan:                                                      //
@@ -284,7 +284,8 @@ size_t libttaR_codecstate_priv_size(unsigned int nchan)
 //      _tta_encode/_tta_decode, respectively                               //
 //                                                                          //
 // return:                                                                  //
-//              size for a TTA buffer that "should" be safe                 //
+//              size for a TTA buffer that "should" be safe, or 0 on        //
+//      failure (bad parameters)                                            //
 //                                                                          //
 // parameters:                                                              //
 //              nsamples:                                                   //

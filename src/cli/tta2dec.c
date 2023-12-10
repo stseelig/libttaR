@@ -352,9 +352,9 @@ tta2dec_loop(struct OpenedFilesMember *const restrict ofm)
 	);
 	assert(t.z == g_samplebuf_len * fstat->nchan);
 	//
-	state_priv = malloc(
-		libttaR_codecstate_priv_size((uint) fstat->nchan)
-	);
+	t.z = libttaR_codecstate_priv_size((uint) fstat->nchan);
+	assert(t.z != 0);
+	state_priv = malloc(t.z);
 	if ( state_priv == NULL ){
 		error_sys(errno, "malloc", strerror(errno), NULL);
 	}

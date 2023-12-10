@@ -45,7 +45,12 @@ size_t
 libttaR_codecstate_priv_size(uint nchan)
 /*@*/
 {
-	size_t r;
+	size_t r = 0;
+
+	if ( nchan == 0 ){
+		return r;
+	}
+
 	r  = sizeof(struct LibTTAr_CodecState_Priv);
 	r += nchan * sizeof(struct Codec);
 	return r;
@@ -57,7 +62,15 @@ libttaR_ttabuf_size(
 	size_t nsamples, uint nchan, enum TTASampleBytes samplebytes
 )
 /*@*/
-{	size_t r;
+{	size_t r = 0;
+
+	if ( (nsamples == 0) || (nchan == 0)
+	    ||
+	     (samplebytes == 0) || (samplebytes > TTA_SAMPLEBYTES_MAX)
+	){
+		return r;
+	}
+
 	r  = nsamples + TTABUF_SAFETY_MARGIN;
 	r *= nchan * samplebytes;
 	return r;

@@ -58,6 +58,7 @@ encbuf_init(
 
 	eb->i32buf_len = r + I32BUF_SAFETY_MARGIN;
 	eb->ttabuf_len = libttaR_ttabuf_size(buflen, nchan, samplebytes);
+	assert(eb->ttabuf_len != 0);
 
 	eb->i32buf = calloc(eb->i32buf_len, sizeof(i32));
 	if ( eb->i32buf == NULL ){
@@ -127,6 +128,7 @@ decbuf_init(
 
 	db->i32buf_len = r;
 	db->ttabuf_len = libttaR_ttabuf_size(buflen, nchan, samplebytes);
+	assert(db->ttabuf_len != 0);
 
 	db->pcmbuf = calloc(r + I32BUF_SAFETY_MARGIN, sizeof(i32));
 	if ( db->pcmbuf == NULL ){
