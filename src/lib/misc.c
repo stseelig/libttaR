@@ -57,6 +57,7 @@ libttaR_codecstate_priv_size(uint nchan)
 }
 
 // returns a TTA buffer size that "should" be safe
+// returns 0 on error
 size_t
 libttaR_ttabuf_size(
 	size_t nsamples, uint nchan, enum TTASampleBytes samplebytes
