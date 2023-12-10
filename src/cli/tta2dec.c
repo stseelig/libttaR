@@ -501,7 +501,6 @@ ttadec_frame(
 	uint r = 0;
 	size_t readlen, nbytes_read, ni32_target;
 	union {
-		off_t	o;
 		size_t	z;
 		uint	u;
 		int	d;
