@@ -77,7 +77,7 @@ struct LibTTAr_CodecState_Priv;
 //                      set to true to start a new frame                    //
 // returned fields:                                                         //
 //              frame_is_finished:                                          //
-//                      codec function will set to true the frame was       //
+//                      codec function will set to true if the frame was    //
 //      finished                                                            //
 //              crc:                                                        //
 //                      frame CRC                                           //
