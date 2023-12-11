@@ -1,6 +1,6 @@
 #ifndef LIBTTAr_H
 #define LIBTTAr_H
-//////////////////////////////////////////////////////////////////////////////
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // libttaR.h                                                                //
 //                                                                          //
@@ -10,13 +10,13 @@
 // Copyright (C) 2023, Shane Seelig                                         //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
-//##########################################################################//
+/* ######################################################################## */
 
 #ifndef xENUM_TTASAMPLEBYTES
 #define xENUM_TTASAMPLEBYTES
@@ -29,12 +29,12 @@ enum TTASampleBytes {
 #define TTA_SAMPLEBITS_MAX	24u
 #endif
 
-// seconds per TTA frame
+/* seconds per TTA frame */
 #define TTA_FRAME_TIME		((double) 1.04489795918367346939)
 
-//##########################################################################//
+/* ######################################################################## */
 
-// version numbers
+/* version numbers */
 /*@unchecked@*/
 extern const unsigned int libttaR_num_version;
 /*@unchecked@*/
@@ -44,24 +44,24 @@ extern const unsigned int libttaR_num_version_minor;
 /*@unchecked@*/
 extern const unsigned int libttaR_num_version_revis;
 
-// version string
+/* version string */
 /*@unchecked@*/
 extern const char libttaR_str_version[];
 
-// copyright string
+/* copyright string */
 /*@unchecked@*/
 extern const char libttaR_str_copyright[];
 
-// license string
+/* license string */
 /*@unchecked@*/
 extern const char libttaR_str_license[];
 
-//##########################################################################//
+/* ######################################################################## */
 
-// private state for the codec functions
+/* private state for the codec functions */
 struct LibTTAr_CodecState_Priv;
 
-//////////////////////////////////////////////////////////////////////////////
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // struct LibTTAr_CodecState_User                                           //
 //                                                                          //
@@ -92,25 +92,25 @@ struct LibTTAr_CodecState_Priv;
 //                      total number of TTA bytes written/read across all   //
 //      calls for the same frame                                            //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 struct LibTTAr_CodecState_User {
 
-	// set by user
-	size_t		ni32_perframe;		// framelen * nchan
+	/* set by user */
+	size_t		ni32_perframe;		/* framelen * nchan */
 	bool		is_new_frame;
 
-	// set by called function
+	/* set by called function */
 	bool		frame_is_finished;
 	uint32_t	crc;
-	size_t		ni32;			// enc: n-read, dec: n-writ
-	size_t		ni32_total;		// ~
-	size_t		nbytes_tta;		// enc: n-writ, dec: n-read
-	size_t		nbytes_tta_total;	// ~
+	size_t		ni32;			/* enc: n-read, dec: n-writ */
+	size_t		ni32_total;		/* ~                        */
+	size_t		nbytes_tta;		/* enc: n-writ, dec: n-read */
+	size_t		nbytes_tta_total;	/* ~                        */
 };
 
-//##########################################################################//
+/* ######################################################################## */
 
-//////////////////////////////////////////////////////////////////////////////
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // libttaR_tta_encode                                                       //
 //                                                                          //
@@ -144,7 +144,7 @@ struct LibTTAr_CodecState_User {
 //              nchan:                                                      //
 //                      number of audio channels                            //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 #undef dest
 #undef src
 #undef dest_len
@@ -179,7 +179,7 @@ extern int libttaR_tta_encode(
 @*/
 ;
 
-//////////////////////////////////////////////////////////////////////////////
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // libttaR_tta_decode                                                       //
 //                                                                          //
@@ -215,7 +215,7 @@ extern int libttaR_tta_encode(
 //              nchan:                                                      //
 //                      number of audio channels                            //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 #undef dest
 #undef src
 #undef dest_len
@@ -251,7 +251,7 @@ extern int libttaR_tta_decode(
 @*/
 ;
 
-//////////////////////////////////////////////////////////////////////////////
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // libttaR_codecstate_priv_size                                             //
 //                                                                          //
@@ -267,13 +267,13 @@ extern int libttaR_tta_decode(
 //              nchan:                                                      //
 //                      number of audio channels                            //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 #undef nchan
 size_t libttaR_codecstate_priv_size(unsigned int nchan)
 /*@*/
 ;
 
-//////////////////////////////////////////////////////////////////////////////
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // libttaR_ttabuf_size                                                      //
 //                                                                          //
@@ -295,7 +295,7 @@ size_t libttaR_codecstate_priv_size(unsigned int nchan)
 //              samplesbytes:                                               //
 //                      bytes-per-sample (1, 2, 3)                          //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 #undef nsamples
 #undef nchan
 #undef samplebytes
@@ -307,7 +307,7 @@ extern size_t libttaR_ttabuf_size(
 /*@*/
 ;
 
-//////////////////////////////////////////////////////////////////////////////
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // libttaR_test_nchan                                                       //
 //                                                                          //
@@ -324,13 +324,13 @@ extern size_t libttaR_ttabuf_size(
 //              nchan:                                                      //
 //                      number of audio channels                            //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 #undef nchan
 bool libttaR_test_nchan(unsigned int nchan)
 /*@*/
 ;
 
-//////////////////////////////////////////////////////////////////////////////
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // libttaR_nsamples_perframe                                                //
 //                                                                          //
@@ -346,7 +346,7 @@ bool libttaR_test_nchan(unsigned int nchan)
 //              samplerate:                                                 //
 //                      audio sampling frequency in samples-per-second      //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 #undef samplerate
 extern size_t libttaR_nsamples_perframe(size_t samplerate)
 /*@*/
@@ -356,10 +356,10 @@ extern size_t libttaR_nsamples_perframe(size_t samplerate)
 	(size_t) (TTA_FRAME_TIME * samplerate) \
 )
 
-//##########################################################################//
+/* ######################################################################## */
 
 
-//////////////////////////////////////////////////////////////////////////////
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // libttaR_pcm_read                                                         //
 //                                                                          //
@@ -381,7 +381,7 @@ extern size_t libttaR_nsamples_perframe(size_t samplerate)
 //              samplebytes:                                                //
 //                      bytes-per-sample (1, 2, 3)                          //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 #undef dest
 #undef src
 #undef nsamples
@@ -395,7 +395,7 @@ extern size_t libttaR_pcm_read(
 /*@modifies	*dest@*/
 ;
 
-//////////////////////////////////////////////////////////////////////////////
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // libttaR_pcm_write                                                        //
 //                                                                          //
@@ -417,7 +417,7 @@ extern size_t libttaR_pcm_read(
 //              samplebytes:                                                //
 //                      bytes-per-sample (1, 2, 3)                          //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 #undef dest
 #undef src
 #undef nsamples
@@ -431,7 +431,7 @@ extern size_t libttaR_pcm_write(
 /*@modifies	*dest@*/
 ;
 
-//////////////////////////////////////////////////////////////////////////////
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // libttaR_crc32                                                            //
 //                                                                          //
@@ -454,12 +454,12 @@ extern size_t libttaR_pcm_write(
 //              size:                                                       //
 //                      size of the data                                    //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 #undef buf
 #undef size
 extern uint32_t libttaR_crc32(const uint8_t *buf, size_t size)
 /*@*/
 ;
 
-// EOF ///////////////////////////////////////////////////////////////////////
+/* EOF //////////////////////////////////////////////////////////////////// */
 #endif
