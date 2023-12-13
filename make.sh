@@ -70,6 +70,8 @@ LIBFLAGS="-fPIC";
 # disable the multichannel/general decoder
 #LIBFLAGS="$LIBFLAGS -DLIBTTAr_DISABLE_MCH";
 
+readonly LIBFLAGS;
+
 #----------------------------------------------------------------------------#
 
 LDFLAGS=;
