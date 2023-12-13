@@ -96,8 +96,8 @@ rice_encode(
 ;
 
 #undef dest
-#undef rice
-#undef bitcache
+#undef cache
+#undef count
 #undef crc
 ALWAYS_INLINE size_t
 rice_encode_cacheflush(
@@ -113,7 +113,8 @@ rice_encode_cacheflush(
 ;
 
 #undef dest
-#undef bitcache
+#undef cache
+#undef count
 #undef crc
 ALWAYS_INLINE size_t
 rice_unary_put(
@@ -129,7 +130,8 @@ rice_unary_put(
 ;
 
 #undef dest
-#undef bitcache
+#undef cache
+#undef count
 #undef crc
 ALWAYS_INLINE size_t
 rice_binary_put(
@@ -165,7 +167,8 @@ ALWAYS_INLINE size_t rice_decode(
 ;
 
 #undef unary
-#undef bitcache
+#undef cache
+#undef count
 #undef crc
 ALWAYS_INLINE size_t rice_unary_get(
 	/*@out@*/ register u32 *const restrict unary,
@@ -181,7 +184,8 @@ ALWAYS_INLINE size_t rice_unary_get(
 ;
 
 #undef binary
-#undef bitcache
+#undef cache
+#undef count
 #undef crc
 ALWAYS_INLINE size_t rice_binary_get(
 	/*@out@*/ register u32 *const restrict binary,
