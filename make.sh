@@ -61,7 +61,7 @@ CFLAGS="$CFLAGS -Wpedantic";
 
 #----------------------------------------------------------------------------#
 
-LIBFLAGS=;
+LIBFLAGS="-fPIC";
 
 # disable the unrolled mono/stereo codec loop. bit faster, but larger binary
 #LIBFLAGS="$LIBFLAGS -DLIBTTAr_DISABLE_UNROLLED_1CH";
@@ -84,6 +84,9 @@ if [ "$LD_REAL" = 'gold' ] && [ -e "$(which gold)" ]; then
 	LDFLAGS="$LDFLAGS -Xlinker --gc-sections";
 fi
 readonly LDFLAGS;
+
+# library only uses memmove from libc, but that should be a builtin
+readonly LIBLDFLAGS="-shared -nolibc";
 
 #----------------------------------------------------------------------------#
 
@@ -373,11 +376,6 @@ _cd "$ROOT";
 
 _mkdir "$DIR0" "$DIR1" "$DIR2" "$DIR3" "$DIR4" "$DIR5";
 
-if [ -n "$LIBFLAGS" ]; then
-	LIBFLAGS="$LIBFLAGS -fPIC";
-else
-	LIBFLAGS='-fPIC';
-fi
 _cc_mp	"$LIBFLAGS" \
 	"$L_C00" "$L_C01" "$L_C02" "$L_C03" "$L_C04" "$L_C05" "$L_C06";
 _cc_mp	"" \
@@ -387,7 +385,7 @@ _cc_mp	"" \
 	"$P_C21";
 wait;
 
-_ld "-shared" "$BUILD/$LIBRARY" \
+_ld "$LIBLDFLAGS" "$BUILD/$LIBRARY" \
 	"$L_O00" "$L_O01" "$L_O02" "$L_O03" "$L_O04" "$L_O05" "$L_O06";
 _ld "-L$BUILD/ -l$LIB_BASE" "$BUILD/$PROGRAM" \
 	"$P_O00" "$P_O01" "$P_O02" "$P_O03" "$P_O04" "$P_O05" "$P_O06" \
