@@ -183,8 +183,8 @@ libttaR_tta_encode(
 	// post-encode
 	user->ni32_total += user->ni32;
 	if ( user->ni32_total == user->ni32_perframe ){
-		r += rice_encode_cacheflush(
-			&dest[r], &priv->bitcache.cache,
+		r = rice_encode_cacheflush(
+			dest, r, &priv->bitcache.cache,
 			&priv->bitcache.count, &user->crc
 		);
 		user->crc = crc32_end(user->crc);
@@ -245,8 +245,8 @@ tta_encode_mch(
 			curr = tta_postfilter_enc(curr);
 
 			// encode
-			r += rice_encode(
-				&dest[r], (u32) curr, &codec[j].rice,
+			r = rice_encode(
+				dest, r, (u32) curr, &codec[j].rice,
 				bitcache, &crc
 			);
 		}
@@ -296,8 +296,8 @@ tta_encode_1ch(
 		curr = tta_postfilter_enc(curr);
 
 		// encode
-		r += rice_encode(
-			&dest[r], (u32) curr, &codec->rice, bitcache, &crc
+		r = rice_encode(
+			dest, r, (u32) curr, &codec->rice, bitcache, &crc
 		);
 	}
 
@@ -346,8 +346,8 @@ tta_encode_2ch(
 		curr = tta_postfilter_enc(curr);
 
 		// encode
-		r += rice_encode(
-			&dest[r], (u32) curr, &codec[0].rice, bitcache, &crc
+		r = rice_encode(
+			dest, r, (u32) curr, &codec[0].rice, bitcache, &crc
 		);
 
 	// 1	// correlate
@@ -363,8 +363,8 @@ tta_encode_2ch(
 		curr = tta_postfilter_enc(curr);
 
 		// encode
-		r += rice_encode(
-			&dest[r], (u32) curr, &codec[1].rice, bitcache, &crc
+		r = rice_encode(
+			dest, r, (u32) curr, &codec[1].rice, bitcache, &crc
 		);
 	}
 

@@ -234,8 +234,8 @@ tta_decode_mch(
 		for ( j = 0; j < nchan; ++j ){
 
 			// decode
-			r += rice_decode(
-				(u32 *) &curr, &src[r], &codec[j].rice,
+			r = rice_decode(
+				(u32 *) &curr, src, r, &codec[j].rice,
 				bitcache, &crc
 			);
 
@@ -293,8 +293,8 @@ tta_decode_1ch(
 		if ( r > safety_margin ){ break; }
 
 		// decode
-		r += rice_decode(
-			(u32 *) &curr, &src[r], &codec->rice, bitcache, &crc
+		r = rice_decode(
+			(u32 *) &curr, src, r, &codec->rice, bitcache, &crc
 		);
 
 		// filter
@@ -341,8 +341,8 @@ tta_decode_2ch(
 		if ( r > safety_margin ){ break; }
 
 		// decode
-		r += rice_decode(
-			(u32 *) &curr, &src[r], &codec[0].rice, bitcache,
+		r = rice_decode(
+			(u32 *) &curr, src, r, &codec[0].rice, bitcache,
 			&crc
 		);
 
@@ -358,8 +358,8 @@ tta_decode_2ch(
 		prev = curr;
 
 		// decode
-		r += rice_decode(
-			(u32 *) &curr, &src[r], &codec[1].rice, bitcache,
+		r = rice_decode(
+			(u32 *) &curr, src, r, &codec[1].rice, bitcache,
 			&crc
 		);
 
