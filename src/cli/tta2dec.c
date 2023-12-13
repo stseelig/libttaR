@@ -321,7 +321,6 @@ tta2dec_loop(struct OpenedFilesMember *const restrict ofm)
 		}
 	}
 	// MAYBE check that the combined seektable entries matches filesize
-	//  individual checked in decbuf_adjust
 
 	// open outfile
 	outfile = fopen_check(outfile_name, "w", FATAL);
