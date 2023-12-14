@@ -16,10 +16,10 @@
 #include <stddef.h>	// size_t
 
 #include "../bits.h"
+#include "../splint.h"
 
 #include "crc32.h"
 
-#include "../splint.h"
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -435,11 +435,11 @@ rice_decode(
 		depth1 = false;
 	}
 
+	*value = unary;
 	if ( kx != 0 ){
 		r = rice_binary_get(&binary, src, r, kx, cache, count, crc);
-		*value = ((unary << kx) + binary);
+		*value = ((*value << kx) + binary);
 	}
-	else {	*value = unary; }
 
 	if ( depth1 ){
 		*sum1 += *value - (*sum1 >> 4u);
@@ -449,6 +449,7 @@ rice_decode(
 		else if ( *sum1 > shift32p4_bit(*k1 + 1u, SMM_TABLE) ){
 			++(*k1);
 		} else{;}
+
 		*value += shift32_bit(*k0);
 	}
 
@@ -517,10 +518,9 @@ rice_binary_get(
 		*cache |= rice_crc32(src[r++], crc) << *count;
 		*count += 8u;
 	}
-	*binary  = *cache & lsmask32(k, SMM_TABLE);
-	*cache >>= k;
-	*count  -= k;
-	*cache  &= lsmask32(*count, SMM_TABLE);
+	*binary = *cache & lsmask32(k, SMM_TABLE);
+	*cache  = (*cache >> k) & lsmask32(*count - k, SMM_TABLE);
+	*count -= k;
 	return r;
 }
 
