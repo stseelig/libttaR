@@ -226,7 +226,7 @@ tta_encode_mch(
 #ifdef LIBTTAr_DISABLE_UNROLLED_1CH
 		prev = 0;	// for mono
 #endif
-		for ( j = 0; j < nchan; ++j ){
+		for ( j = 0; j <= nchan - 1u; ++j ){
 
 			// correlate
 			curr = src[i + j];

@@ -231,7 +231,7 @@ tta_decode_mch(
 #ifdef LIBTTAr_DISABLE_UNROLLED_1CH
 		prev = 0;	// for mono
 #endif
-		for ( j = 0; j < nchan; ++j ){
+		for ( j = 0; true; ++j ){
 
 			// decode
 			r = rice_decode(
@@ -248,7 +248,7 @@ tta_decode_mch(
 			codec[j].prev = curr;
 
 			// decorrelate
-			if ( j < nchan - 1u ){
+			if ( j + 1u < nchan ){
 				dest[i + j] = curr;
 				prev = curr;
 			}
