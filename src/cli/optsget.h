@@ -33,7 +33,7 @@ struct OptDict {
 //////////////////////////////////////////////////////////////////////////////
 
 #undef of
-uint optargs_process(
+extern uint optargs_process(
 	struct OpenedFiles *const restrict of, uint,
 	const struct OptDict *const restrict
 )

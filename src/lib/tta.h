@@ -16,7 +16,7 @@
 
 #include "../bits.h"
 
-#include "rice.h"	// struct Rice
+#include "rice.h"	// struct Rice, shift32_bit
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -43,8 +43,6 @@ enum FilterMode {
 //////////////////////////////////////////////////////////////////////////////
 
 struct Filter {
-	u8	k;
-	i16	round;
 	i32	error;
 	i32	qm[8];
 	i32	dl[9];
@@ -59,29 +57,21 @@ struct Codec {
 
 //////////////////////////////////////////////////////////////////////////////
 
-ALWAYS_INLINE u16 shift16_bit(register u8) /*@*/;
-
-//--------------------------------------------------------------------------//
-
 #undef codec
 INLINE void codec_init(
-	register struct Codec *const restrict codec , register uint,
-	register enum TTASampleBytes
+	register struct Codec *const restrict codec , register uint
 )
 /*@modifies	*codec*/
-;
-
-#undef filter
-INLINE void filter_init(
-	register struct Filter *const restrict filter,
-	register enum TTASampleBytes
-)
-/*@modifies	*filter@*/
 ;
 
 //--------------------------------------------------------------------------//
 
 ALWAYS_INLINE uint tta_predict_k(register enum TTASampleBytes) /*@*/;
+ALWAYS_INLINE i32 tta_filter_round(register enum TTASampleBytes) /*@*/;
+ALWAYS_INLINE uint tta_filter_k(register enum TTASampleBytes) /*@*/;
+
+//--------------------------------------------------------------------------//
+
 ALWAYS_INLINE i32 tta_predict1(register i32, register uint) /*@*/;
 ALWAYS_INLINE i32 tta_postfilter_enc(register i32) /*@*/;
 ALWAYS_INLINE i32 tta_prefilter_dec(register i32) /*@*/;
@@ -91,31 +81,22 @@ ALWAYS_INLINE i32 tta_prefilter_dec(register i32) /*@*/;
 #undef filter
 ALWAYS_INLINE i32 tta_filter(
 	register struct Filter *const restrict filter, register i32,
-	const enum FilterMode
+	register uint, register i32, const enum FilterMode
 )
 /*@modifies	*filter@*/
 ;
 
 //////////////////////////////////////////////////////////////////////////////
 
-ALWAYS_INLINE u16 shift16_bit(register u8 k)
-/*@*/
-{
-	return (u16) (0x1u << k);
-}
-
-//==========================================================================//
-
 INLINE void
 codec_init(
-	register struct Codec *const restrict codec, register uint nchan,
-	register enum TTASampleBytes samplesize
+	register struct Codec *const restrict codec, register uint nchan
 )
 /*@modifies	*codec*/
 {
 	register uint i;
 	for ( i = 0; i < nchan; ++i ){
-		filter_init(&codec[i].filter, samplesize);
+		(void) memset(&codec[i].filter, 0x00, sizeof codec[i].filter);
 		rice_init(&codec[i].rice, (u8) 10u, (u8) 10u);
 		codec[i].prev = 0;
 	}
@@ -124,31 +105,12 @@ codec_init(
 
 //--------------------------------------------------------------------------//
 
-INLINE void
-filter_init(
-	register struct Filter *const restrict filter,
-	register enum TTASampleBytes samplesize
-)
-/*@modifies	*filter@*/
-{
-	const u8 init_shifts[] = { (u8) 10u, (u8) 9u, (u8) 10u };
-	register const  u8 k = init_shifts[samplesize - 1u];
-	register const i16 round = (i16) shift16_bit(k - 1u);
-
-	(void) memset(filter, 0x00, sizeof *filter);
-	filter->k = k;
-	filter->round = round;
-	return;
-}
-
-//==========================================================================//
-
 // returns 0 on failure
 ALWAYS_INLINE uint
 tta_predict_k(register enum TTASampleBytes samplebytes)
 /*@*/
 {
-	uint r = 0;
+	register uint r = 0;
 
 	switch ( samplebytes ){
 	case 1u:
@@ -162,11 +124,51 @@ tta_predict_k(register enum TTASampleBytes samplebytes)
 	return r;
 }
 
+// returns 0 on failure
+ALWAYS_INLINE i32
+tta_filter_round(register enum TTASampleBytes samplebytes)
+/*@*/
+{
+	i32 r = 0;
+
+	switch ( samplebytes ){
+	case 1u:
+	case 3u:
+		r = (i32) shift32_bit((u8) 9u);
+		break;
+	case 2u:
+		r = (i32) shift32_bit((u8) 8u);
+		break;
+	}
+	return r;
+}
+
+// returns 0 on failure
+ALWAYS_INLINE uint
+tta_filter_k(register enum TTASampleBytes samplebytes)
+/*@*/
+{
+	uint r = 0;
+
+	switch ( samplebytes ){
+	case 1u:
+	case 3u:
+		r = 10u;
+		break;
+	case 2u:
+		r = 9u;
+		break;
+	}
+	return r;
+}
+
+//==========================================================================//
+
 ALWAYS_INLINE i32
 tta_predict1(register i32 x, register uint k)
 /*@*/
 {
-	return (i32) (((((u64) x) << k) - x) >> k);
+	return (i32) (((((u64fast) x) << k) - x) >> k);
 }
 
 ALWAYS_INLINE i32
@@ -187,12 +189,13 @@ tta_prefilter_dec(register i32 x)
 
 ALWAYS_INLINE i32
 tta_filter(
-	register struct Filter *const restrict filter, register i32 value,
+	register struct Filter *const restrict filter,
+	register i32 round, register uint k, register i32 value,
 	const enum FilterMode mode
 )
 /*@modifies	*filter@*/
 {
-	register i32 sum = filter->round;
+	register i32 sum = round;
 	register i32 *const restrict a = filter->qm;
 	register i32 *const restrict b = filter->dl;
 	register i32 *const restrict m = filter->dx;
@@ -241,12 +244,12 @@ tta_filter(
 	switch ( mode ){
 	case FM_ENC:
 		b[8]		 = value;
-		value		-= asr32(sum, (uint) filter->k);
+		value		-= asr32(sum, k);
 		filter->error	 = value;
 		break;
 	case FM_DEC:
 		filter->error	 = value;
-		value		+= asr32(sum, (uint) filter->k);
+		value		+= asr32(sum, k);
 		b[8]		 = value;
 		break;
 	}

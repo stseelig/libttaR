@@ -11,7 +11,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
-void errprint_help_tta2enc(void)
+extern void errprint_help_tta2enc(void)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -20,7 +20,7 @@ void errprint_help_tta2enc(void)
 @*/
 ;
 
-void errprint_help_tta2dec(void)
+extern void errprint_help_tta2dec(void)
 /*@globals	fileSystem,
 		internalState
 @*/

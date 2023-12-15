@@ -58,6 +58,7 @@ typedef  int16_t	i16;
 typedef  int32_t	i32;
 
 typedef uint_fast32_t	u32fast;
+typedef uint_fast64_t	u64fast;
 
 //////////////////////////////////////////////////////////////////////////////
 

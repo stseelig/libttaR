@@ -32,7 +32,8 @@ tta_encode_mch(
 	u8 *const dest, const i32 *const, u32 *const restrict crc_out,
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
-	struct Codec *const restrict codec, size_t, size_t, uint, uint
+	struct Codec *const restrict codec, size_t, size_t, uint, i32, uint,
+	uint
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -54,7 +55,7 @@ tta_encode_1ch(
 	u8 *const dest, const i32 *const, u32 *const restrict crc_out,
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
-	struct Codec *const restrict codec, size_t, size_t, uint
+	struct Codec *const restrict codec, size_t, size_t, uint, i32, uint
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -76,7 +77,7 @@ tta_encode_2ch(
 	u8 *const dest, const i32 *const, u32 *const restrict crc_out,
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
-	struct Codec *const restrict codec, size_t, size_t, uint
+	struct Codec *const restrict codec, size_t, size_t, uint, i32, uint
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -111,6 +112,8 @@ libttaR_tta_encode(
 {
 	size_t r;
 	const uint predict_k = tta_predict_k(samplebytes);
+	const i32 filter_round = tta_filter_round(samplebytes);
+	const uint filter_k = tta_filter_k(samplebytes);
 	const size_t safety_margin = (
 		dest_len - (TTABUF_SAFETY_MARGIN * nchan * samplebytes)
 	);
@@ -126,7 +129,7 @@ libttaR_tta_encode(
 		user->nbytes_tta_total	= 0;
 
 		(void) memset(&priv->bitcache, 0x00, sizeof priv->bitcache);
-		codec_init((struct Codec *) &priv->codec, nchan, samplebytes);
+		codec_init((struct Codec *) &priv->codec, nchan);
 	}
 
 	// check for bad parameters
@@ -155,7 +158,8 @@ libttaR_tta_encode(
 	case 1u:
 		r = tta_encode_1ch(
 			dest, src, &user->crc, &user->ni32, &priv->bitcache,
-			priv->codec, ni32_target, safety_margin, predict_k
+			priv->codec, ni32_target, safety_margin, predict_k,
+			filter_round, filter_k
 		);
 		break;
 #endif
@@ -163,7 +167,8 @@ libttaR_tta_encode(
 	case 2u:
 		r = tta_encode_2ch(
 			dest, src, &user->crc, &user->ni32, &priv->bitcache,
-			priv->codec, ni32_target, safety_margin, predict_k
+			priv->codec, ni32_target, safety_margin, predict_k,
+			filter_round, filter_k
 		);
 		break;
 #endif
@@ -172,7 +177,7 @@ libttaR_tta_encode(
 		r = tta_encode_mch(
 			dest, src, &user->crc, &user->ni32, &priv->bitcache,
 			priv->codec, ni32_target, safety_margin, predict_k,
-			nchan
+			filter_round, filter_k, nchan
 		);
 #else
 		return -1;
@@ -206,7 +211,8 @@ tta_encode_mch(
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
 	struct Codec *const restrict codec, size_t ni32_target,
-	size_t safety_margin, uint predict_k, uint nchan
+	size_t safety_margin, uint predict_k, i32 filter_round, uint filter_k,
+	uint nchan
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -241,7 +247,10 @@ tta_encode_mch(
 			codec[j].prev = prev;
 
 			// filter
-			curr = tta_filter(&codec[j].filter, curr, FM_ENC);
+			curr = tta_filter(
+				&codec[j].filter, filter_round, filter_k,
+				curr, FM_ENC
+			);
 			curr = tta_postfilter_enc(curr);
 
 			// encode
@@ -266,7 +275,7 @@ tta_encode_1ch(
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
 	struct Codec *const restrict codec, size_t ni32_target,
-	size_t safety_margin, uint predict_k
+	size_t safety_margin, uint predict_k, i32 filter_round, uint filter_k
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -292,7 +301,9 @@ tta_encode_1ch(
 		codec->prev = prev;
 
 		// filter
-		curr = tta_filter(&codec->filter, curr, FM_ENC);
+		curr = tta_filter(
+			&codec->filter, filter_round, filter_k, curr, FM_ENC
+		);
 		curr = tta_postfilter_enc(curr);
 
 		// encode
@@ -315,7 +326,7 @@ tta_encode_2ch(
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
 	struct Codec *const restrict codec, size_t ni32_target,
-	size_t safety_margin, uint predict_k
+	size_t safety_margin, uint predict_k, i32 filter_round, uint filter_k
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -342,7 +353,9 @@ tta_encode_2ch(
 		codec[0].prev = prev;
 
 		// filter
-		curr = tta_filter(&codec[0].filter, curr, FM_ENC);
+		curr = tta_filter(
+			&codec[0].filter, filter_round, filter_k, curr, FM_ENC
+		);
 		curr = tta_postfilter_enc(curr);
 
 		// encode
@@ -359,7 +372,9 @@ tta_encode_2ch(
 		codec[1].prev = prev;
 
 		// filter
-		curr = tta_filter(&codec[1].filter, curr, FM_ENC);
+		curr = tta_filter(
+			&codec[1].filter, filter_round, filter_k, curr, FM_ENC
+		);
 		curr = tta_postfilter_enc(curr);
 
 		// encode
