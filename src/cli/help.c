@@ -60,7 +60,7 @@ errprint_help_tta2enc(void)
 {
 	errprint_program_intro();
 	(void) fprintf(stderr, " Usage:\n");
-	(void) fprintf(stderr, "\ttta2enc");
+	(void) fprintf(stderr, "\tttaR encode");
 	(void) fputs(help_usage, stderr);
 	(void) fputs(help_tta2enc_opts, stderr);
 	return;
@@ -77,7 +77,7 @@ errprint_help_tta2dec(void)
 {
 	errprint_program_intro();
 	(void) fprintf(stderr, " Usage:\n");
-	(void) fprintf(stderr, "\ttta2dec");
+	(void) fprintf(stderr, "\tttaR decode");
 	(void) fputs(help_usage, stderr);
 	(void) fputs(help_tta2dec_opts, stderr);
 	return;
