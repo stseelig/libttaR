@@ -343,6 +343,7 @@ rice_encode_cacheflush(
 	}
 	return r;
 }
+
 //--------------------------------------------------------------------------//
 
 // returns nbytes written to dest + r
