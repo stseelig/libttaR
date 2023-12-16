@@ -175,7 +175,7 @@ ALWAYS_INLINE i32
 tta_postfilter_enc(register i32 x)
 /*@*/
 {
-	return (x > 0 ? asl32( x, 1u) - 1 : asl32(-x, 1u));
+	return (x > 0 ? asl32(x, 1u) - 1 : asl32(-x, 1u));
 }
 
 ALWAYS_INLINE i32
