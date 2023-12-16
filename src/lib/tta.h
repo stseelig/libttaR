@@ -129,7 +129,7 @@ ALWAYS_INLINE i32
 tta_filter_round(register enum TTASampleBytes samplebytes)
 /*@*/
 {
-	i32 r = 0;
+	register i32 r = 0;
 
 	switch ( samplebytes ){
 	case 1u:
@@ -148,7 +148,7 @@ ALWAYS_INLINE uint
 tta_filter_k(register enum TTASampleBytes samplebytes)
 /*@*/
 {
-	uint r = 0;
+	register uint r = 0;
 
 	switch ( samplebytes ){
 	case 1u:
