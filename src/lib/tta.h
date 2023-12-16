@@ -236,10 +236,10 @@ tta_filter(
 		sum += (a[7] += m[7]) * b[7];
 	}
 
-	m[8] = (i32) ((((u32) asr32(b[7], 28u)) | 0x4u) & 0xFFFFFFFCu);
-	m[7] = (i32) ((((u32) asr32(b[6], 28u)) | 0x2u) & 0xFFFFFFFEu);
-	m[6] = (i32) ((((u32) asr32(b[5], 28u)) | 0x2u) & 0xFFFFFFFEu);
-	m[5] = (i32) ((((u32) asr32(b[4], 28u)) | 0x1u) & 0xFFFFFFFFu);
+	m[8] = (i32) ((((u32) asr32(b[7], 30u)) | 0x1u) << 2u);
+	m[7] = (i32) ((((u32) asr32(b[6], 30u)) | 0x1u) << 1u);
+	m[6] = (i32) ((((u32) asr32(b[5], 30u)) | 0x1u) << 1u);
+	m[5] = (i32)  (((u32) asr32(b[4], 30u)) | 0x1u);
 
 	switch ( mode ){
 	case FM_ENC:
