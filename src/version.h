@@ -27,8 +27,8 @@
 #define TTAr_NUM_VERSION		1u
 #define TTAr_NUM_VERSION_MAJOR		0
 #define TTAr_NUM_VERSION_MINOR		0
-#define TTAr_NUM_VERSION_REVIS		2u
-#define TTAr_STR_VERSION		"ttaR 1.0.0-2 (2023-12-15)"
+#define TTAr_NUM_VERSION_REVIS		3u
+#define TTAr_STR_VERSION		"ttaR 1.0.0-3 (2023-12-18)"
 #define TTAr_STR_COPYRIGHT		"Copyright (C) 2023, Shane Seelig"
 #define TTAr_STR_LICENSE		"GPL-3.0-or-later"
 

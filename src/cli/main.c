@@ -147,8 +147,8 @@ main(int argc, /*@dependent@*/ char **argv)
 print_main_help:
 		errprint_program_intro();
 		(void) fprintf(stderr,
-			" tta2 encode --help\n"
-			" tta2 decode --help\n"
+			" ttaR encode --help\n"
+			" ttaR decode --help\n"
 		);
 		return EXIT_FAILURE;
 	}
