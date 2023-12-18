@@ -41,5 +41,46 @@ struct LibTTAr_CodecState_User {
 	size_t	nbytes_tta_total;	// ~
 };
 
+//////////////////////////////////////////////////////////////////////////////
+
+#undef priv
+#undef user
+INLINE void state_init_check(
+	/*@out@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
+	/*@partial@*/ struct LibTTAr_CodecState_User *const restrict user,
+	uint
+)
+/*@modifies	*priv,
+		*user
+@*/
+;
+
+//////////////////////////////////////////////////////////////////////////////
+
+INLINE void
+state_init(
+	/*@out@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
+	/*@partial@*/ struct LibTTAr_CodecState_User *const restrict user,
+	uint nchan
+)
+/*@modifies	*priv,
+		*user
+@*/
+{
+	if ( user->is_new_frame ){
+		user->is_new_frame	= false;
+		user->frame_is_finished	= false;
+		user->crc		= CRC32_INIT;
+		user->ni32		= 0;
+		user->ni32_total	= 0;
+		user->nbytes_tta	= 0;
+		user->nbytes_tta_total	= 0;
+
+		(void) memset(&priv->bitcache, 0x00, sizeof priv->bitcache);
+		codec_init((struct Codec *) &priv->codec, nchan);
+	}
+	return;
+}
+
 // EOF ///////////////////////////////////////////////////////////////////////
 #endif

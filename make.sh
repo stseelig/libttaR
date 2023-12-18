@@ -373,6 +373,9 @@ fi
 if [ -n "$LIBFLAGS" ]; then
 	_flags_print 'LIBFLAGS' "$LIBFLAGS";
 fi
+if [ -n "$LIBLDFLAGS" ]; then
+	_flags_print 'LIBLDFLAGS' "$LIBLDFLAGS";
+fi
 
 _cd "$ROOT";
 

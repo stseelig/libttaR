@@ -118,19 +118,8 @@ libttaR_tta_encode(
 		dest_len - (TTABUF_SAFETY_MARGIN * nchan * samplebytes)
 	);
 
-	// initial setup
-	if ( user->is_new_frame ){
-		user->is_new_frame	= false;
-		user->frame_is_finished	= false;
-		user->crc		= CRC32_INIT;
-		user->ni32		= 0;
-		user->ni32_total	= 0;
-		user->nbytes_tta	= 0;
-		user->nbytes_tta_total	= 0;
-
-		(void) memset(&priv->bitcache, 0x00, sizeof priv->bitcache);
-		codec_init((struct Codec *) &priv->codec, nchan);
-	}
+	// setup
+	state_init(priv, user, nchan);
 
 	// check for bad parameters
 	if ( (ni32_target == 0) || (ni32_target > src_len)

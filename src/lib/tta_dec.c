@@ -122,19 +122,8 @@ libttaR_tta_decode(
 		safety_margin = nbytes_tta_target;
 	}
 
-	// initial setup
-	if ( user->is_new_frame ){
-		user->is_new_frame	= false;
-		user->frame_is_finished	= false;
-		user->crc		= CRC32_INIT;
-		user->ni32		= 0;
-		user->ni32_total	= 0;
-		user->nbytes_tta	= 0;
-		user->nbytes_tta_total	= 0;
-
-		(void) memset(&priv->bitcache, 0x00, sizeof priv->bitcache);
-		codec_init((struct Codec *) &priv->codec, nchan);
-	}
+	// setup
+	state_init(priv, user, nchan);
 
 	// check for bad parameters
 	if ( (ni32_target == 0) || (ni32_target > dest_len)
@@ -350,10 +339,9 @@ tta_decode_2ch(
 	for ( i = 0; i < ni32_target; i += (size_t) 2 ){
 		if ( r > safety_margin ){ break; }
 
-		// decode
+	// 0	// decode
 		r = rice_decode(
-			(u32 *) &curr, src, r, &codec[0].rice, bitcache,
-			&crc
+			(u32 *) &curr, src, r, &codec[0].rice, bitcache, &crc
 		);
 
 		// filter
@@ -369,10 +357,9 @@ tta_decode_2ch(
 		// save for decorrelation
 		prev = curr;
 
-		// decode
+	// 1	// decode
 		r = rice_decode(
-			(u32 *) &curr, src, r, &codec[1].rice, bitcache,
-			&crc
+			(u32 *) &curr, src, r, &codec[1].rice, bitcache, &crc
 		);
 
 		// filter
