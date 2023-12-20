@@ -128,6 +128,8 @@ libttaR_tta_decode(
 	// check for bad parameters
 	if ( (ni32_target == 0) || (ni32_target > dest_len)
 	    ||
+	     (ni32_target + user->ni32_total > user->ni32_perframe)
+	    ||
 	     (ni32_target % nchan != 0)
 	){
 		return 1;
