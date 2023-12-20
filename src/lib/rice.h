@@ -69,7 +69,7 @@ ALWAYS_INLINE u8 rice_crc32(
 #undef rice
 INLINE void
 rice_init(
-	register struct Rice *const restrict rice, register u8,	register u8
+	register struct Rice *const restrict rice, register u8, register u8
 )
 /*@modifies	*rice@*/
 ;
@@ -217,7 +217,10 @@ shift32p4_bit(register u8 k, const enum ShiftMaskMode mode)
 	case SMM_CONST:
 	case SMM_SHIFT:
 		return (u32) (k != 0
-			? 0x1u << (k <= (u8) 27u ? (u8) (k + 4u) : (u8) 31u)
+			? 0x1u << (k + 4u <= (u8) 31u
+				? (u8) (k + 4u)
+				: (u8) 31u
+			)
 			: 0
 		);
 	case SMM_TABLE:
@@ -232,7 +235,7 @@ lsmask32(register u8 k, const enum ShiftMaskMode mode)
 	switch ( mode ){
 	case SMM_CONST:
 	case SMM_SHIFT:
-		return (u32) (k != 0 ? (0xFFFFFFFFu >> (32u - k)) : 0 );
+		return (u32) (k != 0 ? 0xFFFFFFFFu >> (32u - k) : 0 );
 	case SMM_TABLE:
 		return lsmask32_table[k];
 	}
@@ -438,7 +441,7 @@ rice_decode(
 	*value = unary;
 	if ( kx != 0 ){
 		r = rice_binary_get(&binary, src, r, kx, cache, count, crc);
-		*value = ((*value << kx) + binary);
+		*value = (*value << kx) + binary;
 	}
 
 	if ( depth1 ){

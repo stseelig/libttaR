@@ -12,10 +12,10 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #define LIBTTAr_NUM_VERSION		1u
-#define LIBTTAr_NUM_VERSION_MAJOR	0
-#define LIBTTAr_NUM_VERSION_MINOR	0
-#define LIBTTAr_NUM_VERSION_REVIS	6u
-#define LIBTTAr_STR_VERSION		"libttaR 1.0.0-6 (2023-12-18)"
+#define LIBTTAr_NUM_VERSION_MAJOR	0u
+#define LIBTTAr_NUM_VERSION_MINOR	1u
+#define LIBTTAr_NUM_VERSION_REVIS	0u
+#define LIBTTAr_STR_VERSION		"libttaR 1.0.1-0 (2023-12-19)"
 #define LIBTTAr_STR_COPYRIGHT		( \
 	"Copyright (C) 2007, Aleksander Djuric;" \
 	"Copyright (C) 2023, Shane Seelig" \
@@ -25,8 +25,8 @@
 //--------------------------------------------------------------------------//
 
 #define TTAr_NUM_VERSION		1u
-#define TTAr_NUM_VERSION_MAJOR		0
-#define TTAr_NUM_VERSION_MINOR		0
+#define TTAr_NUM_VERSION_MAJOR		0u
+#define TTAr_NUM_VERSION_MINOR		0u
 #define TTAr_NUM_VERSION_REVIS		3u
 #define TTAr_STR_VERSION		"ttaR 1.0.0-3 (2023-12-18)"
 #define TTAr_STR_COPYRIGHT		"Copyright (C) 2023, Shane Seelig"

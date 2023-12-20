@@ -51,7 +51,13 @@ INLINE void state_init_check(
 	uint
 )
 /*@modifies	*priv,
-		*user
+		user->is_new_frame,
+		user->frame_is_finished,
+		user->crc,
+		user->ni32,
+		user->ni32_total,
+		user->nbytes_tta,
+		user->nbytes_tta_total
 @*/
 ;
 
@@ -64,7 +70,13 @@ state_init(
 	uint nchan
 )
 /*@modifies	*priv,
-		*user
+		user->is_new_frame,
+		user->frame_is_finished,
+		user->crc,
+		user->ni32,
+		user->ni32_total,
+		user->nbytes_tta,
+		user->nbytes_tta_total
 @*/
 {
 	if ( user->is_new_frame ){

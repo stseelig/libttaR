@@ -2,7 +2,7 @@
 #define LIBTTAr_H
 /* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// libttaR.h                                                                //
+// libttaR.h - 1.0.1                                                        //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
@@ -35,26 +35,26 @@ enum TTASampleBytes {
 /* ######################################################################## */
 
 /* version numbers */
-/*@unchecked@*/
+/*@unchecked@*/ /*@unused@*/
 extern const unsigned int libttaR_num_version;
-/*@unchecked@*/
+/*@unchecked@*/ /*@unused@*/
 extern const unsigned int libttaR_num_version_major;
-/*@unchecked@*/
+/*@unchecked@*/ /*@unused@*/
 extern const unsigned int libttaR_num_version_minor;
-/*@unchecked@*/
+/*@unchecked@*/ /*@unused@*/
 extern const unsigned int libttaR_num_version_revis;
 
 /* version string */
-/*@unchecked@*/
-extern const char libttaR_str_version[];
+/*@observer@*/ /*@unchecked@*/ /*@unused@*/
+extern const char *libttaR_str_version;
 
 /* copyright string */
-/*@unchecked@*/
-extern const char libttaR_str_copyright[];
+/*@observer@*/ /*@unchecked@*/ /*@unused@*/
+extern const char *libttaR_str_copyright;
 
 /* license string */
-/*@unchecked@*/
-extern const char libttaR_str_license[];
+/*@observer@*/ /*@unchecked@*/ /*@unused@*/
+extern const char *libttaR_str_license;
 
 /* ######################################################################## */
 
@@ -154,6 +154,7 @@ struct LibTTAr_CodecState_User {
 #undef user
 #undef samplebytes
 #undef nchan
+/*@external@*/ /*@unused@*/
 extern int libttaR_tta_encode(
 	uint8_t *dest,
 	const int32_t *src,
@@ -225,6 +226,7 @@ extern int libttaR_tta_encode(
 #undef user
 #undef samplebytes
 #undef nchan
+/*@external@*/ /*@unused@*/
 extern int libttaR_tta_decode(
 	int32_t *dest,
 	const uint8_t *src,
@@ -269,7 +271,8 @@ extern int libttaR_tta_decode(
 //                                                                          //
 /////////////////////////////////////////////////////////////////////////// */
 #undef nchan
-size_t libttaR_codecstate_priv_size(unsigned int nchan)
+/*@external@*/ /*@unused@*/
+extern size_t libttaR_codecstate_priv_size(unsigned int nchan)
 /*@*/
 ;
 
@@ -299,6 +302,7 @@ size_t libttaR_codecstate_priv_size(unsigned int nchan)
 #undef nsamples
 #undef nchan
 #undef samplebytes
+/*@external@*/ /*@unused@*/
 extern size_t libttaR_ttabuf_size(
 	size_t nsamples,
 	unsigned int nchan,
@@ -326,7 +330,8 @@ extern size_t libttaR_ttabuf_size(
 //                                                                          //
 /////////////////////////////////////////////////////////////////////////// */
 #undef nchan
-bool libttaR_test_nchan(unsigned int nchan)
+/*@external@*/ /*@unused@*/
+extern bool libttaR_test_nchan(unsigned int nchan)
 /*@*/
 ;
 
@@ -348,6 +353,7 @@ bool libttaR_test_nchan(unsigned int nchan)
 //                                                                          //
 /////////////////////////////////////////////////////////////////////////// */
 #undef samplerate
+/*@external@*/ /*@unused@*/
 extern size_t libttaR_nsamples_perframe(size_t samplerate)
 /*@*/
 ;
@@ -386,6 +392,7 @@ extern size_t libttaR_nsamples_perframe(size_t samplerate)
 #undef src
 #undef nsamples
 #undef samplebytes
+/*@external@*/ /*@unused@*/
 extern size_t libttaR_pcm_read(
 	int32_t *dest,
 	const uint8_t *src,
@@ -422,6 +429,7 @@ extern size_t libttaR_pcm_read(
 #undef src
 #undef nsamples
 #undef samplebytes
+/*@external@*/ /*@unused@*/
 extern size_t libttaR_pcm_write(
 	uint8_t *dest,
 	const int32_t *src,
@@ -457,6 +465,7 @@ extern size_t libttaR_pcm_write(
 /////////////////////////////////////////////////////////////////////////// */
 #undef buf
 #undef size
+/*@external@*/ /*@unused@*/
 extern uint32_t libttaR_crc32(const uint8_t *buf, size_t size)
 /*@*/
 ;

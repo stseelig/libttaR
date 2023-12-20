@@ -28,14 +28,14 @@ const uint libttaR_num_version_minor = LIBTTAr_NUM_VERSION_MINOR;
 /*@unchecked@*/ /*@unused@*/
 const uint libttaR_num_version_revis = LIBTTAr_NUM_VERSION_REVIS;
 
-/*@unchecked@*/ /*@unused@*/ /*@observer@*/
-const char libttaR_str_version[] = LIBTTAr_STR_VERSION;
+/*@observer@*/ /*@unchecked@*/ /*@unused@*/
+const char *libttaR_str_version = LIBTTAr_STR_VERSION;
 
-/*@unchecked@*/ /*@unused@*/ /*@observer@*/
-const char libttaR_str_copyright[] = LIBTTAr_STR_COPYRIGHT;
+/*@observer@*/ /*@unchecked@*/ /*@unused@*/
+const char *libttaR_str_copyright = LIBTTAr_STR_COPYRIGHT;
 
-/*@unchecked@*/ /*@unused@*/ /*@observer@*/
-const char libttaR_str_license[] = LIBTTAr_STR_LICENSE;
+/*@observer@*/ /*@unchecked@*/ /*@unused@*/
+const char *libttaR_str_license = LIBTTAr_STR_LICENSE;
 
 //////////////////////////////////////////////////////////////////////////////
 
