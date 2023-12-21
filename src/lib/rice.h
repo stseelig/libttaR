@@ -31,10 +31,8 @@ enum ShiftMaskMode {
 //////////////////////////////////////////////////////////////////////////////
 
 struct Rice {
-	u32	sum0;
-	u32	sum1;
-	u8	k0;
-	u8	k1;
+	u32	sum[2];
+	u8	k[2];
 };
 
 struct BitCache {
@@ -260,10 +258,10 @@ rice_init(
 )
 /*@modifies	*rice@*/
 {
-	rice->sum0 = shift32p4_bit(k0, SMM_CONST);
-	rice->sum1 = shift32p4_bit(k1, SMM_CONST);
-	rice->k0   = k0;
-	rice->k1   = k1;
+	rice->sum[0] = shift32p4_bit(k0, SMM_CONST);
+	rice->sum[1] = shift32p4_bit(k1, SMM_CONST);
+	rice->k[0]   = k0;
+	rice->k[1]   = k1;
 	return;
 }
 
@@ -283,10 +281,10 @@ rice_encode(
 		*crc
 @*/
 {
-	register u32 *const restrict sum0  = &rice->sum0;
-	register u32 *const restrict sum1  = &rice->sum1;
-	register  u8 *const restrict k0    = &rice->k0;
-	register  u8 *const restrict k1    = &rice->k1;
+	register u32 *const restrict sum0  = &rice->sum[0];
+	register u32 *const restrict sum1  = &rice->sum[1];
+	register  u8 *const restrict k0    = &rice->k[0];
+	register  u8 *const restrict k1    = &rice->k[1];
 	register u32 *const restrict cache = &bitcache->cache;
 	register  u8 *const restrict count = &bitcache->count;
 	register u32 unary = 0, binary;
@@ -418,10 +416,10 @@ rice_decode(
 		*crc
 @*/
 {
-	register u32 *const restrict sum0  = &rice->sum0;
-	register u32 *const restrict sum1  = &rice->sum1;
-	register  u8 *const restrict k0    = &rice->k0;
-	register  u8 *const restrict k1    = &rice->k1;
+	register u32 *const restrict sum0  = &rice->sum[0];
+	register u32 *const restrict sum1  = &rice->sum[1];
+	register  u8 *const restrict k0    = &rice->k[0];
+	register  u8 *const restrict k1    = &rice->k[1];
 	register u32 *const restrict cache = &bitcache->cache;
 	register  u8 *const restrict count = &bitcache->count;
 	u32 unary, binary;
