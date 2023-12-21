@@ -12,7 +12,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
-#include "string.h"	// memmove
+#include <string.h>	// memmove
 
 #include "../bits.h"
 
@@ -239,7 +239,7 @@ tta_filter(
 	m[8] = (i32) ((((u32) asr32(b[7], 30u)) | 0x1u) << 2u);
 	m[7] = (i32) ((((u32) asr32(b[6], 30u)) | 0x1u) << 1u);
 	m[6] = (i32) ((((u32) asr32(b[5], 30u)) | 0x1u) << 1u);
-	m[5] = (i32)  (((u32) asr32(b[4], 30u)) | 0x1u);
+	m[5] = (i32) ((((u32) asr32(b[4], 30u)) | 0x1u) << 0u);
 
 	switch ( mode ){
 	case FM_ENC:
