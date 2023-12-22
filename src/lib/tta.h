@@ -182,7 +182,7 @@ ALWAYS_INLINE i32
 tta_prefilter_dec(register i32 x)
 /*@*/
 {
-	return ((((u32) x) & 0x1u) != 0 ? asr32(++x, 1u) : asr32( -x, 1u));
+	return ((((u32) x) & 0x1u) != 0 ? asr32(++x, 1u) : asr32(-x, 1u));
 }
 
 //==========================================================================//
