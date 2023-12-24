@@ -38,7 +38,7 @@ readonly LD_REAL='gold';
 CFLAGS='-std=c99';
 
 #CFLAGS="$CFLAGS -D_POSIX_C_SOURCE=200809";
-CFLAGS="$CFLAGS -D_GNU_SOURCE";			# reallocarray, memrchr
+CFLAGS="$CFLAGS -D_GNU_SOURCE";		# reallocarray, memrchr, strchr
 CFLAGS="$CFLAGS -D_FILE_OFFSET_BITS=64";
 
 CFLAGS="$CFLAGS -march=native";

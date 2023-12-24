@@ -11,6 +11,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
+//                                                                          //
+//      defines may not be technically correct (for every arch, or just in  //
+// general), but this is just to shutup splint                              //
+//                                                                          //
+//////////////////////////////////////////////////////////////////////////////
 
 #include <stdint.h>
 #include <time.h>
@@ -38,13 +43,15 @@ struct timespec {
 #define UINT64_MAX	((uint64_t) 0xFFFFFFFFFFFFFFFFu)
 #endif
 
+#ifndef SIZE_MAX
+#define SIZE_MAX	((size_t) 0xFFFFFFFFFFFFFFFFu)
+#endif
+
 #ifndef CLOCK_MONOTONIC
 #define CLOCK_MONOTONIC	((clockid_t) 1) /*bogus*/
 #endif
 
 //--------------------------------------------------------------------------//
-
-// not technically correct for every arch, but this is just to shutup splint
 
 #ifndef PRIX8
 #define PRIX8	"hhX"
@@ -112,12 +119,6 @@ extern void *reallocarray(/*@only@*/ /*@null@*/ void *, size_t, size_t)
 
 /*@external@*/
 extern int setrlimit(int, /*@in@*/ struct rlimit *)
-/*@globals	internalState@*/
-/*@modifies	internalState@*/
-;
-
-/*@external@*/ /*@only@*/
-extern char *strdup(const char *)
 /*@globals	internalState@*/
 /*@modifies	internalState@*/
 ;

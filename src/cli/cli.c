@@ -25,6 +25,11 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
+static void errprint_libstr_copyright(const char *)
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem@*/
+;
+
 static void errprint_stats_infile(const char *const restrict)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
@@ -95,56 +100,38 @@ static void errprint_chanmask_wav(uint, u32)
 
 void
 errprint_program_intro(void)
-/*@globals	fileSystem,
-		internalState
-@*/
-/*@modifies	fileSystem,
-		internalState
-@*/
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem@*/
 {
-	char *dup0, *dup1;
-	union {
-		/*@temp@*/
-		char *cp;
-	} t;
-
-	dup0 = strdup(ttaR_str_copyright);
-	dup1 = strdup(libttaR_str_copyright);
-	if ( (dup0 == NULL) || (dup1 == NULL) ){
-		error_sys(errno, "strdup", strerror(errno), NULL);
-	}
-
 	(void) fputc('\n', stderr);
-
 	(void) fprintf(stderr, " %s\n", ttaR_str_version);
-	t.cp = strtok(dup0, ";");
-	assert(t.cp != NULL);
-	(void) fprintf(stderr, "\t%s\n", t.cp);
-	do {	t.cp = strtok(NULL, ";");
-		if ( t.cp != NULL ){
-			(void) fprintf(stderr, "\t%s\n", t.cp);
-		}
-	} while ( t.cp != NULL );
-
+	errprint_libstr_copyright(ttaR_str_copyright);
 	(void) fprintf(stderr, " %s\n", libttaR_str_version);
-	t.cp = strtok(dup1, ";");
-	assert(t.cp != NULL);
-	(void) fprintf(stderr, "\t%s\n", t.cp);
-	do {	t.cp = strtok(NULL, ";");
-		if ( t.cp != NULL ){
-			(void) fprintf(stderr, "\t%s\n", t.cp);
-		}
-	} while ( t.cp != NULL );
-
+	errprint_libstr_copyright(libttaR_str_copyright);
 	(void) fprintf(stderr,
 		" This program comes with ABSOLUTELY NO WARRANTY\n"
 	);
-
 	(void) fputc('\n', stderr);
+	return;
+}
 
-	// cleanup
-	free(dup0);
-	free(dup1);
+static void
+errprint_libstr_copyright(const char *str)
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem@*/
+{
+
+	const char *substr;
+	ptrdiff_t diff;
+
+	do {	substr = strchr(str, ';');
+		if ( substr != NULL ){
+			diff = (ptrdiff_t) (substr - str);
+			(void) fprintf(stderr, "\t%.*s\n", (int) diff, str);
+			str = &substr[1];
+		}
+		else { (void) fprintf(stderr, "\t%s\n", str); }
+	} while ( substr != NULL );
 
 	return;
 }

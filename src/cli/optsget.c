@@ -21,6 +21,7 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <limits.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -46,12 +47,10 @@ static int optsget(uint, const struct OptDict *const restrict)
 /*@-globuse@*/	// called function pointers
 static int shortoptsget(uint, const struct OptDict *const restrict)
 /*@globals	fileSystem,
-		internalState,
-		g_argv
+		internalState
 @*/
 /*@modifies	fileSystem,
-		internalState,
-		g_argv
+		internalState
 @*/
 ;
 /*@=globuse@*/
@@ -59,12 +58,10 @@ static int shortoptsget(uint, const struct OptDict *const restrict)
 /*@-globuse@*/	// called function pointers
 static int longoptget(uint, const struct OptDict *const restrict)
 /*@globals	fileSystem,
-		internalState,
-		g_argv
+		internalState
 @*/
 /*@modifies	fileSystem,
-		internalState,
-		g_argv
+		internalState
 @*/
 ;
 /*@=globuse@*/
@@ -166,12 +163,10 @@ optsget(uint optind, const struct OptDict *const restrict optdict)
 static int
 shortoptsget(uint optind, const struct OptDict *const restrict optdict)
 /*@globals	fileSystem,
-		internalState,
-		g_argv
+		internalState
 @*/
 /*@modifies	fileSystem,
-		internalState,
-		g_argv
+		internalState
 @*/
 {
 	const char *const restrict opt = &g_argv[optind][1];
@@ -205,38 +200,31 @@ cont_outer_loop:
 static int
 longoptget(uint optind, const struct OptDict *const restrict optdict)
 /*@globals	fileSystem,
-		internalState,
-		g_argv
+		internalState
 @*/
 /*@modifies	fileSystem,
-		internalState,
-		g_argv
+		internalState
 @*/
 {
-	int r;
-	char *opt, *dup;
+	int r = -1;
+	const char *const opt = &g_argv[optind][2];
+	const char *subopt;
+	size_t size = SIZE_MAX;
 	uint i;
 
-	// supporting --opt=value type longopts
-	dup = strdup(&g_argv[optind][2]);
-	if ( dup == NULL ){
-		error_sys(errno, "strdup", strerror(errno), NULL);
+	subopt = strchr(opt, '=');
+	if ( subopt != NULL ){
+		size = (size_t) (subopt - opt);
 	}
-	opt = strtok(dup, "=");
-	assert(opt != NULL);
 
-	r = -1;
 	for ( i = 0; optdict[i].longopt != NULL; ++i ){
-		if ( strcmp(opt, optdict[i].longopt) == 0 ){
+		if ( strncmp(opt, optdict[i].longopt, size) == 0 ){
 			r = (int) optdict[i].fn(
 				optind, g_argv[optind], OPTMODE_LONG
 			);
 			break;
 		}
 	}
-
-	// cleanup
-	free(dup);
 
 	return r;
 }

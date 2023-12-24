@@ -21,12 +21,8 @@
 //////////////////////////////////////////////////////////////////////////////
 
 extern void errprint_program_intro(void)
-/*@globals	fileSystem,
-		internalState
-@*/
-/*@modifies	fileSystem,
-		internalState
-@*/
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem@*/
 ;
 
 extern void errprint_stats_precodec(
