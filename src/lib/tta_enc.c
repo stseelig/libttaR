@@ -32,8 +32,7 @@ tta_encode_mch(
 	u8 *const dest, const i32 *const, u32 *const restrict crc_out,
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
-	struct Codec *const restrict codec, size_t, size_t, uint, i32, uint,
-	uint
+	struct Codec *const restrict codec, size_t, size_t, u8, i32, u8, uint
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -55,7 +54,7 @@ tta_encode_1ch(
 	u8 *const dest, const i32 *const, u32 *const restrict crc_out,
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
-	struct Codec *const restrict codec, size_t, size_t, uint, i32, uint
+	struct Codec *const restrict codec, size_t, size_t, u8, i32, u8
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -77,7 +76,7 @@ tta_encode_2ch(
 	u8 *const dest, const i32 *const, u32 *const restrict crc_out,
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
-	struct Codec *const restrict codec, size_t, size_t, uint, i32, uint
+	struct Codec *const restrict codec, size_t, size_t, u8, i32, u8
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -111,9 +110,9 @@ libttaR_tta_encode(
 @*/
 {
 	size_t r;
-	const uint predict_k = tta_predict_k(samplebytes);
+	const  u8 predict_k = tta_predict_k(samplebytes);
 	const i32 filter_round = tta_filter_round(samplebytes);
-	const uint filter_k = tta_filter_k(samplebytes);
+	const  u8 filter_k = tta_filter_k(samplebytes);
 	const size_t safety_margin = (
 		dest_len - (TTABUF_SAFETY_MARGIN * nchan * samplebytes)
 	);
@@ -202,7 +201,7 @@ tta_encode_mch(
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
 	struct Codec *const restrict codec, size_t ni32_target,
-	size_t safety_margin, uint predict_k, i32 filter_round, uint filter_k,
+	size_t safety_margin, u8 predict_k, i32 filter_round, u8 filter_k,
 	uint nchan
 )
 /*@modifies	*dest,
@@ -266,7 +265,7 @@ tta_encode_1ch(
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
 	struct Codec *const restrict codec, size_t ni32_target,
-	size_t safety_margin, uint predict_k, i32 filter_round, uint filter_k
+	size_t safety_margin, u8 predict_k, i32 filter_round, u8 filter_k
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -317,7 +316,7 @@ tta_encode_2ch(
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
 	struct Codec *const restrict codec, size_t ni32_target,
-	size_t safety_margin, uint predict_k, i32 filter_round, uint filter_k
+	size_t safety_margin, u8 predict_k, i32 filter_round, u8 filter_k
 )
 /*@modifies	*dest,
 		*crc_out,

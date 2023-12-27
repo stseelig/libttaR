@@ -91,8 +91,8 @@ ALWAYS_INLINE u16 letoh16(register u16) /*@*/;
 ALWAYS_INLINE u32 htole32(register u32) /*@*/;
 ALWAYS_INLINE u32 letoh32(register u32) /*@*/;
 
-ALWAYS_INLINE i32 asl32(register i32, register uint) /*@*/;
-ALWAYS_INLINE i32 asr32(register i32, register uint) /*@*/;
+ALWAYS_INLINE i32 asl32(register i32, register u8) /*@*/;
+ALWAYS_INLINE i32 asr32(register i32, register u8) /*@*/;
 
 ALWAYS_INLINE uint tzcnt32(register u32) /*@*/;
 ALWAYS_INLINE uint tbcnt32(register u32) /*@*/;
@@ -216,7 +216,7 @@ ALWAYS_INLINE u64 letoh64(register u64 x) /*@*/ { return x; }
 // shifting signed integers is naughty
 
 ALWAYS_INLINE i32
-asl32(register i32 x, register uint k)
+asl32(register i32 x, register u8 k)
 /*@*/
 {
 	return (i32) (((u32) x) << k);
@@ -225,7 +225,7 @@ asl32(register i32 x, register uint k)
 //--------------------------------------------------------------------------//
 
 ALWAYS_INLINE i32
-asr32(register i32 x, register uint k)
+asr32(register i32 x, register u8 k)
 /*@*/
 {
 	if ( (! HAS_ASR(i32)) && (x < 0) ){

@@ -484,7 +484,7 @@ rice_unary_get(
 @*/
 {
 	register union {
-		uint u;
+		u8 u_8;
 	} t;
 
 	// switched initial value from 0, because in rice_decode, depth1 is
@@ -496,12 +496,12 @@ rice_unary_get(
 	do {	*cache  = rice_crc32(src[r++], crc);
 		*count  = (u8) 8u;
 loop_entr:
-		t.u = tbcnt32(*cache);	// *cache is always < UINT8_MAX
-		*unary += t.u;
-	} while ( t.u == *count );
+		t.u_8 = (u8) tbcnt32(*cache);	// *cache is always < UINT8_MAX
+		*unary += t.u_8;
+	} while ( t.u_8 == *count );
 
-	*cache >>= t.u + 1u;		// t.u is always < 8
-	*count  -= t.u + 1u;
+	*cache >>= t.u_8 + 1u;			// t.u is always < 8
+	*count  -= t.u_8 + 1u;
 	return r;
 }
 

@@ -66,13 +66,13 @@ INLINE void codec_init(
 
 //--------------------------------------------------------------------------//
 
-ALWAYS_INLINE uint tta_predict_k(register enum TTASampleBytes) /*@*/;
+ALWAYS_INLINE u8 tta_predict_k(register enum TTASampleBytes) /*@*/;
 ALWAYS_INLINE i32 tta_filter_round(register enum TTASampleBytes) /*@*/;
-ALWAYS_INLINE uint tta_filter_k(register enum TTASampleBytes) /*@*/;
+ALWAYS_INLINE u8 tta_filter_k(register enum TTASampleBytes) /*@*/;
 
 //--------------------------------------------------------------------------//
 
-ALWAYS_INLINE i32 tta_predict1(register i32, register uint) /*@*/;
+ALWAYS_INLINE i32 tta_predict1(register i32, register u8) /*@*/;
 ALWAYS_INLINE i32 tta_postfilter_enc(register i32) /*@*/;
 ALWAYS_INLINE i32 tta_prefilter_dec(register i32) /*@*/;
 
@@ -81,7 +81,7 @@ ALWAYS_INLINE i32 tta_prefilter_dec(register i32) /*@*/;
 #undef filter
 ALWAYS_INLINE i32 tta_filter(
 	register struct Filter *const restrict filter, register i32,
-	register uint, register i32, const enum FilterMode
+	register u8, register i32, const enum FilterMode
 )
 /*@modifies	*filter@*/
 ;
@@ -106,19 +106,19 @@ codec_init(
 //--------------------------------------------------------------------------//
 
 // returns 0 on failure
-ALWAYS_INLINE uint
+ALWAYS_INLINE u8
 tta_predict_k(register enum TTASampleBytes samplebytes)
 /*@*/
 {
-	register uint r = 0;
+	register u8 r = 0;
 
 	switch ( samplebytes ){
 	case 1u:
-		r = 4u;
+		r = (u8) 4u;
 		break;
 	case 2u:
 	case 3u:
-		r = 5u;
+		r = (u8) 5u;
 		break;
 	}
 	return r;
@@ -144,19 +144,19 @@ tta_filter_round(register enum TTASampleBytes samplebytes)
 }
 
 // returns 0 on failure
-ALWAYS_INLINE uint
+ALWAYS_INLINE u8
 tta_filter_k(register enum TTASampleBytes samplebytes)
 /*@*/
 {
-	register uint r = 0;
+	register u8 r = 0;
 
 	switch ( samplebytes ){
 	case 1u:
 	case 3u:
-		r = 10u;
+		r = (u8) 10u;
 		break;
 	case 2u:
-		r = 9u;
+		r = (u8) 9u;
 		break;
 	}
 	return r;
@@ -165,7 +165,7 @@ tta_filter_k(register enum TTASampleBytes samplebytes)
 //==========================================================================//
 
 ALWAYS_INLINE i32
-tta_predict1(register i32 x, register uint k)
+tta_predict1(register i32 x, register u8 k)
 /*@*/
 {
 	return (i32) (((((u64fast) x) << k) - x) >> k);
@@ -175,14 +175,17 @@ ALWAYS_INLINE i32
 tta_postfilter_enc(register i32 x)
 /*@*/
 {
-	return (x > 0 ? asl32(x, 1u) - 1 : asl32(-x, 1u));
+	return (x > 0 ? asl32(x, (u8) 1u) - 1 : asl32(-x, (u8) 1u));
 }
 
 ALWAYS_INLINE i32
 tta_prefilter_dec(register i32 x)
 /*@*/
 {
-	return ((((u32) x) & 0x1u) != 0 ? asr32(++x, 1u) : asr32(-x, 1u));
+	return ((((u32) x) & 0x1u) != 0
+		? asr32(++x, (u8) 1u)
+		: asr32( -x, (u8) 1u)
+	);
 }
 
 //==========================================================================//
@@ -190,7 +193,7 @@ tta_prefilter_dec(register i32 x)
 ALWAYS_INLINE i32
 tta_filter(
 	register struct Filter *const restrict filter,
-	register i32 round, register uint k, register i32 value,
+	register i32 round, register u8 k, register i32 value,
 	const enum FilterMode mode
 )
 /*@modifies	*filter@*/
@@ -236,10 +239,10 @@ tta_filter(
 		sum += (a[7] += m[7]) * b[7];
 	}
 
-	m[8] = (i32) ((((u32) asr32(b[7], 30u)) | 0x1u) << 2u);
-	m[7] = (i32) ((((u32) asr32(b[6], 30u)) | 0x1u) << 1u);
-	m[6] = (i32) ((((u32) asr32(b[5], 30u)) | 0x1u) << 1u);
-	m[5] = (i32) ((((u32) asr32(b[4], 30u)) | 0x1u) << 0u);
+	m[8] = (i32) ((((u32) asr32(b[7], (u8) 30u)) | 0x1u) << 2u);
+	m[7] = (i32) ((((u32) asr32(b[6], (u8) 30u)) | 0x1u) << 1u);
+	m[6] = (i32) ((((u32) asr32(b[5], (u8) 30u)) | 0x1u) << 1u);
+	m[5] = (i32) ((((u32) asr32(b[4], (u8) 30u)) | 0x1u) << 0u);
 
 	switch ( mode ){
 	case FM_ENC:
