@@ -492,6 +492,8 @@ rice_unary_get(
 	//  to a 'unary = 0' in !depth1 branch
 	*unary = UINT32_MAX;
 
+	// this loop is slightly better than the lookup-table one, as long as
+	//  tbcnt32 maps to an instruction (tzcnt/ctz). otherwise a bit slower
 	goto loop_entr;
 	do {	*cache  = rice_crc32(src[r++], crc);
 		*count  = (u8) 8u;
