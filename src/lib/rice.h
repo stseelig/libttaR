@@ -496,11 +496,11 @@ rice_unary_get(
 	do {	*cache  = rice_crc32(src[r++], crc);
 		*count  = (u8) 8u;
 loop_entr:
-		t.u_8 = (u8) tbcnt32(*cache);	// *cache is always < UINT8_MAX
+		t.u_8 = (u8) tbcnt32(*cache);	// *cache is always <UINT8_MAX
 		*unary += t.u_8;
 	} while ( t.u_8 == *count );
 
-	*cache >>= t.u_8 + 1u;			// t.u is always < 8
+	*cache >>= t.u_8 + 1u;			// t.u is always <8
 	*count  -= t.u_8 + 1u;
 	return r;
 }
