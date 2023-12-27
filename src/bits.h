@@ -52,14 +52,34 @@
 #define PACKED		__attribute__((packed))
 #define HIDDEN		__attribute__((visibility("hidden")))
 
-// don't use these unless the condition is almost always true/false
-// they should always be tested anyway; not always beneficial
+//--------------------------------------------------------------------------//
+
+// these should always be tested; not always beneficial
+
 #if HAS_BUILTIN(__builtin_expect)
 #define LIKELY(cond)	(__builtin_expect(!!(cond), true))
 #define UNLIKELY(cond)	(__builtin_expect(!!(cond), false))
 #else
 #define LIKELY(cond)	(cond)
 #define UNLIKELY(cond)	(cond)
+#endif
+
+#if HAS_BUILTIN(__builtin_expect_with_probability)
+#define LIKELY_P(cond, prob)	( \
+	__builtin_expect_with_probability(!!(cond), true, prob) \
+)
+#define UNLIKELY_P(cond, prob)	( \
+	__builtin_expect_with_probability(!!(cond), false, prob) \
+)
+#else
+#define LIKELY_P(cond, prob)	(cond)
+#define UNLIKELY_P(cond, prob)	(cond)
+#endif
+
+#if HAS_BUILTIN(__builtin_unpredictable)
+#define UNPREDICTABLE(cond)	(__builtin_unpredictable(!!(cond)))
+#else
+#define UNPREDICTABLE(cond)	(cond)
 #endif
 
 //////////////////////////////////////////////////////////////////////////////

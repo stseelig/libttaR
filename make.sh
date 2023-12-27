@@ -70,6 +70,9 @@ LIBFLAGS="-fPIC";
 # disable the multichannel/general decoder
 #LIBFLAGS="$LIBFLAGS -DLIBTTAr_DISABLE_MCH";
 
+# disable tzcnt builtin if no native tzcnt instruction
+#LIBFLAGS="$LIBFLAGS -DLIBTTAr_NO_INSTRUCTION_TZCNT";
+
 readonly LIBFLAGS;
 
 #----------------------------------------------------------------------------#

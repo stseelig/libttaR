@@ -294,10 +294,10 @@ rice_encode(
 	} t;
 
 	*sum0 += value - (*sum0 >> 4u);
-	if ( *sum0 < shift32p4_bit(*k0, SMM_TABLE) ){
+	if UNPREDICTABLE ( *sum0 < shift32p4_bit(*k0, SMM_TABLE) ){
 		--(*k0);
 	}
-	else if ( *sum0 > shift32p4_bit(*k0 + 1u, SMM_TABLE) ){
+	else if LIKELY ( *sum0 > shift32p4_bit(*k0 + 1u, SMM_TABLE) ){
 		++(*k0);
 	} else{;}
 
@@ -306,10 +306,10 @@ rice_encode(
 		value -= t.u_32;
 		kx = *k1;
 		*sum1 += value - (*sum1 >> 4u);
-		if ( *sum1 < shift32p4_bit(*k1, SMM_TABLE) ){
+		if UNPREDICTABLE ( *sum1 < shift32p4_bit(*k1, SMM_TABLE) ){
 			--(*k1);
 		}
-		else if ( *sum1 > shift32p4_bit(*k1 + 1u, SMM_TABLE) ){
+		else if LIKELY ( *sum1 > shift32p4_bit(*k1 + 1u, SMM_TABLE) ){
 			++(*k1);
 		} else{;}
 		unary = (value >> kx) + 1u;
@@ -429,7 +429,7 @@ rice_decode(
 	register bool depth1;
 
 	r = rice_unary_get(&unary, src, r, cache, count, crc);
-	if ( unary + 1u != 0 ){
+	if LIKELY_P ( unary + 1u != 0, 0.575 ){
 		kx = *k1;
 		depth1 = true;
 	}
@@ -439,17 +439,17 @@ rice_decode(
 	}
 
 	*value = unary;
-	if ( kx != 0 ){
+	if LIKELY ( kx != 0 ){
 		r = rice_binary_get(&binary, src, r, kx, cache, count, crc);
 		*value = (*value << kx) + binary;
 	}
 
-	if ( depth1 ){
+	if LIKELY_P ( depth1, 0.575 ){
 		*sum1 += *value - (*sum1 >> 4u);
-		if ( *sum1 < shift32p4_bit(*k1, SMM_TABLE) ){
+		if UNPREDICTABLE ( *sum1 < shift32p4_bit(*k1, SMM_TABLE) ){
 			--(*k1);
 		}
-		else if ( *sum1 > shift32p4_bit(*k1 + 1u, SMM_TABLE) ){
+		else if LIKELY ( *sum1 > shift32p4_bit(*k1 + 1u, SMM_TABLE) ){
 			++(*k1);
 		} else{;}
 
@@ -457,10 +457,10 @@ rice_decode(
 	}
 
 	*sum0 += *value - (*sum0 >> 4u);
-	if ( *sum0 < shift32p4_bit(*k0, SMM_TABLE) ){
+	if UNPREDICTABLE ( *sum0 < shift32p4_bit(*k0, SMM_TABLE) ){
 		--(*k0);
 	}
-	else if ( *sum0 > shift32p4_bit(*k0 + 1u, SMM_TABLE) ){
+	else if LIKELY ( *sum0 > shift32p4_bit(*k0 + 1u, SMM_TABLE) ){
 		++(*k0);
 	} else{;}
 
@@ -492,17 +492,28 @@ rice_unary_get(
 	//  to a 'unary = 0' in !depth1 branch
 	*unary = UINT32_MAX;
 
+#ifndef LIBTTAr_NO_INSTRUCTION_TZCNT
 	// this loop is slightly better than the lookup-table one, as long as
 	//  tbcnt32 maps to an instruction (tzcnt/ctz). otherwise a bit slower
 	goto loop_entr;
 	do {	*cache  = rice_crc32(src[r++], crc);
 		*count  = (u8) 8u;
 loop_entr:
-		t.u_8 = (u8) tbcnt32(*cache);	// *cache is always <UINT8_MAX
+		t.u_8 = (u8) tbcnt32(*cache);
 		*unary += t.u_8;
-	} while ( t.u_8 == *count );
-
-	*cache >>= t.u_8 + 1u;			// t.u is always <8
+	} while UNLIKELY_P ( t.u_8 == *count, 0.25 );
+#else
+	while UNLIKELY_P (
+		(*cache ^ lsmask32(*count, SMM_TABLE)) == 0, 0.25
+	){
+		*unary += *count;
+		*cache  = rice_crc32(src[r++], crc);
+		*count  = (u8) 8u;
+	}
+	t.u_8 = (u8) tbcnt32(*cache);	// *cache is always < UINT8_MAX
+	*unary  += t.u_8;
+#endif
+	*cache >>= t.u_8 + 1u;	// t.u is always <8
 	*count  -= t.u_8 + 1u;
 	return r;
 }
@@ -521,7 +532,7 @@ rice_binary_get(
 		*crc
 @*/
 {
-	while ( *count < k ){
+	while LIKELY_P( *count < k, 0.9 ){
 		*cache |= rice_crc32(src[r++], crc) << *count;
 		*count += 8u;
 	}
