@@ -2,7 +2,7 @@
 Tau's True Audio (TTA) codec rewrite
 
 ## What is TTA?
-TTA is a lossless audio codec designed around realtime hardware coding.
+TTA is a lossless audio codec designed around realtime hardware coding.  
 http://tausoft.org/wiki/True_Audio_Codec_Overview
 
 ## Building
