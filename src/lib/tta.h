@@ -202,9 +202,9 @@ tta_filter(
 
 	// there is a compiler quirk where putting the ==0 branch !first slows
 	//  everything down considerably. it adds an extra if-statement or two
-	//  to reduce code size a bit, but that borks the autoSIMDing. the
-	//  ==0 branch should be last, because it is the least likely to
-	//  happen by several order of magnitude
+	//  to reduce code size a bit, but that borks the assembler. the ==0
+	//  branch should be last, because it is the least likely to happen
+	//  (but not enough for UNLIKELY)
 	if ( filter->error == 0 ){
 		sum += a[0] * b[0];
 		sum += a[1] * b[1];

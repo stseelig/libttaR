@@ -12,6 +12,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include <limits.h>
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "splint.h"
@@ -37,10 +38,29 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
+#ifdef __has_builtin
+#define HAS_BUILTIN(x)			__has_builtin(x)
+#else
+#define HAS_BUILTIN(x)			0
+#endif
+
+//==========================================================================//
+
 #define INLINE		/*@unused@*/ static inline
 #define ALWAYS_INLINE	INLINE __attribute__((always_inline))
+
 #define PACKED		__attribute__((packed))
 #define HIDDEN		__attribute__((visibility("hidden")))
+
+// don't use these unless the condition is almost always true/false
+// they should always be tested anyway; not always beneficial
+#if HAS_BUILTIN(__builtin_expect)
+#define LIKELY(cond)	(__builtin_expect(!!(cond), true))
+#define UNLIKELY(cond)	(__builtin_expect(!!(cond), false))
+#else
+#define LIKELY(cond)	(cond)
+#define UNLIKELY(cond)	(cond)
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -78,14 +98,6 @@ ALWAYS_INLINE uint tzcnt32(register u32) /*@*/;
 ALWAYS_INLINE uint tbcnt32(register u32) /*@*/;
 
 //////////////////////////////////////////////////////////////////////////////
-
-#ifdef __has_builtin
-#define HAS_BUILTIN(x)			__has_builtin(x)
-#else
-#define HAS_BUILTIN(x)			0
-#endif
-
-//==========================================================================//
 
 #define BUILTIN_BSWAP16			__builtin_bswap16
 #define BUILTIN_BSWAP32			__builtin_bswap32

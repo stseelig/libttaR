@@ -316,7 +316,7 @@ rice_encode(
 	}
 
 	r = rice_unary_put(dest, r, unary, cache, count, crc);
-	if ( kx != 0 ){
+	if LIKELY ( kx != 0 ){
 		binary = value & lsmask32(kx, SMM_SHIFT);
 		r = rice_binary_put(dest, r, binary, kx, cache, count, crc);
 	}
@@ -364,12 +364,14 @@ rice_unary_put(
 	do {	unary  -= 23u;
 		*cache |= lsmask32((u8) 23u, SMM_CONST) << *count;
 		*count += 23u;
-loop_entr:	while ( *count >= (u8) 8u ){
+loop_entr:
+		while ( *count >= (u8) 8u ){
 			dest[r++] = rice_crc32((u8) (*cache & 0xFFu), crc);
 			*cache  >>= 8u;
 			*count   -= 8u;
 		}
-	} while ( unary > (u32) 23u );
+	} while UNLIKELY ( unary > (u32) 23u );
+
 	*cache |= lsmask32((u8) unary, SMM_SHIFT) << *count;
 	*count += unary + 1u;
 	return r;
@@ -489,14 +491,16 @@ rice_unary_get(
 	//  much more likely than not; moved a '--unary' in the depth1 branch
 	//  to a 'unary = 0' in !depth1 branch
 	*unary = UINT32_MAX;
-	while ( (*cache ^ lsmask32(*count, SMM_TABLE)) == 0 ){
-		*unary += *count;
-		*cache  = rice_crc32(src[r++], crc);
+
+	goto loop_entr;
+	do {	*cache  = rice_crc32(src[r++], crc);
 		*count  = (u8) 8u;
-	}
-	t.u = tbcnt32(*cache);	// *cache is always < UINT8_MAX
-	*unary  += t.u;
-	*cache >>= t.u + 1u;	// t.u is always < 8
+loop_entr:
+		t.u = tbcnt32(*cache);	// *cache is always < UINT8_MAX
+		*unary += t.u;
+	} while ( t.u == *count );
+
+	*cache >>= t.u + 1u;		// t.u is always < 8
 	*count  -= t.u + 1u;
 	return r;
 }
