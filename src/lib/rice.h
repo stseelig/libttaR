@@ -532,7 +532,7 @@ rice_binary_get(
 		*crc
 @*/
 {
-	while LIKELY_P( *count < k, 0.9 ){
+	while LIKELY_P ( *count < k, 0.9 ){
 		*cache |= rice_crc32(src[r++], crc) << *count;
 		*count += 8u;
 	}
