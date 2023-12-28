@@ -295,12 +295,6 @@ _cc(){
 # $1: additional opts
 # $2: C-file
 	PRINT="[${T_B_CYAN}CC${T_RESET}]\t${CC} -c";
-	if [ -n "$1" ]; then
-		PRINT="${PRINT} ${1}";
-	fi
-	#if [ -n "$CFLAGS" ]; then
-	#	PRINT="${PRINT} \$CFLAGS";
-	#fi
 	PRINT="${PRINT} -o ${OBJ}/${2}.o ${SRC}/${2}.c\n";
 	CMD_START=$(_timestamp);
 	 "$CC" -c $1 $CFLAGS -o "$OBJ/$2.o" "$SRC/$2.c" || _ret_fail $?;
@@ -403,6 +397,7 @@ _ld "-L$BUILD/ -l$LIB_BASE" "$BUILD/$PROGRAM" \
 
 if [ -n "$STRIP" ] && [ $STRIP -ne 0 ]; then
 	_strip "$BUILD/$PROGRAM";
+	_strip "$BUILD/$LIBRARY";
 fi
 
 _cp2build "$HEADER";
