@@ -513,7 +513,7 @@ loop_entr:
 	t.u_8 = (u8) tbcnt32(*cache);	// *cache is always < UINT8_MAX
 	*unary  += t.u_8;
 #endif
-	*cache >>= t.u_8 + 1u;	// t.u is always <8
+	*cache >>= t.u_8 + 1u;		// t.u is always < 8
 	*count  -= t.u_8 + 1u;
 	return r;
 }
