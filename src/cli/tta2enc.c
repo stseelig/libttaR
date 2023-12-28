@@ -11,7 +11,6 @@
 
 #include <assert.h>
 #include <errno.h>
-#include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -124,7 +123,8 @@ tta2enc(uint optind)
 	struct timespec ts_start, ts_stop;
 	size_t i;
 	union {
-		int d;
+		int	d;
+		bool	b;
 	} t;
 
 	(void) memset(&openedfiles, 0x00, sizeof openedfiles);
@@ -149,9 +149,13 @@ tta2enc(uint optind)
 
 		// check for supported filetypes and fill most of fstat
 		if ( ! g_flag.rawpcm ){
-			nerrors_file += (uint) ((bool) filecheck_decfmt(
+			t.b = (bool) filecheck_decfmt(
 				&ofm->fstat, ofm->infile, ofm->infile_name
-			));
+			);
+			if ( t.b ){
+				++nerrors_file;
+				continue;
+			}
 		}
 		else {	rawpcm_statcopy(&ofm->fstat);
 			// TODO mode for stdin reading
@@ -165,6 +169,7 @@ tta2enc(uint optind)
 			ofm->fstat.decpcm_off  = 0;
 			ofm->fstat.decpcm_size = (size_t) ftello(ofm->infile);
 		}
+
 		if ( ! libttaR_test_nchan((uint)ofm->fstat.nchan) ){
 			++nerrors_file;
 			error_tta_nf("%s: libttaR built without support for"

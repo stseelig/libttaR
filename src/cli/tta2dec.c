@@ -127,7 +127,8 @@ tta2dec(uint optind)
 	struct timespec ts_start, ts_stop;
 	size_t i;
 	union {
-		int d;
+		int	d;
+		bool	b;
 	} t;
 
 	(void) memset(&openedfiles, 0x00, sizeof openedfiles);
@@ -151,9 +152,14 @@ tta2dec(uint optind)
 		if ( ofm->infile == NULL ){ continue; } // bad filename
 
 		// check for supported filetypes and fill most of fstat
-		nerrors_file += (uint) ((bool) filecheck_encfmt(
+		t.b = (bool) filecheck_encfmt(
 			&ofm->fstat, ofm->infile, ofm->infile_name
-		));
+		);
+		if ( t.b ){
+			++nerrors_file;
+			continue;
+		}
+
 		if ( ! libttaR_test_nchan((uint) ofm->fstat.nchan) ){
 			++nerrors_file;
 			error_tta_nf("%s: libttaR built without support for"
@@ -312,9 +318,7 @@ tta2dec_loop(struct OpenedFilesMember *const restrict ofm)
 	if ( t.fc != FILECHECK_OK ){
 		if ( t.fc == FILECHECK_CORRUPTED ){
 			ignore_seektable = true;
-			error_tta_nf("%s: corrupted seektable", infile_name);
-			// TODO warn and handle instead of error
-			//warning_tta("%s: corrupted seektable", infile_name);
+			warning_tta("%s: corrupted seektable", infile_name);
 		}
 		else {	error_filecheck(t.fc, fstat, infile_name, errno);
 			exit(t.fc);
