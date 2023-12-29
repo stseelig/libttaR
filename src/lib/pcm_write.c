@@ -49,12 +49,12 @@ ALWAYS_INLINE u8 i32h_to_u8(register i32) /*@*/;
 
 #undef dest
 ALWAYS_INLINE void write_i32h_to_i16le(register u8 *const dest, register i32)
-/*@modifies	*dest*/
+/*@modifies	*dest@*/
 ;
 
 #undef dest
 ALWAYS_INLINE void write_i32h_to_i24le(register u8 *const dest, register i32)
-/*@modifies	*dest*/
+/*@modifies	*dest@*/
 ;
 
 //////////////////////////////////////////////////////////////////////////////
@@ -141,7 +141,7 @@ i32h_to_u8(register i32 x)
 
 ALWAYS_INLINE void
 write_i32h_to_i16le(register u8 *const dest, register i32 x)
-/*@modifies	*dest*/
+/*@modifies	*dest@*/
 {
 	register const u32 y = (u32) x;
 	dest[0] = (u8)  y;
@@ -151,7 +151,7 @@ write_i32h_to_i16le(register u8 *const dest, register i32 x)
 
 ALWAYS_INLINE void
 write_i32h_to_i24le(register u8 *const dest, register i32 x)
-/*@modifies	*dest*/
+/*@modifies	*dest@*/
 {
 	register const u32 y = (u32) x;
 	dest[0] = (u8)  y;
