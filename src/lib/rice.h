@@ -370,7 +370,7 @@ loop_entr:
 			*cache  >>= 8u;
 			*count   -= 8u;
 		}
-	} while ( unary > (u32) 23u );
+	} while UNLIKELY ( unary > (u32) 23u );
 
 	*cache |= lsmask32((u8) unary, SMM_SHIFT) << *count;
 	*count += unary + 1u;

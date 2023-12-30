@@ -283,8 +283,6 @@ tzcnt32(register u32 x)
 #endif
 }
 
-//==========================================================================//
-
 // undefined for UINT32_MAX
 ALWAYS_INLINE uint tbcnt32(register u32 x) /*@*/ { return tzcnt32(~x); }
 
