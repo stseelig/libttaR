@@ -31,7 +31,7 @@ readonly PROGRAM='ttaR';
 
 readonly CC='clang';
 readonly LD="$CC";
-readonly LD_REAL='gold';
+#readonly LD_REAL='gold';	# disabling for libttaR 1.0.1-7 (2-23-12-30)
 
 #----------------------------------------------------------------------------#
 
@@ -44,8 +44,7 @@ CFLAGS="$CFLAGS -D_FILE_OFFSET_BITS=64";
 CFLAGS="$CFLAGS -march=native";
 CFLAGS="$CFLAGS -mtune=native";
 
-# -Os does slightly better than -O3 except for very large files
-CFLAGS="$CFLAGS -Os";
+CFLAGS="$CFLAGS -Ofast";	# -Ofast for libttaR 1.0.1-7 (2-23-12-30)
 CFLAGS="$CFLAGS -ffast-math";
 
 CFLAGS="$CFLAGS -finline";
@@ -82,7 +81,7 @@ if [ "$LD_REAL" = 'gold' ] && [ -e "$(which gold)" ]; then
 	LDFLAGS="-fuse-ld=$LD_REAL";
 
 	# may slightly slow-down or speed-up binary
-	# smaller size probably worth it for the cache
+	# the smaller size maybe worth it
 	LDFLAGS="$LDFLAGS -Xlinker -O3";
 	LDFLAGS="$LDFLAGS -Xlinker --icf=all";
 
