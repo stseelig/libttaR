@@ -39,9 +39,9 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifdef __has_builtin
-#define HAS_BUILTIN(x)			__has_builtin(x)
+#define HAS_BUILTIN(x)	__has_builtin(x)
 #else
-#define HAS_BUILTIN(x)			0
+#define HAS_BUILTIN(x)	0
 #endif
 
 //==========================================================================//
@@ -57,11 +57,11 @@
 // these should always be tested; not always beneficial
 
 #if HAS_BUILTIN(__builtin_expect)
-#define LIKELY(cond)	(__builtin_expect(!!(cond), true))
-#define UNLIKELY(cond)	(__builtin_expect(!!(cond), false))
+#define LIKELY(cond)		(__builtin_expect(!!(cond), true))
+#define UNLIKELY(cond)		(__builtin_expect(!!(cond), false))
 #else
-#define LIKELY(cond)	(cond)
-#define UNLIKELY(cond)	(cond)
+#define LIKELY(cond)		(cond)
+#define UNLIKELY(cond)		(cond)
 #endif
 
 #if HAS_BUILTIN(__builtin_expect_with_probability)
