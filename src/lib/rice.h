@@ -294,22 +294,22 @@ rice_encode(
 	} t;
 
 	*sum0 += value - (*sum0 >> 4u);
-	if UNPREDICTABLE ( *sum0 < shift32p4_bit(*k0, SMM_TABLE) ){
+	if ( *sum0 < shift32p4_bit(*k0, SMM_TABLE) ){
 		--(*k0);
 	}
-	else if LIKELY ( *sum0 > shift32p4_bit(*k0 + 1u, SMM_TABLE) ){
+	else if ( *sum0 > shift32p4_bit(*k0 + 1u, SMM_TABLE) ){
 		++(*k0);
 	} else{;}
 
 	t.u_32 = shift32_bit(kx);
-	if ( value >= t.u_32 ){
+	if LIKELY_P ( value >= t.u_32, 0.575 ){
 		value -= t.u_32;
 		kx = *k1;
 		*sum1 += value - (*sum1 >> 4u);
-		if UNPREDICTABLE ( *sum1 < shift32p4_bit(*k1, SMM_TABLE) ){
+		if ( *sum1 < shift32p4_bit(*k1, SMM_TABLE) ){
 			--(*k1);
 		}
-		else if LIKELY ( *sum1 > shift32p4_bit(*k1 + 1u, SMM_TABLE) ){
+		else if ( *sum1 > shift32p4_bit(*k1 + 1u, SMM_TABLE) ){
 			++(*k1);
 		} else{;}
 		unary = (value >> kx) + 1u;
@@ -370,7 +370,7 @@ loop_entr:
 			*cache  >>= 8u;
 			*count   -= 8u;
 		}
-	} while UNLIKELY ( unary > (u32) 23u );
+	} while ( unary > (u32) 23u );
 
 	*cache |= lsmask32((u8) unary, SMM_SHIFT) << *count;
 	*count += unary + 1u;
@@ -446,10 +446,10 @@ rice_decode(
 
 	if LIKELY_P ( depth1, 0.575 ){
 		*sum1 += *value - (*sum1 >> 4u);
-		if UNPREDICTABLE ( *sum1 < shift32p4_bit(*k1, SMM_TABLE) ){
+		if ( *sum1 < shift32p4_bit(*k1, SMM_TABLE) ){
 			--(*k1);
 		}
-		else if LIKELY ( *sum1 > shift32p4_bit(*k1 + 1u, SMM_TABLE) ){
+		else if ( *sum1 > shift32p4_bit(*k1 + 1u, SMM_TABLE) ){
 			++(*k1);
 		} else{;}
 
@@ -457,10 +457,10 @@ rice_decode(
 	}
 
 	*sum0 += *value - (*sum0 >> 4u);
-	if UNPREDICTABLE ( *sum0 < shift32p4_bit(*k0, SMM_TABLE) ){
+	if ( *sum0 < shift32p4_bit(*k0, SMM_TABLE) ){
 		--(*k0);
 	}
-	else if LIKELY ( *sum0 > shift32p4_bit(*k0 + 1u, SMM_TABLE) ){
+	else if ( *sum0 > shift32p4_bit(*k0 + 1u, SMM_TABLE) ){
 		++(*k0);
 	} else{;}
 
