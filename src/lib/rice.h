@@ -49,27 +49,36 @@ extern const u32 lsmask32_table[];
 
 //////////////////////////////////////////////////////////////////////////////
 
-ALWAYS_INLINE u32 shift32_bit(register u8) /*@*/;
-ALWAYS_INLINE u32 shift32p4_bit(register u8, const enum ShiftMaskMode) /*@*/;
-ALWAYS_INLINE u32 lsmask32(register u8, const enum ShiftMaskMode) /*@*/;
-
-//--------------------------------------------------------------------------//
-
-#undef crc
-ALWAYS_INLINE u8 rice_crc32(
-	/*@returned@*/ register u8, register u32 *const restrict crc
-)
-/*@modifies	*crc@*/
-;
-
-//--------------------------------------------------------------------------//
-
 #undef rice
 INLINE void
 rice_init(
 	register struct Rice *const restrict rice, register u8, register u8
 )
 /*@modifies	*rice@*/
+;
+
+//--------------------------------------------------------------------------//
+
+ALWAYS_INLINE u32 shift32_bit(register u8) /*@*/;
+ALWAYS_INLINE u32 shift32p4_bit(register u8, const enum ShiftMaskMode) /*@*/;
+ALWAYS_INLINE u32 lsmask32(register u8, const enum ShiftMaskMode) /*@*/;
+
+//--------------------------------------------------------------------------//
+
+#undef sum
+#undef k
+ALWAYS_INLINE void rice_cmpsum(
+	register u32 *const restrict sum, register u8 *const restrict k,
+	register u32
+)
+/*@modifies	*sum,
+		*k
+@*/
+;
+
+#undef crc
+ALWAYS_INLINE u8 rice_crc32(register u8, register u32 *const restrict crc)
+/*@modifies	*crc@*/
 ;
 
 //--------------------------------------------------------------------------//
@@ -199,6 +208,23 @@ ALWAYS_INLINE size_t rice_binary_get(
 
 //////////////////////////////////////////////////////////////////////////////
 
+INLINE void
+rice_init(
+	register struct Rice *const restrict rice, register u8 k0,
+	register u8 k1
+)
+/*@modifies	*rice@*/
+{
+	rice->sum[0] = shift32p4_bit(k0, SMM_CONST);
+	rice->sum[1] = shift32p4_bit(k1, SMM_CONST);
+	rice->k[0]   = k0;
+	rice->k[1]   = k1;
+	return;
+}
+
+//==========================================================================//
+
+// returns x
 ALWAYS_INLINE u32
 shift32_bit(register u8 k)
 /*@*/
@@ -215,7 +241,7 @@ shift32p4_bit(register u8 k, const enum ShiftMaskMode mode)
 	case SMM_CONST:
 	case SMM_SHIFT:
 		return (u32) (k != 0
-			? 0x1u << (k + 4u <= (u8) 31u
+			? 0x1u << ((u8) (k + 4u) <= (u8) 31u
 				? (u8) (k + 4u)
 				: (u8) 31u
 			)
@@ -241,28 +267,28 @@ lsmask32(register u8 k, const enum ShiftMaskMode mode)
 
 //==========================================================================//
 
+// this procedure got macro'd because the compiler was being silly
+#undef sum
+#undef k
+#undef value
+#define rice_cmpsum(sum, k, value) \
+{ \
+	*(sum) += (value) - (*(sum) >> 4u); \
+	if ( *(sum) < shift32p4_bit(*(k), SMM_TABLE) ){ \
+		--(*(k)); \
+	} \
+	else if ( *(sum) > shift32p4_bit(*(k) + 1u, SMM_TABLE) ){ \
+		++(*(k)); \
+	} else{;} \
+}
+
+// returns x
 ALWAYS_INLINE u8
-rice_crc32(/*@returned@*/ register u8 x, register u32 *const restrict crc)
+rice_crc32(register u8 x, register u32 *const restrict crc)
 /*@modifies	*crc@*/
 {
 	*crc = crc32_cont(x, *crc);
 	return x;
-}
-
-//==========================================================================//
-
-INLINE void
-rice_init(
-	register struct Rice *const restrict rice, register u8 k0,
-	register u8 k1
-)
-/*@modifies	*rice@*/
-{
-	rice->sum[0] = shift32p4_bit(k0, SMM_CONST);
-	rice->sum[1] = shift32p4_bit(k1, SMM_CONST);
-	rice->k[0]   = k0;
-	rice->k[1]   = k1;
-	return;
 }
 
 //==========================================================================//
@@ -288,30 +314,19 @@ rice_encode(
 	register u32 *const restrict cache = &bitcache->cache;
 	register  u8 *const restrict count = &bitcache->count;
 	register u32 unary = 0, binary;
-	register  u8 kx = *k0;
+	register  u8 kx;
 	register union {
 		u32 u_32;
 	} t;
 
-	*sum0 += value - (*sum0 >> 4u);
-	if ( *sum0 < shift32p4_bit(*k0, SMM_TABLE) ){
-		--(*k0);
-	}
-	else if ( *sum0 > shift32p4_bit(*k0 + 1u, SMM_TABLE) ){
-		++(*k0);
-	} else{;}
+	kx = *k0;
+	rice_cmpsum(sum0, k0, value);
 
 	t.u_32 = shift32_bit(kx);
 	if LIKELY_P ( value >= t.u_32, 0.575 ){
 		value -= t.u_32;
 		kx = *k1;
-		*sum1 += value - (*sum1 >> 4u);
-		if ( *sum1 < shift32p4_bit(*k1, SMM_TABLE) ){
-			--(*k1);
-		}
-		else if ( *sum1 > shift32p4_bit(*k1 + 1u, SMM_TABLE) ){
-			++(*k1);
-		} else{;}
+		rice_cmpsum(sum1, k1, value);
 		unary = (value >> kx) + 1u;
 	}
 
@@ -445,24 +460,10 @@ rice_decode(
 	}
 
 	if LIKELY_P ( depth1, 0.575 ){
-		*sum1 += *value - (*sum1 >> 4u);
-		if ( *sum1 < shift32p4_bit(*k1, SMM_TABLE) ){
-			--(*k1);
-		}
-		else if ( *sum1 > shift32p4_bit(*k1 + 1u, SMM_TABLE) ){
-			++(*k1);
-		} else{;}
-
+		rice_cmpsum(sum1, k1, *value);
 		*value += shift32_bit(*k0);
 	}
-
-	*sum0 += *value - (*sum0 >> 4u);
-	if ( *sum0 < shift32p4_bit(*k0, SMM_TABLE) ){
-		--(*k0);
-	}
-	else if ( *sum0 > shift32p4_bit(*k0 + 1u, SMM_TABLE) ){
-		++(*k0);
-	} else{;}
+	rice_cmpsum(sum0, k0, *value);
 
 	return r;
 }
