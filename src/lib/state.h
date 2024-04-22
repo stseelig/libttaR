@@ -88,7 +88,7 @@ state_init(
 		user->nbytes_tta	= 0;
 		user->nbytes_tta_total	= 0;
 
-		(void) memset(&priv->bitcache, 0x00, sizeof priv->bitcache);
+		MEMSET(&priv->bitcache, 0x00, sizeof priv->bitcache);
 		codec_init((struct Codec *) &priv->codec, nchan);
 	}
 	return;

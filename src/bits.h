@@ -14,7 +14,7 @@
 #include <limits.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <string.h>	// memmove
+#include <string.h>	// memmove, memset
 
 #include "splint.h"
 
@@ -79,11 +79,18 @@
 
 //--------------------------------------------------------------------------//
 
-// -nolibc; a decent compiler should do this anyway
+// -nolibc for library; a decent compiler should do this anyway
+
 #if HAS_BUILTIN(__builtin_memmove)
 #define MEMMOVE(dest, src, n)	((void) __builtin_memmove((dest), (src), (n)))
 #else
 #define MEMMOVE(dest, src, n)	((void) memmove((dest), (src), (n)))
+#endif
+
+#if HAS_BUILTIN(__builtin_memset)
+#define MEMSET(s, c, n)	((void) __builtin_memset((s), (c), (n)))
+#else
+#define MEMSET(s, c, n)	((void) memset((s), (c), (n)))
 #endif
 
 //////////////////////////////////////////////////////////////////////////////

@@ -97,7 +97,7 @@ codec_init(
 {
 	register uint i;
 	for ( i = 0; i < nchan; ++i ){
-		(void) memset(&codec[i].filter, 0x00, sizeof codec[i].filter);
+		MEMSET(&codec[i].filter, 0x00, sizeof codec[i].filter);
 		rice_init(&codec[i].rice, (u8) 10u, (u8) 10u);
 		codec[i].prev = 0;
 	}

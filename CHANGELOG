@@ -4,7 +4,7 @@
 1.0.1 (2023-12-19):-----------------------------------------------------------
 
 	- changed library strings from arrays to pointers
-	- extra parameter checks
+	- extra parameter checks (some functions now return errors)
 	- performance impovements
 
 1.0.0 (2023-12-10):-----------------------------------------------------------
