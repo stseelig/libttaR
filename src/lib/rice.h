@@ -7,7 +7,7 @@
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // Copyright (C) 2007, Aleksander Djuric                                    //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -267,10 +267,7 @@ lsmask32(register u8 k, const enum ShiftMaskMode mode)
 
 //==========================================================================//
 
-// this procedure got macro'd because the compiler was being silly
-#undef sum
-#undef k
-#undef value
+// this procedure got macro'd because the compiler wasn't ALWAYS_INLINE'ing it
 #define rice_cmpsum(sum, k, value) \
 { \
 	*(sum) += (value) - (*(sum) >> 4u); \
@@ -514,7 +511,7 @@ loop_entr:
 	t.u_8 = (u8) tbcnt32(*cache);	// *cache is always < UINT8_MAX
 	*unary  += t.u_8;
 #endif
-	*cache >>= t.u_8 + 1u;		// t.u is always < 8
+	*cache >>= t.u_8 + 1u;		// t.u_8 is always < 8
 	*count  -= t.u_8 + 1u;
 	return r;
 }

@@ -5,7 +5,7 @@
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // Copyright (C) 2007, Aleksander Djuric                                    //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -115,7 +115,8 @@ libttaR_tta_decode(
 	const i32 filter_round = tta_filter_round(samplebytes);
 	const  u8 filter_k = tta_filter_k(samplebytes);
 	size_t safety_margin = (
-		src_len - (TTABUF_SAFETY_MARGIN * nchan * samplebytes)
+		  src_len
+		- (TTABUF_SAFETY_MARGIN_PER_NCHAN * nchan * samplebytes)
 	);
 	if ( nbytes_tta_target < safety_margin ){
 		safety_margin = nbytes_tta_target;
@@ -138,7 +139,7 @@ libttaR_tta_decode(
 	}
 	if ( src_len
 	    <=
-	     (size_t) (TTABUF_SAFETY_MARGIN * nchan * samplebytes)
+	     (size_t) (TTABUF_SAFETY_MARGIN_PER_NCHAN * nchan * samplebytes)
 	){
 		return 3;
 	}
@@ -177,10 +178,14 @@ libttaR_tta_decode(
 			safety_margin, predict_k, filter_round, filter_k,
 			nchan
 		);
-#else
-		return -1;
-#endif
 		break;
+#endif
+
+#if defined(LIBTTAr_DISABLE_UNROLLED_1CH) \
+ && defined(LIBTTAr_DISABLE_UNROLLED_2CH) \
+ && defined(LIBTTAr_DISABLE_MCH)
+#error "misconfigured codec functions, all channel counts disabled"
+#endif
 	}
 
 	// post-decode

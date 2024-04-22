@@ -6,7 +6,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -14,6 +14,7 @@
 #include <limits.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>	// memmove
 
 #include "splint.h"
 
@@ -76,10 +77,13 @@
 #define UNLIKELY_P(cond, prob)	(cond)
 #endif
 
-#if HAS_BUILTIN(__builtin_unpredictable)
-#define UNPREDICTABLE(cond)	(__builtin_unpredictable(!!(cond)))
+//--------------------------------------------------------------------------//
+
+// -nolibc; a decent compiler should do this anyway
+#if HAS_BUILTIN(__builtin_memmove)
+#define MEMMOVE(dest, src, n)	((void) __builtin_memmove((dest), (src), (n)))
 #else
-#define UNPREDICTABLE(cond)	(cond)
+#define MEMMOVE(dest, src, n)	((void) memmove((dest), (src), (n)))
 #endif
 
 //////////////////////////////////////////////////////////////////////////////

@@ -2,7 +2,7 @@
 #define LIBTTAr_H
 /* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// libttaR.h - 1.0.1                                                        //
+// libttaR.h - 1.0.1-8                                                      //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
@@ -287,8 +287,8 @@ extern size_t libttaR_codecstate_priv_size(unsigned int nchan)
 //      _tta_encode/_tta_decode, respectively                               //
 //                                                                          //
 // return:                                                                  //
-//              size for a TTA buffer that "should" be safe, or 0 on        //
-//      failure (bad parameters)                                            //
+//              size for a TTA buffer that is safe, or 0 on failure (bad    //
+//      parameters)                                                         //
 //                                                                          //
 // parameters:                                                              //
 //              nsamples:                                                   //

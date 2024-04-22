@@ -14,11 +14,11 @@
 #define LIBTTAr_NUM_VERSION		1u
 #define LIBTTAr_NUM_VERSION_MAJOR	0u
 #define LIBTTAr_NUM_VERSION_MINOR	1u
-#define LIBTTAr_NUM_VERSION_REVIS	7u
-#define LIBTTAr_STR_VERSION		"libttaR 1.0.1-7 (2023-12-30)"
+#define LIBTTAr_NUM_VERSION_REVIS	8u
+#define LIBTTAr_STR_VERSION		"libttaR 1.0.1-8 (2024-04-22)"
 #define LIBTTAr_STR_COPYRIGHT		( \
 	"Copyright (C) 2007, Aleksander Djuric;" \
-	"Copyright (C) 2023, Shane Seelig" \
+	"Copyright (C) 2023-2024, Shane Seelig" \
 )
 #define LIBTTAr_STR_LICENSE		"GPL-3.0-or-later"
 

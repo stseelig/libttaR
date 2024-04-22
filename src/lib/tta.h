@@ -7,12 +7,10 @@
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // Copyright (C) 2007, Aleksander Djuric                                    //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
-
-#include <string.h>	// memmove
 
 #include "../bits.h"
 
@@ -31,7 +29,10 @@ enum TTASampleBytes {
 #define TTA_SAMPLEBITS_MAX	24u
 #endif
 
-#define TTABUF_SAFETY_MARGIN	((size_t) 1024)
+// unary + binary
+#define TTABUF_SAFETY_MARGIN_PER_NCHAN		((size_t) (256 + 256))
+// only needed for encode
+#define TTABUF_SAFETY_MARGIN_MAX_CACHEFLUSH	((size_t) 32)
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -207,7 +208,7 @@ tta_filter(
 	//  everything down considerably. it adds an extra if-statement or two
 	//  to reduce code size a bit, but that borks the assembler. the ==0
 	//  branch should be last, because it is the least likely to happen
-	//  (but not enough for UNLIKELY)
+	//  (but not enough for UNLIKELY; main exception being silence)
 	if ( filter->error == 0 ){
 		sum += a[0] * b[0];
 		sum += a[1] * b[1];
@@ -261,8 +262,8 @@ tta_filter(
 	b[6] = b[7] - b[6];
 	b[5] = b[6] - b[5];
 
-	(void) memmove(b, &b[1], 8*(sizeof *b));
-	(void) memmove(m, &m[1], 8*(sizeof *m));
+	MEMMOVE(b, &b[1], 8*(sizeof *b));
+	MEMMOVE(m, &m[1], 8*(sizeof *m));
 
 	return value;
 }

@@ -56,7 +56,7 @@ libttaR_codecstate_priv_size(uint nchan)
 	return r;
 }
 
-// returns a TTA buffer size that "should" be safe
+// returns a TTA buffer size that is safe
 // returns 0 on error
 size_t
 libttaR_ttabuf_size(
@@ -72,8 +72,9 @@ libttaR_ttabuf_size(
 		return r;
 	}
 
-	r  = nsamples + TTABUF_SAFETY_MARGIN;
+	r  = nsamples + TTABUF_SAFETY_MARGIN_PER_NCHAN;
 	r *= nchan * samplebytes;
+	r += TTABUF_SAFETY_MARGIN_MAX_CACHEFLUSH; // only needed for encode
 	return r;
 }
 

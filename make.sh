@@ -5,7 +5,7 @@
 #                                                                            #
 ##############################################################################
 #                                                                            #
-# Copyright (C) 2023, Shane Seelig                                           #
+# Copyright (C) 2023-2024, Shane Seelig                                      #
 # SPDX-License-Identifier: GPL-3.0-or-later                                  #
 #                                                                            #
 ##############################################################################
@@ -44,7 +44,7 @@ CFLAGS="$CFLAGS -D_FILE_OFFSET_BITS=64";
 CFLAGS="$CFLAGS -march=native";
 CFLAGS="$CFLAGS -mtune=native";
 
-CFLAGS="$CFLAGS -Ofast";	# -Ofast for libttaR 1.0.1-7 (2-23-12-30)
+CFLAGS="$CFLAGS -Ofast";	# -Ofast since libttaR 1.0.1-7 (2-23-12-30)
 CFLAGS="$CFLAGS -ffast-math";
 
 CFLAGS="$CFLAGS -finline";
