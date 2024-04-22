@@ -88,9 +88,9 @@
 #endif
 
 #if HAS_BUILTIN(__builtin_memset)
-#define MEMSET(s, c, n)	((void) __builtin_memset((s), (c), (n)))
+#define MEMSET(s, c, n)	(__builtin_memset((s), (c), (n)))
 #else
-#define MEMSET(s, c, n)	((void) memset((s), (c), (n)))
+#define MEMSET(s, c, n)	(memset((s), (c), (n)))
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
