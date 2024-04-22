@@ -43,26 +43,6 @@ struct LibTTAr_CodecState_User {
 
 //////////////////////////////////////////////////////////////////////////////
 
-#undef priv
-#undef user
-INLINE void state_init_check(
-	/*@out@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
-	/*@partial@*/ struct LibTTAr_CodecState_User *const restrict user,
-	uint
-)
-/*@modifies	*priv,
-		user->is_new_frame,
-		user->frame_is_finished,
-		user->crc,
-		user->ni32,
-		user->ni32_total,
-		user->nbytes_tta,
-		user->nbytes_tta_total
-@*/
-;
-
-//////////////////////////////////////////////////////////////////////////////
-
 INLINE void
 state_init(
 	/*@out@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
