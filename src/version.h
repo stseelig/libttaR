@@ -14,8 +14,8 @@
 #define LIBTTAr_NUM_VERSION		1u
 #define LIBTTAr_NUM_VERSION_MAJOR	0u
 #define LIBTTAr_NUM_VERSION_MINOR	1u
-#define LIBTTAr_NUM_VERSION_REVIS	9u
-#define LIBTTAr_STR_VERSION		"libttaR 1.0.1-9 (2024-04-22)"
+#define LIBTTAr_NUM_VERSION_REVIS	10u
+#define LIBTTAr_STR_VERSION		"libttaR 1.0.1-10 (2024-04-23)"
 #define LIBTTAr_STR_COPYRIGHT		( \
 	"Copyright (C) 2007, Aleksander Djuric;" \
 	"Copyright (C) 2023-2024, Shane Seelig" \
