@@ -174,8 +174,10 @@ libttaR_tta_encode(
 			priv->codec, ni32_target, safety_margin, predict_k,
 			filter_round, filter_k, nchan
 		);
-#endif
 		break;
+#else
+		return -1;
+#endif
 
 #if defined(LIBTTAr_DISABLE_UNROLLED_1CH) \
  && defined(LIBTTAr_DISABLE_UNROLLED_2CH) \
