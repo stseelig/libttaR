@@ -106,7 +106,6 @@ encbuf_free(struct EncBuf *const restrict eb)
 
 //==========================================================================//
 
-// TODO fix for new tta2dec
 // returns buflen (for sanity check)
 size_t
 decbuf_init(
