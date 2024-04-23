@@ -178,8 +178,8 @@ libttaR_tta_decode(
 			safety_margin, predict_k, filter_round, filter_k,
 			nchan
 		);
-		break;
 #endif
+		break;
 
 #if defined(LIBTTAr_DISABLE_UNROLLED_1CH) \
  && defined(LIBTTAr_DISABLE_UNROLLED_2CH) \
