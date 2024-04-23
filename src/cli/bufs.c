@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -100,7 +100,7 @@ encbuf_free(struct EncBuf *const restrict eb)
 	if ( eb->ttabuf != NULL ){
 		free(eb->ttabuf);
 	}
-	(void) memset(eb, 0x00, sizeof *eb);
+	memset(eb, 0x00, sizeof *eb);
 	return;
 }
 
@@ -167,7 +167,7 @@ decbuf_free(struct DecBuf *const restrict db)
 	if ( db->pcmbuf != NULL ){
 		free(db->ttabuf);
 	}
-	(void) memset(db, 0x00, sizeof *db);
+	memset(db, 0x00, sizeof *db);
 	return;
 }
 

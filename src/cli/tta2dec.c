@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -131,7 +131,7 @@ tta2dec(uint optind)
 		bool	b;
 	} t;
 
-	(void) memset(&openedfiles, 0x00, sizeof openedfiles);
+	memset(&openedfiles, 0x00, sizeof openedfiles);
 
 	(void) clock_gettime(CLOCK_MONOTONIC, &ts_start);
 
@@ -363,7 +363,7 @@ tta2dec_loop(struct OpenedFilesMember *const restrict ofm)
 	}
 	assert(state_priv != NULL);
 	//
-	(void) memset(&state_user, 0x00, sizeof state_user);
+	memset(&state_user, 0x00, sizeof state_user);
 	state_user.ni32_perframe = fstat->buflen;
 
 	if ( ! g_flag.quiet ){
@@ -371,7 +371,7 @@ tta2dec_loop(struct OpenedFilesMember *const restrict ofm)
 	}
 
 	// decode loop
-	(void) memset(&dstat, 0x00, sizeof dstat);
+	memset(&dstat, 0x00, sizeof dstat);
 	do {
 		if ( (! g_flag.quiet) && (dstat.nframes % (size_t) 64 == 0) ){
 			errprint_spinner();
@@ -605,7 +605,7 @@ ttadec_frame_zeropad(
 {
 	const size_t r = (size_t) (nchan - diff);
 
-	(void) memset(&buf[user->ni32], 0x00, r * (sizeof *buf));
+	memset(&buf[user->ni32], 0x00, r * (sizeof *buf));
 
 	user->ni32_perframe	+= r;
 	user->ni32		+= r;

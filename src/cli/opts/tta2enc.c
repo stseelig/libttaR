@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -104,7 +104,7 @@ opt_tta2enc_rawpcm(
 		longlong ll;
 	} t;
 
-	(void) memset(&f_rpstat, 0x00, sizeof f_rpstat);
+	memset(&f_rpstat, 0x00, sizeof f_rpstat);
 
 	(void) strtok(opt, "=");
 
