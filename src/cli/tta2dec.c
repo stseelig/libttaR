@@ -140,10 +140,10 @@ tta2dec(uint optind)
 		&openedfiles, optind, tta2dec_optdict
 	);
 
-	// program intro
-	if ( ! g_flag.quiet ){
-		errprint_program_intro();
-	}
+	//// program intro
+	//if ( ! g_flag.quiet ){
+	//	errprint_program_intro();
+	//}
 
 	// get file stats
 	for ( i = 0; i < openedfiles.nmemb; ++i ){
@@ -362,15 +362,13 @@ tta2dec_loop(struct OpenedFilesMember *const restrict ofm)
 		error_sys(errno, "malloc", strerror(errno), NULL);
 	}
 	assert(state_priv != NULL);
-	//
-	memset(&state_user, 0x00, sizeof state_user);
-	state_user.ni32_perframe = fstat->buflen;
 
 	if ( ! g_flag.quiet ){
 		(void) clock_gettime(CLOCK_MONOTONIC, &ts_start);
 	}
 
 	// decode loop
+	state_user.ni32_perframe = fstat->buflen;
 	memset(&dstat, 0x00, sizeof dstat);
 	do {
 		if ( (! g_flag.quiet) && (dstat.nframes % (size_t) 64 == 0) ){
