@@ -238,10 +238,10 @@ tta2enc(uint optind)
 		);
 	}
 
-#ifndef NDEBUG
+//#ifndef NDEBUG
 	// cleanup
 	openedfiles_close_free(&openedfiles);
-#endif
+//#endif
 	return (int) g_nwarnings;
 }
 

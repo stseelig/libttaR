@@ -6,7 +6,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -50,7 +50,7 @@ extern int openedfiles_add(
 @*/
 ;
 
-#ifndef NDEBUG
+//#ifndef NDEBUG
 #undef of
 extern void
 openedfiles_close_free(struct OpenedFiles *const restrict of)
@@ -61,7 +61,7 @@ openedfiles_close_free(struct OpenedFiles *const restrict of)
 @*/
 /*@ensures isnull	of->file@*/
 ;
-#endif
+//#endif
 
 /*@only@*/
 extern char *outfile_name_fmt(

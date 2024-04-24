@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -64,7 +64,7 @@ openedfiles_add(
 	return r;
 }
 
-#ifndef NDEBUG
+//#ifndef NDEBUG
 void
 openedfiles_close_free(struct OpenedFiles *const restrict of)
 /*@globals		fileSystem@*/
@@ -90,7 +90,7 @@ openedfiles_close_free(struct OpenedFiles *const restrict of)
 	of->nmemb = 0;
 	return;
 }
-#endif
+//#endif
 
 //==========================================================================//
 
