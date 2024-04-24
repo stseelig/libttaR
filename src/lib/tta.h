@@ -37,10 +37,8 @@ enum TTASampleBytes {
 #define TTABUF_SAFETY_MARGIN_24BIT		((size_t) 256)
 // only needed for encode
 #define TTABUF_SAFETY_MARGIN_MAX_CACHEFLUSH	((size_t) 32)
-//
-#define TTABUF_SAFETY_MARGIN_FAST		( \
-	TTABUF_SAFETY_MARGIN_PER_NCHAN + TTABUF_SAFETY_MARGIN_24BIT \
-)
+// rounded up to the nearest power of 2
+#define TTABUF_SAFETY_MARGIN_FAST		((size_t) 1024)
 
 //////////////////////////////////////////////////////////////////////////////
 

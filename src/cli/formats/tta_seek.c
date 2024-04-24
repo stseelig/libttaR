@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -46,6 +46,7 @@ seektable_init(/*@out@*/ struct SeekTable *const restrict st, size_t nframes)
 	return;
 }
 
+// in encode loop
 void
 seektable_add(
 	struct SeekTable *const restrict st, size_t value, size_t framenum,
@@ -64,7 +65,7 @@ seektable_add(
 		st->table  = reallocarray(
 			st->table, st->limit, (sizeof *(st->table))
 		);
-		if ( st->table == NULL ){
+		if UNLIKELY ( st->table == NULL ){
 			error_sys(
 				errno, "reallocarray", strerror(errno), NULL
 			);
@@ -72,7 +73,7 @@ seektable_add(
 	}
 	assert(st->table != NULL);
 
-	if ( value > UINT32_MAX ){
+	if UNLIKELY ( value > UINT32_MAX ){
 		warning_tta("%s: frame %zu: seektable overflow",
 			outfile_name, framenum
 		);

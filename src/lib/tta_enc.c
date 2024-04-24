@@ -356,7 +356,8 @@ tta_encode_2ch(
 
 		// filter
 		curr = tta_filter(
-			&codec[0].filter, filter_round, filter_k, curr, TTA_ENC
+			&codec[0].filter, filter_round, filter_k, curr,
+			TTA_ENC
 		);
 		curr = tta_postfilter_enc(curr);
 
@@ -375,7 +376,8 @@ tta_encode_2ch(
 
 		// filter
 		curr = tta_filter(
-			&codec[1].filter, filter_round, filter_k, curr, TTA_ENC
+			&codec[1].filter, filter_round, filter_k, curr,
+			TTA_ENC
 		);
 		curr = tta_postfilter_enc(curr);
 

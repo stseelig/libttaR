@@ -368,6 +368,7 @@ tta2dec_loop(struct OpenedFilesMember *const restrict ofm)
 	}
 
 	// decode loop
+	// any warning/error in loop get UNLIKELY'd
 	state_user.ni32_perframe = fstat->buflen;
 	memset(&dstat, 0x00, sizeof dstat);
 	do {
@@ -394,7 +395,7 @@ tta2dec_loop(struct OpenedFilesMember *const restrict ofm)
 
 		// check frame crc
 		t.z = fread(&crc_read, (size_t) 1, sizeof crc_read, infile);
-		if ( t.z != sizeof crc_read ){
+		if UNLIKELY ( t.z != sizeof crc_read ){
 			if ( feof(infile) != 0 ){
 				error_sys_nf(
 					errno, "fread", strerror(errno),
@@ -408,7 +409,7 @@ tta2dec_loop(struct OpenedFilesMember *const restrict ofm)
 			}
 		}
 		state_user.nbytes_tta_total += sizeof crc_read;
-		if ( state_user.crc != letoh32(crc_read) ){
+		if UNLIKELY ( state_user.crc != letoh32(crc_read) ){
 			warning_tta("%s: frame %zu is corrupted; bad crc",
 				infile_name, dstat.nframes
 			);
@@ -421,9 +422,8 @@ tta2dec_loop(struct OpenedFilesMember *const restrict ofm)
 		);
 		dstat.nbytes_decoded	+= state_user.nbytes_tta_total;
 	}
-	while ( (state_user.ni32_total == fstat->buflen)
-	       &&
-	        (dec_retval == 0)
+	while LIKELY (
+		(state_user.ni32_total == fstat->buflen) && (dec_retval == 0)
 	 );
 
 	if ( ! g_flag.quiet ){
@@ -521,7 +521,7 @@ ttadec_frame(
 		nbytes_read = fread(
 			decbuf->ttabuf, (size_t) 1, readlen, infile
 		);
-		if ( nbytes_read != readlen ){
+		if UNLIKELY ( nbytes_read != readlen ){
 			if ( feof(infile) != 0 ){
 				error_sys_nf(
 					errno, "fread", strerror(errno),
@@ -545,7 +545,7 @@ ttadec_frame(
 		// check for truncated sample
 		if ( user->frame_is_finished ){
 			t.u = (uint) (user->ni32_total % fstat->nchan);
-			if ( t.u != 0 ){
+			if UNLIKELY ( t.u != 0 ){
 				warning_tta("%s: frame %zu: "
 					"last sample truncated, zero-padding",
 					infile_name, frame_num
@@ -569,13 +569,13 @@ ttadec_frame(
 			decbuf->pcmbuf, fstat->samplebytes, user->ni32,
 			outfile
 		);
-		if ( t.z != user->ni32 ){
+		if UNLIKELY ( t.z != user->ni32 ){
 			error_sys_nf(
 				errno, "fwrite", strerror(errno), outfile_name
 			);
 		}
 
-		if ( r != 0 ){ break; }
+		if UNLIKELY ( r != 0 ){ break; }
 		if ( ! user->frame_is_finished ){
 			ttadec_frame_adjust(
 				&readlen, &ni32_target, user, infile,
@@ -634,7 +634,7 @@ ttadec_frame_adjust(
 	if ( user->nbytes_tta < *readlen ){
 		t.o  = (off_t) (*readlen - user->nbytes_tta);
 		t.d = fseeko(infile, -t.o, SEEK_CUR);
-		if ( t.d != 0 ){
+		if UNLIKELY ( t.d != 0 ){
 			error_sys(
 				errno, "fseeko", strerror(errno), infile_name
 			);

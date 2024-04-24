@@ -357,6 +357,7 @@ tta2enc_loop(const struct OpenedFilesMember *const restrict ofm)
 	}
 
 	// encode loop
+	// any warning/error in loop get UNLIKELY'd
 	state_user.ni32_perframe = fstat->buflen;
 	memset(&estat, 0x00, sizeof estat);
 	do {
@@ -386,7 +387,7 @@ tta2enc_loop(const struct OpenedFilesMember *const restrict ofm)
 			&state_user.crc, (size_t) 1, sizeof state_user.crc,
 			outfile
 		);
-		if ( t.z != sizeof state_user.crc ){
+		if UNLIKELY ( t.z != sizeof state_user.crc ){
 			error_sys_nf(
 				errno, "fwrite", strerror(errno), outfile_name
 			);
@@ -406,9 +407,8 @@ tta2enc_loop(const struct OpenedFilesMember *const restrict ofm)
 		);
 		estat.nbytes_encoded	+= state_user.nbytes_tta_total;
 	}
-	while ( (state_user.ni32_total == fstat->buflen)
-	       &&
-	        (enc_retval == 0)
+	while LIKELY (
+		(state_user.ni32_total == fstat->buflen) && (enc_retval == 0)
 	);
 
 	if ( ! g_flag.quiet ){
@@ -487,7 +487,7 @@ ttaenc_frame(
 			encbuf->pcmbuf, (size_t) fstat->samplebytes, readlen,
 			infile
 		);
-		if ( nmemb_read != readlen ){
+		if UNLIKELY ( nmemb_read != readlen ){
 			if ( feof(infile) != 0 ){
 				error_sys_nf(
 					errno, "fread", strerror(errno),
@@ -509,7 +509,7 @@ ttaenc_frame(
 
 		// check for truncated sample
 		t.u = (uint) (nmemb_read % fstat->nchan);
-		if ( t.u != 0 ){
+		if UNLIKELY ( t.u != 0 ){
 			warning_tta("%s: frame %zu: last sample truncated, "
 				"zero-padding", infile_name, frame_num
 			);
@@ -532,13 +532,13 @@ ttaenc_frame(
 			encbuf->ttabuf, (size_t) 1, user->nbytes_tta, outfile
 		);
 		// user->nbytes_tta could be 0 for a small g_samplebuf_len
-		if ( t.z != user->nbytes_tta ){
+		if UNLIKELY ( t.z != user->nbytes_tta ){
 			error_sys_nf(
 				errno, "fwrite", strerror(errno), outfile_name
 			);
 		}
 
-		if ( r != 0 ){ break; }
+		if UNLIKELY ( r != 0 ){ break; }
 		if ( ! user->frame_is_finished ){
 			ttaenc_frame_adjust(
 				&readlen, user, infile, infile_name,
@@ -593,7 +593,7 @@ ttaenc_frame_adjust(
 	if ( user->ni32 < *readlen ){
 		t.o  = (off_t) ((*readlen - user->ni32) * samplebytes);
 		t.d = fseeko(infile, -t.o, SEEK_CUR);
-		if ( t.d != 0 ){
+		if UNLIKELY ( t.d != 0 ){
 			error_sys(
 				errno, "fseeko", strerror(errno), infile_name
 			);

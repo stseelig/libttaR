@@ -74,7 +74,6 @@ libttaR_ttabuf_size(
 
 	r  = nsamples + TTABUF_SAFETY_MARGIN_FAST;
 	r *= nchan * samplebytes;
-	r += TTABUF_SAFETY_MARGIN_MAX_CACHEFLUSH; // only needed for encode
 	return r;
 }
 

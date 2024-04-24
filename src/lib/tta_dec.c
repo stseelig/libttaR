@@ -360,7 +360,8 @@ tta_decode_2ch(
 		// filter
 		curr = tta_prefilter_dec(curr);
 		curr = tta_filter(
-			&codec[0].filter, filter_round, filter_k, curr, TTA_DEC
+			&codec[0].filter, filter_round, filter_k, curr,
+			TTA_DEC
 		);
 
 		// predict
@@ -378,7 +379,8 @@ tta_decode_2ch(
 		// filter
 		curr = tta_prefilter_dec(curr);
 		curr = tta_filter(
-			&codec[1].filter, filter_round, filter_k, curr, TTA_DEC
+			&codec[1].filter, filter_round, filter_k, curr,
+			TTA_DEC
 		);
 
 		// predict

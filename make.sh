@@ -89,7 +89,7 @@ if [ "$LD_REAL" = 'gold' ] && [ -e "$(which gold)" ]; then
 fi
 readonly LDFLAGS;
 
-# library only uses memmove from libc, but that should be a builtin
+# library only uses memmove & memset from libc, but that should be a builtin
 readonly LIBLDFLAGS="-shared -nolibc";
 
 #----------------------------------------------------------------------------#
