@@ -12,6 +12,8 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
+#include <stddef.h>	// size_t
+
 #include "../bits.h"
 
 #include "rice.h"	// struct Rice, shift32_bit
@@ -31,14 +33,20 @@ enum TTASampleBytes {
 
 // unary + binary
 #define TTABUF_SAFETY_MARGIN_PER_NCHAN		((size_t) (256 + 256))
+// possible extra unary loop
+#define TTABUF_SAFETY_MARGIN_24BIT		((size_t) 256)
 // only needed for encode
 #define TTABUF_SAFETY_MARGIN_MAX_CACHEFLUSH	((size_t) 32)
+//
+#define TTABUF_SAFETY_MARGIN_FAST		( \
+	TTABUF_SAFETY_MARGIN_PER_NCHAN + TTABUF_SAFETY_MARGIN_24BIT \
+)
 
 //////////////////////////////////////////////////////////////////////////////
 
-enum FilterMode {
-	FM_ENC,
-	FM_DEC
+enum TTAMode {
+	TTA_ENC,
+	TTA_DEC
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -82,7 +90,7 @@ ALWAYS_INLINE i32 tta_prefilter_dec(register i32) /*@*/;
 #undef filter
 ALWAYS_INLINE i32 tta_filter(
 	register struct Filter *const restrict filter, register i32,
-	register u8, register i32, const enum FilterMode
+	register u8, register i32, const enum TTAMode
 )
 /*@modifies	*filter@*/
 ;
@@ -106,12 +114,11 @@ codec_init(
 
 //--------------------------------------------------------------------------//
 
-// returns 0 on failure
 ALWAYS_INLINE u8
 tta_predict_k(register enum TTASampleBytes samplebytes)
 /*@*/
 {
-	register u8 r = 0;
+	register u8 r;
 
 	switch ( samplebytes ){
 	case 1u:
@@ -125,12 +132,11 @@ tta_predict_k(register enum TTASampleBytes samplebytes)
 	return r;
 }
 
-// returns 0 on failure
 ALWAYS_INLINE i32
 tta_filter_round(register enum TTASampleBytes samplebytes)
 /*@*/
 {
-	register i32 r = 0;
+	register i32 r;
 
 	switch ( samplebytes ){
 	case 1u:
@@ -144,12 +150,11 @@ tta_filter_round(register enum TTASampleBytes samplebytes)
 	return r;
 }
 
-// returns 0 on failure
 ALWAYS_INLINE u8
 tta_filter_k(register enum TTASampleBytes samplebytes)
 /*@*/
 {
-	register u8 r = 0;
+	register u8 r;
 
 	switch ( samplebytes ){
 	case 1u:
@@ -195,7 +200,7 @@ ALWAYS_INLINE i32
 tta_filter(
 	register struct Filter *const restrict filter,
 	register i32 round, register u8 k, register i32 value,
-	const enum FilterMode mode
+	const enum TTAMode mode
 )
 /*@modifies	*filter@*/
 {
@@ -246,12 +251,12 @@ tta_filter(
 	m[5] = (i32) ((((u32) asr32(b[4], (u8) 30u)) | 0x1u) << 0u);
 
 	switch ( mode ){
-	case FM_ENC:
+	case TTA_ENC:
 		b[8]		 = value;
 		value		-= asr32(sum, k);
 		filter->error	 = value;
 		break;
-	case FM_DEC:
+	case TTA_DEC:
 		filter->error	 = value;
 		value		+= asr32(sum, k);
 		b[8]		 = value;

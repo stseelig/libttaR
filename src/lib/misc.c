@@ -67,12 +67,12 @@ libttaR_ttabuf_size(
 
 	if ( (nsamples == 0) || (nchan == 0)
 	    ||
-	     (samplebytes == 0) || (samplebytes > TTA_SAMPLEBYTES_MAX)
+	     (samplebytes == 0) || ((uint) samplebytes > TTA_SAMPLEBYTES_MAX)
 	){
 		return r;
 	}
 
-	r  = nsamples + TTABUF_SAFETY_MARGIN_PER_NCHAN;
+	r  = nsamples + TTABUF_SAFETY_MARGIN_FAST;
 	r *= nchan * samplebytes;
 	r += TTABUF_SAFETY_MARGIN_MAX_CACHEFLUSH; // only needed for encode
 	return r;

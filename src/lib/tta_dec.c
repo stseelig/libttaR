@@ -116,16 +116,18 @@ libttaR_tta_decode(
 	const  u8 filter_k = tta_filter_k(samplebytes);
 	size_t safety_margin = (
 		  src_len
-		- (TTABUF_SAFETY_MARGIN_PER_NCHAN * nchan * samplebytes)
+		- (TTABUF_SAFETY_MARGIN_FAST * nchan * samplebytes)
 	);
 	if ( nbytes_tta_target < safety_margin ){
 		safety_margin = nbytes_tta_target;
 	}
 
-	// setup
+	// initial state setup
 	state_init(priv, user, nchan);
 
 	// check for bad parameters
+	// having these checks makes it faster, and the order and different
+	//  return values matter. not really sure why
 	if ( (ni32_target == 0) || (ni32_target > dest_len)
 	    ||
 	     (ni32_target + user->ni32_total > user->ni32_perframe)
@@ -139,14 +141,15 @@ libttaR_tta_decode(
 	}
 	if ( src_len
 	    <=
-	     (size_t) (TTABUF_SAFETY_MARGIN_PER_NCHAN * nchan * samplebytes)
+	     (size_t) (TTABUF_SAFETY_MARGIN_FAST * nchan * samplebytes)
 	){
 		return 3;
 	}
 	if ( nchan == 0 ){
 		return 4;
 	}
-	if ( (samplebytes == 0) || (samplebytes > TTA_SAMPLEBYTES_MAX) ){
+	if ( (samplebytes == 0) || ((uint) samplebytes > TTA_SAMPLEBYTES_MAX)
+	){
 		return 5;
 	}
 
@@ -245,7 +248,7 @@ tta_decode_mch(
 			curr = tta_prefilter_dec(curr);
 			curr = tta_filter(
 				&codec[j].filter, filter_round, filter_k,
-				curr, FM_DEC
+				curr, TTA_DEC
 			);
 
 			// predict
@@ -257,7 +260,9 @@ tta_decode_mch(
 				dest[i + j] = curr;
 				prev = curr;
 			}
+			/*@-usedef@*/	// prev will be defined for non-mono
 			else {	dest[i + j] = (curr += prev / 2);
+			/*@=usedef@*/
 				while ( j-- != 0 ){
 					dest[i + j] = (curr -= dest[i + j]);
 				}
@@ -305,7 +310,7 @@ tta_decode_1ch(
 		// filter
 		curr = tta_prefilter_dec(curr);
 		curr = tta_filter(
-			&codec->filter, filter_round, filter_k, curr, FM_DEC
+			&codec->filter, filter_round, filter_k, curr, TTA_DEC
 		);
 
 		// predict
@@ -355,7 +360,7 @@ tta_decode_2ch(
 		// filter
 		curr = tta_prefilter_dec(curr);
 		curr = tta_filter(
-			&codec[0].filter, filter_round, filter_k, curr, FM_DEC
+			&codec[0].filter, filter_round, filter_k, curr, TTA_DEC
 		);
 
 		// predict
@@ -373,7 +378,7 @@ tta_decode_2ch(
 		// filter
 		curr = tta_prefilter_dec(curr);
 		curr = tta_filter(
-			&codec[1].filter, filter_round, filter_k, curr, FM_DEC
+			&codec[1].filter, filter_round, filter_k, curr, TTA_DEC
 		);
 
 		// predict

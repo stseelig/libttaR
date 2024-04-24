@@ -114,15 +114,16 @@ libttaR_tta_encode(
 	const i32 filter_round = tta_filter_round(samplebytes);
 	const  u8 filter_k = tta_filter_k(samplebytes);
 	const size_t safety_margin = (
-		  dest_len
-		- (TTABUF_SAFETY_MARGIN_PER_NCHAN * nchan * samplebytes)
-		- TTABUF_SAFETY_MARGIN_MAX_CACHEFLUSH
+		  dest_len - (TTABUF_SAFETY_MARGIN_FAST * nchan * samplebytes)
 	);
 
-	// setup
+
+	// initial state setup
 	state_init(priv, user, nchan);
 
 	// check for bad parameters
+	// having these checks makes it faster, and the order and different
+	//  return values matter. not really sure why
 	if ( (ni32_target == 0) || (ni32_target > src_len)
 	    ||
 	     (ni32_target + user->ni32_total > user->ni32_perframe)
@@ -133,17 +134,15 @@ libttaR_tta_encode(
 	}
 	if ( dest_len
 	    <=
-	     (size_t) (
-		  (TTABUF_SAFETY_MARGIN_PER_NCHAN * nchan * samplebytes)
-		+ TTABUF_SAFETY_MARGIN_MAX_CACHEFLUSH
-	     )
+	     (size_t) (TTABUF_SAFETY_MARGIN_FAST * nchan * samplebytes)
 	){
 		return 2;
 	}
 	if ( nchan == 0 ){
 		return 3;
 	}
-	if ( (samplebytes == 0) || (samplebytes > TTA_SAMPLEBYTES_MAX) ){
+	if ( (samplebytes == 0) || ((uint) samplebytes > TTA_SAMPLEBYTES_MAX)
+	){
 		return 4;
 	}
 
@@ -240,7 +239,9 @@ tta_encode_mch(
 			if ( j < nchan - 1u ){
 				curr  = src[i + j + 1u] - curr;
 			}
+			/*@-usedef@*/	// prev will be defined for non-mono
 			else {	curr -= prev / 2; }
+			/*@=usedef@*/
 			prev = curr;
 
 			// predict
@@ -250,7 +251,7 @@ tta_encode_mch(
 			// filter
 			curr = tta_filter(
 				&codec[j].filter, filter_round, filter_k,
-				curr, FM_ENC
+				curr, TTA_ENC
 			);
 			curr = tta_postfilter_enc(curr);
 
@@ -303,7 +304,7 @@ tta_encode_1ch(
 
 		// filter
 		curr = tta_filter(
-			&codec->filter, filter_round, filter_k, curr, FM_ENC
+			&codec->filter, filter_round, filter_k, curr, TTA_ENC
 		);
 		curr = tta_postfilter_enc(curr);
 
@@ -355,7 +356,7 @@ tta_encode_2ch(
 
 		// filter
 		curr = tta_filter(
-			&codec[0].filter, filter_round, filter_k, curr, FM_ENC
+			&codec[0].filter, filter_round, filter_k, curr, TTA_ENC
 		);
 		curr = tta_postfilter_enc(curr);
 
@@ -374,7 +375,7 @@ tta_encode_2ch(
 
 		// filter
 		curr = tta_filter(
-			&codec[1].filter, filter_round, filter_k, curr, FM_ENC
+			&codec[1].filter, filter_round, filter_k, curr, TTA_ENC
 		);
 		curr = tta_postfilter_enc(curr);
 
