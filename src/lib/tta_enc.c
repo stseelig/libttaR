@@ -117,9 +117,10 @@ libttaR_tta_encode(
 		  dest_len - (TTABUF_SAFETY_MARGIN_FAST * nchan * samplebytes)
 	);
 
-
 	// initial state setup
-	state_init(priv, user, nchan);
+	if ( user->is_new_frame ){
+		state_init(priv, user, nchan);
+	}
 
 	// check for bad parameters
 	// having these checks makes it faster, and the order and different

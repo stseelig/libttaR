@@ -12,7 +12,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include <stdbool.h>
-#include <stdlib.h>
+#include <stddef.h>
 
 #include "../bits.h"
 
@@ -46,7 +46,7 @@ struct LibTTAr_CodecState_User {
 INLINE void
 state_init(
 	/*@out@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
-	/*@partial@*/ struct LibTTAr_CodecState_User *const restrict user,
+	/*@out@*/ struct LibTTAr_CodecState_User *const restrict user,
 	uint nchan
 )
 /*@modifies	*priv,
@@ -59,18 +59,17 @@ state_init(
 		user->nbytes_tta_total
 @*/
 {
-	if ( user->is_new_frame ){
-		user->is_new_frame	= false;
-		user->frame_is_finished	= false;
-		user->crc		= CRC32_INIT;
-		user->ni32		= 0;
-		user->ni32_total	= 0;
-		user->nbytes_tta	= 0;
-		user->nbytes_tta_total	= 0;
+	user->is_new_frame	= false;
+	user->frame_is_finished	= false;
+	user->crc		= CRC32_INIT;
+	user->ni32		= 0;
+	user->ni32_total	= 0;
+	user->nbytes_tta	= 0;
+	user->nbytes_tta_total	= 0;
 
-		MEMSET(&priv->bitcache, 0x00, sizeof priv->bitcache);
-		codec_init((struct Codec *) &priv->codec, nchan);
-	}
+	MEMSET(&priv->bitcache, 0x00, sizeof priv->bitcache);
+	codec_init((struct Codec *) &priv->codec, nchan);
+
 	return;
 }
 
