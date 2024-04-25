@@ -51,9 +51,9 @@ static uint ttadec_frame(
 	/*@out@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
 	struct LibTTAr_CodecState_User *const restrict user,
 	const struct DecBuf *const restrict decbuf,
-	const struct FileStats *const restrict,
 	FILE *const restrict outfile, const char *const,
-	FILE *const restrict infile, const char *const, size_t, size_t
+	FILE *const restrict infile, const char *const, size_t, size_t,
+	enum TTASampleBytes, uint
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -388,9 +388,9 @@ tta2dec_loop(struct OpenedFilesMember *const restrict ofm)
 
 		// decode and write frame
 		dec_retval = ttadec_frame(
-			state_priv, &state_user, &decbuf, fstat, outfile,
+			state_priv, &state_user, &decbuf, outfile,
 			outfile_name, infile, infile_name, dstat.nframes,
-			framesize_tta
+			framesize_tta, fstat->samplebytes, (uint) fstat->nchan
 		);
 
 		// check frame crc
@@ -484,10 +484,10 @@ ttadec_frame(
 	/*@out@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
 	struct LibTTAr_CodecState_User *const restrict user,
 	const struct DecBuf *const restrict decbuf,
-	const struct FileStats *const restrict fstat,
 	FILE *const restrict outfile, const char *const outfile_name,
 	FILE *const restrict infile, const char *const infile_name,
-	size_t frame_num, size_t framesize_tta
+	size_t frame_num, size_t framesize_tta,
+	enum TTASampleBytes samplebytes, uint nchan
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -538,21 +538,20 @@ ttadec_frame(
 		t.d = libttaR_tta_decode(
 			decbuf->i32buf, decbuf->ttabuf, decbuf->i32buf_len,
 			decbuf->ttabuf_len, ni32_target, nbytes_read, priv,
-			user, fstat->samplebytes, (uint) fstat->nchan
+			user, samplebytes, nchan
 		);
 		assert(t.d == 0);
 
 		// check for truncated sample
 		if ( user->frame_is_finished ){
-			t.u = (uint) (user->ni32_total % fstat->nchan);
+			t.u = (uint) (user->ni32_total % nchan);
 			if UNLIKELY ( t.u != 0 ){
 				warning_tta("%s: frame %zu: "
 					"last sample truncated, zero-padding",
 					infile_name, frame_num
 				);
 				r = ttadec_frame_zeropad(
-					decbuf->i32buf, user, t.u,
-					(uint) fstat->nchan
+					decbuf->i32buf, user, t.u, nchan
 				);
 			}
 		}
@@ -560,14 +559,13 @@ ttadec_frame(
 		// convert i32 to pcm
 		t.z = libttaR_pcm_write(
 			decbuf->pcmbuf, decbuf->i32buf, user->ni32,
-			fstat->samplebytes
+			samplebytes
 		);
 		assert(t.z == user->ni32);
 
 		// write pcm to outfile
 		t.z = fwrite(
-			decbuf->pcmbuf, fstat->samplebytes, user->ni32,
-			outfile
+			decbuf->pcmbuf, samplebytes, user->ni32, outfile
 		);
 		if UNLIKELY ( t.z != user->ni32 ){
 			error_sys_nf(

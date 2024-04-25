@@ -51,9 +51,9 @@ static uint ttaenc_frame(
 	/*@out@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
 	/*@partial@*/ struct LibTTAr_CodecState_User *const restrict user,
 	const struct EncBuf *const restrict encbuf,
-	const struct FileStats *const restrict,
 	FILE *const restrict outfile, const char *const,
-	FILE *const restrict infile, const char *const, size_t
+	FILE *const restrict infile, const char *const, size_t,
+	enum TTASampleBytes, uint
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -377,8 +377,9 @@ tta2enc_loop(const struct OpenedFilesMember *const restrict ofm)
 
 		// encode and write frame
 		enc_retval = ttaenc_frame(
-			state_priv, &state_user, &encbuf, fstat, outfile,
-			outfile_name, infile, infile_name, estat.nframes
+			state_priv, &state_user, &encbuf, outfile,
+			outfile_name, infile, infile_name, estat.nframes,
+			fstat->samplebytes, (uint) fstat->nchan
 		);
 
 		// write frame footer (crc)
@@ -455,10 +456,9 @@ ttaenc_frame(
 	/*@out@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
 	/*@partial@*/ struct LibTTAr_CodecState_User *const restrict user,
 	const struct EncBuf *const restrict encbuf,
-	const struct FileStats *const restrict fstat,
 	FILE *const restrict outfile, const char *const outfile_name,
 	FILE *const restrict infile, const char *const infile_name,
-	size_t frame_num
+	size_t frame_num, enum TTASampleBytes samplebytes, uint nchan
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -479,12 +479,12 @@ ttaenc_frame(
 	} t;
 
 	user->is_new_frame = true;
-	t.z = g_samplebuf_len * fstat->nchan;
+	t.z = g_samplebuf_len * nchan;
 	readlen = (t.z < user->ni32_perframe ? t.z : user->ni32_perframe);
 	do {
 		// read pcm from infile
 		nmemb_read = fread(
-			encbuf->pcmbuf, (size_t) fstat->samplebytes, readlen,
+			encbuf->pcmbuf, (size_t) samplebytes, readlen,
 			infile
 		);
 		if UNLIKELY ( nmemb_read != readlen ){
@@ -503,19 +503,19 @@ ttaenc_frame(
 		// convert pcm to i32
 		t.z = libttaR_pcm_read(
 			encbuf->i32buf, encbuf->pcmbuf, nmemb_read,
-			fstat->samplebytes
+			samplebytes
 		);
 		assert(t.z == nmemb_read);
 
 		// check for truncated sample
-		t.u = (uint) (nmemb_read % fstat->nchan);
+		t.u = (uint) (nmemb_read % nchan);
 		if UNLIKELY ( t.u != 0 ){
 			warning_tta("%s: frame %zu: last sample truncated, "
 				"zero-padding", infile_name, frame_num
 			);
 			r = ttaenc_frame_zeropad(
 				encbuf->i32buf, &nmemb_read,
-				&user->ni32_perframe, t.u, (uint) fstat->nchan
+				&user->ni32_perframe, t.u, nchan
 			);
 		}
 
@@ -523,7 +523,7 @@ ttaenc_frame(
 		t.d = libttaR_tta_encode(
 			encbuf->ttabuf, encbuf->i32buf, encbuf->ttabuf_len,
 			encbuf->i32buf_len, nmemb_read, priv, user,
-			fstat->samplebytes, (uint) fstat->nchan
+			samplebytes, nchan
 		);
 		assert(t.d == 0);
 
@@ -542,7 +542,7 @@ ttaenc_frame(
 		if ( ! user->frame_is_finished ){
 			ttaenc_frame_adjust(
 				&readlen, user, infile, infile_name,
-				fstat->samplebytes
+				samplebytes
 			);
 		}
 	}
