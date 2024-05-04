@@ -9,7 +9,6 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
-#include <stdbool.h>	// true
 #include <stdio.h>
 #include <string.h>	// memcmp
 
