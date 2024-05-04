@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -126,8 +126,14 @@ filecheck_w64_find_subchunk(
 		int	d;
 	} t;
 
-	// check subchunks until target is found
-	while ( true ){
+	goto loop_entr;
+	do {
+		// seek to end of current subchunk
+		t.d = fseeko(file, (off_t) rh.size, SEEK_CUR);
+		if ( t.d != 0 ){
+			return FILECHECK_SEEK_ERROR;
+		}
+loop_entr:
 		t.z = fread(&rh, sizeof rh, (size_t) 1, file);
 		if ( t.z != (size_t) 1 ){
 			if ( feof(file) != 0 ){
@@ -135,22 +141,15 @@ filecheck_w64_find_subchunk(
 			}
 			return FILECHECK_READ_ERROR;
 		}
-
-		if ( memcmp(&rh.guid, target, sizeof rh.guid) == 0 ){
-			// seek to start of subchunk before returning
-			t.d = fseeko(file, -((off_t) (sizeof rh)), SEEK_CUR);
-			if ( t.d != 0 ){
-				return FILECHECK_SEEK_ERROR;
-			}
-			return FILECHECK_OK;
-		}
-
-		// seek to end of current subchunk
-		t.d = fseeko(file, (off_t) rh.size, SEEK_CUR);
-		if ( t.d != 0 ){
-			return FILECHECK_SEEK_ERROR;
-		}
 	}
+	while ( memcmp(&rh.guid, target, sizeof rh.guid) != 0 );
+
+	// seek to start of subchunk before returning
+	t.d = fseeko(file, -((off_t) (sizeof rh)), SEEK_CUR);
+	if ( t.d != 0 ){
+		return FILECHECK_SEEK_ERROR;
+	}
+	return FILECHECK_OK;
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////
