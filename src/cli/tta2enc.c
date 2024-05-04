@@ -408,8 +408,9 @@ tta2enc_loop(const struct OpenedFilesMember *const restrict ofm)
 		);
 		estat.nbytes_encoded	+= state_user.nbytes_tta_total;
 	}
-	while LIKELY (
-		(state_user.ni32_total == fstat->buflen) && (enc_retval == 0)
+	while (	(state_user.ni32_total == fstat->buflen)
+	       &&
+	        (enc_retval == 0)
 	);
 
 	if ( ! g_flag.quiet ){
@@ -481,11 +482,16 @@ ttaenc_frame(
 	user->is_new_frame = true;
 	t.z = g_samplebuf_len * nchan;
 	readlen = (t.z < user->ni32_perframe ? t.z : user->ni32_perframe);
+	goto loop_entr;
 	do {
+		// adjust for next chunk
+		ttaenc_frame_adjust(
+			&readlen, user, infile, infile_name, samplebytes
+		);
+loop_entr:
 		// read pcm from infile
 		nmemb_read = fread(
-			encbuf->pcmbuf, (size_t) samplebytes, readlen,
-			infile
+			encbuf->pcmbuf, (size_t) samplebytes, readlen, infile
 		);
 		if UNLIKELY ( nmemb_read != readlen ){
 			if ( feof(infile) != 0 ){
@@ -537,16 +543,8 @@ ttaenc_frame(
 				errno, "fwrite", strerror(errno), outfile_name
 			);
 		}
-
-		if UNLIKELY ( r != 0 ){ break; }
-		if ( ! user->frame_is_finished ){
-			ttaenc_frame_adjust(
-				&readlen, user, infile, infile_name,
-				samplebytes
-			);
-		}
 	}
-	while ( ! user->frame_is_finished );
+	while ( (! user->frame_is_finished) && (r == 0) );
 
 	return r;
 }

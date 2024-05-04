@@ -44,7 +44,7 @@ CFLAGS="$CFLAGS -D_FILE_OFFSET_BITS=64";
 CFLAGS="$CFLAGS -march=native";
 CFLAGS="$CFLAGS -mtune=native";
 
-CFLAGS="$CFLAGS -Ofast";	# -Ofast since libttaR 1.0.1-7 (2-23-12-30)
+CFLAGS="$CFLAGS -Ofast";	# -Ofast since libttaR 1.0.1-7 (2023-12-30)
 CFLAGS="$CFLAGS -ffast-math";
 
 CFLAGS="$CFLAGS -finline";

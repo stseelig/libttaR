@@ -422,8 +422,9 @@ tta2dec_loop(struct OpenedFilesMember *const restrict ofm)
 		);
 		dstat.nbytes_decoded	+= state_user.nbytes_tta_total;
 	}
-	while LIKELY (
-		(state_user.ni32_total == fstat->buflen) && (dec_retval == 0)
+	while ( (state_user.ni32_total == fstat->buflen)
+	       &&
+	        (dec_retval == 0)
 	 );
 
 	if ( ! g_flag.quiet ){
@@ -516,7 +517,14 @@ ttadec_frame(
 		? decbuf->ttabuf_len
 		: framesize_tta
 	);
+	goto loop_entr;
 	do {
+		// adjust for next chunk
+		ttadec_frame_adjust(
+			&readlen, &ni32_target, user, infile, infile_name,
+			framesize_tta
+		);
+loop_entr:
 		// read tta from infile
 		nbytes_read = fread(
 			decbuf->ttabuf, (size_t) 1, readlen, infile
@@ -572,16 +580,8 @@ ttadec_frame(
 				errno, "fwrite", strerror(errno), outfile_name
 			);
 		}
-
-		if UNLIKELY ( r != 0 ){ break; }
-		if ( ! user->frame_is_finished ){
-			ttadec_frame_adjust(
-				&readlen, &ni32_target, user, infile,
-				infile_name, framesize_tta
-			);
-		}
 	}
-	while ( ! user->frame_is_finished );
+	while ( (! user->frame_is_finished) && (r == 0) );
 
 	return r;
 }

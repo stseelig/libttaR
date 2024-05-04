@@ -190,11 +190,11 @@ libttaR_tta_encode(
 	user->ni32_total += user->ni32;
 	if ( user->ni32_total == user->ni32_perframe ){
 		r = rice_encode_cacheflush(
-			dest, r, &priv->bitcache.cache,
-			&priv->bitcache.count, &user->crc
+			dest, r, &priv->bitcache.cache, &priv->bitcache.count,
+			&user->crc
 		);
-		user->crc = crc32_end(user->crc);
-		user->frame_is_finished = true;
+		user->frame_is_finished	= true;
+		user->crc		= crc32_end(user->crc);
 	}
 	user->nbytes_tta	= r;
 	user->nbytes_tta_total += r;

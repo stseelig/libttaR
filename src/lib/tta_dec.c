@@ -199,8 +199,8 @@ libttaR_tta_decode(
 	// post-decode
 	user->ni32_total += user->ni32;
 	if ( user->ni32_total == user->ni32_perframe ){
-		user->crc = crc32_end(user->crc);
-		user->frame_is_finished = true;
+		user->frame_is_finished	= true;
+		user->crc		= crc32_end(user->crc);
 	}
 	user->nbytes_tta	= r;
 	user->nbytes_tta_total += r;
