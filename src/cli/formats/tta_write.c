@@ -41,13 +41,13 @@ prewrite_tta1_header_seektable(
 		outfile
 @*/
 {
+	off_t offset;
 	union {
 		int	d;
-		off_t	o;
 	} t;
 
 	// header + seektable + st-crc
-	t.o = (off_t) (
+	offset = (off_t) (
 		  sizeof(struct TTA1Header)
 		+ (st->limit * (sizeof *st->table)) + sizeof(u32)
 	);
@@ -57,7 +57,7 @@ prewrite_tta1_header_seektable(
 		error_sys_nf(errno, "fflush", strerror(errno), outfile_name);
 	}
 
-	t.d = ftruncate(fileno(outfile), t.o);
+	t.d = ftruncate(fileno(outfile), offset);
 	if ( t.d != 0 ){
 		error_sys_nf(
 			errno, "ftruncate", strerror(errno), outfile_name
