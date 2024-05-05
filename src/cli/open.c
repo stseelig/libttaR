@@ -137,7 +137,7 @@ outfile_name_fmt(
 	}
 	else {	base_len = (size_t) (fxdot - infile_name); }
 
-	r = malloc(dir_len + base_len + suffix_len + 1);
+	r = malloc(dir_len + base_len + suffix_len + 1u);
 	if ( r == NULL ){
 		error_sys(errno, "malloc", strerror(errno), NULL);
 	}
@@ -160,14 +160,20 @@ const char *
 get_outfile_sfx(enum DecFormat format)
 /*@*/
 {
+	const char *r;
+
 	switch ( format ){
 	case FORMAT_RAWPCM:
-		return ".raw";
+		r = ".raw";
+		break;
 	case FORMAT_W64:
-		return ".w64";
+		r = ".w64";
+		break;
 	case FORMAT_WAV:
-		return ".wav";
+		r = ".wav";
+		break;
 	}
+	return r;
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////

@@ -25,74 +25,117 @@ readonly PROGRAM='ttaR';
 # can't compile the reference encoder.) I know my compilers are outdated
 # because of Debian, but still.
 #
+#   main reasons that gcc is slower:
+#       - gcc doesn't have a builtin memmove (this is extra funny considering
+# the glibc memcpy backwards fiasco from last decade)
+#       - clang is better at auto-SIMDing
+#       - it can do dumb stuff if you don't use gcc-isms like the example in
+# the previous paragraph
+#
 #	AMD Ryzen 7 1700
 #	gcc (Debian 10.2.1-6) 10.2.1 20210110
 #	Debian clang version 11.0.1-2
 
 readonly CC='clang';
 readonly LD="$CC";
-#readonly LD_REAL='gold';	# disabling for libttaR 1.0.1-7 (2-23-12-30)
+
+#=============================================================================
+
+readonly ROOT="$(realpath "$(dirname "$0")")";
+# relative to ROOT
+readonly SRC='./src';
+readonly BUILD='./build';
+readonly OBJ="$BUILD/obj";
+
+#============================================================================#
+
+CFLAGS_COMMON=;
+
+CFLAGS_COMMON="$CFLAGS_COMMON -std=c99";
+
+CFLAGS_COMMON="$CFLAGS_COMMON -march=native";
+CFLAGS_COMMON="$CFLAGS_COMMON -mtune=native";
+
+#CFLAGS_COMMON="$CFLAGS_COMMON -gdwarf";
+CFLAGS_COMMON="$CFLAGS_COMMON -DNDEBUG";
+
+CFLAGS_COMMON="$CFLAGS_COMMON -Wall";
+CFLAGS_COMMON="$CFLAGS_COMMON -Wextra";
+CFLAGS_COMMON="$CFLAGS_COMMON -Wpedantic";
+#CFLAGS_COMMON="$CFLAGS_COMMON -Werror";
+
+if [ "$CC" = 'gcc' ]; then
+# gcc complaining about enum switches
+CFLAGS_COMMON="$CFLAGS_COMMON -Wno-maybe-uninitialized";
+fi
+
+readonly CFLAGS_COMMON;
 
 #----------------------------------------------------------------------------#
 
-CFLAGS='-std=c99';
+CFLAGS_CLI=;
 
-#CFLAGS="$CFLAGS -D_POSIX_C_SOURCE=200809";
-CFLAGS="$CFLAGS -D_GNU_SOURCE";		# reallocarray, memrchr, strchr
-CFLAGS="$CFLAGS -D_FILE_OFFSET_BITS=64";
+#CFLAGS_CLI="$CFLAGS_CLI -D_POSIX_C_SOURCE=200809";
+CFLAGS_CLI="$CFLAGS_CLI -D_GNU_SOURCE";	# reallocarray, memrchr, strchr
+CFLAGS_CLI="$CFLAGS_CLI -D_FILE_OFFSET_BITS=64";
 
-CFLAGS="$CFLAGS -march=native";
-CFLAGS="$CFLAGS -mtune=native";
+CFLAGS_CLI="$CFLAGS_CLI -O3";
+CFLAGS_CLI="$CFLAGS_CLI -ffast-math";
 
-CFLAGS="$CFLAGS -Ofast";	# -Ofast since libttaR 1.0.1-7 (2023-12-30)
-CFLAGS="$CFLAGS -ffast-math";
+#CFLAGS_CLI="$CFLAGS_CLI -fno-inline";
 
-CFLAGS="$CFLAGS -finline";
-#CFLAGS="$CFLAGS -fno-inline";
-
-#CFLAGS="$CFLAGS -gdwarf";
-CFLAGS="$CFLAGS -DNDEBUG";
-
-CFLAGS="$CFLAGS -Wall";
-CFLAGS="$CFLAGS -Wextra";
-CFLAGS="$CFLAGS -Wpedantic";
-#CFLAGS="$CFLAGS -Werror";
+readonly CFLAGS_CLI;
 
 #----------------------------------------------------------------------------#
 
-LIBFLAGS="-fPIC";
+CFLAGS_LIB=;
+
+CFLAGS_LIB="$CFLAGS_LIB -O3";
+
+#CFLAGS_LIB="$CFLAGS_LIB -fno-inline";
+
+CFLAGS_LIB="$CFLAGS_LIB -fPIC";
 
 # disable the unrolled mono/stereo codec loop. bit faster, but larger binary
-#LIBFLAGS="$LIBFLAGS -DLIBTTAr_DISABLE_UNROLLED_1CH";
-#LIBFLAGS="$LIBFLAGS -DLIBTTAr_DISABLE_UNROLLED_2CH";
+#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_DISABLE_UNROLLED_1CH";
+#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_DISABLE_UNROLLED_2CH";
 
 # disable the multichannel/general decoder
-#LIBFLAGS="$LIBFLAGS -DLIBTTAr_DISABLE_MCH";
+#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_DISABLE_MCH";
 
 # disable tzcnt builtin if no native tzcnt instruction
-#LIBFLAGS="$LIBFLAGS -DLIBTTAr_NO_INSTRUCTION_TZCNT";
+#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_NO_INSTRUCTION_TZCNT";
 
-readonly LIBFLAGS;
+readonly CFLAGS_LIB;
+
+#============================================================================#
+
+LDFLAGS_COMMON=;
+readonly LDFLAGS_COMMON;
 
 #----------------------------------------------------------------------------#
 
-LDFLAGS=;
-if [ "$LD_REAL" = 'gold' ] && [ -e "$(which gold)" ]; then
-	LDFLAGS="-fuse-ld=$LD_REAL";
+LDFLAGS_CLI=;
+readonly LDFLAGS_CLI;
 
-	# may slightly slow-down or speed-up binary
-	# the smaller size maybe worth it
-	LDFLAGS="$LDFLAGS -Xlinker -O3";
-	LDFLAGS="$LDFLAGS -Xlinker --icf=all";
+# gcc needs these at the end of the command for some reason
+LDFLAGS_CLI_END=;
+LDFLAGS_CLI_END="$LDFLAGS_CLI_END -L$BUILD/";
+LDFLAGS_CLI_END="$LDFLAGS_CLI_END -l$LIB_BASE";
+readonly LD_FLAGS_CLI_END;
 
-	LDFLAGS="$LDFLAGS -Xlinker --gc-sections";
-fi
-readonly LDFLAGS;
+#----------------------------------------------------------------------------#
 
+LDFLAGS_LIB=;
+LDFLAGS_LIB="$LDFLAGS_LIB -shared";
 # library only uses memmove & memset from libc, but that should be a builtin
-readonly LIBLDFLAGS="-shared -nolibc";
+LDFLAGS_LIB="$LDFLAGS_LIB -nolibc";
+readonly LDFLAGS_LIB;
 
-#----------------------------------------------------------------------------#
+LDFLAGS_LIB_END=;
+readonly LDFLAGS_LIB_END;
+
+#============================================================================#
 
 #readonly STRIP=1;
 STRIP_O='--strip-all';
@@ -101,12 +144,6 @@ STRIP_O="$STRIP_O --remove-section=.note*";
 readonly STRIP_O;
 
 ##############################################################################
-
-readonly ROOT="$(realpath "$(dirname "$0")")";
-# relative to ROOT
-readonly SRC='./src';
-readonly BUILD='./build';
-readonly OBJ="$BUILD/obj";
 
 readonly DIR0="$BUILD";
 readonly DIR1="$OBJ";
@@ -294,18 +331,18 @@ _cc(){
 # $1: additional opts
 # $2: C-file
 	PRINT="[${T_B_CYAN}CC${T_RESET}]\t${CC} -c";
-	PRINT="${PRINT} -o ${OBJ}/${2}.o ${SRC}/${2}.c\n";
+	PRINT="${PRINT}${1} -o ${OBJ}/${2}.o ${SRC}/${2}.c\n";
 	CMD_START=$(_timestamp);
-	 "$CC" -c $1 $CFLAGS -o "$OBJ/$2.o" "$SRC/$2.c" || _ret_fail $?;
+	 "$CC" -c $1 -o "$OBJ/$2.o" "$SRC/$2.c" || _ret_fail $?;
 	_ret_ok $(dc -e "$(_timestamp) $CMD_START - p") "$OBJ/$2.o";
 }
 
 _cc_mp(){
 # $1: additional opts
 # $2-$#: C-files
-	CC_ADD_OPTS="$1"; shift;
+	CC_OPTS="$1"; shift;
 	while [ $# -gt 0 ]; do
-		_cc "$CC_ADD_OPTS" "$1"&
+		_cc "$CC_OPTS" "$1"&
 		while [ $(pgrep -P $$ -c) -ge $NPROC ]; do :; done
 		shift;
 	done
@@ -315,17 +352,21 @@ _ld(){
 # $1: additional opts
 # $2: out-file
 # $3-$#: in-files
-	LD_ADD_OPTS="$1"; shift;
+	LD_OPTS="$1"; shift;
+	LD_OPTS_END="$1"; shift;
 	PRINT="[${T_B_CYAN}LD${T_RESET}]\t${LD}";
-	if [ -n "LD_ADD_OPTS" ]; then
-		PRINT="${PRINT} ${LD_ADD_OPTS}";
+	if [ -n "LD_OPTS" ]; then
+		PRINT="${PRINT}${LD_OPTS}";
 	fi
 	if [ -n "$LDFLAGS" ]; then
 		PRINT="${PRINT} \$LDFLAGS";
 	fi
 	PRINT="${PRINT} -o ${*}\n";
+	if [ -n "LD_OPTS_END" ]; then
+		PRINT="${PRINT}${LD_OPTS_END}";
+	fi
 	CMD_START=$(_timestamp);
-	"$LD" $LD_ADD_OPTS $LDFLAGS -o "$@" || _ret_fail $?;
+	"$LD" $LD_OPTS -o "$@" $LD_OPTS_END || _ret_fail $?;
 	_ret_ok $(dc -e "$(_timestamp) $CMD_START - p") "$1";
 }
 
@@ -360,35 +401,47 @@ readonly MAIN_START=$(_timestamp);
 
 #----------------------------------------------------------------------------#
 
-if [ -n "$CFLAGS" ]; then
-	_flags_print 'CFLAGS' "$CFLAGS";
+if [ -n "$CFLAGS_COMMON" ]; then
+	_flags_print 'CFLAGS_COMMON' "$CFLAGS_COMMON";
 fi
-if [ -n "$LDFLAGS" ]; then
-	_flags_print 'LDFLAGS' "$LDFLAGS";
+if [ -n "$CFLAGS_CLI" ]; then
+	_flags_print 'CFLAGS_CLI' "$CFLAGS_CLI";
 fi
-if [ -n "$LIBFLAGS" ]; then
-	_flags_print 'LIBFLAGS' "$LIBFLAGS";
+if [ -n "$CFLAGS_LIB" ]; then
+	_flags_print 'CFLAGS_LIB' "$CFLAGS_LIB";
 fi
-if [ -n "$LIBLDFLAGS" ]; then
-	_flags_print 'LIBLDFLAGS' "$LIBLDFLAGS";
+if [ -n "$LDFLAGS_COMMON" ]; then
+	_flags_print 'LDFLAGS_COMMON' "$LDFLAGS_COMMON";
+fi
+if [ -n "$LDFLAGS_CLI" ]; then
+	_flags_print 'LDFLAGS_CLI' "$LDFLAGS_CLI";
+fi
+if [ -n "$LDFLAGS_CLI_END" ]; then
+	_flags_print 'LDFLAGS_CLI_END' "$LDFLAGS_CLI_END";
+fi
+if [ -n "$LDFLAGS_LIB" ]; then
+	_flags_print 'LDFLAGS_LIB' "$LDFLAGS_LIB";
+fi
+if [ -n "$LDFLAGS_LIB_END" ]; then
+	_flags_print 'LDFLAGS_LIB_END' "$LDFLAGS_LIB_END";
 fi
 
 _cd "$ROOT";
 
 _mkdir "$DIR0" "$DIR1" "$DIR2" "$DIR3" "$DIR4" "$DIR5";
 
-_cc_mp	"$LIBFLAGS" \
+_cc_mp	"$CFLAGS_COMMON $CFLAGS_LIB" \
 	"$L_C00" "$L_C01" "$L_C02" "$L_C03" "$L_C04" "$L_C05" "$L_C06";
-_cc_mp	"" \
+_cc_mp	"$CFLAGS_COMMON $CFLAGS_CLI" \
 	"$P_C00" "$P_C01" "$P_C02" "$P_C03" "$P_C04" "$P_C05" "$P_C06" \
 	"$P_C07" "$P_C08" "$P_C09" "$P_C10" "$P_C11" "$P_C12" "$P_C13" \
 	"$P_C14" "$P_C15" "$P_C16" "$P_C17" "$P_C18" "$P_C19" "$P_C20" \
 	"$P_C21";
 wait;
 
-_ld "$LIBLDFLAGS" "$BUILD/$LIBRARY" \
+_ld "$LDFLAGS_LIB" "$LDFLAGS_LIB_END" "$BUILD/$LIBRARY" \
 	"$L_O00" "$L_O01" "$L_O02" "$L_O03" "$L_O04" "$L_O05" "$L_O06";
-_ld "-L$BUILD/ -l$LIB_BASE" "$BUILD/$PROGRAM" \
+_ld "$LDFLAGS_CLI" "$LDFLAGS_CLI_END" "$BUILD/$PROGRAM" \
 	"$P_O00" "$P_O01" "$P_O02" "$P_O03" "$P_O04" "$P_O05" "$P_O06" \
 	"$P_O07" "$P_O08" "$P_O09" "$P_O10" "$P_O11" "$P_O12" "$P_O13" \
 	"$P_O14" "$P_O15" "$P_O16" "$P_O17" "$P_O18" "$P_O19" "$P_O20" \

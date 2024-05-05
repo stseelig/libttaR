@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -377,14 +377,20 @@ static const char *
 decfmt_name(enum DecFormat fmt)
 /*@*/
 {
+	const char *r;
+
 	switch( fmt ){
 	case FORMAT_RAWPCM:
-		return "raw";
+		r = "raw";
+		break;
 	case FORMAT_W64:
-		return "w64";
+		r = "w64";
+		break;
 	case FORMAT_WAV:
-		return "wav";
+		r = "wav";
+		break;
 	}
+	return r;
 }
 
 /*@observer@*/
@@ -392,10 +398,14 @@ static const char *
 encfmt_name(enum EncFormat fmt)
 /*@*/
 {
+	const char *r;
+
 	switch( fmt ){
 	case FORMAT_TTA1:
-		return "tta1";
+		r = "tta1";
+		break;
 	}
+	return r;
 }
 
 static double

@@ -67,7 +67,7 @@ ALWAYS_INLINE u32 lsmask32(register u8, const enum ShiftMaskMode) /*@*/;
 
 #undef sum
 #undef k
-ALWAYS_INLINE void rice_cmpsum(
+void rice_cmpsum(
 	register u32 *const restrict sum, register u8 *const restrict k,
 	register u32
 )
@@ -237,32 +237,42 @@ ALWAYS_INLINE u32
 shift32p4_bit(register u8 k, const enum ShiftMaskMode mode)
 /*@*/
 {
+	u32 r;
+
 	switch ( mode ){
 	case SMM_CONST:
 	case SMM_SHIFT:
-		return (u32) (k != 0
+		r = (u32) (k != 0
 			? 0x1u << ((u8) (k + 4u) <= (u8) 31u
 				? (u8) (k + 4u)
 				: (u8) 31u
 			)
 			: 0
 		);
+		break;
 	case SMM_TABLE:
-		return shift32p4_bit_table[k];
+		r = shift32p4_bit_table[k];
+		break;
 	}
+	return r;
 }
 
 ALWAYS_INLINE u32
 lsmask32(register u8 k, const enum ShiftMaskMode mode)
 /*@*/
 {
+	u32 r;
+
 	switch ( mode ){
 	case SMM_CONST:
 	case SMM_SHIFT:
-		return (u32) (k != 0 ? 0xFFFFFFFFu >> (32u - k) : 0 );
+		r = (u32) (k != 0 ? 0xFFFFFFFFu >> (32u - k) : 0 );
+		break;
 	case SMM_TABLE:
-		return lsmask32_table[k];
+		r = lsmask32_table[k];
+		break;
 	}
+	return r;
 }
 
 //==========================================================================//
