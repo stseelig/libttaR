@@ -48,7 +48,7 @@ static void tta2dec_loop(struct OpenedFilesMember *const restrict)
 #undef outfile
 #undef infile
 static uint ttadec_frame(
-	/*@out@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
+	/*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
 	/*@partial@*/ struct LibTTAr_CodecState_User *const restrict user,
 	const struct DecBuf *const restrict decbuf,
 	FILE *const restrict outfile, const char *const,
@@ -368,7 +368,7 @@ tta2dec_loop(struct OpenedFilesMember *const restrict ofm)
 	}
 
 	// decode loop
-	// any warning/error in loop get UNLIKELY'd
+	// any warning/error in loop gets UNLIKELY'd
 	state_user.ni32_perframe = fstat->buflen;
 	memset(&dstat, 0x00, sizeof dstat);
 	do {
@@ -483,7 +483,7 @@ tta2dec_loop(struct OpenedFilesMember *const restrict ofm)
 // returns 0 on OK, or number of bytes padded
 static uint
 ttadec_frame(
-	/*@out@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
+	/*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
 	/*@partial@*/ struct LibTTAr_CodecState_User *const restrict user,
 	const struct DecBuf *const restrict decbuf,
 	FILE *const restrict outfile, const char *const outfile_name,
