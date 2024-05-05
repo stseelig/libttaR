@@ -119,14 +119,16 @@ outfile_name_fmt(
 	if ( outfile_dir != NULL ){
 		dir_len = strlen(outfile_dir);
 		// remove any directory paths from infile_name
-		t.p = (uintptr_t) memrchr(infile_name, (int) PATH_DELIM, in_len);
+		t.p = (uintptr_t) memrchr(
+			infile_name, (int) PATH_DELIM, in_len
+		);
 		if ( t.p != 0 ){
 			infile_name = (char *) (t.p + 1u);
 			in_len  = strlen(infile_name);
 		}
 	}
 	if ( suffix != NULL ){
-		suffix_len = strlen(suffix) + 1u;	// +1 for null
+		suffix_len = strlen(suffix);
 		fxdot = memrchr(infile_name, (int) '.', in_len);
 	}
 
@@ -135,7 +137,7 @@ outfile_name_fmt(
 	}
 	else {	base_len = (size_t) (fxdot - infile_name); }
 
-	r = malloc(dir_len + base_len + suffix_len);
+	r = malloc(dir_len + base_len + suffix_len + 1);
 	if ( r == NULL ){
 		error_sys(errno, "malloc", strerror(errno), NULL);
 	}
@@ -148,6 +150,7 @@ outfile_name_fmt(
 	if ( suffix != NULL ){
 		(void) memcpy(&r[dir_len + base_len], suffix, suffix_len);
 	}
+	r[dir_len + base_len + suffix_len] = '\0';
 
 	return r;
 }
