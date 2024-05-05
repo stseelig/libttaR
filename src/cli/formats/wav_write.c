@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -26,7 +26,7 @@
 
 // MAYBE write preliminary header instead
 void
-prewrite_wav_header(FILE *const restrict outfile)
+prewrite_wav_header(FILE *const restrict outfile, const char *outfile_name)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
 		outfile
@@ -36,15 +36,25 @@ prewrite_wav_header(FILE *const restrict outfile)
 		int	d;
 	} t;
 
-	(void) fflush(outfile);
+	t.d = fflush(outfile);
+	if ( t.d != 0 ){
+		error_sys_nf(errno, "fflush", strerror(errno), outfile_name);
+	}
+
 	t.d = ftruncate(
 		fileno(outfile),
 		(off_t) sizeof(struct RiffHeader_WriteTemplate)
 	);
 	if ( t.d != 0 ){
-		error_sys(errno, "ftruncate", strerror(errno), NULL);
+		error_sys_nf(
+			errno, "ftruncate", strerror(errno), outfile_name
+		);
 	}
-	(void) fseeko(outfile, 0, SEEK_END);
+
+	t.d = fseeko(outfile, 0, SEEK_END);
+	if ( t.d != 0 ){
+		error_sys_nf(errno, "fseeko", strerror(errno), outfile_name);
+	}
 
 	return;
 }
@@ -62,7 +72,8 @@ write_wav_header(
 {
 	struct RiffHeader_WriteTemplate wt;
 	union {
-		u32	u32;
+		u32	u_32;
+		size_t	z;
 	} t;
 
 	if ( data_size > UINT32_MAX ){
@@ -72,11 +83,11 @@ write_wav_header(
 
 	// riff/wave header
 	(void) memcpy(&wt.hdr.rh.id, RIFF_ID_RIFF, sizeof wt.hdr.rh.id);
-	t.u32 = (data_size >= (UINT32_MAX - (sizeof wt) + (sizeof wt.hdr))
+	t.u_32 = (data_size >= (UINT32_MAX - (sizeof wt) + (sizeof wt.hdr))
 		? UINT32_MAX
 		: data_size + (sizeof wt) - (sizeof wt.hdr.rh)
 	);
-	wt.hdr.rh.size	= htole32(t.u32);
+	wt.hdr.rh.size	= htole32(t.u_32);
 	(void) memcpy(&wt.hdr.format, RIFF_ID_WAVE, sizeof wt.hdr.format);
 
 	// fmt subchunk
@@ -89,11 +100,13 @@ write_wav_header(
 
 	// data chunk header
 	(void) memcpy(&wt.data.id, RIFF_ID_DATA, sizeof wt.data.id);
-	t.u32 = (data_size >= UINT32_MAX ? UINT32_MAX : data_size);
-	wt.data.size	= htole32(t.u32);
+	t.u_32 = (data_size >= UINT32_MAX ? UINT32_MAX : data_size);
+	wt.data.size	= htole32(t.u_32);
 
-	(void) fwrite(&wt, sizeof wt, (size_t) 1, outfile);
-	// TODO check for error
+	t.z = fwrite(&wt, sizeof wt, (size_t) 1, outfile);
+	if ( t.z != (size_t) 1 ){
+		error_sys_nf(errno, "fwrite", strerror(errno), outfile_name);
+	}
 
 	return;
 }

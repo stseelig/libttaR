@@ -6,7 +6,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -212,7 +212,8 @@ extern enum FileCheck filecheck_tta_seektable(
 
 #undef outfile
 extern void prewrite_tta1_header_seektable(
-	FILE *const restrict outfile, const struct SeekTable *const restrict
+	FILE *const restrict outfile, const struct SeekTable *const restrict,
+	const char *
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -233,7 +234,8 @@ extern off_t write_tta1_header(
 
 #undef outfile
 extern void write_tta_seektable(
-	FILE *const restrict outfile, const struct SeekTable *const restrict
+	FILE *const restrict outfile, const struct SeekTable *const restrict,
+	const char *
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -260,7 +262,7 @@ extern enum FileCheck filecheck_w64(
 // w64_write.c
 
 #undef outfile
-extern void prewrite_w64_header(FILE *const restrict outfile)
+extern void prewrite_w64_header(FILE *const restrict outfile, const char *)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
 		outfile
@@ -270,7 +272,7 @@ extern void prewrite_w64_header(FILE *const restrict outfile)
 #undef outfile
 extern void write_w64_header(
 	FILE *const restrict outfile, size_t,
-	const struct FileStats *const restrict
+	const struct FileStats *const restrict, const char *
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -307,7 +309,7 @@ extern enum FileCheck filecheck_wav_read_subchunk_fmt(
 // wav_write.c
 
 #undef outfile
-extern void prewrite_wav_header(FILE *const restrict outfile)
+extern void prewrite_wav_header(FILE *const restrict outfile, const char *)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
 		outfile

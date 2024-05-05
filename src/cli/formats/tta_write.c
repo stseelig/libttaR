@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -34,7 +34,7 @@
 void
 prewrite_tta1_header_seektable(
 	FILE *const restrict outfile,
-	const struct SeekTable *const restrict st
+	const struct SeekTable *const restrict st, const char *outfile_name
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -51,12 +51,23 @@ prewrite_tta1_header_seektable(
 		  sizeof(struct TTA1Header)
 		+ (st->limit * (sizeof *st->table)) + sizeof(u32)
 	);
-	(void) fflush(outfile);
+
+	t.d = fflush(outfile);
+	if ( t.d != 0 ){
+		error_sys_nf(errno, "fflush", strerror(errno), outfile_name);
+	}
+
 	t.d = ftruncate(fileno(outfile), t.o);
 	if ( t.d != 0 ){
-		error_sys(errno, "ftruncate", strerror(errno), NULL);
+		error_sys_nf(
+			errno, "ftruncate", strerror(errno), outfile_name
+		);
 	}
-	(void) fseeko(outfile, 0, SEEK_END);
+
+	t.d = fseeko(outfile, 0, SEEK_END);
+	if ( t.d != 0 ){
+		error_sys_nf(errno, "fseeko", strerror(errno), outfile_name);
+	}
 
 	return;
 }
@@ -96,7 +107,7 @@ write_tta1_header(
 	// write
 	t.z = fwrite(&h, sizeof h, (size_t) 1, outfile);
 	if ( t.z != (size_t) 1 ){
-		error_sys(errno, "fwrite", strerror(errno), outfile_name);
+		error_sys_nf(errno, "fwrite", strerror(errno), outfile_name);
 	}
 
 	return ftello(outfile);
@@ -106,7 +117,7 @@ write_tta1_header(
 void
 write_tta_seektable(
 	FILE *const restrict outfile,
-	const struct SeekTable *const restrict st
+	const struct SeekTable *const restrict st, const char *outfile_name
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -114,17 +125,30 @@ write_tta_seektable(
 @*/
 {
 	u32 crc;
+	union {
+		int	d;
+		size_t	z;
+	} t;
 
-	(void) fseeko(outfile, st->off, SEEK_SET);
+	t.d = fseeko(outfile, st->off, SEEK_SET);
+	if ( t.d != 0 ){
+		error_sys_nf(errno, "fseeko", strerror(errno), outfile_name);
+	}
 
 	// write seektable
-	(void) fwrite(st->table, sizeof *st->table, st->nmemb, outfile);
+	t.z = fwrite(st->table, sizeof *st->table, st->nmemb, outfile);
+	if ( t.z != st->nmemb ){
+		error_sys_nf(errno, "fwrite", strerror(errno), outfile_name);
+	}
 
 	// calc then write seektable crc
 	crc = libttaR_crc32(
 		(u8 *) st->table, st->nmemb * (sizeof *st->table)
 	);
-	(void) fwrite(&crc, sizeof crc, (size_t) 1, outfile);
+	t.z = fwrite(&crc, sizeof crc, (size_t) 1, outfile);
+	if ( t.z != (size_t) 1 ){
+		error_sys_nf(errno, "fwrite", strerror(errno), outfile_name);
+	}
 
 	return;
 }

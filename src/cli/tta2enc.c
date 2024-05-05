@@ -330,7 +330,9 @@ tta2enc_loop(const struct OpenedFilesMember *const restrict ofm)
 	// TODO handle file of unknown size
 	switch ( fstat->encfmt ){
 	case FORMAT_TTA1:
-		prewrite_tta1_header_seektable(outfile, &seektable);
+		prewrite_tta1_header_seektable(
+			outfile, &seektable, outfile_name
+		);
 		break;
 	}
 
@@ -425,7 +427,7 @@ tta2enc_loop(const struct OpenedFilesMember *const restrict ofm)
 		seektable.off = write_tta1_header(
 			outfile, estat.nsamples_perchan, fstat, outfile_name
 		);
-		write_tta_seektable(outfile, &seektable);
+		write_tta_seektable(outfile, &seektable, outfile_name);
 		break;
 	}
 

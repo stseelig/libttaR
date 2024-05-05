@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -27,7 +27,7 @@
 
 // MAYBE write preliminary header instead
 void
-prewrite_w64_header(FILE *const restrict outfile)
+prewrite_w64_header(FILE *const restrict outfile, const char *outfile_name)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
 		outfile
@@ -37,15 +37,25 @@ prewrite_w64_header(FILE *const restrict outfile)
 		int	d;
 	} t;
 
-	(void) fflush(outfile);
+	t.d = fflush(outfile);
+	if ( t.d != 0 ){
+		error_sys_nf(errno, "fflush", strerror(errno), outfile_name);
+	}
+
 	t.d = ftruncate(
 		fileno(outfile),
 		(off_t) sizeof(struct Riff64Header_WriteTemplate)
 	);
 	if ( t.d != 0 ){
-		error_sys(errno, "ftruncate", strerror(errno), NULL);
+		error_sys_nf(
+			errno, "ftruncate", strerror(errno), outfile_name
+		);
 	}
-	(void) fseeko(outfile, 0, SEEK_END);
+
+	t.d = fseeko(outfile, 0, SEEK_END);
+	if ( t.d != 0 ){
+		error_sys_nf(errno, "fseeko", strerror(errno), outfile_name);
+	}
 
 	return;
 }
@@ -54,7 +64,7 @@ prewrite_w64_header(FILE *const restrict outfile)
 void
 write_w64_header(
 	FILE *const restrict outfile, size_t data_size,
-	const struct FileStats *const restrict fstat
+	const struct FileStats *const restrict fstat, const char *outfile_name
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -62,6 +72,9 @@ write_w64_header(
 @*/
 {
 	struct Riff64Header_WriteTemplate wt;
+	union {
+		int	z;
+	} t;
 
 	// riff/wave header
 	(void) memcpy(
@@ -84,8 +97,10 @@ write_w64_header(
 	(void) memcpy(&wt.data.guid, &RIFF64_GUID_DATA, sizeof wt.data.guid);
 	wt.data.size	= htole64(data_size + (sizeof wt.data));
 
-	(void) fwrite(&wt, sizeof wt, (size_t) 1, outfile);
-	// TODO check for error
+	t.z = fwrite(&wt, sizeof wt, (size_t) 1, outfile);
+	if ( t.z != (size_t) 1 ){
+		error_sys_nf(errno, "fwrite", strerror(errno), outfile_name);
+	}
 
 	return;
 }

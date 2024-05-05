@@ -49,7 +49,7 @@ static void tta2dec_loop(struct OpenedFilesMember *const restrict)
 #undef infile
 static uint ttadec_frame(
 	/*@out@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
-	struct LibTTAr_CodecState_User *const restrict user,
+	/*@partial@*/ struct LibTTAr_CodecState_User *const restrict user,
 	const struct DecBuf *const restrict decbuf,
 	FILE *const restrict outfile, const char *const,
 	FILE *const restrict infile, const char *const, size_t, size_t,
@@ -338,10 +338,10 @@ tta2dec_loop(struct OpenedFilesMember *const restrict ofm)
 	case FORMAT_RAWPCM:
 		break;
 	case FORMAT_WAV:
-		prewrite_wav_header(outfile);
+		prewrite_wav_header(outfile, outfile_name);
 		break;
 	case FORMAT_W64:
-		prewrite_w64_header(outfile);
+		prewrite_w64_header(outfile, outfile_name);
 		break;
 	}
 
@@ -446,7 +446,8 @@ tta2dec_loop(struct OpenedFilesMember *const restrict ofm)
 		rewind(outfile);
 		write_w64_header(
 			outfile,
-			(size_t) (dstat.nsamples * fstat->samplebytes), fstat
+			(size_t) (dstat.nsamples * fstat->samplebytes), fstat,
+			outfile_name
 		);
 		break;
 	case FORMAT_WAV:
@@ -483,7 +484,7 @@ tta2dec_loop(struct OpenedFilesMember *const restrict ofm)
 static uint
 ttadec_frame(
 	/*@out@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
-	struct LibTTAr_CodecState_User *const restrict user,
+	/*@partial@*/ struct LibTTAr_CodecState_User *const restrict user,
 	const struct DecBuf *const restrict decbuf,
 	FILE *const restrict outfile, const char *const outfile_name,
 	FILE *const restrict infile, const char *const infile_name,
