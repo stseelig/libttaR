@@ -41,16 +41,13 @@ prewrite_tta1_header_seektable(
 		outfile
 @*/
 {
-	off_t offset;
-	union {
-		int	d;
-	} t;
-
-	// header + seektable + st-crc
-	offset = (off_t) (
+	const off_t offset = (off_t) (	// header + seektable + st-crc
 		  sizeof(struct TTA1Header)
 		+ (st->limit * (sizeof *st->table)) + sizeof(u32)
 	);
+	union {
+		int d;
+	} t;
 
 	t.d = fflush(outfile);
 	if ( t.d != 0 ){
