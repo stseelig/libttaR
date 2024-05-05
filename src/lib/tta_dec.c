@@ -96,7 +96,7 @@ libttaR_tta_decode(
 	i32 *const dest, const u8 *const src,
 	size_t dest_len, size_t src_len,
 	size_t ni32_target, size_t nbytes_tta_target,
-	/*@out@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
+	/*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
 	/*@partial@*/ struct LibTTAr_CodecState_User *const restrict user,
 	enum TTASampleBytes samplebytes, uint nchan
 )

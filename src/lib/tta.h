@@ -66,9 +66,9 @@ struct Codec {
 
 #undef codec
 INLINE void codec_init(
-	register struct Codec *const restrict codec , register uint
+	/*@out@*/ register struct Codec *const restrict codec , register uint
 )
-/*@modifies	*codec*/
+/*@modifies	*codec@*/
 ;
 
 //--------------------------------------------------------------------------//
@@ -97,9 +97,10 @@ ALWAYS_INLINE i32 tta_filter(
 
 INLINE void
 codec_init(
-	register struct Codec *const restrict codec, register uint nchan
+	/*@out@*/ register struct Codec *const restrict codec,
+	register uint nchan
 )
-/*@modifies	*codec*/
+/*@modifies	*codec@*/
 {
 	register uint i;
 	for ( i = 0; i < nchan; ++i ){

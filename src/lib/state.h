@@ -46,7 +46,7 @@ struct LibTTAr_CodecState_User {
 INLINE void
 state_init(
 	/*@out@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
-	/*@out@*/ struct LibTTAr_CodecState_User *const restrict user,
+	/*@partial@*/ struct LibTTAr_CodecState_User *const restrict user,
 	uint nchan
 )
 /*@modifies	*priv,

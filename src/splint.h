@@ -72,25 +72,25 @@ struct timespec {
 //////////////////////////////////////////////////////////////////////////////
 
 #undef res
-/*@external@*/
+/*@external@*/ /*@unused@*/
 extern int clock_gettime(clockid_t, /*@out@*/ struct timespec *res)
 /*@modifies	res@*/
 ;
 
-/*@external@*/
+/*@external@*/ /*@unused@*/
 extern int fseeko(FILE *, off_t, int)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;
 
-/*@external@*/
+/*@external@*/ /*@unused@*/
 extern off_t ftello(FILE *)
 /*@globals	fileSystem@*/
 /*@modifies	nothing@*/
 ;
 
 /*@-type@*/
-/*@external@*/
+/*@external@*/ /*@unused@*/
 extern int ftruncate(int, off_t)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
@@ -99,25 +99,25 @@ extern int ftruncate(int, off_t)
 
 /*@-protoparammatch@*/
 #undef rlim
-/*@external@*/
+/*@external@*/ /*@unused@*/
 extern int getrlimit(int, /*@out@*/ struct rlimit *rlim)
 /*@globals	internalState@*/
 /*@modifies	*rlim@*/
 ;
 /*@=protoparammatch@*/
 
-/*@temp@*/ /*@null@*/ /*@external@*/
+/*@temp@*/ /*@null@*/ /*@external@*/ /*@unused@*/
 extern void *memrchr(const void *, int, size_t)
 /*@*/
 ;
 
-/*@only@*/ /*@null@*/ /*@partial@*/ /*@external@*/
+/*@only@*/ /*@null@*/ /*@partial@*/ /*@external@*/ /*@unused@*/
 extern void *reallocarray(/*@only@*/ /*@null@*/ void *, size_t, size_t)
 /*@globals	internalState@*/
 /*@modifies	internalState@*/
 ;
 
-/*@external@*/
+/*@external@*/ /*@unused@*/
 extern int setrlimit(int, /*@in@*/ struct rlimit *)
 /*@globals	internalState@*/
 /*@modifies	internalState@*/

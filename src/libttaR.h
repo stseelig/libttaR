@@ -2,7 +2,7 @@
 #define LIBTTAr_H
 /* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// libttaR.h - 1.0.1-8                                                      //
+// libttaR.h - 1.0.2-4                                                      //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
@@ -161,7 +161,7 @@ extern int libttaR_tta_encode(
 	size_t dest_len,
 	size_t src_len,
 	size_t ni32_target,
-	/*@out@*/
+	/*@reldef@*/
 	struct LibTTAr_CodecState_Priv *priv,
 	/*@partial@*/
 	struct LibTTAr_CodecState_User *user,
@@ -234,7 +234,7 @@ extern int libttaR_tta_decode(
 	size_t src_len,
 	size_t ni32_target,
 	size_t nbytes_tta_target,
-	/*@out@*/
+	/*@reldef@*/
 	struct LibTTAr_CodecState_Priv *priv,
 	/*@partial@*/
 	struct LibTTAr_CodecState_User *user,

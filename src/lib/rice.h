@@ -67,6 +67,7 @@ ALWAYS_INLINE u32 lsmask32(register u8, const enum ShiftMaskMode) /*@*/;
 
 #undef sum
 #undef k
+/*@unused@*/
 void rice_cmpsum(
 	register u32 *const restrict sum, register u8 *const restrict k,
 	register u32

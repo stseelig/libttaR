@@ -94,7 +94,7 @@ int
 libttaR_tta_encode(
 	u8 *const dest, const i32 *const src,
 	size_t dest_len, size_t src_len, size_t ni32_target,
-	/*@out@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
+	/*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
 	/*@partial@*/ struct LibTTAr_CodecState_User *const restrict user,
 	enum TTASampleBytes samplebytes, uint nchan
 )
