@@ -237,7 +237,7 @@ ALWAYS_INLINE u32
 shift32p4_bit(register u8 k, const enum ShiftMaskMode mode)
 /*@*/
 {
-	u32 r;
+	register u32 r;
 
 	switch ( mode ){
 	case SMM_CONST:
@@ -261,7 +261,7 @@ ALWAYS_INLINE u32
 lsmask32(register u8 k, const enum ShiftMaskMode mode)
 /*@*/
 {
-	u32 r;
+	register u32 r;
 
 	switch ( mode ){
 	case SMM_CONST:
