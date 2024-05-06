@@ -183,7 +183,9 @@ readonly P_C17='cli/opts/tta2dec';
 readonly P_C18='cli/opts/tta2enc';
 readonly P_C19='cli/optsget';
 readonly P_C20='cli/tta2dec';
-readonly P_C21='cli/tta2enc';
+readonly P_C21='cli/tta2dec_st';
+readonly P_C22='cli/tta2enc';
+readonly P_C23='cli/tta2enc_st';
 
 #----------------------------------------------------------------------------#
 
@@ -217,6 +219,8 @@ readonly P_O18="$OBJ/$P_C18.o";
 readonly P_O19="$OBJ/$P_C19.o";
 readonly P_O20="$OBJ/$P_C20.o";
 readonly P_O21="$OBJ/$P_C21.o";
+readonly P_O22="$OBJ/$P_C22.o";
+readonly P_O23="$OBJ/$P_C23.o";
 
 ##############################################################################
 
@@ -328,7 +332,7 @@ _mkdir(){
 }
 
 _cc(){
-# $1: additional opts
+# $1: CC opts
 # $2: C-file
 	PRINT="[${T_B_CYAN}CC${T_RESET}]\t${CC} -c";
 	PRINT="${PRINT}${1} -o ${OBJ}/${2}.o ${SRC}/${2}.c\n";
@@ -338,7 +342,7 @@ _cc(){
 }
 
 _cc_mp(){
-# $1: additional opts
+# $1: CC opts
 # $2-$#: C-files
 	CC_OPTS="$1"; shift;
 	while [ $# -gt 0 ]; do
@@ -349,9 +353,10 @@ _cc_mp(){
 }
 
 _ld(){
-# $1: additional opts
-# $2: out-file
-# $3-$#: in-files
+# $1: LD opts
+# $2: LD end opts (gcc bs)
+# $3: out-file
+# $4-$#: in-files
 	LD_OPTS="$1"; shift;
 	LD_OPTS_END="$1"; shift;
 	PRINT="[${T_B_CYAN}LD${T_RESET}]\t${LD}";
@@ -359,12 +364,13 @@ _ld(){
 		PRINT="${PRINT}${LD_OPTS}";
 	fi
 	if [ -n "$LDFLAGS" ]; then
-		PRINT="${PRINT} \$LDFLAGS";
+		PRINT="${PRINT}${LDFLAGS}";
 	fi
-	PRINT="${PRINT} -o ${*}\n";
+	PRINT="${PRINT} -o ${*}";
 	if [ -n "LD_OPTS_END" ]; then
 		PRINT="${PRINT}${LD_OPTS_END}";
 	fi
+	PRINT="${PRINT}\n";
 	CMD_START=$(_timestamp);
 	"$LD" $LD_OPTS -o "$@" $LD_OPTS_END || _ret_fail $?;
 	_ret_ok $(dc -e "$(_timestamp) $CMD_START - p") "$1";
@@ -436,7 +442,7 @@ _cc_mp	"$CFLAGS_COMMON $CFLAGS_CLI" \
 	"$P_C00" "$P_C01" "$P_C02" "$P_C03" "$P_C04" "$P_C05" "$P_C06" \
 	"$P_C07" "$P_C08" "$P_C09" "$P_C10" "$P_C11" "$P_C12" "$P_C13" \
 	"$P_C14" "$P_C15" "$P_C16" "$P_C17" "$P_C18" "$P_C19" "$P_C20" \
-	"$P_C21";
+	"$P_C21" "$P_C22" "$P_C23";
 wait;
 
 _ld "$LDFLAGS_LIB" "$LDFLAGS_LIB_END" "$BUILD/$LIBRARY" \
@@ -445,7 +451,7 @@ _ld "$LDFLAGS_CLI" "$LDFLAGS_CLI_END" "$BUILD/$PROGRAM" \
 	"$P_O00" "$P_O01" "$P_O02" "$P_O03" "$P_O04" "$P_O05" "$P_O06" \
 	"$P_O07" "$P_O08" "$P_O09" "$P_O10" "$P_O11" "$P_O12" "$P_O13" \
 	"$P_O14" "$P_O15" "$P_O16" "$P_O17" "$P_O18" "$P_O19" "$P_O20" \
-	"$P_O21";
+	"$P_O21" "$P_O22" "$P_O23";
 
 if [ -n "$STRIP" ] && [ $STRIP -ne 0 ]; then
 	_strip "$BUILD/$PROGRAM";
