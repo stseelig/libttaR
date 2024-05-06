@@ -6,7 +6,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -20,22 +20,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-struct GlobalFlags {
-	/*@dependent@*/ /*@null@*/
-	char		*outfile;	// from g_argv
-	bool		outfile_is_dir;
-	bool		quiet;
-	bool		delete_src;
-	bool		rawpcm;
-	enum DecFormat	decfmt:8;
-};
-
-//////////////////////////////////////////////////////////////////////////////
-
 // common
-
-/*@checkmod@*/
-extern struct GlobalFlags g_flag;
 
 /*@checkmod@*/
 extern struct FileStats g_fstat;

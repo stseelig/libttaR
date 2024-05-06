@@ -5,7 +5,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -95,6 +95,13 @@ char **g_argv;
 /*@checkmod@*/
 u8 g_nwarnings;
 
+/*@-fullinitblock@*/
+/*@checkmod@*/
+struct GlobalFlags g_flag = {
+	.decfmt = FORMAT_W64
+};
+/*@=fullinitblock@*/
+
 // MAYBE cli opt to change
 /*@checkmod@*/
 size_t g_samplebuf_len = ((size_t) BUFSIZ);
@@ -117,10 +124,13 @@ main(int argc, /*@dependent@*/ char **argv)
 		g_argv
 @*/
 {
+	int r;
+
 	if ( argc == 1 ){
 		goto print_main_help;
 	}
 
+	// setup signals
 	if ( (signal((int) HS_ABRT, (void (*)(int)) sighand) == SIG_ERR)
 	    ||
 	     (signal((int) HS_HUP , (void (*)(int)) sighand) == SIG_ERR)
@@ -134,14 +144,16 @@ main(int argc, /*@dependent@*/ char **argv)
 		warning_tta("failed to setup sighandler");
 	}
 
+	// these are saved for argument parsing in the modes
 	g_argc = (uint) argc;
 	g_argv = argv;
 
+	// enter a mode
 	if ( strcmp(argv[1], "encode") == 0 ){
-		return tta2enc(2u);
+		r = tta2enc(2u);
 	}
 	else if ( strcmp(argv[1], "decode") == 0 ){
-		return tta2dec(2u);
+		r = tta2dec(2u);
 	}
 	else {	error_tta_nf("bad mode '%s'", argv[1]);
 print_main_help:
@@ -150,8 +162,10 @@ print_main_help:
 			" ttaR encode --help\n"
 			" ttaR decode --help\n"
 		);
-		return EXIT_FAILURE;
+		r = EXIT_FAILURE;
 	}
+
+	return r;
 }
 
 //--------------------------------------------------------------------------//

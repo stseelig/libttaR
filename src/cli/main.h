@@ -6,7 +6,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -20,6 +20,16 @@
 enum ProgramMode {
 	MODE_ENCODE,
 	MODE_DECODE
+};
+
+struct GlobalFlags {
+	/*@dependent@*/ /*@null@*/
+	char		*outfile;	// from g_argv
+	bool		outfile_is_dir;
+	bool		quiet;
+	bool		delete_src;
+	bool		rawpcm;
+	enum DecFormat	decfmt:8;
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -54,6 +64,9 @@ extern char **g_argv;
 
 /*@checkmod@*/
 extern u8 g_nwarnings;
+
+/*@checkmod@*/
+extern struct GlobalFlags g_flag;
 
 /*@checkmod@*/
 extern size_t  g_samplebuf_len;

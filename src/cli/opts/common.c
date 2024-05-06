@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -20,13 +20,6 @@
 #include "../optsget.h"
 
 //////////////////////////////////////////////////////////////////////////////
-
-/*@-fullinitblock@*/
-/*@checkmod@*/
-struct GlobalFlags g_flag = {
-	.decfmt = FORMAT_W64
-};
-/*@=fullinitblock@*/
 
 /*@checkmod@*/
 struct FileStats g_fstat;

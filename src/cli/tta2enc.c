@@ -28,6 +28,7 @@
 #include "main.h"
 #include "open.h"
 #include "opts.h"
+#include "tta2.h"
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -39,57 +40,6 @@ static void tta2enc_loop(const struct OpenedFilesMember *const restrict)
 /*@modifies	fileSystem,
 		internalState,
 		g_rm_on_sigint
-@*/
-;
-
-#undef priv
-#undef user
-#undef encbuf
-#undef outfile
-#undef infile
-static uint ttaenc_frame(
-	/*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
-	/*@partial@*/ struct LibTTAr_CodecState_User *const restrict user,
-	const struct EncBuf *const restrict encbuf,
-	FILE *const restrict outfile, const char *const,
-	FILE *const restrict infile, const char *const, size_t,
-	enum TTASampleBytes, uint
-)
-/*@globals	fileSystem@*/
-/*@modifies	fileSystem,
-		*priv,
-		*user,
-		*encbuf->i32buf,
-		*encbuf->ttabuf,
-		outfile,
-		infile
-@*/
-;
-
-#undef buf
-#undef nmemb_read
-#undef ni32_perframe
-static uint ttaenc_frame_zeropad(
-	i32 *const restrict buf, size_t *const restrict nmemb_read,
-	size_t *const restrict ni32_perframe, uint, uint
-)
-/*@modifies	*buf,
-		*nmemb_read,
-		*ni32_perframe
-@*/
-;
-
-#undef readlen
-#undef infile
-static void ttaenc_frame_adjust(
-	size_t *const restrict readlen,
-	const struct LibTTAr_CodecState_User *const restrict,
-	FILE *const restrict infile, const char *const, enum TTASampleBytes
-)
-/*@globals	fileSystem@*/
-/*@modifies	fileSystem,
-		*readlen,
-		infile
 @*/
 ;
 
@@ -272,10 +222,8 @@ tta2enc_loop(const struct OpenedFilesMember *const restrict ofm)
 	struct SeekTable seektable;
 	struct EncBuf encbuf;
 	struct timespec ts_start, ts_stop;
-	uint enc_retval;
 	union {
-		size_t	z;
-		int	d;
+		size_t z;
 	} t;
 
 	// set outfile_name
@@ -354,67 +302,14 @@ tta2enc_loop(const struct OpenedFilesMember *const restrict ofm)
 	}
 	assert(state_priv != NULL);
 
+	// encode
 	if ( ! g_flag.quiet ){
 		(void) clock_gettime(CLOCK_MONOTONIC, &ts_start);
 	}
-
-	// encode loop
-	// any warning/error in loop gets UNLIKELY'd
-	state_user.ni32_perframe = fstat->buflen;
-	memset(&estat, 0x00, sizeof estat);
-	do {
-		if ( (! g_flag.quiet) && (estat.nframes % (size_t) 64 == 0) ){
-			errprint_spinner();
-		}
-
-		// calc framelen and adjust if necessary
-		t.z  = (estat.nsamples + fstat->buflen);
-		t.z *= fstat->samplebytes;
-		if ( t.z > fstat->decpcm_size ){
-			t.z  = fstat->decpcm_size;
-			t.z -= estat.nsamples * fstat->samplebytes;
-			t.z /= fstat->samplebytes;
-			state_user.ni32_perframe = t.z;
-		}
-
-		// encode and write frame
-		enc_retval = ttaenc_frame(
-			state_priv, &state_user, &encbuf, outfile,
-			outfile_name, infile, infile_name, estat.nframes,
-			fstat->samplebytes, (uint) fstat->nchan
-		);
-
-		// write frame footer (crc)
-		state_user.crc = htole32(state_user.crc);
-		t.z = fwrite(
-			&state_user.crc, (size_t) 1, sizeof state_user.crc,
-			outfile
-		);
-		if UNLIKELY ( t.z != sizeof state_user.crc ){
-			error_sys_nf(
-				errno, "fwrite", strerror(errno), outfile_name
-			);
-		}
-		state_user.nbytes_tta_total += sizeof state_user.crc;
-
-		// update seektable
-		seektable_add(
-			&seektable, state_user.nbytes_tta_total,
-			estat.nframes, outfile_name
-		);
-
-		estat.nframes		+= (size_t) 1;
-		estat.nsamples		+= state_user.ni32_total;
-		estat.nsamples_perchan	+= (size_t) (
-			state_user.ni32_total / fstat->nchan
-		);
-		estat.nbytes_encoded	+= state_user.nbytes_tta_total;
-	}
-	while (	(state_user.ni32_total == fstat->buflen)
-	       &&
-	        (enc_retval == 0)
+	ttaenc_loop_st(
+		state_priv, &state_user, &encbuf, &seektable, &estat, fstat,
+		outfile, outfile_name, infile, infile_name
 	);
-
 	if ( ! g_flag.quiet ){
 		(void) clock_gettime(CLOCK_MONOTONIC, &ts_stop);
 		estat.encodetime += timediff(&ts_start, &ts_stop);
@@ -452,163 +347,6 @@ tta2enc_loop(const struct OpenedFilesMember *const restrict ofm)
 
 	return;
 }
-
-// returns 0 on OK, or number of bytes padded
-static uint
-ttaenc_frame(
-	/*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
-	/*@partial@*/ struct LibTTAr_CodecState_User *const restrict user,
-	const struct EncBuf *const restrict encbuf,
-	FILE *const restrict outfile, const char *const outfile_name,
-	FILE *const restrict infile, const char *const infile_name,
-	size_t frame_num, enum TTASampleBytes samplebytes, uint nchan
-)
-/*@globals	fileSystem@*/
-/*@modifies	fileSystem,
-		*priv,
-		*user,
-		*encbuf->i32buf,
-		*encbuf->ttabuf,
-		outfile,
-		infile
-@*/
-{
-	uint r = 0;
-	size_t readlen, nmemb_read;
-	union {
-		size_t	z;
-		uint	u;
-		int	d;
-	} t;
-
-	user->is_new_frame = true;
-	t.z = g_samplebuf_len * nchan;
-	readlen = (t.z < user->ni32_perframe ? t.z : user->ni32_perframe);
-	goto loop_entr;
-	do {
-		// adjust for next chunk
-		ttaenc_frame_adjust(
-			&readlen, user, infile, infile_name, samplebytes
-		);
-loop_entr:
-		// read pcm from infile
-		nmemb_read = fread(
-			encbuf->pcmbuf, (size_t) samplebytes, readlen, infile
-		);
-		if UNLIKELY ( nmemb_read != readlen ){
-			if ( feof(infile) != 0 ){
-				error_sys_nf(
-					errno, "fread", strerror(errno),
-					infile_name
-				);
-			}
-			else {	warning_tta("%s: truncated file",
-					infile_name
-				);
-			}
-		}
-
-		// convert pcm to i32
-		t.z = libttaR_pcm_read(
-			encbuf->i32buf, encbuf->pcmbuf, nmemb_read,
-			samplebytes
-		);
-		assert(t.z == nmemb_read);
-
-		// check for truncated sample
-		t.u = (uint) (nmemb_read % nchan);
-		if UNLIKELY ( t.u != 0 ){
-			warning_tta("%s: frame %zu: last sample truncated, "
-				"zero-padding", infile_name, frame_num
-			);
-			r = ttaenc_frame_zeropad(
-				encbuf->i32buf, &nmemb_read,
-				&user->ni32_perframe, t.u, nchan
-			);
-		}
-
-		// encode i32 to tta
-		t.d = libttaR_tta_encode(
-			encbuf->ttabuf, encbuf->i32buf, encbuf->ttabuf_len,
-			encbuf->i32buf_len, nmemb_read, priv, user,
-			samplebytes, nchan
-		);
-		assert(t.d == 0);
-
-		// write tta to outfile
-		t.z = fwrite(
-			encbuf->ttabuf, (size_t) 1, user->nbytes_tta, outfile
-		);
-		// user->nbytes_tta could be 0 for a small g_samplebuf_len
-		if UNLIKELY ( t.z != user->nbytes_tta ){
-			error_sys_nf(
-				errno, "fwrite", strerror(errno), outfile_name
-			);
-		}
-	}
-	while ( (! user->frame_is_finished) && (r == 0) );
-
-	return r;
-}
-
-// returns nmemb of buf zero-padded
-static uint
-ttaenc_frame_zeropad(
-	i32 *const restrict buf, size_t *const restrict nmemb_read,
-	size_t *const restrict ni32_perframe, uint diff, uint nchan
-)
-/*@modifies	*buf,
-		*nmemb_read,
-		*ni32_perframe
-@*/
-{
-	const size_t r = (size_t) (nchan - diff);
-
-	memset(&buf[*nmemb_read], 0x00, r * (sizeof *buf));
-
-	*nmemb_read	+= r;
-	*ni32_perframe	+= r;
-	return (uint) r;
-}
-
-static void
-ttaenc_frame_adjust(
-	size_t *const restrict readlen,
-	const struct LibTTAr_CodecState_User *const restrict user,
-	FILE *const restrict infile, const char *const infile_name,
-	enum TTASampleBytes samplebytes
-)
-/*@globals	fileSystem@*/
-/*@modifies	fileSystem,
-		*readlen,
-		infile
-@*/
-{
-	union {
-		off_t	o;
-		int	d;
-	} t;
-
-	// seek infile to first non-encoded sample
-	if ( user->ni32 < *readlen ){
-		t.o  = (off_t) ((*readlen - user->ni32) * samplebytes);
-		t.d = fseeko(infile, -t.o, SEEK_CUR);
-		if UNLIKELY ( t.d != 0 ){
-			error_sys(
-				errno, "fseeko", strerror(errno), infile_name
-			);
-		}
-	}
-
-	// adjust readlen
-	if ( user->ni32_total + *readlen > user->ni32_perframe ){
-		*readlen = user->ni32_perframe - user->ni32_total;
-	}
-
-	return;
-}
-
-//--------------------------------------------------------------------------//
 
 static enum FileCheck
 filecheck_decfmt(
@@ -663,6 +401,28 @@ end_check:
 		return FILECHECK_UNSUPPORTED_RESOLUTION;
 	}
 	return FILECHECK_OK;
+}
+
+//==========================================================================//
+
+// returns nmemb of buf zero-padded
+uint
+ttaenc_frame_zeropad(
+	i32 *const restrict buf, size_t *const restrict nmemb_read,
+	size_t *const restrict ni32_perframe, uint diff, uint nchan
+)
+/*@modifies	*buf,
+		*nmemb_read,
+		*ni32_perframe
+@*/
+{
+	const size_t r = (size_t) (nchan - diff);
+
+	memset(&buf[*nmemb_read], 0x00, r * (sizeof *buf));
+
+	*nmemb_read	+= r;
+	*ni32_perframe	+= r;
+	return (uint) r;
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////

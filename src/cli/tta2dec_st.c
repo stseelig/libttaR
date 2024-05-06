@@ -24,7 +24,7 @@
 #include "cli.h"	// errprint_spinner
 #include "debug.h"
 #include "formats.h"
-#include "opts.h"	// g_flag.quiet
+#include "main.h"	// g_flag.quiet
 #include "tta2.h"
 
 //////////////////////////////////////////////////////////////////////////////
