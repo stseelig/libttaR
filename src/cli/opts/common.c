@@ -21,11 +21,6 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-/*@checkmod@*/
-struct FileStats g_fstat;
-
-//////////////////////////////////////////////////////////////////////////////
-
 int
 opt_common_delete_src(
 	/*@unused@*/ uint optind, /*@unused@*/ char *opt,
@@ -43,7 +38,6 @@ opt_common_delete_src(
 	return 0;
 }
 
-// TODO shortopt
 int
 opt_common_outfile(uint optind, char *opt, enum OptMode mode)
 /*@globals	fileSystem,
