@@ -5,7 +5,7 @@
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // Copyright (C) 2007, Aleksander Djuric                                    //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -70,13 +70,13 @@ libttaR_pcm_write(
 	size_t r = 0;
 
 	switch ( samplebytes ){
-	case 1u:
+	case TTASAMPLEBYTES_1:
 		r = pcm_write_u8(dest, src, nsamples);
 		break;
-	case 2u:
+	case TTASAMPLEBYTES_2:
 		r = pcm_write_i16le(dest, src, nsamples);
 		break;
-	case 3u:
+	case TTASAMPLEBYTES_3:
 		r = pcm_write_i24le(dest, src, nsamples);
 		break;
 	}

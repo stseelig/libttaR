@@ -27,8 +27,8 @@ enum TTASampleBytes {
 	TTASAMPLEBYTES_2 = 2u,
 	TTASAMPLEBYTES_3 = 3u
 };
-#define TTA_SAMPLEBYTES_MAX	((enum TTASampleBytes) 3u)
-#define TTA_SAMPLEBITS_MAX	24u
+#define TTA_SAMPLEBYTES_MAX	TTASAMPLEBYTES_3
+#define TTA_SAMPLEBITS_MAX	((uint) 8*TTA_SAMPLEBYTES_MAX)
 #endif
 
 // unary + binary
@@ -120,11 +120,11 @@ tta_predict_k(register enum TTASampleBytes samplebytes)
 	register u8 r;
 
 	switch ( samplebytes ){
-	case 1u:
+	case TTASAMPLEBYTES_1:
 		r = (u8) 4u;
 		break;
-	case 2u:
-	case 3u:
+	case TTASAMPLEBYTES_2:
+	case TTASAMPLEBYTES_3:
 		r = (u8) 5u;
 		break;
 	}
@@ -138,11 +138,11 @@ tta_filter_round(register enum TTASampleBytes samplebytes)
 	register i32 r;
 
 	switch ( samplebytes ){
-	case 1u:
-	case 3u:
+	case TTASAMPLEBYTES_1:
+	case TTASAMPLEBYTES_3:
 		r = (i32) shift32_bit((u8) 9u);
 		break;
-	case 2u:
+	case TTASAMPLEBYTES_2:
 		r = (i32) shift32_bit((u8) 8u);
 		break;
 	}
@@ -156,11 +156,11 @@ tta_filter_k(register enum TTASampleBytes samplebytes)
 	register u8 r;
 
 	switch ( samplebytes ){
-	case 1u:
-	case 3u:
+	case TTASAMPLEBYTES_1:
+	case TTASAMPLEBYTES_3:
 		r = (u8) 10u;
 		break;
-	case 2u:
+	case TTASAMPLEBYTES_2:
 		r = (u8) 9u;
 		break;
 	}
