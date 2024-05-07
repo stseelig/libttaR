@@ -20,13 +20,6 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-// common
-
-/*@checkmod@*/
-extern struct FileStats g_fstat;
-
-//--------------------------------------------------------------------------//
-
 /*@unchecked@*/
 extern const struct OptDict tta2enc_optdict[];
 
