@@ -40,8 +40,8 @@ seektable_init(/*@out@*/ struct SeekTable *const restrict st, size_t nframes)
 	st->nmemb = 0;
 	st->limit = (nframes != 0 ? nframes : SEEKTABLE_INIT_DEFAULT);
 	st->table = calloc(st->limit, sizeof *(st->table));
-	if ( st->table == NULL ){
-		error_sys(errno, "calloc", strerror(errno), NULL);
+	if UNLIKELY ( st->table == NULL ){
+		error_sys(errno, "calloc", NULL);
 	}
 	return;
 }
@@ -66,9 +66,7 @@ seektable_add(
 			st->table, st->limit, (sizeof *(st->table))
 		);
 		if UNLIKELY ( st->table == NULL ){
-			error_sys(
-				errno, "reallocarray", strerror(errno), NULL
-			);
+			error_sys(errno, "reallocarray", NULL);
 		}
 	}
 	assert(st->table != NULL);

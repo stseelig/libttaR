@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -21,38 +21,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <sys/resource.h>
-
 #include "../splint.h"
 
 #include "debug.h"
 #include "formats.h"	// FileCheck, FileStats, guid128_format
 #include "main.h"
-
-//////////////////////////////////////////////////////////////////////////////
-
-static int inc_nwarnings(void)
-/*@globals	g_nwarnings@*/
-/*@modifies	g_nwarnings@*/
-;
-
-static bool try_fdlimit(void)
-/*@globals	fileSystem,
-		internalState
-@*/
-/*@modifies	fileSystem,
-		internalState
-@*/
-;
-
-static void fdlimit_check(void)
-/*@globals	fileSystem,
-		internalState
-@*/
-/*@modifies	fileSystem,
-		internalState
-@*/
-;
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -71,7 +44,7 @@ static int inc_nwarnings(void)
 void
 print_error_sys(
 	enum Fatality fatality, int errnum, const char *const name,
-	/*@null@*/ const char *const msg0, /*@null@*/ const char *const msg1
+	/*@null@*/ const char *const extra
 )
 /*@globals	fileSystem,
 		g_nwarnings
@@ -80,20 +53,24 @@ print_error_sys(
 		g_nwarnings
 @*/
 {
-	union {
-		int d;
-	} t;
+	#define BUFLEN	((size_t) 128)
+	char buf[BUFLEN];
+	union {	int d; } t;
 
+	flockfile(stdout);
+	flockfile(stderr);
+	//
 	(void) fprintf(stderr, T_B_DEFAULT "%s: ", g_argv[0]);
 	(void) fprintf(stderr, T_B_RED "error:" T_B_DEFAULT " ");
-	(void) fprintf(stderr, "%s: (%d)", name, errnum);
-	if ( msg0 != NULL ){
-		(void) fprintf(stderr, " %s", msg0);
-	}
-	if ( msg1 != NULL ){
-		(void) fprintf(stderr, ": %s", msg1);
+	(void) fprintf(stderr, "%s: (%d) ", name, errnum);
+	(void) fputs(strerror_r(errnum, buf, BUFLEN), stderr);
+	if ( extra != NULL ){
+		(void) fprintf(stderr, ": %s", extra);
 	}
 	(void) fprintf(stderr, " " T_B_RED "!" T_RESET "\n");
+	//
+	funlockfile(stdout);
+	funlockfile(stderr);
 
 	t.d = inc_nwarnings();
 	if ( fatality == FATAL ){
@@ -112,16 +89,20 @@ print_error_tta(enum Fatality fatality, const char *const format, ...)
 @*/
 {
 	va_list args;
-	union {
-		int d;
-	} t;
+	union {	int d; } t;
 
 	va_start(args, format);
 
+	flockfile(stdout);
+	flockfile(stderr);
+	//
 	(void) fprintf(stderr, T_B_DEFAULT "%s: ", g_argv[0]);
 	(void) fprintf(stderr, T_B_RED "error:" T_B_DEFAULT " ");
 	(void) vfprintf(stderr, format, args);
 	(void) fprintf(stderr, " " T_B_RED "!" T_RESET "\n");
+	//
+	funlockfile(stdout);
+	funlockfile(stderr);
 
 	t.d = inc_nwarnings();
 	if ( fatality == FATAL ){
@@ -143,10 +124,16 @@ warning_tta(const char *const format, ...)
 
 	va_start(args, format);
 
+	flockfile(stdout);
+	flockfile(stderr);
+	//
 	(void) fprintf(stderr, T_B_DEFAULT "%s: ", g_argv[0]);
 	(void) fprintf(stderr, T_B_YELLOW "warning:" T_B_DEFAULT " ");
 	(void) vfprintf(stderr, format, args);
 	(void) fprintf(stderr, " " T_B_YELLOW "!" T_RESET "\n");
+	//
+	funlockfile(stdout);
+	funlockfile(stderr);
 
 	va_end(args);
 
@@ -175,10 +162,10 @@ error_filecheck(
 		error_tta_nf("%s: OK", filename);
 		break;
 	case FILECHECK_READ_ERROR:
-		error_sys_nf(errnum, "fread", strerror(errnum), filename);
+		error_sys_nf(errnum, "fread", filename);
 		break;
 	case FILECHECK_SEEK_ERROR:
-		error_sys_nf(errnum, "fseeko", strerror(errnum), filename);
+		error_sys_nf(errnum, "fseeko", filename);
 		break;
 	case FILECHECK_MISMATCH:
 		error_tta_nf("%s: unsupported filetype", filename);
@@ -209,86 +196,6 @@ error_filecheck(
 		);
 		break;
 	}
-	return;
-}
-
-//==========================================================================//
-
-/*@dependent@*/ /*@null@*/
-FILE
-*fopen_check(const char *pathname, const char *mode, enum Fatality fatality)
-/*@globals	fileSystem,
-		internalState
-@*/
-/*@modifies	fileSystem,
-		internalState
-@*/
-{
-	FILE *r;
-
-try_again:
-	r = fopen(pathname, mode);
-	if ( r == NULL ){
-		if ( try_fdlimit() ){ goto try_again; }
-		else {	print_error_sys(
-				fatality, errno, "fopen", strerror(errno),
-				pathname
-			);
-		}
-	}
-	return r;
-}
-
-//--------------------------------------------------------------------------//
-
-// true:  continue
-// false: fallthrough
-static bool
-try_fdlimit(void)
-/*@globals	fileSystem,
-		internalState
-@*/
-/*@modifies	fileSystem,
-		internalState
-@*/
-{
-	static bool tried;
-
-	if ( ! tried ){
-		fdlimit_check();
-		tried = true;
-		return true;
-	}
-	return false;
-}
-
-// attempt to increase the open-file limit
-static void
-fdlimit_check(void)
-/*@globals	fileSystem,
-		internalState
-@*/
-/*@modifies	fileSystem,
-		internalState
-@*/
-{
-	struct rlimit limit;
-	union {
-		int d;
-	} t;
-
-	t.d = getrlimit((int) RLIMIT_NOFILE, &limit);
-	if ( t.d != 0 ){
-		error_sys(errno, "getrlimit", strerror(errno), NULL);
-	}
-
-	limit.rlim_cur = limit.rlim_max;
-
-	t.d = setrlimit((int) RLIMIT_NOFILE, &limit);
-	if ( t.d != 0 ){
-		error_sys(errno, "setrlimit", strerror(errno), NULL);
-	}
-
 	return;
 }
 

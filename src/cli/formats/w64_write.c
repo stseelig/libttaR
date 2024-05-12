@@ -33,28 +33,24 @@ prewrite_w64_header(FILE *const restrict outfile, const char *outfile_name)
 		outfile
 @*/
 {
-	union {
-		int	d;
-	} t;
+	union {	int d; } t;
 
 	t.d = fflush(outfile);
-	if ( t.d != 0 ){
-		error_sys_nf(errno, "fflush", strerror(errno), outfile_name);
+	if UNLIKELY ( t.d != 0 ){
+		error_sys(errno, "fflush", outfile_name);
 	}
 
 	t.d = ftruncate(
 		fileno(outfile),
 		(off_t) sizeof(struct Riff64Header_WriteTemplate)
 	);
-	if ( t.d != 0 ){
-		error_sys_nf(
-			errno, "ftruncate", strerror(errno), outfile_name
-		);
+	if UNLIKELY ( (t.d != 0) && (errno != EINVAL) ){	// /dev/null
+		error_sys(errno, "ftruncate", outfile_name);
 	}
 
 	t.d = fseeko(outfile, 0, SEEK_END);
-	if ( t.d != 0 ){
-		error_sys_nf(errno, "fseeko", strerror(errno), outfile_name);
+	if UNLIKELY ( t.d != 0 ){
+		error_sys(errno, "fseeko", outfile_name);
 	}
 
 	return;
@@ -72,9 +68,7 @@ write_w64_header(
 @*/
 {
 	struct Riff64Header_WriteTemplate wt;
-	union {
-		int	z;
-	} t;
+	union {	int z; } t;
 
 	// riff/wave header
 	(void) memcpy(
@@ -98,8 +92,8 @@ write_w64_header(
 	wt.data.size	= htole64(data_size + (sizeof wt.data));
 
 	t.z = fwrite(&wt, sizeof wt, (size_t) 1, outfile);
-	if ( t.z != (size_t) 1 ){
-		error_sys_nf(errno, "fwrite", strerror(errno), outfile_name);
+	if UNLIKELY ( t.z != (size_t) 1 ){
+		error_sys_nf(errno, "fwrite", outfile_name);
 	}
 
 	return;

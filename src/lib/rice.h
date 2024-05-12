@@ -52,7 +52,8 @@ extern const u32 lsmask32_table[];
 #undef rice
 INLINE void
 rice_init(
-	register struct Rice *const restrict rice, register u8, register u8
+	/*@out@*/ register struct Rice *const restrict rice, register u8,
+	register u8
 )
 /*@modifies	*rice@*/
 ;
@@ -211,7 +212,7 @@ ALWAYS_INLINE size_t rice_binary_get(
 
 INLINE void
 rice_init(
-	register struct Rice *const restrict rice, register u8 k0,
+	/*@out@*/ register struct Rice *const restrict rice, register u8 k0,
 	register u8 k1
 )
 /*@modifies	*rice@*/
@@ -321,11 +322,10 @@ rice_encode(
 	register  u8 *const restrict k1    = &rice->k[1];
 	register u32 *const restrict cache = &bitcache->cache;
 	register  u8 *const restrict count = &bitcache->count;
+
 	register u32 unary = 0, binary;
 	register  u8 kx;
-	register union {
-		u32 u_32;
-	} t;
+	register union { u32 u_32; } t;
 
 	kx = *k0;
 	rice_cmpsum(sum0, k0, value);
@@ -447,6 +447,7 @@ rice_decode(
 	register  u8 *const restrict k1    = &rice->k[1];
 	register u32 *const restrict cache = &bitcache->cache;
 	register  u8 *const restrict count = &bitcache->count;
+
 	u32 unary, binary;
 	register  u8 kx;
 	register bool depth1;
@@ -492,9 +493,7 @@ rice_unary_get(
 		*crc
 @*/
 {
-	register union {
-		u8 u_8;
-	} t;
+	register union { u8 u_8; } t;
 
 	// switched initial value from 0, because in rice_decode, depth1 is
 	//  much more likely than not; moved a '--unary' in the depth1 branch

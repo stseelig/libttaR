@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -41,16 +41,15 @@ filecheck_tta_seektable(
 @*/
 {
 	u32 crc;
-	union {
-		size_t	z;
+	union {	size_t	z;
 		int	d;
 		u32	u32;
 	} t;
 
 	st->nmemb = nframes;
 	st->table = calloc(st->nmemb, sizeof *st->table);
-	if ( st->table == NULL ){
-		error_sys(errno, "calloc", strerror(errno), NULL);
+	if UNLIKELY ( st->table == NULL ){
+		error_sys(errno, "calloc", NULL);
 	}
 	assert(st->table != NULL);
 

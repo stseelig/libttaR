@@ -43,8 +43,7 @@ filecheck_wav(
 		struct RiffChunkHeader_Wave	wave;
 	} chunk;
 	const off_t start = ftello(file);
-	union {
-		size_t		z;
+	union {	size_t		z;
 		int		d;
 		enum FileCheck	fc;
 	} t;
@@ -100,7 +99,7 @@ filecheck_wav(
 		return FILECHECK_READ_ERROR;
 	}
 
-	fstat->decfmt      = FORMAT_WAV;
+	fstat->decfmt      = DECFMT_WAV;
 	fstat->decpcm_off  = ftello(file);
 	fstat->decpcm_size = (size_t) letoh32(chunk.rh.size);
 
@@ -120,10 +119,9 @@ filecheck_wav_read_subchunk_fmt(
 		struct RiffSubChunk_WaveFormatExtensible_Tail	wfx;
 	} chunk;
 	u16 format;
-	union {
-		size_t		z;
-		off_t		o;
-		int		d;
+	union {	size_t	z;
+		off_t	o;
+		int	d;
 	} t;
 
 	t.z = fread(&chunk.fmt, sizeof chunk.fmt, (size_t) 1, file);
@@ -195,8 +193,7 @@ filecheck_wav_find_subchunk(
 /*@modifies	file@*/
 {
 	struct RiffHeader rh;
-	union {
-		size_t	z;
+	union {	size_t	z;
 		int	d;
 	} t;
 

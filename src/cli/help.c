@@ -31,8 +31,9 @@ static const char help_tta2enc_opts[] = {
 "\t"    "-d, --delete-src\t\t"          "delete infiles\n"
 "\t"    "-o, --outfile=FILE|DIR\t\t"    "set outfile name or directory\n"
 "\t"    "-q, --quiet\t\t\t"             "only warnings and errors printed\n"
-"\t"    "    --rawpcm=FMT,SR,NCHAN\t"   "rawpcm file stats\n"
-"\t\t"          "FMT: u8, i16le, i24le\n"
+"\t"    "    --rawpcm=FMT,SRATE,NCHAN\t""rawpcm file stats\n"
+"\t\t"          "  FMT: u8, i16le, i24le\n"
+
 };
 
 /*@unchecked@*/

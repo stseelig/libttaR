@@ -89,7 +89,7 @@ opt_tta2dec_format(uint optind, char *opt, enum OptMode mode)
 	case OPTMODE_LONG:
 		(void) strtok(opt, "=");
 		subopt = strtok(NULL, "");
-		if ( subopt == NULL ){
+		if UNLIKELY ( subopt == NULL ){
 			error_tta("%s: missing %s field",
 				"--format", "format"
 			);
@@ -103,7 +103,7 @@ opt_tta2dec_format(uint optind, char *opt, enum OptMode mode)
 			g_flag.decfmt = (enum DecFormat) i;
 			break;
 		}
-		else if ( i == NUM_DECFMT - 1u ){
+		else if UNLIKELY ( i == NUM_DECFMT - 1u ){
 			error_tta("%s: bad %s: %s",
 				mode == OPTMODE_SHORT ? "-f" : "--format",
 				"format", subopt

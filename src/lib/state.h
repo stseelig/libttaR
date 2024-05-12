@@ -41,6 +41,16 @@ struct LibTTAr_CodecState_User {
 	size_t	nbytes_tta_total;	// ~
 };
 
+// TODO
+//struct LibTTAr_CodecState_User {
+//	u32	ncalls_codec;		// num calls to the codec function
+//	u32	crc;
+//	size_t	ni32;			// enc: num read, dec: num written
+//	size_t	ni32_total;		// ~
+//	size_t	nbytes_tta;		// enc: num written, dec: num read
+//	size_t	nbytes_tta_total;	// ~
+//};
+
 //////////////////////////////////////////////////////////////////////////////
 
 INLINE void

@@ -43,8 +43,7 @@ filecheck_w64(
 		struct Riff64ChunkHeader_Wave	wave;
 	} chunk;
 	const off_t start = ftello(file);
-	union {
-		size_t		z;
+	union {	size_t		z;
 		int		d;
 		enum FileCheck	fc;
 	} t;
@@ -102,7 +101,7 @@ filecheck_w64(
 		return FILECHECK_READ_ERROR;
 	}
 
-	fstat->decfmt      = FORMAT_W64;
+	fstat->decfmt      = DECFMT_W64;
 	fstat->decpcm_off  = ftello(file);
 	fstat->decpcm_size = (size_t) letoh64(
 		chunk.rh.size - sizeof(struct Riff64Header)
@@ -120,8 +119,7 @@ filecheck_w64_find_subchunk(
 /*@modifies	file@*/
 {
 	struct Riff64Header rh;
-	union {
-		size_t	z;
+	union {	size_t	z;
 		int	d;
 	} t;
 

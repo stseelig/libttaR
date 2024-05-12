@@ -68,7 +68,7 @@ opt_common_outfile(uint optind, char *opt, enum OptMode mode)
 	case OPTMODE_LONG:
 		(void) strtok(opt, "=");
 		subopt = strtok(NULL, "");
-		if ( subopt == NULL ){
+		if UNLIKELY ( subopt == NULL ){
 			error_tta("%s: missing %s field",
 				"--format", "format"
 			);

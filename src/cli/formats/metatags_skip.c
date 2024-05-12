@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -106,8 +106,7 @@ apetag_skip(FILE *const restrict file)
 {
 	struct ApeTagHF h;
 	off_t start;
-	union {
-		size_t	z;
+	union {	size_t	z;
 		int	d;
 	} t;
 
@@ -153,8 +152,7 @@ id3tag_skip(FILE *const restrict file)
 {
 	struct ID3TagHeader h;
 	off_t start;
-	union {
-		size_t	z;
+	union {	size_t	z;
 		int	d;
 	} t;
 

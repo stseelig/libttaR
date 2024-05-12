@@ -9,6 +9,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
+#include <stdbool.h>	// true
 #include <stdlib.h>	// atoll, exit
 #include <string.h>	// strtok
 
@@ -100,9 +101,7 @@ opt_tta2enc_rawpcm(
 #endif
 
 	char *subopt;
-	union {
-		longlong ll;
-	} t;
+	union {	longlong ll; } t;
 
 	memset(&f_rpstat, 0x00, sizeof f_rpstat);
 
@@ -110,7 +109,7 @@ opt_tta2enc_rawpcm(
 
 	// format
 	subopt = strtok(NULL, ",");
-	if ( subopt == NULL ){
+	if UNLIKELY ( subopt == NULL ){
 		error_tta("%s: missing %s field", "--rawpcm", "format");
 	}
 
@@ -128,16 +127,18 @@ opt_tta2enc_rawpcm(
 		f_rpstat.samplebits = 24u;
 		f_rpstat.endian     = xENDIAN_LITTLE;
 	}
-	else {	error_tta("%s: unsupported format: %s", "--rawpcm", subopt); }
+	else if UNLIKELY ( true ) {
+		error_tta("%s: unsupported format: %s", "--rawpcm", subopt);
+	}else{;}
 
 	// samplerate
 	subopt = strtok(NULL, ",");
-	if ( subopt == NULL ){
+	if UNLIKELY ( subopt == NULL ){
 		error_tta("%s: missing %s field", "--rawpcm", "samplerate");
 	}
 
 	t.ll = atoll(subopt);
-	if ( (t.ll <= 0) || (t.ll > UINT32_MAX) ){
+	if UNLIKELY ( (t.ll <= 0) || (t.ll > UINT32_MAX) ){
 		error_tta("%s: %s out of range: %lld",
 			"--rawpcm", "samplerate", t.ll
 		);
@@ -146,12 +147,12 @@ opt_tta2enc_rawpcm(
 
 	// nchan
 	subopt = strtok(NULL, ",");
-	if ( subopt == NULL ){
+	if UNLIKELY ( subopt == NULL ){
 		error_tta("%s: missing %s field", "--rawpcm", "nchan");
 	}
 
 	t.ll = atoll(subopt);
-	if ( (t.ll <= 0) || (t.ll > UINT16_MAX) ){
+	if UNLIKELY ( (t.ll <= 0) || (t.ll > UINT16_MAX) ){
 		error_tta("%s: %s out of range: %lld",
 			"--rawpcm", "nchan", t.ll
 		);
@@ -159,7 +160,7 @@ opt_tta2enc_rawpcm(
 	f_rpstat.nchan = (u16) t.ll;
 
 	// decfmt
-	f_rpstat.decfmt = FORMAT_RAWPCM;
+	f_rpstat.decfmt = DECFMT_RAWPCM;
 
 	g_flag.rawpcm = true;
 	return 0;

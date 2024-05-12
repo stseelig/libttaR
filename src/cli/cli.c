@@ -211,9 +211,7 @@ errprint_spinner(void)
 	static uint i = 0;
 
 	(void) fwrite(&spinner[i], (size_t) 2, (size_t) 1, stderr);
-	if ( (i += 2u) == (uint) (sizeof spinner) ){
-		i = 0;
-	}
+	i = (i + 2u != (uint) sizeof spinner ? i + 2u : 0);
 	return;
 }
 
@@ -380,13 +378,13 @@ decfmt_name(enum DecFormat fmt)
 	const char *r;
 
 	switch( fmt ){
-	case FORMAT_RAWPCM:
+	case DECFMT_RAWPCM:
 		r = "raw";
 		break;
-	case FORMAT_W64:
+	case DECFMT_W64:
 		r = "w64";
 		break;
-	case FORMAT_WAV:
+	case DECFMT_WAV:
 		r = "wav";
 		break;
 	}
@@ -401,7 +399,7 @@ encfmt_name(enum EncFormat fmt)
 	const char *r;
 
 	switch( fmt ){
-	case FORMAT_TTA1:
+	case ENCFMT_TTA1:
 		r = "tta1";
 		break;
 	}

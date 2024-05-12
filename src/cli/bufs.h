@@ -22,22 +22,22 @@
 struct EncBuf {
 	size_t	i32buf_len;
 	size_t	ttabuf_len;
-	/*@only@*/ /*@relnull@*/
+	/*@only@*/
 	i32	*i32buf;
-	/*@dependent@*/ /*@relnull@*/
+	/*@dependent@*/
 	u8	*pcmbuf;
-	/*@only@*/ /*@relnull@*/
+	/*@only@*/
 	u8	*ttabuf;
 };
 
 struct DecBuf {
 	size_t	i32buf_len;
 	size_t	ttabuf_len;
-	/*@only@*/ /*@relnull@*/
+	/*@only@*/
 	u8	*pcmbuf;
-	/*@dependent@*/ /*@relnull@*/
+	/*@dependent@*/
 	i32	*i32buf;
-	/*@only@*/ /*@relnull@*/
+	/*@only@*/
 	u8	*ttabuf;
 };
 
@@ -61,6 +61,20 @@ extern size_t encbuf_init(
 ;
 
 #undef eb
+extern void encbuf_adjust(
+	struct EncBuf *const restrict eb, uint, enum TTASampleBytes
+)
+/*@globals	fileSystem,
+		internalState
+@*/
+/*@modifies	fileSystem,
+		internalState,
+		eb->ttabuf_len,
+		eb->ttabuf
+@*/
+;
+
+#undef eb
 extern void encbuf_free(struct EncBuf *const restrict eb)
 /*@globals		internalState@*/
 /*@modifies		internalState,
@@ -69,11 +83,9 @@ extern void encbuf_free(struct EncBuf *const restrict eb)
 /*@releases		eb->i32buf,
 			eb->ttabuf
 @*/
-/*@ensures isnull	eb->ttabuf,
-			eb->i32buf,
-			eb->pcmbuf
-@*/
 ;
+
+//--------------------------------------------------------------------------//
 
 #undef db
 extern size_t decbuf_init(
@@ -99,10 +111,6 @@ extern void decbuf_free(struct DecBuf *const restrict db)
 			*db
 @*/
 /*@releases		db->pcmbuf,
-			db->ttabuf
-@*/
-/*@ensures isnull	db->pcmbuf,
-			db->i32buf,
 			db->ttabuf
 @*/
 ;

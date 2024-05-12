@@ -9,8 +9,8 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// i32buf and pcmbuf overlap to save space                                  //
-// all pointers are aligned to 16                                           //
+//      i32buf and pcmbuf overlap to save space                             //
+//      all pointers are aligned to 16                                      //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
@@ -22,19 +22,23 @@
 #include "../bits.h"
 #include "../libttaR.h"
 
-#include "bufs.h"	// struct EncBuf, struct DecBuf
+#include "bufs.h"
 #include "debug.h"
+#include "main.h"
 
 //////////////////////////////////////////////////////////////////////////////
 
+// value is 16, because aligning buf to 16
 #define I32BUF_SAFETY_MARGIN	((size_t) 16)
 
 //////////////////////////////////////////////////////////////////////////////
 
-// returns buflen (for sanity check)
+// single-threaded
+
+// returns (samplebuf_len * nchan) (for sanity check)
 size_t
 encbuf_init(
-	/*@out@*/ struct EncBuf *const restrict eb, size_t buflen,
+	/*@out@*/ struct EncBuf *const restrict eb, size_t samplebuf_len,
 	uint nchan, enum TTASampleBytes samplebytes
 )
 /*@globals	fileSystem,
@@ -48,36 +52,64 @@ encbuf_init(
 		eb->ttabuf
 @*/
 {
-	size_t r;
-	size_t pcmbuf_size;
-	union {
-		uintptr_t p;
-	} t;
-
-	r = (size_t) (buflen * nchan);
+	const size_t r = (size_t) (samplebuf_len * nchan);
+	const size_t pcmbuf_size = (size_t) (r * samplebytes);
+	union {	uintptr_t p; } t;
 
 	eb->i32buf_len = r + I32BUF_SAFETY_MARGIN;
-	eb->ttabuf_len = libttaR_ttabuf_size(buflen, nchan, samplebytes);
+	eb->ttabuf_len = libttaR_ttabuf_size(
+		samplebuf_len, nchan, samplebytes
+	);
 	assert(eb->ttabuf_len != 0);
 
-	eb->i32buf = calloc(eb->i32buf_len, sizeof(i32));
-	if ( eb->i32buf == NULL ){
-		error_sys(errno, "calloc", strerror(errno), NULL);
+	eb->i32buf = calloc(eb->i32buf_len, sizeof *eb->i32buf);
+	if UNLIKELY ( eb->i32buf == NULL ){
+		error_sys(errno, "calloc", NULL);
 	}
 	assert(eb->i32buf != NULL);
 
-	pcmbuf_size = (size_t) (r * samplebytes);
 	t.p	    = (uintptr_t) &eb->i32buf[eb->i32buf_len];
 	t.p        -= pcmbuf_size + 1u;
-	eb->pcmbuf  =  (u8 *) (t.p - (t.p % 16u));
+	eb->pcmbuf  = (u8 *) (t.p - (t.p % 16u));
 
 	eb->ttabuf = malloc(eb->ttabuf_len);
-	if ( eb->ttabuf == NULL ){
-		error_sys(errno, "malloc", strerror(errno), NULL);
+	if UNLIKELY ( eb->ttabuf == NULL ){
+		error_sys(errno, "malloc", NULL);
 	}
 	assert(eb->ttabuf != NULL);
 
 	return r;
+}
+
+// for multi-threaded
+void
+encbuf_adjust(
+	struct EncBuf *const restrict eb, uint nchan,
+	enum TTASampleBytes samplebytes
+)
+/*@globals	fileSystem,
+		internalState
+@*/
+/*@modifies	internalState,
+		eb->ttabuf_len,
+		eb->ttabuf
+@*/
+{
+	union {	size_t z; } t;
+
+	t.z = libttaR_ttabuf_size(
+		G_SAMPLEBUF_LEN_DEFAULT, nchan, samplebytes
+	);
+	assert(t.z != 0);
+	eb->ttabuf_len += t.z;
+
+	eb->ttabuf = realloc(eb->ttabuf, eb->ttabuf_len);
+	if UNLIKELY ( eb->ttabuf == NULL ){
+		error_sys(errno, "realloc", NULL);
+	}
+	assert(eb->ttabuf != NULL);
+
+	return;
 }
 
 void
@@ -89,28 +121,19 @@ encbuf_free(struct EncBuf *const restrict eb)
 /*@releases		eb->i32buf,
 			eb->ttabuf
 @*/
-/*@ensures isnull	eb->ttabuf,
-			eb->i32buf,
-			eb->pcmbuf
-@*/
 {
-	if ( eb->i32buf != NULL ){
-		free(eb->i32buf);
-	}
-	if ( eb->ttabuf != NULL ){
-		free(eb->ttabuf);
-	}
-	memset(eb, 0x00, sizeof *eb);
+	free(eb->i32buf);
+	free(eb->ttabuf);
 	return;
 }
 
 //==========================================================================//
 
-// returns buflen (for sanity check)
+// returns (samplebuf_len * nchan) (for sanity check)
 size_t
 decbuf_init(
-	/*@out@*/ struct DecBuf *const restrict db, size_t buflen, uint nchan,
-	enum TTASampleBytes samplebytes
+	/*@out@*/ struct DecBuf *const restrict db, size_t samplebuf_len,
+	uint nchan, enum TTASampleBytes samplebytes
 )
 /*@globals	fileSystem,
 		internalState
@@ -123,27 +146,37 @@ decbuf_init(
 		db->ttabuf
 @*/
 {
-	const size_t r = buflen * nchan;
+	const size_t r = samplebuf_len * nchan;
 
 	db->i32buf_len = r;
-	db->ttabuf_len = libttaR_ttabuf_size(buflen, nchan, samplebytes);
+	db->ttabuf_len = libttaR_ttabuf_size(
+		samplebuf_len, nchan, samplebytes
+	);
 	assert(db->ttabuf_len != 0);
 
 	db->pcmbuf = calloc(r + I32BUF_SAFETY_MARGIN, sizeof(i32));
-	if ( db->pcmbuf == NULL ){
-		error_sys(errno, "calloc", strerror(errno), NULL);
+	if UNLIKELY ( db->pcmbuf == NULL ){
+		error_sys(errno, "calloc", NULL);
 	}
 	assert(db->pcmbuf != NULL);
 
 	db->i32buf = (i32 *) &db->pcmbuf[I32BUF_SAFETY_MARGIN * sizeof(i32)];
 
 	db->ttabuf = malloc(db->ttabuf_len);
-	if ( db->ttabuf == NULL ){
-		error_sys(errno, "malloc", strerror(errno), NULL);
+	if UNLIKELY ( db->ttabuf == NULL ){
+		error_sys(errno, "malloc", NULL);
 	}
 	assert(db->ttabuf != NULL);
 
 	return r;
+}
+
+// for multi-threaded
+void
+decbuf_adjust()
+// TODO
+{
+	return;
 }
 
 void
@@ -155,18 +188,9 @@ decbuf_free(struct DecBuf *const restrict db)
 /*@releases		db->pcmbuf,
 			db->ttabuf
 @*/
-/*@ensures isnull	db->pcmbuf,
-			db->i32buf,
-			db->ttabuf
-@*/
 {
-	if ( db->pcmbuf != NULL ){
-		free(db->pcmbuf);
-	}
-	if ( db->pcmbuf != NULL ){
-		free(db->ttabuf);
-	}
-	memset(db, 0x00, sizeof *db);
+	free(db->pcmbuf);
+	free(db->ttabuf);
 	return;
 }
 

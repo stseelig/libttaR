@@ -23,17 +23,17 @@
 //////////////////////////////////////////////////////////////////////////////
 
 enum EncFormat {
-	FORMAT_TTA1,
-	//FORMAT_TTA2,
-	//FORMAT_MKA_TTA1,
-	//FORMAT_MKA_TTA2
+	ENCFMT_TTA1
+	//ENCFMT_TTA2
+	//ENCFMT_MKA_TTA1
+	//ENCFMT_MKA_TTA2
 };
 
 enum DecFormat {
-	FORMAT_RAWPCM,
-	FORMAT_WAV,		// Microsoft RIFF/WAVE
-	FORMAT_W64,		// Sony Wave64
-	//FORMAT_MKA_PCM
+	DECFMT_RAWPCM,
+	DECFMT_WAV,
+	DECFMT_W64
+	//DECFMT_MKA_PCM
 };
 
 enum IntType {
@@ -76,14 +76,14 @@ struct FileStats {
 	off_t			enctta_off;	// end of tta header
 	size_t			enctta_size;
 	//
-	size_t			framelen;
+	size_t			framelen;	// nsamples_peridealframe
 	size_t			buflen;		// framelen * nchan
 	enum EncFormat		encfmt:8;
 	enum DecFormat		decfmt:8;
 	enum IntType		inttype:8;
-	u16			samplebits:8;
-	enum TTASampleBytes	samplebytes:8;
 	enum Endian		endian:8;
+	enum TTASampleBytes	samplebytes:8;
+	u16			samplebits;
 	u16			nchan;
 	u32			samplerate;
 	u32			chanmask_wav;
@@ -94,19 +94,19 @@ struct FileStats {
 };
 
 struct EncStats {
-	double	encodetime;
 	size_t	nframes;
 	size_t	nsamples;
 	size_t	nsamples_perchan;	// for overflow protection
 	size_t	nbytes_encoded;
+	double	encodetime;
 };
 
 struct DecStats {
-	double	decodetime;
 	size_t	nframes;
 	size_t	nsamples;
 	size_t	nsamples_perchan;	// for overflow protection
 	size_t	nbytes_decoded;
+	double	decodetime;
 };
 
 //////////////////////////////////////////////////////////////////////////////

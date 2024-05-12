@@ -73,8 +73,7 @@ tta2dec(uint optind)
 	uint nerrors_file = 0;
 	struct timespec ts_start, ts_stop;
 	size_t i;
-	union {
-		int	d;
+	union {	int	d;
 		bool	b;
 	} t;
 
@@ -107,7 +106,7 @@ tta2dec(uint optind)
 			continue;
 		}
 
-		if ( ! libttaR_test_nchan((uint) ofm->fstat.nchan) ){
+		if UNLIKELY ( ! libttaR_test_nchan((uint) ofm->fstat.nchan) ){
 			++nerrors_file;
 			error_tta_nf("%s: libttaR built without support for"
 				" nchan of %u", ofm->infile_name,
@@ -129,7 +128,8 @@ tta2dec(uint optind)
 	}
 
 	// additional error check(s)
-	if ( (g_flag.outfile != NULL)
+	if UNLIKELY (
+	     (g_flag.outfile != NULL)
 	    &&
 	     (openedfiles.nmemb > (size_t) 1)
 	    &&
@@ -154,15 +154,15 @@ tta2dec(uint optind)
 		openedfiles.file[i]->infile = NULL;
 		if ( g_flag.delete_src ){
 			t.d = remove(openedfiles.file[i]->infile_name);
-			if ( t.d != 0 ){
+			if UNLIKELY ( t.d != 0 ){
 				error_sys_nf(
-					errno, "remove", strerror(errno),
+					errno, "remove",
 					openedfiles.file[i]->infile_name
 				);
 			}
 		}
 	}
-	if ( openedfiles.nmemb == 0 ){
+	if UNLIKELY ( openedfiles.nmemb == 0 ){
 		warning_tta("nothing to do");
 	}
 
@@ -175,10 +175,9 @@ tta2dec(uint optind)
 		);
 	}
 
-//#ifndef NDEBUG
 	// cleanup
 	openedfiles_close_free(&openedfiles);
-//#endif
+
 	return (int) g_nwarnings;
 }
 
@@ -194,45 +193,24 @@ tta2dec_loop(struct OpenedFilesMember *const restrict ofm)
 @*/
 {
 	FILE *const restrict infile = ofm->infile;
-	const char *const restrict infile_name = ofm->infile_name;
+	const char *const infile_name = ofm->infile_name;
 	struct FileStats *const restrict fstat = &ofm->fstat;
 	//
 	FILE *restrict outfile = NULL;
-	char *outfile_name = NULL;
-	const char *outfile_dir  = NULL;
-	const char *outfile_sfx  = NULL;
-	//
-	struct LibTTAr_CodecState_Priv *state_priv;
-	struct LibTTAr_CodecState_User state_user;
+	char *const restrict outfile_name = get_outfile_name(
+		infile_name, get_decfmt_sfx(fstat->decfmt)
+	);
 	//
 	struct DecStats dstat;
 	struct SeekTable seektable;
-	struct DecBuf decbuf;
 	bool ignore_seektable = false;
 	struct timespec ts_start, ts_stop;
-	union {
-		size_t		z;
+	union {	size_t		z;
+		int		d;
 		enum FileCheck	fc;
 	} t;
 
-	// set outfile_name
 	fstat->decfmt = g_flag.decfmt;
-	if ( g_flag.outfile != NULL ){
-		if ( g_flag.outfile_is_dir ){
-			outfile_dir  = g_flag.outfile;
-			outfile_name = (char *) infile_name;
-			outfile_sfx  = get_outfile_sfx(fstat->decfmt);
-		}
-		else {	outfile_name = (char *) g_flag.outfile;
-		}
-	}
-	else {	outfile_name = (char *) infile_name;
-		outfile_sfx  = get_outfile_sfx(fstat->decfmt);
-	}
-	outfile_name = outfile_name_fmt(
-		outfile_dir, outfile_name, outfile_sfx
-	);
-	g_rm_on_sigint = outfile_name;
 	//
 	switch ( fstat->samplebytes ){
 	case 1u:
@@ -243,6 +221,7 @@ tta2dec_loop(struct OpenedFilesMember *const restrict ofm)
 		fstat->inttype = INT_SIGNED;
 		break;
 	}
+	//
 	fstat->endian = xENDIAN_LITTLE;	// wav/w64 only LE
 
 	// pre-decode stats
@@ -258,7 +237,7 @@ tta2dec_loop(struct OpenedFilesMember *const restrict ofm)
 	// copy/check seektable
 	t.z = (fstat->nsamples + fstat->framelen - 1u) / fstat->framelen;
 	t.fc = filecheck_tta_seektable(&seektable, t.z, infile);
-	if ( t.fc != FILECHECK_OK ){
+	if UNLIKELY ( t.fc != FILECHECK_OK ){
 		if ( t.fc == FILECHECK_CORRUPTED ){
 			ignore_seektable = true;
 			warning_tta("%s: corrupted seektable", infile_name);
@@ -271,19 +250,21 @@ tta2dec_loop(struct OpenedFilesMember *const restrict ofm)
 
 	// open outfile
 	outfile = fopen_check(outfile_name, "w", FATAL);
-	if ( outfile == NULL ){
-		error_sys(errno, "fopen", strerror(errno), outfile_name);
+	if UNLIKELY ( outfile == NULL ){
+		error_sys(errno, "fopen", outfile_name);
 	}
 	assert(outfile != NULL);
+	//
+	g_rm_on_sigint = outfile_name;
 
 	// save some space for the outfile header
 	switch ( fstat->decfmt ){
-	case FORMAT_RAWPCM:
+	case DECFMT_RAWPCM:
 		break;
-	case FORMAT_WAV:
+	case DECFMT_WAV:
 		prewrite_wav_header(outfile, outfile_name);
 		break;
-	case FORMAT_W64:
+	case DECFMT_W64:
 		prewrite_w64_header(outfile, outfile_name);
 		break;
 	}
@@ -291,35 +272,20 @@ tta2dec_loop(struct OpenedFilesMember *const restrict ofm)
 	// seek to tta data
 	// already there for TTA1
 
-	// setup buffers
-	t.z = decbuf_init(
-		&decbuf, g_samplebuf_len, (uint) fstat->nchan,
-		fstat->samplebytes
-	);
-	assert(t.z == g_samplebuf_len * fstat->nchan);
-	//
-	t.z = libttaR_codecstate_priv_size((uint) fstat->nchan);
-	assert(t.z != 0);
-	state_priv = malloc(t.z);
-	if ( state_priv == NULL ){
-		error_sys(errno, "malloc", strerror(errno), NULL);
-	}
-	assert(state_priv != NULL);
-
-	// decode
 	if ( ! g_flag.quiet ){
 		(void) clock_gettime(CLOCK_MONOTONIC, &ts_start);
 	}
-	ttadec_loop_st(
-		state_priv, &state_user, &decbuf, &seektable, &dstat, fstat,
-		outfile, outfile_name, infile, infile_name
-	);
-	if ( ! g_flag.quiet ){
-		(void) clock_gettime(CLOCK_MONOTONIC, &ts_stop);
-		dstat.decodetime += timediff(&ts_start, &ts_stop);
-	}
 
-	if ( (! ignore_seektable) && (dstat.nframes != seektable.nmemb) ){
+	// decode
+	memset(&dstat, 0x00, sizeof dstat);
+	ttadec_loop_st(
+		&seektable, &dstat, fstat, outfile, outfile_name, infile,
+		infile_name
+	);
+
+	if UNLIKELY (
+		(! ignore_seektable) && (dstat.nframes != seektable.nmemb)
+	){
 		warning_tta("%s: truncated file / malformed seektable",
 			infile_name
 		);
@@ -327,9 +293,9 @@ tta2dec_loop(struct OpenedFilesMember *const restrict ofm)
 
 	// update header
 	switch ( fstat->decfmt ){
-	case FORMAT_RAWPCM:
+	case DECFMT_RAWPCM:
 		break;
-	case FORMAT_W64:
+	case DECFMT_W64:
 		rewind(outfile);
 		write_w64_header(
 			outfile,
@@ -337,7 +303,7 @@ tta2dec_loop(struct OpenedFilesMember *const restrict ofm)
 			outfile_name
 		);
 		break;
-	case FORMAT_WAV:
+	case DECFMT_WAV:
 		rewind(outfile);
 		write_wav_header(
 			outfile,
@@ -347,23 +313,28 @@ tta2dec_loop(struct OpenedFilesMember *const restrict ofm)
 		break;
 	}
 
+	// close outfile
+	if ( ! g_flag.quiet ){
+		(void) fputs("C\r", stderr);
+	}
+	t.d = fclose(outfile);
+	if UNLIKELY ( t.d != 0 ){
+		error_sys_nf(errno, "fclose", outfile_name);
+	}
+
+	if ( ! g_flag.quiet ){
+		(void) clock_gettime(CLOCK_MONOTONIC, &ts_stop);
+		dstat.decodetime += timediff(&ts_start, &ts_stop);
+	}
+
 	// post-decode stats
 	if ( ! g_flag.quiet ){
 		errprint_stats_postcodec(fstat, (struct EncStats *) &dstat);
 	}
 
 	// cleanup
-	if ( outfile != NULL ){
-		(void) fclose(outfile);
-	}
 	g_rm_on_sigint = NULL;
-	if ( outfile_name != NULL ){
-		free(outfile_name);
-	}
-	if ( state_priv != NULL ){
-		free(state_priv);
-	}
-	decbuf_free(&decbuf);
+	free(outfile_name);
 	seektable_free(&seektable);
 }
 
@@ -378,9 +349,7 @@ filecheck_encfmt(
 		file
 @*/
 {
-	union {
-		enum FileCheck	fc;
-	} t;
+	union {	enum FileCheck	fc; } t;
 
 	// seek past any metadata on the input file
 	t.fc = metatags_skip(file);
@@ -412,31 +381,6 @@ end_check:
 		return FILECHECK_UNSUPPORTED_RESOLUTION;
 	}
 	return FILECHECK_OK;
-}
-
-//==========================================================================//
-
-// returns nmemb of buf zero-padded
-uint
-ttadec_frame_zeropad(
-	i32 *const restrict buf,
-	struct LibTTAr_CodecState_User *const restrict user, uint diff,
-	uint nchan
-)
-/*@modifies	*buf,
-		user->ni32_perframe,
-		user->ni32,
-		user->ni32_total
-@*/
-{
-	const size_t r = (size_t) (nchan - diff);
-
-	memset(&buf[user->ni32], 0x00, r * (sizeof *buf));
-
-	user->ni32_perframe	+= r;
-	user->ni32		+= r;
-	user->ni32_total	+= r;
-	return (uint) r;
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////

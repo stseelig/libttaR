@@ -95,6 +95,9 @@ struct LibTTAr_CodecState_Priv;
 /////////////////////////////////////////////////////////////////////////// */
 struct LibTTAr_CodecState_User {
 
+/* TODO slim down:
+	- remove ni32_perframe, is_new_frame, & MAYBE frame_is_finished
+*/
 	/* set by user */
 	size_t		ni32_perframe;		/* framelen * nchan */
 	bool		is_new_frame;

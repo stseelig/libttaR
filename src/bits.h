@@ -108,7 +108,6 @@ typedef   int8_t	 i8;
 typedef  int16_t	i16;
 typedef  int32_t	i32;
 
-typedef uint_fast32_t	u32fast;
 typedef uint_fast64_t	u64fast;
 
 //////////////////////////////////////////////////////////////////////////////
@@ -281,14 +280,13 @@ tzcnt32(register u32 x)
 	return (uint) BUILTIN_TZCNT64((u64) x);
 #else
 	register uint r = 0;
-	register u32fast y = x;
-	if ( (y & 0x01u) == 0 ){
+	if ( (x & 0x01u) == 0 ){
 		r = 1u;
-		if ( (y & 0xFFFFu) == 0 ){ r |= 16u, y >>= 16u; }
-		if ( (y & 0x00FFu) == 0 ){ r |=  8u, y >>=  8u; }
-		if ( (y & 0x000Fu) == 0 ){ r |=  4u, y >>=  4u; }
-		if ( (y & 0x0003u) == 0 ){ r |=  2u, y >>=  2u; }
-		r -=  y & 0x0001u;
+		if ( (x & 0xFFFFu) == 0 ){ r |= 16u, x >>= 16u; }
+		if ( (x & 0x00FFu) == 0 ){ r |=  8u, x >>=  8u; }
+		if ( (x & 0x000Fu) == 0 ){ r |=  4u, x >>=  4u; }
+		if ( (x & 0x0003u) == 0 ){ r |=  2u, x >>=  2u; }
+		r -=  x & 0x0001u;
 	}
 	return r;
 #endif

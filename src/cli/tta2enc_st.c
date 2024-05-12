@@ -21,10 +21,10 @@
 #include "../splint.h"
 
 #include "bufs.h"
-#include "cli.h"	// errprint_spinner
+#include "cli.h"
 #include "debug.h"
 #include "formats.h"
-#include "main.h"	// g_flag.quiet
+#include "main.h"
 #include "tta2.h"
 
 //////////////////////////////////////////////////////////////////////////////
@@ -71,11 +71,8 @@ static void ttaenc_frame_adjust_st(
 
 void
 ttaenc_loop_st(
-	/*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
-	/*@out@*/ struct LibTTAr_CodecState_User *const restrict user,
-	struct EncBuf *const restrict encbuf,
 	struct SeekTable *const restrict seektable,
-	/*@out@*/ struct EncStats *const restrict estat,
+	/*@out@*/ struct EncStats *const restrict estat_out,
 	const struct FileStats *const restrict fstat,
 	FILE *const restrict outfile, const char *const outfile_name,
 	FILE *const restrict infile, const char *const infile_name
@@ -85,73 +82,85 @@ ttaenc_loop_st(
 @*/
 /*@modifies	fileSystem,
 		internalState,
-		*priv,
-		*user,
-		*encbuf->i32buf,
-		*encbuf->ttabuf,
 		*seektable,
-		*estat,
+		*estat_out,
 		outfile,
 		infile
 @*/
 {
+	struct LibTTAr_CodecState_Priv *priv = NULL;
+	struct LibTTAr_CodecState_User user;
+	struct EncBuf encbuf;
+	struct EncStats estat;
+	//
 	uint enc_retval;
-	union {
-		size_t z;
-	} t;
+	union {	size_t z; } t;
 
-	// any warning/error in loop gets UNLIKELY'd
-	user->ni32_perframe = fstat->buflen;
-	memset(estat, 0x00, sizeof *estat);
+	memset(&estat, 0x00, sizeof estat);
+
+	// setup buffers
+	t.z = encbuf_init(
+		&encbuf, g_samplebuf_len, (uint) fstat->nchan,
+		fstat->samplebytes
+	);
+	assert(t.z == g_samplebuf_len * fstat->nchan);
+	//
+	t.z = libttaR_codecstate_priv_size((uint) fstat->nchan);
+	assert(t.z != 0);
+	priv = malloc(t.z);
+	if UNLIKELY ( priv == NULL ){
+		error_sys(errno, "malloc", NULL);
+	}
+	assert(priv != NULL);
+
+	user.ni32_perframe = fstat->buflen;
 	do {
-		if ( (!g_flag.quiet) && (estat->nframes % (size_t) 64 == 0) ){
+		if ( (! g_flag.quiet) && (estat.nframes % (size_t) 64 == 0) ){
 			errprint_spinner();
 		}
 
-		// calc framelen and adjust if necessary
-		t.z  = (estat->nsamples + fstat->buflen);
-		t.z *= fstat->samplebytes;
-		if ( t.z > fstat->decpcm_size ){
-			t.z  = fstat->decpcm_size;
-			t.z -= estat->nsamples * fstat->samplebytes;
-			t.z /= fstat->samplebytes;
-			user->ni32_perframe = t.z;
-		}
+		user.ni32_perframe	= enc_readlen(
+			fstat->framelen, estat.nsamples, fstat->decpcm_size,
+			fstat->samplebytes, fstat->nchan
+		);
 
 		// encode and write frame
-		enc_retval = ttaenc_frame_st(
-			priv, user, encbuf, outfile, outfile_name, infile,
-			infile_name, estat->nframes, fstat->samplebytes,
+		enc_retval		= ttaenc_frame_st(
+			priv, &user, &encbuf, outfile, outfile_name, infile,
+			infile_name, estat.nframes, fstat->samplebytes,
 			(uint) fstat->nchan
 		);
 
 		// write frame footer (crc)
-		user->crc = htole32(user->crc);
+		user.crc = htole32(user.crc);
 		t.z = fwrite(
-			&user->crc, (size_t) 1, sizeof user->crc, outfile
+			&user.crc, sizeof user.crc, (size_t) 1, outfile
 		);
-		if UNLIKELY ( t.z != sizeof user->crc ){
-			error_sys_nf(
-				errno, "fwrite", strerror(errno), outfile_name
-			);
+		if UNLIKELY ( t.z != (size_t) 1 ){
+			error_sys_nf(errno, "fwrite", outfile_name);
 		}
-		user->nbytes_tta_total += sizeof user->crc;
+		user.nbytes_tta_total += sizeof user.crc;
 
 		// update seektable
 		seektable_add(
-			seektable, user->nbytes_tta_total, estat->nframes,
+			seektable, user.nbytes_tta_total, estat.nframes,
 			outfile_name
 		);
 
-		estat->nframes		+= (size_t) 1;
-		estat->nsamples		+= user->ni32_total;
-		estat->nsamples_perchan	+= (size_t) (
-			user->ni32_total / fstat->nchan
+		estat.nframes		+= (size_t) 1;
+		estat.nsamples		+= user.ni32_total;
+		estat.nsamples_perchan	+= (size_t) (
+			user.ni32_total / fstat->nchan
 		);
-		estat->nbytes_encoded	+= user->nbytes_tta_total;
+		estat.nbytes_encoded	+= user.nbytes_tta_total;
 	}
-	while (	(user->ni32_total == fstat->buflen) && (enc_retval == 0) );
+	while (	(user.ni32_total == fstat->buflen) && (enc_retval == 0) );
 
+	// cleanup
+	free(priv);
+	encbuf_free(&encbuf);
+
+	*estat_out = estat;
 	return;
 }
 
@@ -179,11 +188,12 @@ ttaenc_frame_st(
 {
 	uint r = 0;
 	size_t readlen, nmemb_read;
-	union {
-		size_t	z;
+	union {	size_t	z;
 		uint	u;
 		int	d;
 	} t;
+
+// TODO local user and copy over
 
 	user->is_new_frame = true;
 	t.z = g_samplebuf_len * nchan;
@@ -200,14 +210,11 @@ loop_entr:
 			encbuf->pcmbuf, (size_t) samplebytes, readlen, infile
 		);
 		if UNLIKELY ( nmemb_read != readlen ){
-			if ( feof(infile) != 0 ){
-				error_sys_nf(
-					errno, "fread", strerror(errno),
-					infile_name
-				);
+			if UNLIKELY ( ferror(infile) != 0 ){
+				error_sys(errno, "fread", infile_name);
 			}
-			else {	warning_tta("%s: truncated file",
-					infile_name
+			else {	warning_tta("%s: frame %zu: truncated file",
+					infile_name, frame_num
 				);
 			}
 		}
@@ -225,10 +232,11 @@ loop_entr:
 			warning_tta("%s: frame %zu: last sample truncated, "
 				"zero-padding", infile_name, frame_num
 			);
-			r = ttaenc_frame_zeropad(
-				encbuf->i32buf, &nmemb_read,
-				&user->ni32_perframe, t.u, nchan
+			r = encst_frame_zeropad(
+				encbuf->i32buf, nmemb_read, t.u, nchan
 			);
+			nmemb_read		+= r;
+			user->ni32_perframe	+= r;
 		}
 
 		// encode i32 to tta
@@ -243,11 +251,9 @@ loop_entr:
 		t.z = fwrite(
 			encbuf->ttabuf, (size_t) 1, user->nbytes_tta, outfile
 		);
-		// user->nbytes_tta could be 0 for a small g_samplebuf_len
+		// nbytes_tta could be 0 for a small g_samplebuf_len
 		if UNLIKELY ( t.z != user->nbytes_tta ){
-			error_sys_nf(
-				errno, "fwrite", strerror(errno), outfile_name
-			);
+			error_sys_nf(errno, "fwrite", outfile_name);
 		}
 	}
 	while ( (! user->frame_is_finished) && (r == 0) );
@@ -255,6 +261,7 @@ loop_entr:
 	return r;
 }
 
+// TODO inline
 static void
 ttaenc_frame_adjust_st(
 	size_t *const restrict readlen,
@@ -268,8 +275,7 @@ ttaenc_frame_adjust_st(
 		infile
 @*/
 {
-	union {
-		off_t	o;
+	union {	off_t	o;
 		int	d;
 	} t;
 
@@ -278,9 +284,7 @@ ttaenc_frame_adjust_st(
 		t.o  = (off_t) ((*readlen - user->ni32) * samplebytes);
 		t.d = fseeko(infile, -t.o, SEEK_CUR);
 		if UNLIKELY ( t.d != 0 ){
-			error_sys(
-				errno, "fseeko", strerror(errno), infile_name
-			);
+			error_sys(errno, "fseeko", infile_name);
 		}
 	}
 

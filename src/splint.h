@@ -22,7 +22,9 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
+/*@-redef@*/
 typedef enum clockid_t	clockid_t;
+/*@=redef@*/
 
 struct timespec {
 	time_t  tv_sec;
@@ -71,6 +73,14 @@ struct timespec {
 
 //////////////////////////////////////////////////////////////////////////////
 
+/*@-incondefs@*/
+/*@external@*/ /*@unused@*/
+extern void *calloc(size_t, size_t)
+/*@globals	internalState@*/
+/*@modifies	internalState@*/
+;
+/*@=incondefs@*/
+
 #undef res
 /*@external@*/ /*@unused@*/
 extern int clock_gettime(clockid_t, /*@out@*/ struct timespec *res)
@@ -105,6 +115,14 @@ extern int getrlimit(int, /*@out@*/ struct rlimit *rlim)
 /*@modifies	*rlim@*/
 ;
 /*@=protoparammatch@*/
+
+/*@-incondefs@*/
+/*@external@*/ /*@unused@*/
+extern void *malloc(size_t)
+/*@globals	internalState@*/
+/*@modifies	internalState@*/
+;
+/*@=incondefs@*/
 
 /*@temp@*/ /*@null@*/ /*@external@*/ /*@unused@*/
 extern void *memrchr(const void *, int, size_t)

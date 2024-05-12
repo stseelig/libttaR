@@ -203,10 +203,11 @@ tta_filter(
 )
 /*@modifies	*filter@*/
 {
-	register i32 sum = round;
 	register i32 *const restrict a = filter->qm;
 	register i32 *const restrict b = filter->dl;
 	register i32 *const restrict m = filter->dx;
+
+	register i32 sum = round;
 
 	// there is a compiler quirk where putting the ==0 branch !first slows
 	//  everything down considerably. it adds an extra if-statement or two

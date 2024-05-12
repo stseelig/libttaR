@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -34,8 +34,7 @@ filecheck_tta1(
 {
 	struct TTA1Header hdr;
 	const off_t start = ftello(file);
-	union {
-		size_t		z;
+	union {	size_t		z;
 		int		d;
 		u32		u32;
 		enum FileCheck	fc;
@@ -66,7 +65,7 @@ filecheck_tta1(
 		return FILECHECK_UNSUPPORTED_DATATYPE;
 	}
 
-	fstat->encfmt		= FORMAT_TTA1;
+	fstat->encfmt		= ENCFMT_TTA1;
 	fstat->nchan		= letoh16(hdr.nchan);
 	fstat->samplebits	= letoh16(hdr.samplebits);
 	fstat->samplerate	= letoh32(hdr.samplerate);

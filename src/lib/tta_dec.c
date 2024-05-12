@@ -112,12 +112,11 @@ libttaR_tta_decode(
 @*/
 {
 	size_t r;
-	const  u8 predict_k = tta_predict_k(samplebytes);
+	const  u8 predict_k    = tta_predict_k(samplebytes);
 	const i32 filter_round = tta_filter_round(samplebytes);
-	const  u8 filter_k = tta_filter_k(samplebytes);
+	const  u8 filter_k     = tta_filter_k(samplebytes);
 	size_t safety_margin = (
-		  src_len
-		- (TTABUF_SAFETY_MARGIN_FAST * nchan * samplebytes)
+		src_len - (TTABUF_SAFETY_MARGIN_FAST * nchan * samplebytes)
 	);
 	if ( nbytes_tta_target < safety_margin ){
 		safety_margin = nbytes_tta_target;
@@ -281,8 +280,8 @@ tta_decode_mch(
 #endif
 
 #ifndef LIBTTAr_DISABLE_UNROLLED_1CH
-static size_t
 // returns nbytes read from src
+static size_t
 tta_decode_1ch(
 	i32 *const dest, const u8 *const src, u32 *const restrict crc_out,
 	/*@out@*/ size_t *const restrict ni32_out,
@@ -331,8 +330,8 @@ tta_decode_1ch(
 #endif
 
 #ifndef LIBTTAr_DISABLE_UNROLLED_2CH
-static size_t
 // returns nbytes read from src
+static size_t
 tta_decode_2ch(
 	i32 *const dest, const u8 *const src, u32 *const restrict crc_out,
 	/*@out@*/ size_t *const restrict ni32_out,

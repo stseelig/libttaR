@@ -15,6 +15,10 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
+#define G_SAMPLEBUF_LEN_DEFAULT	((size_t) 2*BUFSIZ)
+
+//--------------------------------------------------------------------------//
+
 #define PATH_DELIM	'/'
 
 enum ProgramMode {
@@ -70,6 +74,12 @@ extern struct GlobalFlags g_flag;
 
 /*@checkmod@*/
 extern size_t  g_samplebuf_len;
+
+/*@checkmod@*/
+extern uint g_nthreads;
+
+/*@checkmod@*/
+extern uint g_framequeue_len;
 
 /*@checkmod@*/ /*@dependent@*/ /*@null@*/
 extern char *g_rm_on_sigint;

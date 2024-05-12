@@ -11,6 +11,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include <signal.h>
+#include <stdbool.h>	// true
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,6 +23,7 @@
 
 #include "debug.h"
 #include "cli.h"
+#include "main.h"
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -98,16 +100,24 @@ u8 g_nwarnings;
 /*@-fullinitblock@*/
 /*@checkmod@*/
 struct GlobalFlags g_flag = {
-	.decfmt = FORMAT_W64
+	.decfmt = DECFMT_W64
 };
 /*@=fullinitblock@*/
 
 // MAYBE cli opt to change
 /*@checkmod@*/
-size_t g_samplebuf_len = ((size_t) BUFSIZ);
+size_t g_samplebuf_len = G_SAMPLEBUF_LEN_DEFAULT;
+
+// TODO cli opt to change + multithreaded-mode flag
+/*@checkmod@*/
+uint g_nthreads = 16u;
+
+// TODO cli opt
+/*@checkmod@*/
+uint g_framequeue_len = 0;
 
 /*@checkmod@*/ /*@dependent@*/ /*@null@*/
-char *g_rm_on_sigint;
+char *g_rm_on_sigint = NULL;
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -126,12 +136,13 @@ main(int argc, /*@dependent@*/ char **argv)
 {
 	int r;
 
-	if ( argc == 1 ){
+	if UNLIKELY ( argc == 1 ){
 		goto print_main_help;
 	}
 
 	// setup signals
-	if ( (signal((int) HS_ABRT, (void (*)(int)) sighand) == SIG_ERR)
+	if UNLIKELY (
+	     (signal((int) HS_ABRT, (void (*)(int)) sighand) == SIG_ERR)
 	    ||
 	     (signal((int) HS_HUP , (void (*)(int)) sighand) == SIG_ERR)
 	    ||
@@ -155,7 +166,8 @@ main(int argc, /*@dependent@*/ char **argv)
 	else if ( strcmp(argv[1], "decode") == 0 ){
 		r = tta2dec(2u);
 	}
-	else {	error_tta_nf("bad mode '%s'", argv[1]);
+	else if UNLIKELY ( true ) {
+		error_tta_nf("bad mode '%s'", argv[1]);
 print_main_help:
 		errprint_program_intro();
 		(void) fprintf(stderr,
@@ -163,7 +175,7 @@ print_main_help:
 			" ttaR decode --help\n"
 		);
 		r = EXIT_FAILURE;
-	}
+	} else{;}
 
 	return r;
 }

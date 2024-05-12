@@ -20,6 +20,15 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
+INLINE double timediff(
+	register const struct timespec *const restrict,
+	register const struct timespec *const restrict
+)
+/*@*/
+;
+
+//==========================================================================//
+
 extern void errprint_program_intro(void)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
@@ -53,15 +62,6 @@ extern void errprint_spinner(void)
 /*@modifies	fileSystem,
 		internalState
 @*/
-;
-
-//--------------------------------------------------------------------------//
-
-INLINE double timediff(
-	register const struct timespec *const restrict,
-	register const struct timespec *const restrict
-)
-/*@*/
 ;
 
 //////////////////////////////////////////////////////////////////////////////

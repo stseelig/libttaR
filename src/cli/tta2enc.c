@@ -72,8 +72,7 @@ tta2enc(uint optind)
 	uint nerrors_file = 0;
 	struct timespec ts_start, ts_stop;
 	size_t i;
-	union {
-		int	d;
+	union {	int	d;
 		bool	b;
 	} t;
 
@@ -110,17 +109,14 @@ tta2enc(uint optind)
 		else {	rawpcm_statcopy(&ofm->fstat);
 			// TODO mode for stdin reading
 			t.d = fseeko(ofm->infile, 0, SEEK_END);
-			if ( t.d != 0 ){
-				error_sys(
-					errno, "fseeko", ofm->infile_name,
-					strerror(errno)
-				);
+			if UNLIKELY ( t.d != 0 ){
+				error_sys(errno, "fseeko", ofm->infile_name);
 			}
 			ofm->fstat.decpcm_off  = 0;
 			ofm->fstat.decpcm_size = (size_t) ftello(ofm->infile);
 		}
 
-		if ( ! libttaR_test_nchan((uint)ofm->fstat.nchan) ){
+		if UNLIKELY ( ! libttaR_test_nchan((uint)ofm->fstat.nchan) ){
 			++nerrors_file;
 			error_tta_nf("%s: libttaR built without support for"
 				" nchan == %u", ofm->infile_name,
@@ -129,7 +125,7 @@ tta2enc(uint optind)
 		}
 
 		// the rest of fstat
-		ofm->fstat.encfmt      = FORMAT_TTA1;
+		ofm->fstat.encfmt      = ENCFMT_TTA1;
 		ofm->fstat.framelen    = libttaR_nsamples_perframe(
 			ofm->fstat.samplerate
 		);
@@ -142,7 +138,8 @@ tta2enc(uint optind)
 	}
 
 	// additional error check(s)
-	if ( (g_flag.outfile != NULL)
+	if UNLIKELY (
+	     (g_flag.outfile != NULL)
 	    &&
 	     (openedfiles.nmemb > (size_t) 1)
 	    &&
@@ -167,15 +164,15 @@ tta2enc(uint optind)
 		openedfiles.file[i]->infile = NULL;
 		if ( g_flag.delete_src ){
 			t.d = remove(openedfiles.file[i]->infile_name);
-			if ( t.d != 0 ){
+			if UNLIKELY ( t.d != 0 ){
 				error_sys_nf(
-					errno, "remove", strerror(errno),
+					errno, "remove",
 					openedfiles.file[i]->infile_name
 				);
 			}
 		}
 	}
-	if ( openedfiles.nmemb == 0 ){
+	if UNLIKELY ( openedfiles.nmemb == 0 ){
 		warning_tta("nothing to do");
 	}
 
@@ -188,10 +185,9 @@ tta2enc(uint optind)
 		);
 	}
 
-//#ifndef NDEBUG
 	// cleanup
 	openedfiles_close_free(&openedfiles);
-//#endif
+
 	return (int) g_nwarnings;
 }
 
@@ -207,42 +203,20 @@ tta2enc_loop(const struct OpenedFilesMember *const restrict ofm)
 @*/
 {
 	FILE *const restrict infile = ofm->infile;
-	const char *infile_name = ofm->infile_name;
+	const char *const infile_name = ofm->infile_name;
 	const struct FileStats *const restrict fstat = &ofm->fstat;
 	//
 	FILE *restrict outfile = NULL;
-	char *outfile_name = NULL;
-	const char *outfile_dir  = NULL;
-	const char *outfile_sfx  = NULL;
-	//
-	struct LibTTAr_CodecState_Priv *state_priv;
-	struct LibTTAr_CodecState_User state_user;
+	char *const restrict outfile_name = get_outfile_name(
+		infile_name, get_encfmt_sfx(fstat->encfmt)
+	);
 	//
 	struct EncStats estat;
 	struct SeekTable seektable;
-	struct EncBuf encbuf;
 	struct timespec ts_start, ts_stop;
-	union {
-		size_t z;
+	union {	size_t	z;
+		int	d;
 	} t;
-
-	// set outfile_name
-	if ( g_flag.outfile != NULL ){
-		if ( g_flag.outfile_is_dir ){
-			outfile_dir  = g_flag.outfile;
-			outfile_name = (char *) infile_name;
-			outfile_sfx  = ".tta";
-		}
-		else {	outfile_name = (char *) g_flag.outfile;
-		}
-	}
-	else {	outfile_name = (char *) infile_name;
-		outfile_sfx  = ".tta";
-	}
-	outfile_name = outfile_name_fmt(
-		outfile_dir, outfile_name, outfile_sfx
-	);
-	g_rm_on_sigint = outfile_name;
 
 	// pre-encode stats
 	if ( ! g_flag.quiet ){
@@ -253,7 +227,7 @@ tta2enc_loop(const struct OpenedFilesMember *const restrict ofm)
 
 	// setup seektable
 	switch ( fstat->encfmt ){
-	case FORMAT_TTA1:
+	case ENCFMT_TTA1:
 		// seektable at start of file, size calculated in advance
 		t.z  = (fstat->decpcm_size + fstat->buflen) / fstat->buflen;
 		--t.z;
@@ -269,15 +243,17 @@ tta2enc_loop(const struct OpenedFilesMember *const restrict ofm)
 
 	// open outfile
 	outfile = fopen_check(outfile_name, "w", FATAL);
-	if ( outfile == NULL ){
-		error_sys(errno, "fopen", strerror(errno), outfile_name);
+	if UNLIKELY ( outfile == NULL ){
+		error_sys(errno, "fopen", outfile_name);
 	}
 	assert(outfile != NULL);
+	//
+	g_rm_on_sigint = outfile_name;
 
 	// save some space for the outfile header and seektable
 	// TODO handle file of unknown size
 	switch ( fstat->encfmt ){
-	case FORMAT_TTA1:
+	case ENCFMT_TTA1:
 		prewrite_tta1_header_seektable(
 			outfile, &seektable, outfile_name
 		);
@@ -287,37 +263,26 @@ tta2enc_loop(const struct OpenedFilesMember *const restrict ofm)
 	// seek to start of pcm
 	(void) fseeko(infile, fstat->decpcm_off, SEEK_SET);
 
-	// setup buffers
-	t.z = encbuf_init(
-		&encbuf, g_samplebuf_len, (uint) fstat->nchan,
-		fstat->samplebytes
-	);
-	assert(t.z == g_samplebuf_len * fstat->nchan);
-	//
-	t.z = libttaR_codecstate_priv_size((uint) fstat->nchan);
-	assert(t.z != 0);
-	state_priv = malloc(t.z);
-	if ( state_priv == NULL ){
-		error_sys(errno, "malloc", strerror(errno), NULL);
-	}
-	assert(state_priv != NULL);
-
-	// encode
 	if ( ! g_flag.quiet ){
 		(void) clock_gettime(CLOCK_MONOTONIC, &ts_start);
 	}
-	ttaenc_loop_st(
-		state_priv, &state_user, &encbuf, &seektable, &estat, fstat,
-		outfile, outfile_name, infile, infile_name
-	);
-	if ( ! g_flag.quiet ){
-		(void) clock_gettime(CLOCK_MONOTONIC, &ts_stop);
-		estat.encodetime += timediff(&ts_start, &ts_stop);
+
+	// encode
+	if ( g_nthreads == 0 ){
+		ttaenc_loop_st(
+			&seektable, &estat, fstat, outfile, outfile_name,
+			infile, infile_name
+		);
+	}
+	else {	ttaenc_loop_mt(
+			&seektable, &estat, fstat, outfile, outfile_name,
+			infile, infile_name
+		);
 	}
 
 	// write header and seektable
 	switch ( fstat->encfmt ){
-	case FORMAT_TTA1:
+	case ENCFMT_TTA1:
 		rewind(outfile);
 		seektable.off = write_tta1_header(
 			outfile, estat.nsamples_perchan, fstat, outfile_name
@@ -326,23 +291,28 @@ tta2enc_loop(const struct OpenedFilesMember *const restrict ofm)
 		break;
 	}
 
+	// close outfile
+	if ( ! g_flag.quiet ){
+		(void) fputs("C\r", stderr);
+	}
+	t.d = fclose(outfile);
+	if UNLIKELY ( t.d != 0 ){
+		error_sys_nf(errno, "fclose", outfile_name);
+	}
+
+	if ( ! g_flag.quiet ){
+		(void) clock_gettime(CLOCK_MONOTONIC, &ts_stop);
+		estat.encodetime += timediff(&ts_start, &ts_stop);
+	}
+
 	// post-encode stats
 	if ( ! g_flag.quiet ){
 		errprint_stats_postcodec(fstat, &estat);
 	}
 
 	// cleanup
-	if ( outfile != NULL ){
-		(void) fclose(outfile);
-	}
 	g_rm_on_sigint = NULL;
-	if ( outfile_name != NULL ){
-		free(outfile_name);
-	}
-	if ( state_priv != NULL ){
-		free(state_priv);
-	}
-	encbuf_free(&encbuf);
+	free(outfile_name);
 	seektable_free(&seektable);
 
 	return;
@@ -359,9 +329,7 @@ filecheck_decfmt(
 		file
 @*/
 {
-	union {
-		enum FileCheck	fc;
-	} t;
+	union {	enum FileCheck	fc; } t;
 
 	// seek past any metadata on the input file
 	t.fc = metatags_skip(file);
@@ -401,28 +369,6 @@ end_check:
 		return FILECHECK_UNSUPPORTED_RESOLUTION;
 	}
 	return FILECHECK_OK;
-}
-
-//==========================================================================//
-
-// returns nmemb of buf zero-padded
-uint
-ttaenc_frame_zeropad(
-	i32 *const restrict buf, size_t *const restrict nmemb_read,
-	size_t *const restrict ni32_perframe, uint diff, uint nchan
-)
-/*@modifies	*buf,
-		*nmemb_read,
-		*ni32_perframe
-@*/
-{
-	const size_t r = (size_t) (nchan - diff);
-
-	memset(&buf[*nmemb_read], 0x00, r * (sizeof *buf));
-
-	*nmemb_read	+= r;
-	*ni32_perframe	+= r;
-	return (uint) r;
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////
