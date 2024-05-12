@@ -52,6 +52,23 @@ extern int opt_common_quiet(uint, char *, enum OptMode)
 /*@modifies	g_flag.quiet@*/
 ;
 
+extern int opt_common_single_threaded(uint, char *, enum OptMode)
+/*@globals	g_flag@*/
+/*@modifies	g_flag.threadmode@*/
+;
+
+#undef opt
+int opt_common_threads(uint, char *opt, enum OptMode)
+/*@globals	fileSystem,
+		g_flag
+@*/
+/*@modifies	fileSystem,
+		g_flag.threadmode,
+		g_nthreads,
+		*opt
+@*/
+;
+
 //==========================================================================//
 
 // tta2enc

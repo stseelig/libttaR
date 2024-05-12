@@ -33,7 +33,8 @@ static const char help_tta2enc_opts[] = {
 "\t"    "-q, --quiet\t\t\t"             "only warnings and errors printed\n"
 "\t"    "    --rawpcm=FMT,SRATE,NCHAN\t""rawpcm file stats\n"
 "\t\t"          "  FMT: u8, i16le, i24le\n"
-
+"\t"    "-S, --single-threaded\t\t"     "use single-threaded mode\n"
+"\t"    "-t, --threads=N\t\t\t"         "number of coder threads to use\n"
 };
 
 /*@unchecked@*/
@@ -46,6 +47,7 @@ static const char help_tta2dec_opts[] = {
 "\t\t"          "FMT: raw, w64, wav\n"
 "\t"    "-o, --outfile=FILE|DIR\t\t"    "set outfile name or directory\n"
 "\t"    "-q, --quiet\t\t\t"             "only warnings and errors printed\n"
+"\t"    "-S, --single-threaded\t\t"     "use single-threaded mode\n"
 };
 
 //////////////////////////////////////////////////////////////////////////////

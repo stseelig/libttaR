@@ -17,6 +17,8 @@
 #include <string.h>
 #include <time.h>
 
+#include <sys/sysinfo.h>
+
 #include "../bits.h"
 #include "../libttaR.h"
 #include "../splint.h"
@@ -32,7 +34,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-static void tta2enc_loop(const struct OpenedFilesMember *const restrict)
+static void tta2enc_loop(const struct OpenedFilesMember *const restrict, uint)
 /*@globals	fileSystem,
 		internalState,
 		g_rm_on_sigint
@@ -70,6 +72,9 @@ tta2enc(uint optind)
 	struct OpenedFiles openedfiles;
 	struct OpenedFilesMember *ofm;
 	uint nerrors_file = 0;
+	const uint nthreads = (g_nthreads != 0
+		? g_nthreads : (uint) get_nprocs()
+	);
 	struct timespec ts_start, ts_stop;
 	size_t i;
 	union {	int	d;
@@ -159,9 +164,12 @@ tta2enc(uint optind)
 		if ( (i != 0) && (! g_flag.quiet) ){
 			(void) fputc('\n', stderr);
 		}
-		tta2enc_loop(openedfiles.file[i]);
+		//
+		tta2enc_loop(openedfiles.file[i], nthreads);
+		//
 		(void) fclose(openedfiles.file[i]->infile);
 		openedfiles.file[i]->infile = NULL;
+		//
 		if ( g_flag.delete_src ){
 			t.d = remove(openedfiles.file[i]->infile_name);
 			if UNLIKELY ( t.d != 0 ){
@@ -192,7 +200,9 @@ tta2enc(uint optind)
 }
 
 static void
-tta2enc_loop(const struct OpenedFilesMember *const restrict ofm)
+tta2enc_loop(
+	const struct OpenedFilesMember *const restrict ofm, uint nthreads
+)
 /*@globals	fileSystem,
 		internalState,
 		g_rm_on_sigint
@@ -268,7 +278,7 @@ tta2enc_loop(const struct OpenedFilesMember *const restrict ofm)
 	}
 
 	// encode
-	if ( g_nthreads == 0 ){
+	if ( (g_flag.threadmode == TM_SINGLE) || (nthreads == 0) ){
 		ttaenc_loop_st(
 			&seektable, &estat, fstat, outfile, outfile_name,
 			infile, infile_name
@@ -276,7 +286,7 @@ tta2enc_loop(const struct OpenedFilesMember *const restrict ofm)
 	}
 	else {	ttaenc_loop_mt(
 			&seektable, &estat, fstat, outfile, outfile_name,
-			infile, infile_name
+			infile, infile_name, nthreads
 		);
 	}
 

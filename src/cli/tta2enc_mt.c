@@ -9,7 +9,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-//	deadlocks and errors if (g_framequeue_len <= g_nthreads)            //
+//	deadlocks or aborts if (g_framequeue_len <= g_nthreads)             //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
@@ -279,7 +279,8 @@ ttaenc_loop_mt(
 	/*@out@*/ struct EncStats *const restrict estat_out,
 	const struct FileStats *const restrict fstat,
 	FILE *const restrict outfile, const char *const outfile_name,
-	FILE *const restrict infile, const char *const infile_name
+	FILE *const restrict infile, const char *const infile_name,
+	uint nthreads
 )
 /*@globals	fileSystem,
 		internalState
@@ -297,6 +298,7 @@ ttaenc_loop_mt(
 	pthread_t *thread_encode = NULL;
 	struct FileStats_EncMT fstat_c;
 	const size_t samplebuf_len = fstat->buflen;
+	const uint framequeue_len = FRAMEQUEUE_LEN(nthreads);
 	uint i;
 	union {	int d; } t;
 
@@ -304,19 +306,19 @@ ttaenc_loop_mt(
 	fstatencmt_init(&fstat_c, fstat);
 	//
 	encmtstate_init(
-		&state_io, &state_encoder, FRAMEQUEUE_LEN, samplebuf_len,
+		&state_io, &state_encoder, framequeue_len, samplebuf_len,
 		fstat_c.nchan, fstat_c.samplebytes, outfile, outfile_name,
 		infile, infile_name, seektable, estat_out, &fstat_c
 	);
 	//
-	thread_encode = calloc((size_t) g_nthreads, sizeof *thread_encode);
+	thread_encode = calloc((size_t) nthreads, sizeof *thread_encode);
 	assert(thread_encode != NULL);
 	if UNLIKELY ( thread_encode == NULL ){
 		error_sys(errno, "calloc", NULL);
 	}
 
 	// create
-	for ( i = 0; i < g_nthreads; ++i ){
+	for ( i = 0; i < nthreads; ++i ){
 		t.d = pthread_create(
 			&thread_encode[i], NULL,
 			(void *(*)(void *)) encmt_encoder, &state_encoder
@@ -330,7 +332,7 @@ ttaenc_loop_mt(
 	(void) encmt_io(&state_io);
 
 	// join
-	for ( i = 0; i < g_nthreads; ++i ){
+	for ( i = 0; i < nthreads; ++i ){
 		t.d = pthread_join(thread_encode[i], NULL);
 		if UNLIKELY ( t.d != 0 ){
 			error_sys_nf(t.d, "pthread_join", NULL);
@@ -338,7 +340,7 @@ ttaenc_loop_mt(
 	}
 
 	// cleanup
-	encmtstate_free(&state_io, &state_encoder, FRAMEQUEUE_LEN);
+	encmtstate_free(&state_io, &state_encoder, framequeue_len);
 	free(thread_encode);
 
 	return;
@@ -396,10 +398,7 @@ encmt_io(struct MTArg_EncIO *const restrict arg)
 	bool start_writing = false, at_end = false, truncated = false;
 	size_t framecnt = 0;
 	uint i = 0, last;
-	union {	size_t	z;
-		uint	u;
-		int	d;
-	} t;
+	union {	uint u; } t;
 
 	memset(&estat, 0x00, sizeof estat);
 	goto loop0_entr;
@@ -598,9 +597,7 @@ encmt_encoder(struct MTArg_Encoder *const restrict arg)
 
 	struct LibTTAr_CodecState_Priv *restrict priv;
 	uint i;
-	union {	size_t	z;
-		int	d;
-	} t;
+	union {	size_t z; } t;
 
 	// setup
 	t.z = libttaR_codecstate_priv_size(nchan);
@@ -760,16 +757,16 @@ encmtstate_init(
 		error_sys(t.d, "sem_init", NULL);
 	}
 	//
-	io->frames.post_encoder	= calloc(
+	io->frames.post_encoder		= calloc(
 		(size_t) framequeue_len, sizeof *io->frames.post_encoder
 	);
 	io->frames.ni32_perframe	= calloc(
 		(size_t) framequeue_len, sizeof *io->frames.ni32_perframe
 	);
-	io->frames.encbuf	= calloc(
+	io->frames.encbuf		= calloc(
 		(size_t) framequeue_len, sizeof *io->frames.encbuf
 	);
-	io->frames.user		= calloc(
+	io->frames.user			= calloc(
 		(size_t) framequeue_len, sizeof *io->frames.user
 	);
 	if UNLIKELY (

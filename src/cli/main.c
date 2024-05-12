@@ -100,21 +100,16 @@ u8 g_nwarnings;
 /*@-fullinitblock@*/
 /*@checkmod@*/
 struct GlobalFlags g_flag = {
-	.decfmt = DECFMT_W64
+	.decfmt		= DECFMT_W64,
+	.threadmode	= TM_MULTI
 };
 /*@=fullinitblock@*/
 
-// MAYBE cli opt to change
 /*@checkmod@*/
 size_t g_samplebuf_len = G_SAMPLEBUF_LEN_DEFAULT;
 
-// TODO cli opt to change + multithreaded-mode flag
 /*@checkmod@*/
-uint g_nthreads = 16u;
-
-// TODO cli opt
-/*@checkmod@*/
-uint g_framequeue_len = 0;
+uint g_nthreads = 0u;
 
 /*@checkmod@*/ /*@dependent@*/ /*@null@*/
 char *g_rm_on_sigint = NULL;

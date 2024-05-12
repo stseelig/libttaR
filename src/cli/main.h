@@ -26,6 +26,11 @@ enum ProgramMode {
 	MODE_DECODE
 };
 
+enum ThreadMode {
+	TM_SINGLE,
+	TM_MULTI
+};
+
 struct GlobalFlags {
 	/*@dependent@*/ /*@null@*/
 	char		*outfile;	// from g_argv
@@ -33,6 +38,7 @@ struct GlobalFlags {
 	bool		quiet;
 	bool		delete_src;
 	bool		rawpcm;
+	enum ThreadMode	threadmode:8;
 	enum DecFormat	decfmt:8;
 };
 
@@ -77,9 +83,6 @@ extern size_t  g_samplebuf_len;
 
 /*@checkmod@*/
 extern uint g_nthreads;
-
-/*@checkmod@*/
-extern uint g_framequeue_len;
 
 /*@checkmod@*/ /*@dependent@*/ /*@null@*/
 extern char *g_rm_on_sigint;

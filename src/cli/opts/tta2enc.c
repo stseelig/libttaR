@@ -31,7 +31,7 @@ static int opt_tta2enc_rawpcm(uint, char *opt, enum OptMode)
 @*/
 /*@modifies	fileSystem
 		internalState,
-		opt
+		*opt
 @*/
 ;
 
@@ -44,13 +44,15 @@ static int opt_tta2enc_help(uint, char *, enum OptMode)
 
 /*@unchecked@*/
 const struct OptDict tta2enc_optdict[] = {
-	{ "help"	, '?'	, opt_tta2enc_help	},
-	{ "delete-src"	, 'd'	, opt_common_delete_src	},
-	{ "outfile"	, 'o'	, opt_common_outfile	},
-	{ "quiet"	, 'q'	, opt_common_quiet	},
-	{ "rawpcm"	, -1	, opt_tta2enc_rawpcm	},
+	{ "help"		, '?'	, opt_tta2enc_help		},
+	{ "delete-src"		, 'd'	, opt_common_delete_src		},
+	{ "outfile"		, 'o'	, opt_common_outfile		},
+	{ "quiet"		, 'q'	, opt_common_quiet		},
+	{ "rawpcm"		, -1	, opt_tta2enc_rawpcm		},
+	{ "single-threaded"	, 'S'	, opt_common_single_threaded	},
+	{ "threads"		, 't'	, opt_common_threads		},
 
-	{ NULL		,  0	, NULL			}
+	{ NULL			,  0	, NULL				}
 };
 
 //==========================================================================//
@@ -92,7 +94,7 @@ opt_tta2enc_rawpcm(
 @*/
 /*@modifies	fileSystem
 		internalState,
-		opt
+		*opt
 @*/
 {
 #ifndef S_SPLINT_S

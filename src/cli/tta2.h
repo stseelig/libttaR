@@ -23,9 +23,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-#define FRAMEQUEUE_LEN	( \
-	g_framequeue_len != 0 ? g_framequeue_len : 2u*g_nthreads \
-)
+#define FRAMEQUEUE_LEN(nthreads)	(2u*(nthreads))
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -129,7 +127,7 @@ extern void ttaenc_loop_mt(
 	/*@out@*/ struct EncStats *const restrict estat_out,
 	const struct FileStats *const restrict fstat,
 	FILE *const restrict outfile, const char *const,
-	FILE *const restrict infile, const char *const
+	FILE *const restrict infile, const char *const, uint
 )
 /*@globals	fileSystem,
 		internalState

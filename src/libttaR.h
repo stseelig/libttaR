@@ -26,7 +26,7 @@ enum TTASampleBytes {
 	TTASAMPLEBYTES_3 = 3u
 };
 #define TTA_SAMPLEBYTES_MAX	TTASAMPLEBYTES_3
-#define TTA_SAMPLEBITS_MAX	((unsigned int) 8*TTA_SAMPLEBYTES_MAX)
+#define TTA_SAMPLEBITS_MAX	((unsigned int) (8u*TTA_SAMPLEBYTES_MAX))
 #endif
 
 /* seconds per TTA frame */
@@ -95,9 +95,6 @@ struct LibTTAr_CodecState_Priv;
 /////////////////////////////////////////////////////////////////////////// */
 struct LibTTAr_CodecState_User {
 
-/* TODO slim down:
-	- remove ni32_perframe, is_new_frame, & MAYBE frame_is_finished
-*/
 	/* set by user */
 	size_t		ni32_perframe;		/* framelen * nchan */
 	bool		is_new_frame;

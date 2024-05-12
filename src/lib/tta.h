@@ -28,7 +28,7 @@ enum TTASampleBytes {
 	TTASAMPLEBYTES_3 = 3u
 };
 #define TTA_SAMPLEBYTES_MAX	TTASAMPLEBYTES_3
-#define TTA_SAMPLEBITS_MAX	((uint) 8*TTA_SAMPLEBYTES_MAX)
+#define TTA_SAMPLEBITS_MAX	((uint) (8u*TTA_SAMPLEBYTES_MAX))
 #endif
 
 // unary + binary

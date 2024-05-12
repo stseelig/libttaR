@@ -7,7 +7,7 @@
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // Copyright (C) 2007, Aleksander Djuric                                    //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -24,11 +24,6 @@
 
 /*@unchecked@*/ /*@unused@*/
 extern const u32 crc32_table[];
-
-//////////////////////////////////////////////////////////////////////////////
-
-ALWAYS_INLINE u32 crc32_cont(register u8, register u32) /*@*/;
-ALWAYS_INLINE u32 crc32_end(register u32 crc) /*@*/;
 
 //////////////////////////////////////////////////////////////////////////////
 

@@ -126,7 +126,7 @@ readonly LD_FLAGS_CLI_END;
 
 LDFLAGS_LIB=;
 LDFLAGS_LIB="$LDFLAGS_LIB -shared";
-# library only uses memmove & memset from libc, but that should be a builtin
+# library only uses memmove & memset from libc, but those should be builtin
 LDFLAGS_LIB="$LDFLAGS_LIB -nolibc";
 readonly LDFLAGS_LIB;
 
