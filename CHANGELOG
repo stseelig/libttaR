@@ -1,8 +1,10 @@
 
 # libttaR ####################################################################
 
-1.0.3 (2024-XX-XX):-----------------------------------------------------------
+1.1.0 (2024-XX-XX):-----------------------------------------------------------
 
+	- CodecState_User fields changed, and must be init'd before calling
+	- tta_encode and tta_decode have a new parameter
 	- changed the version num/string layout
 
 1.0.2 (2024-04-24):-----------------------------------------------------------

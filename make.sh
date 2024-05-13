@@ -36,7 +36,7 @@ readonly PROGRAM='ttaR';
 #	gcc (Debian 10.2.1-6) 10.2.1 20210110
 #	Debian clang version 11.0.1-2
 
-readonly CC='gcc';
+readonly CC='clang';
 readonly LD="$CC";
 
 #=============================================================================

@@ -89,7 +89,7 @@ opt_common_threads(uint optind, char *opt, enum OptMode mode)
 		error_tta("%s: argument out of range: %d", "--threads", t.d);
 	}
 
-	g_nthreads = (uint) t.d;
+	g_nthreads = t.d;
 	g_flag.threadmode = TM_MULTI;
 
 	return r;

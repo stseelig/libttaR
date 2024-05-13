@@ -34,7 +34,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-static void tta2enc_loop(const struct OpenedFilesMember *const restrict, int)
+static void tta2enc_loop(const struct OpenedFilesMember *const restrict)
 /*@globals	fileSystem,
 		internalState,
 		g_rm_on_sigint
@@ -72,7 +72,6 @@ tta2enc(uint optind)
 	struct OpenedFiles openedfiles;
 	struct OpenedFilesMember *ofm;
 	uint nerrors_file = 0;
-	const int nthreads = (g_nthreads != 0 ? g_nthreads : get_nprocs());
 	struct timespec ts_start, ts_stop;
 	size_t i;
 	union {	int	d;
@@ -163,7 +162,7 @@ tta2enc(uint optind)
 			(void) fputc('\n', stderr);
 		}
 		//
-		tta2enc_loop(openedfiles.file[i], nthreads);
+		tta2enc_loop(openedfiles.file[i]);
 		//
 		(void) fclose(openedfiles.file[i]->infile);
 		openedfiles.file[i]->infile = NULL;
@@ -198,9 +197,7 @@ tta2enc(uint optind)
 }
 
 static void
-tta2enc_loop(
-	const struct OpenedFilesMember *const restrict ofm, int nthreads
-)
+tta2enc_loop(const struct OpenedFilesMember *const restrict ofm)
 /*@globals	fileSystem,
 		internalState,
 		g_rm_on_sigint
@@ -218,6 +215,8 @@ tta2enc_loop(
 	char *const restrict outfile_name = get_outfile_name(
 		infile_name, get_encfmt_sfx(fstat->encfmt)
 	);
+	//
+	const int nthreads = (g_nthreads != 0 ? g_nthreads : get_nprocs());
 	//
 	struct EncStats estat;
 	struct SeekTable seektable;

@@ -36,16 +36,16 @@
 #undef infile
 static uint ttaenc_frame_st(
 	/*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
-	/*@partial@*/ struct LibTTAr_CodecState_User *const restrict user,
+	/*@out@*/ struct LibTTAr_CodecState_User *const restrict user_out,
 	const struct EncBuf *const restrict encbuf,
 	FILE *const restrict outfile, const char *const,
 	FILE *const restrict infile, const char *const, size_t,
-	enum TTASampleBytes, uint
+	enum TTASampleBytes, uint, size_t
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
 		*priv,
-		*user,
+		*user_out,
 		*encbuf->i32buf,
 		*encbuf->ttabuf,
 		outfile,
@@ -58,7 +58,8 @@ static uint ttaenc_frame_st(
 static void ttaenc_frame_adjust_st(
 	size_t *const restrict readlen,
 	const struct LibTTAr_CodecState_User *const restrict,
-	FILE *const restrict infile, const char *const, enum TTASampleBytes
+	FILE *const restrict infile, const char *const, enum TTASampleBytes,
+	size_t
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -88,24 +89,25 @@ ttaenc_loop_st(
 		infile
 @*/
 {
+	const uint                nchan       = (uint) fstat->nchan;
+	const enum TTASampleBytes samplebytes = fstat->samplebytes;
+
 	struct LibTTAr_CodecState_Priv *priv = NULL;
 	struct LibTTAr_CodecState_User user;
 	struct EncBuf encbuf;
 	struct EncStats estat;
 	//
+	size_t ni32_perframe;
 	uint enc_retval;
 	union {	size_t z; } t;
 
 	memset(&estat, 0x00, sizeof estat);
 
 	// setup buffers
-	t.z = encbuf_init(
-		&encbuf, g_samplebuf_len, (uint) fstat->nchan,
-		fstat->samplebytes
-	);
-	assert(t.z == g_samplebuf_len * fstat->nchan);
+	t.z = encbuf_init(&encbuf, g_samplebuf_len, nchan, samplebytes);
+	assert(t.z == (size_t) (g_samplebuf_len * nchan));
 	//
-	t.z = libttaR_codecstate_priv_size((uint) fstat->nchan);
+	t.z = libttaR_codecstate_priv_size(nchan);
 	assert(t.z != 0);
 	priv = malloc(t.z);
 	if UNLIKELY ( priv == NULL ){
@@ -113,29 +115,27 @@ ttaenc_loop_st(
 	}
 	assert(priv != NULL);
 
-	user.ni32_perframe = fstat->buflen;
+	ni32_perframe = fstat->buflen;
 	do {
-		if ( (! g_flag.quiet) && (estat.nframes % (size_t) 64 == 0) ){
+		if ( (! g_flag.quiet) && (estat.nframes % SPINNER_FRQ == 0) ){
 			errprint_spinner();
 		}
 
-		user.ni32_perframe	= enc_readlen(
+		ni32_perframe	= enc_readlen(
 			fstat->framelen, estat.nsamples, fstat->decpcm_size,
-			fstat->samplebytes, fstat->nchan
+			samplebytes, nchan
 		);
 
 		// encode and write frame
-		enc_retval		= ttaenc_frame_st(
+		enc_retval	= ttaenc_frame_st(
 			priv, &user, &encbuf, outfile, outfile_name, infile,
-			infile_name, estat.nframes, fstat->samplebytes,
-			(uint) fstat->nchan
+			infile_name, estat.nframes, samplebytes, nchan,
+			ni32_perframe
 		);
 
 		// write frame footer (crc)
 		user.crc = htole32(user.crc);
-		t.z = fwrite(
-			&user.crc, sizeof user.crc, (size_t) 1, outfile
-		);
+		t.z = fwrite(&user.crc, sizeof user.crc, (size_t) 1, outfile);
 		if UNLIKELY ( t.z != (size_t) 1 ){
 			error_sys_nf(errno, "fwrite", outfile_name);
 		}
@@ -149,9 +149,7 @@ ttaenc_loop_st(
 
 		estat.nframes		+= (size_t) 1;
 		estat.nsamples		+= user.ni32_total;
-		estat.nsamples_perchan	+= (size_t) (
-			user.ni32_total / fstat->nchan
-		);
+		estat.nsamples_perchan	+= (size_t) (user.ni32_total / nchan);
 		estat.nbytes_encoded	+= user.nbytes_tta_total;
 	}
 	while (	(user.ni32_total == fstat->buflen) && (enc_retval == 0) );
@@ -170,16 +168,17 @@ ttaenc_loop_st(
 static uint
 ttaenc_frame_st(
 	/*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
-	/*@partial@*/ struct LibTTAr_CodecState_User *const restrict user,
+	/*@out@*/ struct LibTTAr_CodecState_User *const restrict user_out,
 	const struct EncBuf *const restrict encbuf,
 	FILE *const restrict outfile, const char *const outfile_name,
 	FILE *const restrict infile, const char *const infile_name,
-	size_t frame_num, enum TTASampleBytes samplebytes, uint nchan
+	size_t frame_num, enum TTASampleBytes samplebytes, uint nchan,
+	size_t ni32_perframe
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
 		*priv,
-		*user,
+		*user_out,
 		*encbuf->i32buf,
 		*encbuf->ttabuf,
 		outfile,
@@ -187,22 +186,21 @@ ttaenc_frame_st(
 @*/
 {
 	uint r = 0;
+	struct LibTTAr_CodecState_User user = LIBTTAr_CODECSTATE_USER_INIT;
 	size_t readlen, nmemb_read;
 	union {	size_t	z;
 		uint	u;
 		int	d;
 	} t;
 
-// TODO local user and copy over
-
-	user->is_new_frame = true;
 	t.z = g_samplebuf_len * nchan;
-	readlen = (t.z < user->ni32_perframe ? t.z : user->ni32_perframe);
+	readlen = (t.z < ni32_perframe ? t.z : ni32_perframe);
 	goto loop_entr;
 	do {
 		// adjust for next chunk
 		ttaenc_frame_adjust_st(
-			&readlen, user, infile, infile_name, samplebytes
+			&readlen, &user, infile, infile_name, samplebytes,
+			ni32_perframe
 		);
 loop_entr:
 		// read pcm from infile
@@ -235,29 +233,30 @@ loop_entr:
 			r = encst_frame_zeropad(
 				encbuf->i32buf, nmemb_read, t.u, nchan
 			);
-			nmemb_read		+= r;
-			user->ni32_perframe	+= r;
+			nmemb_read    += r;
+			ni32_perframe += r;
 		}
 
 		// encode i32 to tta
 		t.d = libttaR_tta_encode(
 			encbuf->ttabuf, encbuf->i32buf, encbuf->ttabuf_len,
-			encbuf->i32buf_len, nmemb_read, priv, user,
-			samplebytes, nchan
+			encbuf->i32buf_len, nmemb_read, priv, &user,
+			samplebytes, nchan, ni32_perframe
 		);
 		assert(t.d == 0);
 
 		// write tta to outfile
 		t.z = fwrite(
-			encbuf->ttabuf, (size_t) 1, user->nbytes_tta, outfile
+			encbuf->ttabuf, (size_t) 1, user.nbytes_tta, outfile
 		);
 		// nbytes_tta could be 0 for a small g_samplebuf_len
-		if UNLIKELY ( t.z != user->nbytes_tta ){
+		if UNLIKELY ( t.z != user.nbytes_tta ){
 			error_sys_nf(errno, "fwrite", outfile_name);
 		}
 	}
-	while ( (! user->frame_is_finished) && (r == 0) );
+	while ( (user.ncalls_codec != 0) && (r == 0) );
 
+	*user_out = user;
 	return r;
 }
 
@@ -267,7 +266,7 @@ ttaenc_frame_adjust_st(
 	size_t *const restrict readlen,
 	const struct LibTTAr_CodecState_User *const restrict user,
 	FILE *const restrict infile, const char *const infile_name,
-	enum TTASampleBytes samplebytes
+	enum TTASampleBytes samplebytes, size_t ni32_perframe
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -289,8 +288,8 @@ ttaenc_frame_adjust_st(
 	}
 
 	// adjust readlen
-	if ( user->ni32_total + *readlen > user->ni32_perframe ){
-		*readlen = user->ni32_perframe - user->ni32_total;
+	if ( user->ni32_total + *readlen > ni32_perframe ){
+		*readlen = ni32_perframe - user->ni32_total;
 	}
 
 	return;

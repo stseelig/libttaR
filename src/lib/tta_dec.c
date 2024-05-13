@@ -97,18 +97,12 @@ libttaR_tta_decode(
 	size_t dest_len, size_t src_len,
 	size_t ni32_target, size_t nbytes_tta_target,
 	/*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
-	/*@partial@*/ struct LibTTAr_CodecState_User *const restrict user,
-	enum TTASampleBytes samplebytes, uint nchan
+	/*@in@*/ struct LibTTAr_CodecState_User *const restrict user,
+	enum TTASampleBytes samplebytes, uint nchan, size_t ni32_perframe
 )
 /*@modifies	*dest,
 		*priv,
-		user->is_new_frame,
-		user->frame_is_finished,
-		user->crc,
-		user->ni32,
-		user->ni32_total,
-		user->nbytes_tta,
-		user->nbytes_tta_total
+		*user
 @*/
 {
 	size_t r;
@@ -123,8 +117,8 @@ libttaR_tta_decode(
 	}
 
 	// initial state setup
-	if ( user->is_new_frame ){
-		state_init(priv, user, nchan);
+	if ( user->ncalls_codec == 0 ){
+		state_init(priv, nchan);
 	}
 
 	// check for bad parameters
@@ -132,7 +126,7 @@ libttaR_tta_decode(
 	//  return values matter. not really sure why
 	if ( (ni32_target == 0) || (ni32_target > dest_len)
 	    ||
-	     (ni32_target + user->ni32_total > user->ni32_perframe)
+	     (ni32_target + user->ni32_total > ni32_perframe)
 	    ||
 	     (ni32_target % nchan != 0)
 	){
@@ -197,10 +191,11 @@ libttaR_tta_decode(
 
 	// post-decode
 	user->ni32_total += user->ni32;
-	if ( user->ni32_total == user->ni32_perframe ){
-		user->frame_is_finished	= true;
-		user->crc		= crc32_end(user->crc);
+	if ( user->ni32_total == ni32_perframe ){
+		user->ncalls_codec  = 0;
+		user->crc           = crc32_end(user->crc);
 	}
+	else {	user->ncalls_codec += (size_t) 1; }
 	user->nbytes_tta	= r;
 	user->nbytes_tta_total += r;
 

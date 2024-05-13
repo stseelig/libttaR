@@ -36,16 +36,16 @@
 #undef infile
 static uint ttadec_frame_st(
 	/*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
-	/*@partial@*/ struct LibTTAr_CodecState_User *const restrict user,
+	/*@out@*/ struct LibTTAr_CodecState_User *const restrict user_out,
 	const struct DecBuf *const restrict decbuf,
 	FILE *const restrict outfile, const char *const,
 	FILE *const restrict infile, const char *const, size_t, size_t,
-	enum TTASampleBytes, uint
+	enum TTASampleBytes, uint, size_t
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
 		*priv,
-		*user,
+		*user_out,
 		*decbuf->i32buf,
 		*decbuf->ttabuf,
 		outfile,
@@ -60,7 +60,7 @@ static void
 ttadec_frame_adjust_st(
 	size_t *const restrict readlen, size_t *const restrict ni32_target,
 	const struct LibTTAr_CodecState_User *const restrict,
-	FILE *const restrict infile, const char *const, size_t
+	FILE *const restrict infile, const char *const, size_t, size_t
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -91,12 +91,15 @@ ttadec_loop_st(
 		infile
 @*/
 {
+	const uint                nchan       = (uint) fstat->nchan;
+	const enum TTASampleBytes samplebytes = fstat->samplebytes;
+
 	struct LibTTAr_CodecState_Priv *priv = NULL;
 	struct LibTTAr_CodecState_User user;
 	struct DecBuf decbuf;
 	struct DecStats dstat;
 	//
-	size_t framesize_tta;
+	size_t ni32_perframe, framesize_tta;
 	uint dec_retval;
 	u32 crc_read;
 	union {	size_t	z;
@@ -106,13 +109,10 @@ ttadec_loop_st(
 	memset(&dstat, 0x00, sizeof dstat);
 
 	// setup buffers
-	t.z = decbuf_init(
-		&decbuf, g_samplebuf_len, (uint) fstat->nchan,
-		fstat->samplebytes
-	);
-	assert(t.z == g_samplebuf_len * fstat->nchan);
+	t.z = decbuf_init(&decbuf, g_samplebuf_len, nchan, samplebytes);
+	assert(t.z == (size_t) (g_samplebuf_len * nchan));
 	//
-	t.z = libttaR_codecstate_priv_size((uint) fstat->nchan);
+	t.z = libttaR_codecstate_priv_size(nchan);
 	assert(t.z != 0);
 	priv = malloc(t.z);
 	if UNLIKELY ( priv == NULL ){
@@ -120,9 +120,9 @@ ttadec_loop_st(
 	}
 	assert(priv != NULL);
 
-	user.ni32_perframe = fstat->buflen;
+	ni32_perframe = fstat->buflen;
 	do {
-		if ( (! g_flag.quiet) && (dstat.nframes % (size_t) 64 == 0) ){
+		if ( (! g_flag.quiet) && (dstat.nframes % SPINNER_FRQ == 0) ){
 			errprint_spinner();
 		}
 
@@ -130,7 +130,7 @@ ttadec_loop_st(
 		t.z = dstat.nsamples_perchan + fstat->framelen;
 		if ( t.z > fstat->nsamples ){
 			t.z = fstat->nsamples - dstat.nsamples_perchan;
-			user.ni32_perframe = t.z * fstat->nchan;
+			ni32_perframe = t.z * nchan;
 		}
 		//
 		framesize_tta  = letoh32(seektable->table[dstat.nframes]);
@@ -140,7 +140,7 @@ ttadec_loop_st(
 		dec_retval = ttadec_frame_st(
 			priv, &user, &decbuf, outfile, outfile_name, infile,
 			infile_name, dstat.nframes, framesize_tta,
-			fstat->samplebytes, (uint) fstat->nchan
+			samplebytes, nchan, ni32_perframe
 		);
 
 		// check frame crc
@@ -164,9 +164,7 @@ ttadec_loop_st(
 
 		dstat.nframes		+= (size_t) 1;
 		dstat.nsamples		+= user.ni32_total;
-		dstat.nsamples_perchan	+= (size_t) (
-			user.ni32_total / fstat->nchan
-		);
+		dstat.nsamples_perchan	+= (size_t) (user.ni32_total / nchan);
 		dstat.nbytes_decoded	+= user.nbytes_tta_total;
 	}
 	while ( (user.ni32_total == fstat->buflen) && (dec_retval == 0) );
@@ -185,17 +183,17 @@ ttadec_loop_st(
 static uint
 ttadec_frame_st(
 	/*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
-	/*@partial@*/ struct LibTTAr_CodecState_User *const restrict user,
+	/*@out@*/ struct LibTTAr_CodecState_User *const restrict user_out,
 	const struct DecBuf *const restrict decbuf,
 	FILE *const restrict outfile, const char *const outfile_name,
 	FILE *const restrict infile, const char *const infile_name,
 	size_t frame_num, size_t framesize_tta,
-	enum TTASampleBytes samplebytes, uint nchan
+	enum TTASampleBytes samplebytes, uint nchan, size_t ni32_perframe
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
 		*priv,
-		*user,
+		*user_out,
 		*decbuf->i32buf,
 		*decbuf->ttabuf,
 		outfile,
@@ -203,16 +201,16 @@ ttadec_frame_st(
 @*/
 {
 	uint r = 0;
+	struct LibTTAr_CodecState_User user = LIBTTAr_CODECSTATE_USER_INIT;
 	size_t readlen, nbytes_read, ni32_target;
 	union {	size_t	z;
 		uint	u;
 		int	d;
 	} t;
 
-	user->is_new_frame = true;
-	ni32_target = (decbuf->i32buf_len < user->ni32_perframe
+	ni32_target = (decbuf->i32buf_len < ni32_perframe
 		? decbuf->i32buf_len
-		: user->ni32_perframe
+		: ni32_perframe
 	);
 	readlen = (decbuf->ttabuf_len < framesize_tta
 		? decbuf->ttabuf_len
@@ -222,8 +220,8 @@ ttadec_frame_st(
 	do {
 		// adjust for next chunk
 		ttadec_frame_adjust_st(
-			&readlen, &ni32_target, user, infile, infile_name,
-			framesize_tta
+			&readlen, &ni32_target, &user, infile, infile_name,
+			framesize_tta, ni32_perframe
 		);
 loop_entr:
 		// read tta from infile
@@ -244,44 +242,45 @@ loop_entr:
 		t.d = libttaR_tta_decode(
 			decbuf->i32buf, decbuf->ttabuf, decbuf->i32buf_len,
 			decbuf->ttabuf_len, ni32_target, nbytes_read, priv,
-			user, samplebytes, nchan
+			&user, samplebytes, nchan, ni32_perframe
 		);
 		assert(t.d == 0);
 
 		// check for truncated sample
-		if ( user->frame_is_finished ){
-			t.u = (uint) (user->ni32_total % nchan);
+		if ( user.ncalls_codec != 0 ){
+			t.u = (uint) (user.ni32_total % nchan);
 			if UNLIKELY ( t.u != 0 ){
 				warning_tta("%s: frame %zu: "
 					"last sample truncated, zero-padding",
 					infile_name, frame_num
 				);
 				r = dec_frame_zeropad(
-					decbuf->i32buf, user->ni32, t.u, nchan
+					decbuf->i32buf, user.ni32, t.u, nchan
 				);
-				user->ni32_perframe	+= r;
-				user->ni32		+= r;
-				user->ni32_total	+= r;
+				ni32_perframe   += r;
+				user.ni32       += r;
+				user.ni32_total += r;
 			}
 		}
 
 		// convert i32 to pcm
 		t.z = libttaR_pcm_write(
-			decbuf->pcmbuf, decbuf->i32buf, user->ni32,
+			decbuf->pcmbuf, decbuf->i32buf, user.ni32,
 			samplebytes
 		);
-		assert(t.z == user->ni32);
+		assert(t.z == user.ni32);
 
 		// write pcm to outfile
 		t.z = fwrite(
-			decbuf->pcmbuf, samplebytes, user->ni32, outfile
+			decbuf->pcmbuf, samplebytes, user.ni32, outfile
 		);
-		if UNLIKELY ( t.z != user->ni32 ){
+		if UNLIKELY ( t.z != user.ni32 ){
 			error_sys_nf(errno, "fwrite", outfile_name);
 		}
 	}
-	while ( (! user->frame_is_finished) && (r == 0) );
+	while ( (user.ncalls_codec != 0) && (r == 0) );
 
+	*user_out = user;
 	return r;
 }
 
@@ -291,7 +290,7 @@ ttadec_frame_adjust_st(
 	size_t *const restrict readlen, size_t *const restrict ni32_target,
 	const struct LibTTAr_CodecState_User *const restrict user,
 	FILE *const restrict infile, const char *const infile_name,
-	size_t framesize_tta
+	size_t framesize_tta, size_t ni32_perframe
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -317,8 +316,8 @@ ttadec_frame_adjust_st(
 	if ( user->nbytes_tta_total + *readlen > framesize_tta ){
 		*readlen = framesize_tta - user->nbytes_tta_total;
 	}
-	if ( user->ni32_total + *ni32_target > user->ni32_perframe ){
-		*ni32_target = user->ni32_perframe - user->ni32_total;
+	if ( user->ni32_total + *ni32_target > ni32_perframe ){
+		*ni32_target = ni32_perframe - user->ni32_total;
 	}
 
 	return;

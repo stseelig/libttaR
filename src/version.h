@@ -12,8 +12,8 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #define LIBTTAr_NUM_VERSION		1u
-#define LIBTTAr_NUM_VERSION_MAJOR	0u
-#define LIBTTAr_NUM_VERSION_MINOR	3u
+#define LIBTTAr_NUM_VERSION_MAJOR	1u
+#define LIBTTAr_NUM_VERSION_MINOR	0u
 #define LIBTTAr_NUM_VERSION_REVIS	0u
 #define LIBTTAr_STR_VERSION_EXTRA	"beta"
 #define LIBTTAr_STR_VERSION_DATE	"2024-XX-XX"

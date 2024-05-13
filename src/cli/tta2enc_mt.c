@@ -9,7 +9,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-//	deadlocks or aborts if (g_framequeue_len <= g_nthreads)             //
+//	deadlocks or aborts if (framequeue_len <= nthreads)                 //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
@@ -421,7 +421,7 @@ encmt_io(struct MTArg_EncIO *const restrict arg)
 			outfile_name, nchan
 		);
 loop0_entr:
-		if ( (! g_flag.quiet) && (framecnt % (size_t) 64 == 0) ){
+		if ( (! g_flag.quiet) && (framecnt % SPINNER_FRQ == 0) ){
 			errprint_spinner();
 		}
 io_read:
@@ -655,7 +655,7 @@ encmt_frame_encode(
 		*encbuf->ttabuf
 @*/
 {
-	struct LibTTAr_CodecState_User user;
+	struct LibTTAr_CodecState_User user = LIBTTAr_CODECSTATE_USER_INIT;
 	size_t ni32_target = ni32_perframe;
 	union {	size_t	z;
 		int	d;
@@ -671,9 +671,6 @@ encmt_frame_encode(
 	assert(t.z == ni32_target);
 
 	// encode i32 to tta
-	memset(&user, 0x00, sizeof user);
-	user.is_new_frame  = true;
-	user.ni32_perframe = ni32_perframe;
 	goto loop_entr;
 	do {
 		encbuf_adjust(encbuf, g_samplebuf_len, nchan, samplebytes);
@@ -684,11 +681,12 @@ loop_entr:
 			&encbuf->i32buf[user.ni32_total],
 			encbuf->ttabuf_len - user.nbytes_tta_total,
 			encbuf->i32buf_len - user.ni32_total,
-			ni32_target, priv, &user, samplebytes, nchan
+			ni32_target, priv, &user, samplebytes, nchan,
+			ni32_perframe
 		);
 		assert(t.d == 0);
 	}
-	while ( ! user.frame_is_finished );
+	while ( user.ncalls_codec != 0 );
 
 	*user_out = user;
 	return;

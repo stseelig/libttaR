@@ -2,7 +2,7 @@
 #define LIBTTAr_H
 /* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// libttaR.h - 1.0.3                                                        //
+// libttaR.h - 1.1.0                                                        //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
@@ -32,6 +32,54 @@ enum TTASampleBytes {
 /* seconds per TTA frame */
 #define TTA_FRAME_TIME		((double) 1.04489795918367346939)
 
+#define TTA_CRC32_INIT		((u32) 0xFFFFFFFFu)
+
+/* ######################################################################## */
+
+/* private state for the codec functions */
+struct LibTTAr_CodecState_Priv;
+
+/* ///////////////////////////////////////////////////////////////////////////
+//                                                                          //
+// struct LibTTAr_CodecState_User                                           //
+//                                                                          //
+//////////////////////////////////////////////////////////////////////////////
+//                                                                          //
+// description:                                                             //
+//              user readable state for the codec functions. _must_ be      //
+//      initialized before use                                              //
+//                                                                          //
+// fields:                                                                  //
+//              ncalls_codec:                                               //
+//                      will be 0 if the frame was finished coding, or it   //
+//      is the number of times the codec function has been called           //
+//              crc:                                                        //
+//                      frame CRC                                           //
+//              ni32:                                                       //
+//                      number of I32 read/written in call                  //
+//              ni32_total:                                                 //
+//                      total number of I32 read/written across all calls   //
+//      for the same frame                                                  //
+//              nbytes_tta:                                                 //
+//                      number of TTA bytes written/read in call            //
+//              nbytes_tta_total:                                           //
+//                      total number of TTA bytes written/read across all   //
+//      calls for the same frame                                            //
+//                                                                          //
+/////////////////////////////////////////////////////////////////////////// */
+struct LibTTAr_CodecState_User {
+	uint32_t	ncalls_codec;		/* 0 if frame is finished */
+	uint32_t	crc;
+	size_t		ni32;			/* enc: n-read, dec: n-writ */
+	size_t		ni32_total;		/* ~                        */
+	size_t		nbytes_tta;		/* enc: n-writ, dec: n-read */
+	size_t		nbytes_tta_total;	/* ~                        */
+};
+
+#define LIBTTAr_CODECSTATE_USER_INIT ((struct LibTTAr_CodecState_User) \
+	{0, TTA_CRC32_INIT, 0, 0, 0, 0} \
+)
+
 /* ######################################################################## */
 
 /* version numbers */
@@ -57,58 +105,6 @@ extern const char *const libttaR_str_copyright;
 /* license string */
 /*@observer@*/ /*@unchecked@*/ /*@unused@*/
 extern const char *const libttaR_str_license;
-
-/* ######################################################################## */
-
-/* private state for the codec functions */
-struct LibTTAr_CodecState_Priv;
-
-/* ///////////////////////////////////////////////////////////////////////////
-//                                                                          //
-// struct LibTTAr_CodecState_User                                           //
-//                                                                          //
-//////////////////////////////////////////////////////////////////////////////
-//                                                                          //
-// description:                                                             //
-//              user readable state for the codec functions                 //
-//                                                                          //
-// user-set fields:                                                         //
-//              ni32_perframe:                                              //
-//                      number of I32 per frame                             //
-//              is_new_frame:                                               //
-//                      set to true to start a new frame                    //
-// returned fields:                                                         //
-//              frame_is_finished:                                          //
-//                      codec function will set to true if the frame was    //
-//      finished                                                            //
-//              crc:                                                        //
-//                      frame CRC                                           //
-//              ni32:                                                       //
-//                      number of I32 read/written in call                  //
-//              ni32_total:                                                 //
-//                      total number of I32 read/written across all calls   //
-//      for the same frame                                                  //
-//              nbytes_tta:                                                 //
-//                      number of TTA bytes written/read in call            //
-//              nbytes_tta_total:                                           //
-//                      total number of TTA bytes written/read across all   //
-//      calls for the same frame                                            //
-//                                                                          //
-/////////////////////////////////////////////////////////////////////////// */
-struct LibTTAr_CodecState_User {
-
-	/* set by user */
-	size_t		ni32_perframe;		/* framelen * nchan */
-	bool		is_new_frame;
-
-	/* set by called function */
-	bool		frame_is_finished;
-	uint32_t	crc;
-	size_t		ni32;			/* enc: n-read, dec: n-writ */
-	size_t		ni32_total;		/* ~                        */
-	size_t		nbytes_tta;		/* enc: n-writ, dec: n-read */
-	size_t		nbytes_tta_total;	/* ~                        */
-};
 
 /* ######################################################################## */
 
@@ -145,6 +141,8 @@ struct LibTTAr_CodecState_User {
 //                      bytes-per-sample (1, 2, 3)                          //
 //              nchan:                                                      //
 //                      number of audio channels                            //
+//              ni32_perframe:                                              //
+//                      number of I32 per frame                             //
 //                                                                          //
 /////////////////////////////////////////////////////////////////////////// */
 #undef dest
@@ -156,6 +154,7 @@ struct LibTTAr_CodecState_User {
 #undef user
 #undef samplebytes
 #undef nchan
+#undef ni32_perframe
 /*@external@*/ /*@unused@*/
 extern int libttaR_tta_encode(
 	uint8_t *dest,
@@ -165,20 +164,15 @@ extern int libttaR_tta_encode(
 	size_t ni32_target,
 	/*@reldef@*/
 	struct LibTTAr_CodecState_Priv *priv,
-	/*@partial@*/
+	/*@in@*/
 	struct LibTTAr_CodecState_User *user,
 	enum TTASampleBytes samplebytes,
-	unsigned int nchan
+	unsigned int nchan,
+	size_t ni32_perframe
 )
 /*@modifies	*dest,
 		*priv,
-		user->is_new_frame,
-		user->frame_is_finished,
-		user->crc,
-		user->ni32,
-		user->ni32_total,
-		user->nbytes_tta,
-		user->nbytes_tta_total
+		*user
 @*/
 ;
 
@@ -217,6 +211,8 @@ extern int libttaR_tta_encode(
 //                      bytes-per-sample (1, 2, 3)                          //
 //              nchan:                                                      //
 //                      number of audio channels                            //
+//              ni32_perframe:                                              //
+//                      number of I32 per frame                             //
 //                                                                          //
 /////////////////////////////////////////////////////////////////////////// */
 #undef dest
@@ -228,6 +224,7 @@ extern int libttaR_tta_encode(
 #undef user
 #undef samplebytes
 #undef nchan
+#undef ni32_perframe
 /*@external@*/ /*@unused@*/
 extern int libttaR_tta_decode(
 	int32_t *dest,
@@ -238,20 +235,15 @@ extern int libttaR_tta_decode(
 	size_t nbytes_tta_target,
 	/*@reldef@*/
 	struct LibTTAr_CodecState_Priv *priv,
-	/*@partial@*/
+	/*@in@*/
 	struct LibTTAr_CodecState_User *user,
 	enum TTASampleBytes samplebytes,
-	unsigned int nchan
+	unsigned int nchan,
+	size_t ni32_perframe
 )
 /*@modifies	*dest,
 		*priv,
-		user->is_new_frame,
-		user->frame_is_finished,
-		user->crc,
-		user->ni32,
-		user->ni32_total,
-		user->nbytes_tta,
-		user->nbytes_tta_total
+		*user
 @*/
 ;
 
