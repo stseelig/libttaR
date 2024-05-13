@@ -245,8 +245,7 @@ shift32p4_bit(register u8 k, const enum ShiftMaskMode mode)
 	case SMM_SHIFT:
 		r = (u32) (k != 0
 			? 0x1u << ((u8) (k + 4u) <= (u8) 31u
-				? (u8) (k + 4u)
-				: (u8) 31u
+				? (u8) (k + 4u) : (u8) 31u
 			)
 			: 0
 		);
