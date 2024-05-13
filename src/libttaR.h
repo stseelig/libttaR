@@ -25,7 +25,7 @@ enum TTASampleBytes {
 	TTASAMPLEBYTES_2 = 2u,
 	TTASAMPLEBYTES_3 = 3u
 };
-#define TTA_SAMPLEBYTES_MAX	TTASAMPLEBYTES_3
+#define TTA_SAMPLEBYTES_MAX	((unsigned int) TTASAMPLEBYTES_3)
 #define TTA_SAMPLEBITS_MAX	((unsigned int) (8u*TTA_SAMPLEBYTES_MAX))
 #endif
 
@@ -47,7 +47,7 @@ struct LibTTAr_CodecState_Priv;
 //                                                                          //
 // description:                                                             //
 //              user readable state for the codec functions. _must_ be      //
-//      initialized before use                                              //
+//      initialized before the first call to code a frame                   //
 //                                                                          //
 // fields:                                                                  //
 //              ncalls_codec:                                               //
@@ -278,7 +278,7 @@ extern size_t libttaR_codecstate_priv_size(unsigned int nchan)
 //                                                                          //
 // description:                                                             //
 //              calculates a buffer size for the dest/src buffer for        //
-//      _tta_encode/_tta_decode, respectively                               //
+//      tta_encode/tta_decode, respectively                                 //
 //                                                                          //
 // return:                                                                  //
 //              size for a TTA buffer that is safe, or 0 on failure (bad    //
@@ -357,7 +357,6 @@ extern size_t libttaR_nsamples_perframe(size_t samplerate)
 )
 
 /* ######################################################################## */
-
 
 /* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //

@@ -29,7 +29,7 @@ enum TTASampleBytes {
 	TTASAMPLEBYTES_2 = 2u,
 	TTASAMPLEBYTES_3 = 3u
 };
-#define TTA_SAMPLEBYTES_MAX	TTASAMPLEBYTES_3
+#define TTA_SAMPLEBYTES_MAX	((unsigned int) TTASAMPLEBYTES_3)
 #define TTA_SAMPLEBITS_MAX	((unsigned int) (8u*TTA_SAMPLEBYTES_MAX))
 #endif
 

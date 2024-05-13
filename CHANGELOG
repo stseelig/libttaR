@@ -4,7 +4,7 @@
 1.1.0 (2024-XX-XX):-----------------------------------------------------------
 
 	- CodecState_User fields changed, and must be init'd before calling
-	- tta_encode and tta_decode have a new parameter
+	- tta_encode/tta_decode have a new parameter
 	- changed the version num/string layout
 
 1.0.2 (2024-04-24):-----------------------------------------------------------
@@ -26,7 +26,7 @@
 1.1.0 (2024-XX-XX):-----------------------------------------------------------
 
 	- multi-threaded encoder
-	- updated for libttaR 1.0.3
+	- updated for libttaR 1.1.0
 
 1.0.2 (2024-05-05):-----------------------------------------------------------
 

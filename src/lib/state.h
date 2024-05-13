@@ -46,7 +46,6 @@ state_init(
 {
 	MEMSET(&priv->bitcache, 0x00, sizeof priv->bitcache);
 	codec_init((struct Codec *) &priv->codec, nchan);
-
 	return;
 }
 
