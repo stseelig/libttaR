@@ -32,7 +32,7 @@ enum TTASampleBytes {
 /* seconds per TTA frame */
 #define TTA_FRAME_TIME		((double) 1.04489795918367346939)
 
-#define TTA_CRC32_INIT		((u32) 0xFFFFFFFFu)
+#define TTA_CRC32_INIT		((uint32_t) 0xFFFFFFFFu)
 
 /* ######################################################################## */
 
