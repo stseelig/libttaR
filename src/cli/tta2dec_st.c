@@ -247,7 +247,7 @@ loop_entr:
 		assert(t.d == 0);
 
 		// check for truncated sample
-		if ( user.ncalls_codec != 0 ){
+		if ( user.ncalls_codec == 0 ){
 			t.u = (uint) (user.ni32_total % nchan);
 			if UNLIKELY ( t.u != 0 ){
 				warning_tta("%s: frame %zu: "
