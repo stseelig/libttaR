@@ -47,7 +47,6 @@ static const char help_tta2dec_opts[] = {
 "\t\t"          "FMT: raw, w64, wav\n"
 "\t"    "-o, --outfile=FILE|DIR\t\t"    "set outfile name or directory\n"
 "\t"    "-q, --quiet\t\t\t"             "only warnings and errors printed\n"
-"\t"    "-S, --single-threaded\t\t"     "use single-threaded mode\n"
 };
 
 //////////////////////////////////////////////////////////////////////////////

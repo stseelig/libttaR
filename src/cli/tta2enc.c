@@ -34,7 +34,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-static void tta2enc_loop(const struct OpenedFilesMember *const restrict, uint)
+static void tta2enc_loop(const struct OpenedFilesMember *const restrict, int)
 /*@globals	fileSystem,
 		internalState,
 		g_rm_on_sigint
@@ -72,9 +72,7 @@ tta2enc(uint optind)
 	struct OpenedFiles openedfiles;
 	struct OpenedFilesMember *ofm;
 	uint nerrors_file = 0;
-	const uint nthreads = (g_nthreads != 0
-		? g_nthreads : (uint) get_nprocs()
-	);
+	const int nthreads = (g_nthreads != 0 ? g_nthreads : get_nprocs());
 	struct timespec ts_start, ts_stop;
 	size_t i;
 	union {	int	d;
@@ -201,7 +199,7 @@ tta2enc(uint optind)
 
 static void
 tta2enc_loop(
-	const struct OpenedFilesMember *const restrict ofm, uint nthreads
+	const struct OpenedFilesMember *const restrict ofm, int nthreads
 )
 /*@globals	fileSystem,
 		internalState,
@@ -278,7 +276,10 @@ tta2enc_loop(
 	}
 
 	// encode
-	if ( (g_flag.threadmode == TM_SINGLE) || (nthreads == 0) ){
+	if ( (g_flag.threadmode == TM_SINGLE)
+	    ||
+	     ((g_flag.threadmode == TM_UNSET) && (nthreads <= 1))
+	){
 		ttaenc_loop_st(
 			&seektable, &estat, fstat, outfile, outfile_name,
 			infile, infile_name
@@ -286,7 +287,7 @@ tta2enc_loop(
 	}
 	else {	ttaenc_loop_mt(
 			&seektable, &estat, fstat, outfile, outfile_name,
-			infile, infile_name, nthreads
+			infile, infile_name, (uint) nthreads
 		);
 	}
 

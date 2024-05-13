@@ -84,7 +84,7 @@ encbuf_init(
 // for multi-threaded
 void
 encbuf_adjust(
-	struct EncBuf *const restrict eb, uint nchan,
+	struct EncBuf *const restrict eb, size_t samplebuf_len, uint nchan,
 	enum TTASampleBytes samplebytes
 )
 /*@globals	fileSystem,
@@ -97,9 +97,7 @@ encbuf_adjust(
 {
 	union {	size_t z; } t;
 
-	t.z = libttaR_ttabuf_size(
-		G_SAMPLEBUF_LEN_DEFAULT, nchan, samplebytes
-	);
+	t.z = libttaR_ttabuf_size(samplebuf_len, nchan, samplebytes);
 	assert(t.z != 0);
 	eb->ttabuf_len += t.z;
 

@@ -25,6 +25,13 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
+static void errprint_ttaR_version(
+	uint, uint, uint, uint, const char *, const char *
+)
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem@*/
+;
+
 static void errprint_libstr_copyright(const char *)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
@@ -104,15 +111,42 @@ errprint_program_intro(void)
 /*@modifies	fileSystem@*/
 {
 	(void) fputc('\n', stderr);
-	(void) fprintf(stderr, " %s\n", ttaR_str_version);
+	errprint_ttaR_version(
+		ttaR_num_version, ttaR_num_version_major,
+		ttaR_num_version_minor, ttaR_num_version_revis,
+		ttaR_str_version_extra, ttaR_str_version_date
+	);
 	errprint_libstr_copyright(ttaR_str_copyright);
-	(void) fprintf(stderr, " %s\n", libttaR_str_version);
+	errprint_ttaR_version(
+		libttaR_num_version, libttaR_num_version_major,
+		libttaR_num_version_minor, libttaR_num_version_revis,
+		libttaR_str_version_extra, libttaR_str_version_date
+	);
 	errprint_libstr_copyright(libttaR_str_copyright);
 	(void) fprintf(stderr,
 		" This program comes with ABSOLUTELY NO WARRANTY\n"
 	);
 	(void) fputc('\n', stderr);
 	return;
+}
+
+static void
+errprint_ttaR_version(
+	uint ver, uint ver_major, uint ver_minor, uint ver_revis,
+	const char *ver_extra, const char *ver_date
+)
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem@*/
+{
+	(void) fprintf(stderr, "%u.%u.%u", ver, ver_major, ver_minor);
+	if ( ver_revis != 0 ){
+		(void) fprintf(stderr, "-%u", ver_revis);
+	}
+	if ( ver_extra[0] != '\0' ){
+		(void) fprintf(stderr, "~%s", ver_extra);
+	}
+	(void) fprintf(stderr, " (%s)", ver_date);
+	(void) fputc('\n', stderr);
 }
 
 static void

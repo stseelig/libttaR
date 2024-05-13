@@ -78,11 +78,12 @@ const uint ttaR_num_version_minor = TTAr_NUM_VERSION_MINOR;
 const uint ttaR_num_version_revis = TTAr_NUM_VERSION_REVIS;
 
 /*@unchecked@*/ /*@unused@*/ /*@observer@*/
-const char ttaR_str_version[] = TTAr_STR_VERSION;
+const char ttaR_str_version_extra[] = TTAr_STR_VERSION_EXTRA;
+/*@unchecked@*/ /*@unused@*/ /*@observer@*/
+const char ttaR_str_version_date[] = TTAr_STR_VERSION_DATE;
 
 /*@unchecked@*/ /*@unused@*/ /*@observer@*/
 const char ttaR_str_copyright[] = TTAr_STR_COPYRIGHT;
-
 /*@unchecked@*/ /*@unused@*/ /*@observer@*/
 const char ttaR_str_license[] = TTAr_STR_LICENSE;
 
@@ -101,15 +102,17 @@ u8 g_nwarnings;
 /*@checkmod@*/
 struct GlobalFlags g_flag = {
 	.decfmt		= DECFMT_W64,
-	.threadmode	= TM_MULTI
+	.threadmode	= TM_UNSET
 };
 /*@=fullinitblock@*/
 
+// MAYBE opt to set, or remove
 /*@checkmod@*/
 size_t g_samplebuf_len = G_SAMPLEBUF_LEN_DEFAULT;
 
+// signed because of get_nprocs
 /*@checkmod@*/
-uint g_nthreads = 0u;
+int g_nthreads = 0;
 
 /*@checkmod@*/ /*@dependent@*/ /*@null@*/
 char *g_rm_on_sigint = NULL;

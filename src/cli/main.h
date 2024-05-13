@@ -27,6 +27,7 @@ enum ProgramMode {
 };
 
 enum ThreadMode {
+	TM_UNSET,
 	TM_SINGLE,
 	TM_MULTI
 };
@@ -55,11 +56,12 @@ extern const uint ttaR_num_version_minor;
 extern const uint ttaR_num_version_revis;
 
 /*@unchecked@*/
-extern const char ttaR_str_version[];
+extern const char ttaR_str_version_extra[];
+/*@unchecked@*/
+extern const char ttaR_str_version_date[];
 
 /*@unchecked@*/
 extern const char ttaR_str_copyright[];
-
 /*@unchecked@*/
 extern const char ttaR_str_license[];
 
@@ -82,7 +84,7 @@ extern struct GlobalFlags g_flag;
 extern size_t  g_samplebuf_len;
 
 /*@checkmod@*/
-extern uint g_nthreads;
+extern int g_nthreads;
 
 /*@checkmod@*/ /*@dependent@*/ /*@null@*/
 extern char *g_rm_on_sigint;

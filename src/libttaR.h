@@ -2,7 +2,7 @@
 #define LIBTTAr_H
 /* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// libttaR.h - 1.0.X                                                        //
+// libttaR.h - 1.0.3                                                        //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
@@ -44,17 +44,19 @@ extern const unsigned int libttaR_num_version_minor;
 /*@unchecked@*/ /*@unused@*/
 extern const unsigned int libttaR_num_version_revis;
 
-/* version string */
+/* version strings */
 /*@observer@*/ /*@unchecked@*/ /*@unused@*/
-extern const char *libttaR_str_version;
+extern const char *const libttaR_str_version_extra;
+/*@observer@*/ /*@unchecked@*/ /*@unused@*/
+extern const char *const libttaR_str_version_date;
 
 /* copyright string */
 /*@observer@*/ /*@unchecked@*/ /*@unused@*/
-extern const char *libttaR_str_copyright;
+extern const char *const libttaR_str_copyright;
 
 /* license string */
 /*@observer@*/ /*@unchecked@*/ /*@unused@*/
-extern const char *libttaR_str_license;
+extern const char *const libttaR_str_license;
 
 /* ######################################################################## */
 

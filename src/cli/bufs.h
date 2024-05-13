@@ -62,7 +62,7 @@ extern size_t encbuf_init(
 
 #undef eb
 extern void encbuf_adjust(
-	struct EncBuf *const restrict eb, uint, enum TTASampleBytes
+	struct EncBuf *const restrict eb, size_t, uint, enum TTASampleBytes
 )
 /*@globals	fileSystem,
 		internalState

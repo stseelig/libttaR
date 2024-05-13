@@ -660,7 +660,9 @@ encmt_frame_encode(
 	union {	size_t	z;
 		int	d;
 	} t;
-
+#ifdef NDEBUG
+	(void) t.d;	// gcc
+#endif
 	// convert pcm to i32
 	t.z = libttaR_pcm_read(
 		encbuf->i32buf, encbuf->pcmbuf, ni32_target,
@@ -674,7 +676,7 @@ encmt_frame_encode(
 	user.ni32_perframe = ni32_perframe;
 	goto loop_entr;
 	do {
-		encbuf_adjust(encbuf, nchan, samplebytes);
+		encbuf_adjust(encbuf, g_samplebuf_len, nchan, samplebytes);
 		ni32_target = ni32_perframe - user.ni32_total;
 loop_entr:
 		t.d = libttaR_tta_encode(
