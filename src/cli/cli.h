@@ -33,11 +33,6 @@ INLINE double timediff(
 
 //==========================================================================//
 
-extern void errprint_program_intro(void)
-/*@globals	fileSystem@*/
-/*@modifies	fileSystem@*/
-;
-
 extern void errprint_stats_precodec(
 	const struct FileStats *const restrict, const char *const restrict,
 	const char *const restrict, enum ProgramMode

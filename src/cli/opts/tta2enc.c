@@ -51,7 +51,6 @@ const struct OptDict tta2enc_optdict[] = {
 	{ "rawpcm"		, -1	, opt_tta2enc_rawpcm		},
 	{ "single-threaded"	, 'S'	, opt_common_single_threaded	},
 	{ "threads"		, 't'	, opt_common_threads		},
-
 	{ NULL			,  0	, NULL				}
 };
 
@@ -181,8 +180,8 @@ opt_tta2enc_help(
 	(void) opt;
 	(void) mode;
 #endif
-	errprint_help_tta2enc();
-	exit(EXIT_SUCCESS);;
+	errprint_help_mode_encode();
+	exit(EXIT_SUCCESS);
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////

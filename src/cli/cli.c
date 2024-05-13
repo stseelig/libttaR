@@ -17,25 +17,12 @@
 #include <inttypes.h>
 #include <stdio.h>
 
-#include "../libttaR.h"
 #include "../splint.h"
 
 #include "debug.h"
 #include "main.h"	// enum ProgramMode
 
 //////////////////////////////////////////////////////////////////////////////
-
-static void errprint_ttaR_version(
-	uint, uint, uint, uint, const char *, const char *
-)
-/*@globals	fileSystem@*/
-/*@modifies	fileSystem@*/
-;
-
-static void errprint_libstr_copyright(const char *)
-/*@globals	fileSystem@*/
-/*@modifies	fileSystem@*/
-;
 
 static void errprint_stats_infile(const char *const restrict)
 /*@globals	fileSystem@*/
@@ -106,71 +93,6 @@ static void errprint_chanmask_wav(uint, u32)
 //////////////////////////////////////////////////////////////////////////////
 
 void
-errprint_program_intro(void)
-/*@globals	fileSystem@*/
-/*@modifies	fileSystem@*/
-{
-	(void) fputc('\n', stderr);
-	errprint_ttaR_version(
-		ttaR_num_version, ttaR_num_version_major,
-		ttaR_num_version_minor, ttaR_num_version_revis,
-		ttaR_str_version_extra, ttaR_str_version_date
-	);
-	errprint_libstr_copyright(ttaR_str_copyright);
-	errprint_ttaR_version(
-		libttaR_num_version, libttaR_num_version_major,
-		libttaR_num_version_minor, libttaR_num_version_revis,
-		libttaR_str_version_extra, libttaR_str_version_date
-	);
-	errprint_libstr_copyright(libttaR_str_copyright);
-	(void) fprintf(stderr,
-		" This program comes with ABSOLUTELY NO WARRANTY\n"
-	);
-	(void) fputc('\n', stderr);
-	return;
-}
-
-static void
-errprint_ttaR_version(
-	uint ver, uint ver_major, uint ver_minor, uint ver_revis,
-	const char *ver_extra, const char *ver_date
-)
-/*@globals	fileSystem@*/
-/*@modifies	fileSystem@*/
-{
-	(void) fprintf(stderr, "%u.%u.%u", ver, ver_major, ver_minor);
-	if ( ver_revis != 0 ){
-		(void) fprintf(stderr, "-%u", ver_revis);
-	}
-	if ( ver_extra[0] != '\0' ){
-		(void) fprintf(stderr, "~%s", ver_extra);
-	}
-	(void) fprintf(stderr, " (%s)", ver_date);
-	(void) fputc('\n', stderr);
-}
-
-static void
-errprint_libstr_copyright(const char *str)
-/*@globals	fileSystem@*/
-/*@modifies	fileSystem@*/
-{
-
-	const char *substr;
-	ptrdiff_t diff;
-
-	do {	substr = strchr(str, ';');
-		if ( substr != NULL ){
-			diff = (ptrdiff_t) (substr - str);
-			(void) fprintf(stderr, "\t%.*s\n", (int) diff, str);
-			str = &substr[1];
-		}
-		else { (void) fprintf(stderr, "\t%s\n", str); }
-	} while ( substr != NULL );
-
-	return;
-}
-
-void
 errprint_stats_precodec(
 	const struct FileStats *const restrict fstat,
 	const char *const restrict infile_name,
@@ -183,7 +105,6 @@ errprint_stats_precodec(
 	errprint_stats_outfile(outfile_name);
 	errprint_stats_format(fstat, mode);
 	errprint_stats_frame(fstat);
-	//errprint_stats_membuf(fstat);
 	return;
 }
 

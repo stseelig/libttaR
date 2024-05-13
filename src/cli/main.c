@@ -22,7 +22,7 @@
 #include "../version.h"
 
 #include "debug.h"
-#include "cli.h"
+#include "help.h"
 #include "main.h"
 
 //////////////////////////////////////////////////////////////////////////////
@@ -102,7 +102,7 @@ u8 g_nwarnings;
 /*@checkmod@*/
 struct GlobalFlags g_flag = {
 	.decfmt		= DECFMT_W64,
-	.threadmode	= TM_UNSET
+	.threadmode	= THREADMODE_UNSET
 };
 /*@=fullinitblock@*/
 
@@ -167,11 +167,7 @@ main(int argc, /*@dependent@*/ char **argv)
 	else if UNLIKELY ( true ) {
 		error_tta_nf("bad mode '%s'", argv[1]);
 print_main_help:
-		errprint_program_intro();
-		(void) fprintf(stderr,
-			" ttaR encode --help\n"
-			" ttaR decode --help\n"
-		);
+		errprint_help_main();
 		r = EXIT_FAILURE;
 	} else{;}
 

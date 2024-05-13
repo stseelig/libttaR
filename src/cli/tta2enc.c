@@ -275,9 +275,9 @@ tta2enc_loop(const struct OpenedFilesMember *const restrict ofm)
 	}
 
 	// encode
-	if ( (g_flag.threadmode == TM_SINGLE)
+	if ( (g_flag.threadmode == THREADMODE_SINGLE)
 	    ||
-	     ((g_flag.threadmode == TM_UNSET) && (nthreads <= 1))
+	     ((g_flag.threadmode == THREADMODE_UNSET) && (nthreads <= 1))
 	){
 		ttaenc_loop_st(
 			&seektable, &estat, fstat, outfile, outfile_name,

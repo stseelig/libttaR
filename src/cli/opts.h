@@ -58,7 +58,7 @@ extern int opt_common_single_threaded(uint, char *, enum OptMode)
 ;
 
 #undef opt
-int opt_common_threads(uint, char *opt, enum OptMode)
+extern int opt_common_threads(uint, char *opt, enum OptMode)
 /*@globals	fileSystem,
 		g_flag
 @*/

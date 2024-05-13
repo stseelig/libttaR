@@ -52,7 +52,7 @@ const struct OptDict tta2dec_optdict[] = {
 	{ "outfile"		, 'o'	, opt_common_outfile		},
 	{ "quiet"		, 'q'	, opt_common_quiet		},
 	{ "single-threaded"	, 'S'	, opt_common_single_threaded	},
-
+	{ "threads"		, 't'	, opt_common_threads		},
 	{ NULL			,  0	, NULL				}
 };
 
@@ -128,8 +128,8 @@ opt_tta2dec_help(
 	(void) opt;
 	(void) mode;
 #endif
-	errprint_help_tta2dec();
-	exit(EXIT_SUCCESS);;
+	errprint_help_mode_decode();
+	exit(EXIT_SUCCESS);
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////

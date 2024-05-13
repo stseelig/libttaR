@@ -27,9 +27,9 @@ enum ProgramMode {
 };
 
 enum ThreadMode {
-	TM_UNSET,
-	TM_SINGLE,
-	TM_MULTI
+	THREADMODE_UNSET,
+	THREADMODE_SINGLE,
+	THREADMODE_MULTI
 };
 
 struct GlobalFlags {

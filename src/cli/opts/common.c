@@ -90,7 +90,7 @@ opt_common_threads(uint optind, char *opt, enum OptMode mode)
 	}
 
 	g_nthreads = t.d;
-	g_flag.threadmode = TM_MULTI;
+	g_flag.threadmode = THREADMODE_MULTI;
 
 	return r;
 }
@@ -172,7 +172,7 @@ opt_common_single_threaded(
 	(void) opt;
 	(void) mode;
 #endif
-	g_flag.threadmode = TM_SINGLE;
+	g_flag.threadmode = THREADMODE_SINGLE;
 	return 0;
 }
 

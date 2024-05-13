@@ -209,12 +209,10 @@ ttadec_frame_st(
 	} t;
 
 	ni32_target = (decbuf->i32buf_len < ni32_perframe
-		? decbuf->i32buf_len
-		: ni32_perframe
+		? decbuf->i32buf_len : ni32_perframe
 	);
-	readlen = (decbuf->ttabuf_len < framesize_tta
-		? decbuf->ttabuf_len
-		: framesize_tta
+	readlen     = (decbuf->ttabuf_len < framesize_tta
+		? decbuf->ttabuf_len : framesize_tta
 	);
 	goto loop_entr;
 	do {
