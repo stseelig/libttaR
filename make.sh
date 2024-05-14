@@ -255,7 +255,7 @@ _timefmt(){
 
 _size(){
 # $1: file
-	du -h "$1" | cut -f 1;
+	du -h --apparent-size "$1" | cut -f 1;
 }
 
 _ret_ok(){
