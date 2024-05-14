@@ -198,7 +198,7 @@ tta2dec_loop(struct OpenedFilesMember *const restrict ofm)
 	//
 	FILE *restrict outfile = NULL;
 	char *const restrict outfile_name = get_outfile_name(
-		infile_name, get_decfmt_sfx(fstat->decfmt)
+		infile_name, get_decfmt_sfx(g_flag.decfmt)
 	);
 	//
 	struct DecStats dstat;

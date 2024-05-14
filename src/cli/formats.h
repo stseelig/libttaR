@@ -31,8 +31,8 @@ enum EncFormat {
 
 enum DecFormat {
 	DECFMT_RAWPCM,
-	DECFMT_WAV,
-	DECFMT_W64
+	DECFMT_W64,
+	DECFMT_WAV
 	//DECFMT_MKA_PCM
 };
 
