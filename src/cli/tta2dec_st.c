@@ -53,23 +53,6 @@ static uint ttadec_frame_st(
 @*/
 ;
 
-#undef readlen
-#undef ni32_target
-#undef infile
-static void
-ttadec_frame_adjust_st(
-	size_t *const restrict readlen, size_t *const restrict ni32_target,
-	const struct LibTTAr_CodecState_User *const restrict,
-	FILE *const restrict infile, const char *const, size_t, size_t
-)
-/*@globals	fileSystem@*/
-/*@modifies	fileSystem,
-		*readlen,
-		*ni32_target,
-		infile
-@*/
-;
-
 //////////////////////////////////////////////////////////////////////////////
 
 void
@@ -91,8 +74,11 @@ ttadec_loop_st(
 		infile
 @*/
 {
-	const uint                nchan       = (uint) fstat->nchan;
-	const enum TTASampleBytes samplebytes = fstat->samplebytes;
+	const size_t              framelen     = fstat->framelen;
+	const size_t              buflen       = fstat->buflen;
+	const size_t              nsamples_enc = fstat->nsamples;
+	const uint                nchan        = (uint) fstat->nchan;
+	const enum TTASampleBytes samplebytes  = fstat->samplebytes;
 
 	struct LibTTAr_CodecState_Priv *priv = NULL;
 	struct LibTTAr_CodecState_User user;
@@ -106,8 +92,6 @@ ttadec_loop_st(
 		int	d;
 	} t;
 
-	memset(&dstat, 0x00, sizeof dstat);
-
 	// setup buffers
 	t.z = decbuf_init(&decbuf, g_samplebuf_len, nchan, samplebytes);
 	assert(t.z == (size_t) (g_samplebuf_len * nchan));
@@ -120,16 +104,17 @@ ttadec_loop_st(
 	}
 	assert(priv != NULL);
 
-	ni32_perframe = fstat->buflen;
+	memset(&dstat, 0x00, sizeof dstat);
+	ni32_perframe = buflen;
 	do {
 		if ( (! g_flag.quiet) && (dstat.nframes % SPINNER_FRQ == 0) ){
 			errprint_spinner();
 		}
 
 		// calc framelen and adjust if necessary
-		t.z = dstat.nsamples_perchan + fstat->framelen;
-		if ( t.z > fstat->nsamples ){
-			t.z = fstat->nsamples - dstat.nsamples_perchan;
+		t.z = dstat.nsamples_perchan + framelen;
+		if ( t.z > nsamples_enc ){
+			t.z = nsamples_enc - dstat.nsamples_perchan;
 			ni32_perframe = t.z * nchan;
 		}
 		//
@@ -162,12 +147,12 @@ ttadec_loop_st(
 			);
 		}
 
-		dstat.nframes		+= (size_t) 1u;
-		dstat.nsamples		+= user.ni32_total;
-		dstat.nsamples_perchan	+= (size_t) (user.ni32_total / nchan);
-		dstat.nbytes_decoded	+= user.nbytes_tta_total;
+		dstat.nframes          += (size_t) 1u;
+		dstat.nsamples         += user.ni32_total;
+		dstat.nsamples_perchan += (size_t) (user.ni32_total / nchan);
+		dstat.nbytes_decoded   += user.nbytes_tta_total;
 	}
-	while ( (user.ni32_total == fstat->buflen) && (dec_retval == 0) );
+	while ( (user.ni32_total == buflen) && (dec_retval == 0) );
 
 	// cleanup
 	free(priv);
@@ -206,6 +191,7 @@ ttadec_frame_st(
 	union {	size_t	z;
 		uint	u;
 		int	d;
+		off_t	o;
 	} t;
 
 	ni32_target = (decbuf->i32buf_len < ni32_perframe
@@ -217,17 +203,27 @@ ttadec_frame_st(
 	goto loop_entr;
 	do {
 		// adjust for next chunk
-		ttadec_frame_adjust_st(
-			&readlen, &ni32_target, &user, infile, infile_name,
-			framesize_tta, ni32_perframe
-		);
+		if ( user.nbytes_tta < readlen ){
+			t.o = (off_t) (readlen - user.nbytes_tta);
+			t.d = fseeko(infile, -t.o, SEEK_CUR);
+			if UNLIKELY ( t.d != 0 ){
+				error_sys(errno, "fseeko", infile_name);
+			}
+		}
+		//
+		if ( user.nbytes_tta_total + readlen > framesize_tta ){
+			readlen = framesize_tta - user.nbytes_tta_total;
+		}
+		if ( user.ni32_total + ni32_target > ni32_perframe ){
+			ni32_target = ni32_perframe - user.ni32_total;
+		}
 loop_entr:
 		// read tta from infile
 		nbytes_read = fread(
 			decbuf->ttabuf, (size_t) 1u, readlen, infile
 		);
 		if UNLIKELY ( nbytes_read != readlen ){
-			if UNLIKELY ( feof(infile) != 0 ){
+			if UNLIKELY ( ferror(infile) != 0 ){
 				error_sys_nf(errno, "fread", infile_name);
 			}
 			else {	warning_tta("%s: frame %zu: truncated file",
@@ -280,45 +276,6 @@ loop_entr:
 
 	*user_out = user;
 	return r;
-}
-
-// MAYBE inline
-static void
-ttadec_frame_adjust_st(
-	size_t *const restrict readlen, size_t *const restrict ni32_target,
-	const struct LibTTAr_CodecState_User *const restrict user,
-	FILE *const restrict infile, const char *const infile_name,
-	size_t framesize_tta, size_t ni32_perframe
-)
-/*@globals	fileSystem@*/
-/*@modifies	fileSystem,
-		*readlen,
-		*ni32_target,
-		infile
-@*/
-{
-	union {	off_t	o;
-		int	d;
-	} t;
-
-	// seek infile to first non-decoded byte
-	if ( user->nbytes_tta < *readlen ){
-		t.o  = (off_t) (*readlen - user->nbytes_tta);
-		t.d = fseeko(infile, -t.o, SEEK_CUR);
-		if UNLIKELY ( t.d != 0 ){
-			error_sys(errno, "fseeko", infile_name);
-		}
-	}
-
-	// adjust readlen and ni32_target
-	if ( user->nbytes_tta_total + *readlen > framesize_tta ){
-		*readlen = framesize_tta - user->nbytes_tta_total;
-	}
-	if ( user->ni32_total + *ni32_target > ni32_perframe ){
-		*ni32_target = ni32_perframe - user->ni32_total;
-	}
-
-	return;
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////

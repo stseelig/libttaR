@@ -37,7 +37,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-// TODO own header w/ inlined funcs
+// MAYBE own header w/ inlined funcs
 struct FileStats_EncMT {
 	uint			nchan;
 	enum TTASampleBytes	samplebytes;
@@ -694,7 +694,7 @@ loop_entr:
 
 //==========================================================================//
 
-// TODO inline in own header
+// MAYBE inline in own header
 static void
 fstatencmt_init(
 	/*@out@*/ struct FileStats_EncMT *const restrict fstat_c,

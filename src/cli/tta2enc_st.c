@@ -53,21 +53,6 @@ static uint ttaenc_frame_st(
 @*/
 ;
 
-#undef readlen
-#undef infile
-static void ttaenc_frame_adjust_st(
-	size_t *const restrict readlen,
-	const struct LibTTAr_CodecState_User *const restrict,
-	FILE *const restrict infile, const char *const, enum TTASampleBytes,
-	size_t
-)
-/*@globals	fileSystem@*/
-/*@modifies	fileSystem,
-		*readlen,
-		infile
-@*/
-;
-
 //////////////////////////////////////////////////////////////////////////////
 
 void
@@ -89,6 +74,9 @@ ttaenc_loop_st(
 		infile
 @*/
 {
+	const size_t              decpcm_size = fstat->decpcm_size;
+	const size_t              framelen    = fstat->framelen;
+	const size_t              buflen      = fstat->buflen;
 	const uint                nchan       = (uint) fstat->nchan;
 	const enum TTASampleBytes samplebytes = fstat->samplebytes;
 
@@ -100,8 +88,6 @@ ttaenc_loop_st(
 	size_t ni32_perframe;
 	uint enc_retval;
 	union {	size_t z; } t;
-
-	memset(&estat, 0x00, sizeof estat);
 
 	// setup buffers
 	t.z = encbuf_init(&encbuf, g_samplebuf_len, nchan, samplebytes);
@@ -115,15 +101,16 @@ ttaenc_loop_st(
 	}
 	assert(priv != NULL);
 
-	ni32_perframe = fstat->buflen;
+	memset(&estat, 0x00, sizeof estat);
+	ni32_perframe = buflen;
 	do {
 		if ( (! g_flag.quiet) && (estat.nframes % SPINNER_FRQ == 0) ){
 			errprint_spinner();
 		}
 
 		ni32_perframe	= enc_readlen(
-			fstat->framelen, estat.nsamples, fstat->decpcm_size,
-			samplebytes, nchan
+			framelen, estat.nsamples, decpcm_size, samplebytes,
+			nchan
 		);
 
 		// encode and write frame
@@ -149,12 +136,12 @@ ttaenc_loop_st(
 			outfile_name
 		);
 
-		estat.nframes		+= (size_t) 1u;
-		estat.nsamples		+= user.ni32_total;
-		estat.nsamples_perchan	+= (size_t) (user.ni32_total / nchan);
-		estat.nbytes_encoded	+= user.nbytes_tta_total;
+		estat.nframes           += (size_t) 1u;
+		estat.nsamples          += user.ni32_total;
+		estat.nsamples_perchan  += (size_t) (user.ni32_total / nchan);
+		estat.nbytes_encoded    += user.nbytes_tta_total;
 	}
-	while (	(user.ni32_total == fstat->buflen) && (enc_retval == 0) );
+	while (	(user.ni32_total == buflen) && (enc_retval == 0) );
 
 	// cleanup
 	free(priv);
@@ -193,6 +180,7 @@ ttaenc_frame_st(
 	union {	size_t	z;
 		uint	u;
 		int	d;
+		off_t	o;
 	} t;
 
 	t.z = g_samplebuf_len * nchan;
@@ -200,10 +188,17 @@ ttaenc_frame_st(
 	goto loop_entr;
 	do {
 		// adjust for next chunk
-		ttaenc_frame_adjust_st(
-			&readlen, &user, infile, infile_name, samplebytes,
-			ni32_perframe
-		);
+		if ( user.ni32 < readlen ){
+			t.o = (off_t) ((readlen - user.ni32) * samplebytes);
+			t.d = fseeko(infile, -t.o, SEEK_CUR);
+			if UNLIKELY ( t.d != 0 ){
+				error_sys(errno, "fseeko", infile_name);
+			}
+		}
+		//
+		if ( user.ni32_total + readlen > ni32_perframe ){
+			readlen = ni32_perframe - user.ni32_total;
+		}
 loop_entr:
 		// read pcm from infile
 		nmemb_read = fread(
@@ -260,41 +255,6 @@ loop_entr:
 
 	*user_out = user;
 	return r;
-}
-
-// TODO inline
-static void
-ttaenc_frame_adjust_st(
-	size_t *const restrict readlen,
-	const struct LibTTAr_CodecState_User *const restrict user,
-	FILE *const restrict infile, const char *const infile_name,
-	enum TTASampleBytes samplebytes, size_t ni32_perframe
-)
-/*@globals	fileSystem@*/
-/*@modifies	fileSystem,
-		*readlen,
-		infile
-@*/
-{
-	union {	off_t	o;
-		int	d;
-	} t;
-
-	// seek infile to first non-encoded sample
-	if ( user->ni32 < *readlen ){
-		t.o  = (off_t) ((*readlen - user->ni32) * samplebytes);
-		t.d = fseeko(infile, -t.o, SEEK_CUR);
-		if UNLIKELY ( t.d != 0 ){
-			error_sys(errno, "fseeko", infile_name);
-		}
-	}
-
-	// adjust readlen
-	if ( user->ni32_total + *readlen > ni32_perframe ){
-		*readlen = ni32_perframe - user->ni32_total;
-	}
-
-	return;
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////

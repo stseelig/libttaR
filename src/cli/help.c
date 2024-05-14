@@ -52,7 +52,7 @@ static const char intro_licence_blurb[] = {
 static const char help_main[] = {
 //1234567012345670123456701234567012345670123456701234567012345670123456701234
 " Usage:\n"
-"\t"    "ttaR MODE [-options] INFILE... [-o OUTFILE]\n"
+"\t"    "ttaR MODE [-options] INFILE... [-o OUTFILE|OUTDIR]\n"
 "\n"
 "\t"    "ttaR MODE --help\n"
 "\n"

@@ -78,6 +78,7 @@ struct FileStats {
 	//
 	size_t			framelen;	// nsamples_peridealframe
 	size_t			buflen;		// framelen * nchan
+	size_t			nsamples;	// for decode
 	enum EncFormat		encfmt:8u;
 	enum DecFormat		decfmt:8u;
 	enum IntType		inttype:8u;
@@ -88,7 +89,6 @@ struct FileStats {
 	u32			samplerate;
 	u32			chanmask_wav;
 	//u32			chanmask_tta;
-	size_t			nsamples;	// for decode
 	u16			wavformat;
 	struct Guid128		wavsubformat;	// Extensible only
 };
