@@ -37,8 +37,9 @@ struct LibTTAr_CodecState_User {
 
 //////////////////////////////////////////////////////////////////////////////
 
+#undef priv
 INLINE void
-priv_init(
+state_priv_init(
 	/*@out@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
 	uint nchan
 )

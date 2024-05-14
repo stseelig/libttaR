@@ -33,8 +33,6 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-// single-threaded
-
 // returns (samplebuf_len * nchan) (for sanity check)
 size_t
 encbuf_init(
@@ -81,7 +79,6 @@ encbuf_init(
 	return r;
 }
 
-// for multi-threaded
 void
 encbuf_adjust(
 	struct EncBuf *const restrict eb, size_t samplebuf_len, uint nchan,
@@ -169,7 +166,6 @@ decbuf_init(
 	return r;
 }
 
-// for multi-threaded
 void
 decbuf_adjust()
 // TODO

@@ -15,7 +15,9 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-#define G_SAMPLEBUF_LEN_DEFAULT	((size_t) 2u*BUFSIZ)
+#define SAMPLEBUF_LEN_DEFAULT		((size_t) BUFSIZ)
+
+#define FRAMEQUEUE_LEN(nthreads)	((uint) (2u*(nthreads)))
 
 //--------------------------------------------------------------------------//
 
@@ -79,9 +81,6 @@ extern u8 g_nwarnings;
 
 /*@checkmod@*/
 extern struct GlobalFlags g_flag;
-
-/*@checkmod@*/
-extern size_t  g_samplebuf_len;
 
 /*@checkmod@*/
 extern int g_nthreads;

@@ -47,13 +47,18 @@ opt_tta2dec_help(uint, char *,enum OptMode)
 /*@unchecked@*/
 const struct OptDict tta2dec_optdict[] = {
 	{ "help"		, '?'	, opt_tta2dec_help		},
+
+	{ "single-threaded"	, 'S'	, opt_common_single_threaded	},
+	{ "multi-threaded"	, 'M'	, opt_common_multi_threaded	},
+
 	{ "delete-src"		, 'd'	, opt_common_delete_src		},
 	{ "format"		, 'f'	, opt_tta2dec_format		},
 	{ "outfile"		, 'o'	, opt_common_outfile		},
 	{ "quiet"		, 'q'	, opt_common_quiet		},
 	{ "single-threaded"	, 'S'	, opt_common_single_threaded	},
 	{ "threads"		, 't'	, opt_common_threads		},
-	{ NULL			,  0	, NULL				}
+
+	{ NULL , 0 , NULL }
 };
 
 //////////////////////////////////////////////////////////////////////////////

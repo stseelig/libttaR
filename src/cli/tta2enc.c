@@ -17,7 +17,7 @@
 #include <string.h>
 #include <time.h>
 
-#include <sys/sysinfo.h>
+#include <unistd.h>
 
 #include "../bits.h"
 #include "../libttaR.h"
@@ -30,7 +30,54 @@
 #include "main.h"
 #include "open.h"
 #include "opts.h"
-#include "tta2.h"
+
+//////////////////////////////////////////////////////////////////////////////
+
+#undef seektable
+#undef estat_out
+#undef outfile
+#undef infile
+extern void encst_loop(
+	struct SeekTable *const restrict seektable,
+	/*@out@*/ struct EncStats *const restrict estat_out,
+	const struct FileStats *const restrict,
+	FILE *const restrict outfile, const char *const,
+	FILE *const restrict infile, const char *const
+)
+/*@globals	fileSystem,
+		internalState
+@*/
+/*@modifies	fileSystem,
+		internalState,
+		*seektable,
+		*estat_out,
+		outfile,
+		infile
+@*/
+;
+
+#undef seektable
+#undef estat
+#undef outfile
+#undef infile
+extern void encmt_loop(
+	struct SeekTable *const restrict seektable,
+	/*@out@*/ struct EncStats *const restrict estat_out,
+	const struct FileStats *const restrict fstat,
+	FILE *const restrict outfile, const char *const,
+	FILE *const restrict infile, const char *const, uint
+)
+/*@globals	fileSystem,
+		internalState
+@*/
+/*@modifies	fileSystem,
+		internalState,
+		*seektable,
+		*estat_out,
+		outfile,
+		infile
+@*/
+;
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -216,7 +263,9 @@ tta2enc_loop(const struct OpenedFilesMember *const restrict ofm)
 		infile_name, get_encfmt_sfx(fstat->encfmt)
 	);
 	//
-	const int nthreads = (g_nthreads != 0 ? g_nthreads : get_nprocs());
+	const uint nthreads = (g_nthreads != 0
+		? g_nthreads : (uint) sysconf(_SC_NPROCESSORS_ONLN)
+	);
 	//
 	struct EncStats estat;
 	struct SeekTable seektable;
@@ -237,7 +286,7 @@ tta2enc_loop(const struct OpenedFilesMember *const restrict ofm)
 	case ENCFMT_TTA1:
 		// seektable at start of file, size calculated in advance
 		t.z  = (fstat->decpcm_size + fstat->buflen) / fstat->buflen;
-		--t.z;
+		t.z -= (size_t) 1u;
 		t.z  = (size_t) (t.z + fstat->samplebytes);
 		t.z /= (size_t) fstat->samplebytes;
 		seektable_init( &seektable, t.z);
@@ -274,20 +323,23 @@ tta2enc_loop(const struct OpenedFilesMember *const restrict ofm)
 		(void) clock_gettime(CLOCK_MONOTONIC, &ts_start);
 	}
 
-	// encode
-	if ( (g_flag.threadmode == THREADMODE_SINGLE)
-	    ||
-	     ((g_flag.threadmode == THREADMODE_UNSET) && (nthreads <= 1))
-	){
-		ttaenc_loop_st(
+	switch ( g_flag.threadmode ){
+	case THREADMODE_UNSET:
+		if ( nthreads > 1u ){ goto encode_multi; }
+		/*@fallthrough@*/
+	case THREADMODE_SINGLE:
+		encst_loop(
 			&seektable, &estat, fstat, outfile, outfile_name,
 			infile, infile_name
 		);
-	}
-	else {	ttaenc_loop_mt(
+		break;
+	case THREADMODE_MULTI:
+encode_multi:
+		encmt_loop(
 			&seektable, &estat, fstat, outfile, outfile_name,
 			infile, infile_name, (uint) nthreads
 		);
+		break;
 	}
 
 	// write header and seektable

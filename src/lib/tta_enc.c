@@ -113,7 +113,7 @@ libttaR_tta_encode(
 
 	// initial state setup
 	if ( user->ncalls_codec == 0 ){
-		priv_init(priv, nchan);
+		state_priv_init(priv, nchan);
 	}
 
 	// check for bad parameters

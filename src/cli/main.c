@@ -106,13 +106,8 @@ struct GlobalFlags g_flag = {
 };
 /*@=fullinitblock@*/
 
-// MAYBE opt to set, or remove
 /*@checkmod@*/
-size_t g_samplebuf_len = G_SAMPLEBUF_LEN_DEFAULT;
-
-// signed because of get_nprocs
-/*@checkmod@*/
-int g_nthreads = 0;
+uint g_nthreads = 0;
 
 /*@checkmod@*/ /*@dependent@*/ /*@null@*/
 char *g_rm_on_sigint = NULL;

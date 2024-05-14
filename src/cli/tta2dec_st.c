@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// tta2dec_st.c                                                             //
+// tta2dec_lm.c                                                             //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
@@ -93,8 +93,8 @@ ttadec_loop_st(
 	} t;
 
 	// setup buffers
-	t.z = decbuf_init(&decbuf, g_samplebuf_len, nchan, samplebytes);
-	assert(t.z == (size_t) (g_samplebuf_len * nchan));
+	t.z = decbuf_init(&decbuf, SAMPLEBUF_LEN_DEFAULT, nchan, samplebytes);
+	assert(t.z == (size_t) (SAMPLEBUF_LEN_DEFAULT * nchan));
 	//
 	t.z = libttaR_codecstate_priv_size(nchan);
 	assert(t.z != 0);
@@ -269,7 +269,7 @@ loop_entr:
 			decbuf->pcmbuf, samplebytes, user.ni32, outfile
 		);
 		if UNLIKELY ( t.z != user.ni32 ){
-			error_sys_nf(errno, "fwrite", outfile_name);
+			error_sys(errno, "fwrite", outfile_name);
 		}
 	}
 	while ( (user.ncalls_codec != 0) && (r == 0) );

@@ -30,6 +30,21 @@ extern const struct OptDict tta2dec_optdict[];
 
 // common
 
+extern int opt_common_single_threaded(uint, char *, enum OptMode)
+/*@globals	g_flag@*/
+/*@modifies	g_flag.threadmode@*/
+;
+
+extern int opt_common_multi_threaded(uint, char *, enum OptMode)
+/*@globals	g_flag@*/
+/*@modifies	g_flag.threadmode@*/
+;
+
+extern int opt_common_low_memory(uint, char *, enum OptMode)
+/*@globals	g_flag@*/
+/*@modifies	g_flag.threadmode@*/
+;
+
 extern int opt_common_delete_src(uint, char *, enum OptMode)
 /*@globals	g_flag@*/
 /*@modifies	g_flag.delete_src@*/
@@ -50,11 +65,6 @@ extern int opt_common_outfile(uint, char *opt, enum OptMode)
 extern int opt_common_quiet(uint, char *, enum OptMode)
 /*@globals	g_flag@*/
 /*@modifies	g_flag.quiet@*/
-;
-
-extern int opt_common_single_threaded(uint, char *, enum OptMode)
-/*@globals	g_flag@*/
-/*@modifies	g_flag.threadmode@*/
 ;
 
 #undef opt

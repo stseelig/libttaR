@@ -163,10 +163,10 @@ errprint_spinner(void)
 @*/
 {
 	const char spinner[] = {'|','\r','/','\r','-','\r','\\','\r'};
-	static uint i = 0;
+	static u8 i = 0;
 
 	(void) fwrite(&spinner[i], (size_t) 2u, (size_t) 1u, stderr);
-	i = (i + 2u != (uint) sizeof spinner ? i + 2u : 0);
+	i = ((u8) (i + 2u) != (u8) (sizeof spinner) ? (u8) (i + 2u) : 0);
 	return;
 }
 

@@ -93,7 +93,7 @@ write_w64_header(
 
 	t.z = fwrite(&wt, sizeof wt, (size_t) 1u, outfile);
 	if UNLIKELY ( t.z != (size_t) 1u ){
-		error_sys_nf(errno, "fwrite", outfile_name);
+		error_sys(errno, "fwrite", outfile_name);
 	}
 
 	return;

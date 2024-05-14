@@ -24,6 +24,40 @@
 //////////////////////////////////////////////////////////////////////////////
 
 int
+opt_common_single_threaded(
+	/*@unused@*/ uint optind, /*@unused@*/ char *opt,
+	/*@unused@*/ enum OptMode mode
+)
+/*@globals	g_flag@*/
+/*@modifies	g_flag.threadmode@*/
+{
+#ifndef S_SPLINT_S
+	(void) optind;
+	(void) opt;
+	(void) mode;
+#endif
+	g_flag.threadmode = THREADMODE_SINGLE;
+	return 0;
+}
+
+int
+opt_common_multi_threaded(
+	/*@unused@*/ uint optind, /*@unused@*/ char *opt,
+	/*@unused@*/ enum OptMode mode
+)
+/*@globals	g_flag@*/
+/*@modifies	g_flag.threadmode@*/
+{
+#ifndef S_SPLINT_S
+	(void) optind;
+	(void) opt;
+	(void) mode;
+#endif
+	g_flag.threadmode = THREADMODE_MULTI;
+	return 0;
+}
+
+int
 opt_common_delete_src(
 	/*@unused@*/ uint optind, /*@unused@*/ char *opt,
 	/*@unused@*/ enum OptMode mode
@@ -156,23 +190,6 @@ opt_common_quiet(
 	(void) mode;
 #endif
 	g_flag.quiet = true;
-	return 0;
-}
-
-int
-opt_common_single_threaded(
-	/*@unused@*/ uint optind, /*@unused@*/ char *opt,
-	/*@unused@*/ enum OptMode mode
-)
-/*@globals	g_flag@*/
-/*@modifies	g_flag.threadmode@*/
-{
-#ifndef S_SPLINT_S
-	(void) optind;
-	(void) opt;
-	(void) mode;
-#endif
-	g_flag.threadmode = THREADMODE_SINGLE;
 	return 0;
 }
 

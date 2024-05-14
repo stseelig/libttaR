@@ -83,16 +83,22 @@ static const char help_mode_usage1[] = {
 //1234567012345670123456701234567012345670123456701234567012345670123456701234
 #define OPT_COMMON_HELP \
 "\t"    "-?, --help\t\t\t"              "print this help\n"
+
+//1234567012345670123456701234567012345670123456701234567012345670123456701234
+#define OPT_COMMON_SINGLE_THREADED \
+"\t"    "-S, --single-threaded\t\t"     "more efficient than multi-threaded\n"
+#define OPT_COMMON_MULTI_THREADED \
+"    [*]\t" \
+        "-M, --multi-threaded\t\t"      "with NPROCESSORS_ONLN threads\n"
+
 #define OPT_COMMON_DELETE_SRC \
-"\t"    "-d, --delete-src\t\t"          "delete infiles\n"
+"\t"    "-d, --delete-src\t\t"          "delete each infile after coding\n"
 #define OPT_COMMON_OUTFILE \
-"\t"    "-o, --outfile=FILE|DIR\t\t"    "set outfile name or directory\n"
+"\t"    "-o, --outfile=FILE|DIR\t\t"    "outfile name or directory\n"
 #define OPT_COMMON_QUIET \
 "\t"    "-q, --quiet\t\t\t"             "only warnings and errors printed\n"
-#define OPT_COMMON_SINGLE_THREADED \
-"\t"    "-S, --single-threaded\t\t"     "use single-threaded mode\n"
 #define OPT_COMMON_THREADS \
-"\t"    "-t, --threads=N\t\t\t"         "number of coder threads to use\n"
+"\t"    "-t, --threads=N\t\t\t"         "multi-threaded with N threads\n"
 
 //1234567012345670123456701234567012345670123456701234567012345670123456701234
 #define OPT_ENCODE_RAWPCM \
@@ -102,18 +108,21 @@ static const char help_mode_usage1[] = {
 //1234567012345670123456701234567012345670123456701234567012345670123456701234
 #define OPT_DECODE_FORMAT \
 "\t"    "-f, --format=FMT\t\t"          "outfile format\n" \
-"\t\t"          "FMT: raw, w64, wav\n"
+"\t\t"          "FMT: raw, [*] w64, wav\n"
 
 
 /*@unchecked@*/
 static const char help_mode_opts_encode[] = {
 " Options:\n"
 OPT_COMMON_HELP
+"\n"
+OPT_COMMON_SINGLE_THREADED
+OPT_COMMON_MULTI_THREADED
+"\n"
 OPT_COMMON_DELETE_SRC
 OPT_COMMON_OUTFILE
 OPT_COMMON_QUIET
 OPT_ENCODE_RAWPCM
-OPT_COMMON_SINGLE_THREADED
 OPT_COMMON_THREADS
 };
 
@@ -121,11 +130,14 @@ OPT_COMMON_THREADS
 static const char help_mode_opts_decode[] = {
 " Options:\n"
 OPT_COMMON_HELP
+"\n"
+OPT_COMMON_SINGLE_THREADED
+OPT_COMMON_MULTI_THREADED
+"\n"
 OPT_COMMON_DELETE_SRC
 OPT_DECODE_FORMAT
 OPT_COMMON_OUTFILE
 OPT_COMMON_QUIET
-OPT_COMMON_SINGLE_THREADED
 OPT_COMMON_THREADS
 };
 
@@ -233,6 +245,5 @@ errprint_libstr_copyright(const char *str)
 
 	return;
 }
-
 
 // EOF ///////////////////////////////////////////////////////////////////////

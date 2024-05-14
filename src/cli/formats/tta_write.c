@@ -85,7 +85,7 @@ write_tta1_header(
 	h.nchan		= htole16(stats->nchan);
 	h.samplebits	= htole16(stats->samplebits);
 	h.samplerate	= htole32(stats->samplerate);
-	if UNLIKELY ( nsamples_perchan_total > UINT32_MAX ){
+	if UNLIKELY ( nsamples_perchan_total > (size_t) UINT32_MAX ){
 		warning_tta("%s: broken header field: nsamples",
 			outfile_name
 		);
@@ -98,7 +98,7 @@ write_tta1_header(
 	// write
 	t.z = fwrite(&h, sizeof h, (size_t) 1u, outfile);
 	if UNLIKELY ( t.z != (size_t) 1u ){
-		error_sys_nf(errno, "fwrite", outfile_name);
+		error_sys(errno, "fwrite", outfile_name);
 	}
 
 	return ftello(outfile);
@@ -122,13 +122,13 @@ write_tta_seektable(
 
 	t.d = fseeko(outfile, st->off, SEEK_SET);
 	if UNLIKELY ( t.d != 0 ){
-		error_sys_nf(errno, "fseeko", outfile_name);
+		error_sys(errno, "fseeko", outfile_name);
 	}
 
 	// write seektable
 	t.z = fwrite(st->table, sizeof *st->table, st->nmemb, outfile);
 	if UNLIKELY ( t.z != st->nmemb ){
-		error_sys_nf(errno, "fwrite", outfile_name);
+		error_sys(errno, "fwrite", outfile_name);
 	}
 
 	// calc then write seektable crc
@@ -137,7 +137,7 @@ write_tta_seektable(
 	);
 	t.z = fwrite(&crc, sizeof crc, (size_t) 1u, outfile);
 	if UNLIKELY ( t.z != (size_t) 1u ){
-		error_sys_nf(errno, "fwrite", outfile_name);
+		error_sys(errno, "fwrite", outfile_name);
 	}
 
 	return;

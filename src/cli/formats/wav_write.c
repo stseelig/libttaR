@@ -71,7 +71,7 @@ write_wav_header(
 		size_t	z;
 	} t;
 
-	if UNLIKELY ( data_size > UINT32_MAX ){
+	if UNLIKELY ( data_size > (size_t) UINT32_MAX ){
 		data_size = UINT32_MAX;
 		warning_tta("%s: broken header field: size", outfile_name);
 	}
@@ -100,7 +100,7 @@ write_wav_header(
 
 	t.z = fwrite(&wt, sizeof wt, (size_t) 1u, outfile);
 	if UNLIKELY ( t.z != (size_t) 1u ){
-		error_sys_nf(errno, "fwrite", outfile_name);
+		error_sys(errno, "fwrite", outfile_name);
 	}
 
 	return;
