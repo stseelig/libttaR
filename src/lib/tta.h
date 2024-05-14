@@ -208,41 +208,29 @@ tta_filter(
 	register i32 *const restrict m = filter->dx;
 
 	register i32 sum = round;
+	register uint i;
 
 	// there is a compiler quirk where putting the ==0 branch !first slows
 	//  everything down considerably. it adds an extra if-statement or two
 	//  to reduce code size a bit, but that borks the assembler. the ==0
 	//  branch should be last, because it is the least likely to happen
 	//  (but not enough for UNLIKELY; main exception being silence)
+	//
+	// for-loops SIMD better than unrolled
 	if ( filter->error == 0 ){
-		sum += a[0u] * b[0u];
-		sum += a[1u] * b[1u];
-		sum += a[2u] * b[2u];
-		sum += a[3u] * b[3u];
-		sum += a[4u] * b[4u];
-		sum += a[5u] * b[5u];
-		sum += a[6u] * b[6u];
-		sum += a[7u] * b[7u];
+		for ( i = 0; i < 8u; ++i ){
+			sum += a[i] * b[i];
+		}
 	}
 	else if ( filter->error < 0 ){
-		sum += (a[0u] -= m[0u]) * b[0u];
-		sum += (a[1u] -= m[1u]) * b[1u];
-		sum += (a[2u] -= m[2u]) * b[2u];
-		sum += (a[3u] -= m[3u]) * b[3u];
-		sum += (a[4u] -= m[4u]) * b[4u];
-		sum += (a[5u] -= m[5u]) * b[5u];
-		sum += (a[6u] -= m[6u]) * b[6u];
-		sum += (a[7u] -= m[7u]) * b[7u];
+		for ( i = 0; i < 8u; ++i ){
+			sum += (a[i] -= m[i]) * b[i];
+		}
 	}
 	else {	// filter->error > 0
-		sum += (a[0u] += m[0u]) * b[0u];
-		sum += (a[1u] += m[1u]) * b[1u];
-		sum += (a[2u] += m[2u]) * b[2u];
-		sum += (a[3u] += m[3u]) * b[3u];
-		sum += (a[4u] += m[4u]) * b[4u];
-		sum += (a[5u] += m[5u]) * b[5u];
-		sum += (a[6u] += m[6u]) * b[6u];
-		sum += (a[7u] += m[7u]) * b[7u];
+		for ( i = 0; i < 8u; ++i ){
+			sum += (a[i] += m[i]) * b[i];
+		}
 	}
 
 	m[8u] = (i32) ((((u32) asr32(b[7u], (u8) 30u)) | 0x1u) << 2u);

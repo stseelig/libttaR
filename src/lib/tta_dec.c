@@ -123,7 +123,8 @@ libttaR_tta_decode(
 
 	// check for bad parameters
 	// having these checks makes it faster, and the order and different
-	//  return values matter. not really sure why
+	//  return values matter. not really sure why, probably something with
+	//  bounds checking
 	if ( (ni32_target == 0) || (ni32_target > dest_len)
 	    ||
 	     (ni32_target + user->ni32_total > ni32_perframe)
