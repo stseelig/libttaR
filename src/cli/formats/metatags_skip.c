@@ -24,19 +24,19 @@
 //////////////////////////////////////////////////////////////////////////////
 
 struct ApeTagHF {
-	char	preamble[8];	// .ascii "APETAGEX"
+	char	preamble[8u];	// .ascii "APETAGEX"
 	u32	version;	// 2000 for apetag 2.0
 	u32	size;		// length of the items-blob + footer in bytes
 	u32	nmemb;		// number of items in the tag
 	u32	apeflags;	// global flags for tag
-	u8 	pad[8];		// padding; all zeroes
+	u8 	pad[8u];	// padding; all zeroes
 } PACKED;
 
 struct ID3TagHeader {
-	char	preamble[3];	// .ascii "ID3"
+	char	preamble[3u];	// .ascii "ID3"
 	u16	version;
 	u8	flags;
-	u8	size[4];	// length of the tag - header
+	u8	size[4u];	// length of the tag - header
 				// "syncsafe" integer; only lowest 7 bits
 } PACKED;
 
@@ -112,8 +112,8 @@ apetag_skip(FILE *const restrict file)
 
 	start = ftello(file);
 
-	t.z = fread(&h, sizeof h, (size_t) 1, file);
-	if ( t.z != (size_t) 1 ){
+	t.z = fread(&h, sizeof h, (size_t) 1u, file);
+	if ( t.z != (size_t) 1u ){
 		if ( feof(file) != 0 ){
 			return FILECHECK_MALFORMED;
 		}
@@ -158,8 +158,8 @@ id3tag_skip(FILE *const restrict file)
 
 	start = ftello(file);
 
-	t.z = fread(&h, sizeof h, (size_t) 1, file);
-	if ( t.z != (size_t) 1 ){
+	t.z = fread(&h, sizeof h, (size_t) 1u, file);
+	if ( t.z != (size_t) 1u ){
 		if ( feof(file) != 0 ){
 			return FILECHECK_MALFORMED;
 		}
@@ -178,7 +178,7 @@ id3tag_skip(FILE *const restrict file)
 	}
 
 	// seek to end of tag
-	t.z = id3syncsafeint(h.size[0], h.size[1], h.size[2], h.size[3]);
+	t.z = id3syncsafeint(h.size[0], h.size[1u], h.size[2u], h.size[3u]);
 	t.d = fseeko(file, (off_t) t.z, SEEK_CUR);
 	if ( t.d != 0 ){
 		return FILECHECK_SEEK_ERROR;

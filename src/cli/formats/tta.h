@@ -39,10 +39,10 @@ enum TTASampleBytes {
 #define TTA1_PREAMBLE		((char[]) {'T','T','A','1'})
 #define TTA2_PREAMBLE		((char[]) {'T','T','A','2'})
 #define TTA2_SEEKTABLE_SIG ( \
-	(u8[3]) {(u8) 0xFFu, (u8) 0xFFu, (u8) 0xFFu} \
+	(u8[3u]) {(u8) 0xFFu, (u8) 0xFFu, (u8) 0xFFu} \
 )
 #define TTA2_FRAMEFOOTER_SIG ( \
-	(u8[3]) {(u8) 0xFEu, (u8) 0xFFu, (u8) 0xFFu} \
+	(u8[3u]) {(u8) 0xFEu, (u8) 0xFFu, (u8) 0xFFu} \
 )
 
 // 13.2 Surround; differs from WAVE channel layout
@@ -69,7 +69,7 @@ enum TTASampleBytes {
 // all int's are little-endian
 
 struct TTA1Header {
-	char	preamble[4];	// .ascii "TTA1"
+	char	preamble[4u];	// .ascii "TTA1"
 	u16	format;		// WAVE_FMT_PCM (0x0001u)
 	u16	nchan;		// number of channels
 	u16	samplebits;	// bits per sample
@@ -79,7 +79,7 @@ struct TTA1Header {
 } PACKED;
 
 struct TTA2Header {
-	char	preamble[4];	// .ascii "TTA2"
+	char	preamble[4u];	// .ascii "TTA2"
 	u16	nchan;		// number of channels
 	u16	samplebits;	// bits per sample
 	u32	samplerate;	// samples per second

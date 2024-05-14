@@ -190,7 +190,7 @@ libttaR_tta_encode(
 		user->ncalls_codec  = 0;
 		user->crc           = crc32_end(user->crc);
 	}
-	else {	user->ncalls_codec += (size_t) 1; }
+	else {	user->ncalls_codec += (size_t) 1u; }
 	user->nbytes_tta	= r;
 	user->nbytes_tta_total += r;
 
@@ -338,7 +338,7 @@ tta_encode_2ch(
 	i32 curr, prev, next;
 	size_t i;
 
-	for ( i = 0; i < ni32_target; i += (size_t) 2 ){
+	for ( i = 0; i < ni32_target; i += (size_t) 2u ){
 		if ( r > safety_margin ){ break; }
 
 	// 0	// correlate
@@ -367,19 +367,19 @@ tta_encode_2ch(
 		prev = curr;
 
 		// predict
-		curr -= tta_predict1(codec[1].prev, predict_k);
-		codec[1].prev = prev;
+		curr -= tta_predict1(codec[1u].prev, predict_k);
+		codec[1u].prev = prev;
 
 		// filter
 		curr = tta_filter(
-			&codec[1].filter, filter_round, filter_k, curr,
+			&codec[1u].filter, filter_round, filter_k, curr,
 			TTA_ENC
 		);
 		curr = tta_postfilter_enc(curr);
 
 		// encode
 		r = rice_encode(
-			dest, r, (u32) curr, &codec[1].rice, bitcache, &crc
+			dest, r, (u32) curr, &codec[1u].rice, bitcache, &crc
 		);
 	}
 

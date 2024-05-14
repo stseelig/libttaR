@@ -226,7 +226,7 @@ errprint_libstr_copyright(const char *str)
 		if ( substr != NULL ){
 			diff = (ptrdiff_t) (substr - str);
 			(void) fprintf(stderr, "\t%.*s\n", (int) diff, str);
-			str = &substr[1];
+			str = &substr[1u];
 		}
 		else { (void) fprintf(stderr, "\t%s\n", str); }
 	} while ( substr != NULL );

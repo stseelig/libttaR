@@ -144,7 +144,7 @@ ttadec_loop_st(
 		);
 
 		// check frame crc
-		t.z = fread(&crc_read, (size_t) 1, sizeof crc_read, infile);
+		t.z = fread(&crc_read, (size_t) 1u, sizeof crc_read, infile);
 		if UNLIKELY ( t.z != sizeof crc_read ){
 			if UNLIKELY ( ferror(infile) != 0 ){
 				error_sys(errno, "fread", infile_name);
@@ -162,7 +162,7 @@ ttadec_loop_st(
 			);
 		}
 
-		dstat.nframes		+= (size_t) 1;
+		dstat.nframes		+= (size_t) 1u;
 		dstat.nsamples		+= user.ni32_total;
 		dstat.nsamples_perchan	+= (size_t) (user.ni32_total / nchan);
 		dstat.nbytes_decoded	+= user.nbytes_tta_total;
@@ -224,7 +224,7 @@ ttadec_frame_st(
 loop_entr:
 		// read tta from infile
 		nbytes_read = fread(
-			decbuf->ttabuf, (size_t) 1, readlen, infile
+			decbuf->ttabuf, (size_t) 1u, readlen, infile
 		);
 		if UNLIKELY ( nbytes_read != readlen ){
 			if UNLIKELY ( feof(infile) != 0 ){

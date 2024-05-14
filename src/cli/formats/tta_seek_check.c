@@ -61,8 +61,8 @@ filecheck_tta_seektable(
 		return FILECHECK_READ_ERROR;
 	}
 
-	t.z = fread(&crc, sizeof crc, (size_t) 1, file);
-	if ( t.z != (size_t) 1 ){
+	t.z = fread(&crc, sizeof crc, (size_t) 1u, file);
+	if ( t.z != (size_t) 1u ){
 		if ( feof(file) != 0 ){
 			return FILECHECK_MALFORMED;
 		}

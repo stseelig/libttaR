@@ -15,7 +15,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-#define G_SAMPLEBUF_LEN_DEFAULT	((size_t) 2*BUFSIZ)
+#define G_SAMPLEBUF_LEN_DEFAULT	((size_t) 2u*BUFSIZ)
 
 //--------------------------------------------------------------------------//
 
@@ -39,8 +39,8 @@ struct GlobalFlags {
 	bool		quiet;
 	bool		delete_src;
 	bool		rawpcm;
-	enum ThreadMode	threadmode:8;
-	enum DecFormat	decfmt:8;
+	enum ThreadMode	threadmode:8u;
+	enum DecFormat	decfmt:8u;
 };
 
 //////////////////////////////////////////////////////////////////////////////

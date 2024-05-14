@@ -32,13 +32,13 @@ enum TTASampleBytes {
 #endif
 
 // unary + binary
-#define TTABUF_SAFETY_MARGIN_PER_NCHAN		((size_t) (256 + 256))
+#define TTABUF_SAFETY_MARGIN_PER_NCHAN		((size_t) (256u + 256u))
 // possible extra unary loop
-#define TTABUF_SAFETY_MARGIN_24BIT		((size_t) 256)
+#define TTABUF_SAFETY_MARGIN_24BIT		((size_t) 256u)
 // only needed for encode
-#define TTABUF_SAFETY_MARGIN_MAX_CACHEFLUSH	((size_t) 32)
+#define TTABUF_SAFETY_MARGIN_MAX_CACHEFLUSH	((size_t) 32u)
 // rounded up to the nearest power of 2
-#define TTABUF_SAFETY_MARGIN_FAST		((size_t) 1024)
+#define TTABUF_SAFETY_MARGIN_FAST		((size_t) 1024u)
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -51,9 +51,9 @@ enum TTAMode {
 
 struct Filter {
 	i32	error;
-	i32	qm[8];
-	i32	dl[9];
-	i32	dx[9];
+	i32	qm[8u];
+	i32	dl[9u];
+	i32	dx[9u];
 };
 
 struct Codec {
@@ -215,60 +215,60 @@ tta_filter(
 	//  branch should be last, because it is the least likely to happen
 	//  (but not enough for UNLIKELY; main exception being silence)
 	if ( filter->error == 0 ){
-		sum += a[0] * b[0];
-		sum += a[1] * b[1];
-		sum += a[2] * b[2];
-		sum += a[3] * b[3];
-		sum += a[4] * b[4];
-		sum += a[5] * b[5];
-		sum += a[6] * b[6];
-		sum += a[7] * b[7];
+		sum += a[0u] * b[0u];
+		sum += a[1u] * b[1u];
+		sum += a[2u] * b[2u];
+		sum += a[3u] * b[3u];
+		sum += a[4u] * b[4u];
+		sum += a[5u] * b[5u];
+		sum += a[6u] * b[6u];
+		sum += a[7u] * b[7u];
 	}
 	else if ( filter->error < 0 ){
-		sum += (a[0] -= m[0]) * b[0];
-		sum += (a[1] -= m[1]) * b[1];
-		sum += (a[2] -= m[2]) * b[2];
-		sum += (a[3] -= m[3]) * b[3];
-		sum += (a[4] -= m[4]) * b[4];
-		sum += (a[5] -= m[5]) * b[5];
-		sum += (a[6] -= m[6]) * b[6];
-		sum += (a[7] -= m[7]) * b[7];
+		sum += (a[0u] -= m[0u]) * b[0u];
+		sum += (a[1u] -= m[1u]) * b[1u];
+		sum += (a[2u] -= m[2u]) * b[2u];
+		sum += (a[3u] -= m[3u]) * b[3u];
+		sum += (a[4u] -= m[4u]) * b[4u];
+		sum += (a[5u] -= m[5u]) * b[5u];
+		sum += (a[6u] -= m[6u]) * b[6u];
+		sum += (a[7u] -= m[7u]) * b[7u];
 	}
 	else {	// filter->error > 0
-		sum += (a[0] += m[0]) * b[0];
-		sum += (a[1] += m[1]) * b[1];
-		sum += (a[2] += m[2]) * b[2];
-		sum += (a[3] += m[3]) * b[3];
-		sum += (a[4] += m[4]) * b[4];
-		sum += (a[5] += m[5]) * b[5];
-		sum += (a[6] += m[6]) * b[6];
-		sum += (a[7] += m[7]) * b[7];
+		sum += (a[0u] += m[0u]) * b[0u];
+		sum += (a[1u] += m[1u]) * b[1u];
+		sum += (a[2u] += m[2u]) * b[2u];
+		sum += (a[3u] += m[3u]) * b[3u];
+		sum += (a[4u] += m[4u]) * b[4u];
+		sum += (a[5u] += m[5u]) * b[5u];
+		sum += (a[6u] += m[6u]) * b[6u];
+		sum += (a[7u] += m[7u]) * b[7u];
 	}
 
-	m[8] = (i32) ((((u32) asr32(b[7], (u8) 30u)) | 0x1u) << 2u);
-	m[7] = (i32) ((((u32) asr32(b[6], (u8) 30u)) | 0x1u) << 1u);
-	m[6] = (i32) ((((u32) asr32(b[5], (u8) 30u)) | 0x1u) << 1u);
-	m[5] = (i32) ((((u32) asr32(b[4], (u8) 30u)) | 0x1u) << 0u);
+	m[8u] = (i32) ((((u32) asr32(b[7u], (u8) 30u)) | 0x1u) << 2u);
+	m[7u] = (i32) ((((u32) asr32(b[6u], (u8) 30u)) | 0x1u) << 1u);
+	m[6u] = (i32) ((((u32) asr32(b[5u], (u8) 30u)) | 0x1u) << 1u);
+	m[5u] = (i32) ((((u32) asr32(b[4u], (u8) 30u)) | 0x1u) << 0u);
 
 	switch ( mode ){
 	case TTA_ENC:
-		b[8]		 = value;
+		b[8u]		 = value;
 		value		-= asr32(sum, k);
 		filter->error	 = value;
 		break;
 	case TTA_DEC:
 		filter->error	 = value;
 		value		+= asr32(sum, k);
-		b[8]		 = value;
+		b[8u]		 = value;
 		break;
 	}
 
-	b[7] = b[8] - b[7];
-	b[6] = b[7] - b[6];
-	b[5] = b[6] - b[5];
+	b[7u] = b[8u] - b[7u];
+	b[6u] = b[7u] - b[6u];
+	b[5u] = b[6u] - b[5u];
 
-	MEMMOVE(b, &b[1], 8*(sizeof *b));
-	MEMMOVE(m, &m[1], 8*(sizeof *m));
+	MEMMOVE(b, &b[1u], (size_t) (8u*(sizeof *b)));
+	MEMMOVE(m, &m[1u], (size_t) (8u*(sizeof *m)));
 
 	return value;
 }

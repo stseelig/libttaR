@@ -68,7 +68,7 @@ struct LibTTAr_CodecState_Priv;
 //                                                                          //
 /////////////////////////////////////////////////////////////////////////// */
 struct LibTTAr_CodecState_User {
-	uint32_t	ncalls_codec;		/* 0 if frame is finished */
+	uint32_t	ncalls_codec;		/* 0 if frame is finished   */
 	uint32_t	crc;
 	size_t		ni32;			/* enc: n-read, dec: n-writ */
 	size_t		ni32_total;		/* ~                        */

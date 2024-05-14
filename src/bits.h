@@ -280,7 +280,7 @@ tzcnt32(register u32 x)
 	return (uint) BUILTIN_TZCNT64((u64) x);
 #else
 	register uint r = 0;
-	if ( (x & 0x01u) == 0 ){
+	if ( (x & 0x1u) == 0 ){
 		r = 1u;
 		if ( (x & 0xFFFFu) == 0 ){ r |= 16u, x >>= 16u; }
 		if ( (x & 0x00FFu) == 0 ){ r |=  8u, x >>=  8u; }

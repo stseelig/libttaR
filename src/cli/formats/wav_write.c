@@ -98,8 +98,8 @@ write_wav_header(
 	t.u_32 = (data_size >= UINT32_MAX ? UINT32_MAX : data_size);
 	wt.data.size	= htole32(t.u_32);
 
-	t.z = fwrite(&wt, sizeof wt, (size_t) 1, outfile);
-	if UNLIKELY ( t.z != (size_t) 1 ){
+	t.z = fwrite(&wt, sizeof wt, (size_t) 1u, outfile);
+	if UNLIKELY ( t.z != (size_t) 1u ){
 		error_sys_nf(errno, "fwrite", outfile_name);
 	}
 

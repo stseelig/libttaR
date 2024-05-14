@@ -143,7 +143,7 @@ tta2enc(uint optind)
 	if UNLIKELY (
 	     (g_flag.outfile != NULL)
 	    &&
-	     (openedfiles.nmemb > (size_t) 1)
+	     (openedfiles.nmemb > (size_t) 1u)
 	    &&
 	     (! g_flag.outfile_is_dir)
 	){
@@ -182,7 +182,7 @@ tta2enc(uint optind)
 	}
 
 	// print multifile stats
-	if ( (! g_flag.quiet) && (openedfiles.nmemb > (size_t) 1) ){
+	if ( (! g_flag.quiet) && (openedfiles.nmemb > (size_t) 1u) ){
 		(void) clock_gettime(CLOCK_MONOTONIC, &ts_stop);
 		errprint_runtime(
 			timediff(&ts_start, &ts_stop), openedfiles.nmemb,
@@ -239,7 +239,7 @@ tta2enc_loop(const struct OpenedFilesMember *const restrict ofm)
 		t.z  = (fstat->decpcm_size + fstat->buflen) / fstat->buflen;
 		--t.z;
 		t.z  = (size_t) (t.z + fstat->samplebytes);
-		t.z /= fstat->samplebytes;
+		t.z /= (size_t) fstat->samplebytes;
 		seektable_init( &seektable, t.z);
 		break;
 	}

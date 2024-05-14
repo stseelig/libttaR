@@ -158,14 +158,14 @@ main(int argc, /*@dependent@*/ char **argv)
 	g_argv = argv;
 
 	// enter a mode
-	if ( strcmp(argv[1], "encode") == 0 ){
+	if ( strcmp(argv[1u], "encode") == 0 ){
 		r = tta2enc(2u);
 	}
-	else if ( strcmp(argv[1], "decode") == 0 ){
+	else if ( strcmp(argv[1u], "decode") == 0 ){
 		r = tta2dec(2u);
 	}
 	else if UNLIKELY ( true ) {
-		error_tta_nf("bad mode '%s'", argv[1]);
+		error_tta_nf("bad mode '%s'", argv[1u]);
 print_main_help:
 		errprint_help_main();
 		r = EXIT_FAILURE;

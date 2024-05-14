@@ -78,12 +78,12 @@ opt_tta2dec_format(uint optind, char *opt, enum OptMode mode)
 
 	switch ( mode ){
 	case OPTMODE_SHORT:
-		if ( opt[1] == '\0' ){
+		if ( opt[1u] == '\0' ){
 			optsget_argcheck(optind, opt, 1u);
 			subopt = g_argv[optind + 1u];
 			r = -1;
 		}
-		else {	subopt = &opt[1];
+		else {	subopt = &opt[1u];
 			r = (int) strlen(subopt);
 		}
 		break;

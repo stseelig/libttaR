@@ -40,8 +40,8 @@ filecheck_tta1(
 		enum FileCheck	fc;
 	} t;
 
-	t.z = fread(&hdr, sizeof hdr, (size_t) 1, file);
-	if ( t.z != (size_t) 1 ){
+	t.z = fread(&hdr, sizeof hdr, (size_t) 1u, file);
+	if ( t.z != (size_t) 1u ){
 		if ( feof(file) != 0 ){
 			return FILECHECK_MALFORMED;
 		}

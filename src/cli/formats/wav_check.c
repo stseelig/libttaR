@@ -49,8 +49,8 @@ filecheck_wav(
 	} t;
 
 	// RIFF chunk
-	t.z = fread(&chunk.wave, sizeof chunk.wave, (size_t) 1, file);
-	if ( t.z != (size_t) 1 ){
+	t.z = fread(&chunk.wave, sizeof chunk.wave, (size_t) 1u, file);
+	if ( t.z != (size_t) 1u ){
 		if ( feof(file) != 0 ){
 			return FILECHECK_MALFORMED;
 		}
@@ -91,8 +91,8 @@ filecheck_wav(
 	if ( t.fc != FILECHECK_OK ){
 		return t.fc;
 	}
-	t.z = fread(&chunk.rh, sizeof chunk.rh, (size_t) 1, file);
-	if ( t.z != (size_t) 1 ){
+	t.z = fread(&chunk.rh, sizeof chunk.rh, (size_t) 1u, file);
+	if ( t.z != (size_t) 1u ){
 		if ( feof(file) != 0 ){
 			return FILECHECK_MALFORMED;
 		}
@@ -124,8 +124,8 @@ filecheck_wav_read_subchunk_fmt(
 		int	d;
 	} t;
 
-	t.z = fread(&chunk.fmt, sizeof chunk.fmt, (size_t) 1, file);
-	if ( t.z != (size_t) 1 ){
+	t.z = fread(&chunk.fmt, sizeof chunk.fmt, (size_t) 1u, file);
+	if ( t.z != (size_t) 1u ){
 		if ( feof(file) != 0 ){
 			return FILECHECK_MALFORMED;
 		}
@@ -148,8 +148,8 @@ filecheck_wav_read_subchunk_fmt(
 	else {	fstat->inttype	= INT_SIGNED; }
 
 	if ( format == WAVE_FMT_EXTENSIBLE ){
-		t.z = fread(&chunk.wfx, sizeof chunk.wfx, (size_t) 1, file);
-		if ( t.z != (size_t) 1 ){
+		t.z = fread(&chunk.wfx, sizeof chunk.wfx, (size_t) 1u, file);
+		if ( t.z != (size_t) 1u ){
 			if ( feof(file) != 0 ){
 				return FILECHECK_MALFORMED;
 			}
@@ -206,8 +206,8 @@ filecheck_wav_find_subchunk(
 			return FILECHECK_SEEK_ERROR;
 		}
 loop_entr:
-		t.z = fread(&rh, sizeof rh, (size_t) 1, file);
-		if ( t.z != (size_t) 1 ){
+		t.z = fread(&rh, sizeof rh, (size_t) 1u, file);
+		if ( t.z != (size_t) 1u ){
 			if ( feof(file) != 0 ){
 				return FILECHECK_MALFORMED;
 			}

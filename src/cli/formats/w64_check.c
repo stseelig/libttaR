@@ -49,8 +49,8 @@ filecheck_w64(
 	} t;
 
 	// Riff64 chunk
-	t.z = fread(&chunk.wave, sizeof chunk.wave, (size_t) 1, file);
-	if ( t.z != (size_t) 1 ){
+	t.z = fread(&chunk.wave, sizeof chunk.wave, (size_t) 1u, file);
+	if ( t.z != (size_t) 1u ){
 		if ( feof(file) != 0 ){
 			return FILECHECK_MALFORMED;
 		}
@@ -93,8 +93,8 @@ filecheck_w64(
 	if ( t.fc != FILECHECK_OK ){
 		return t.fc;
 	}
-	t.z = fread(&chunk.rh, sizeof chunk.rh, (size_t) 1, file);
-	if ( t.z != (size_t) 1 ){
+	t.z = fread(&chunk.rh, sizeof chunk.rh, (size_t) 1u, file);
+	if ( t.z != (size_t) 1u ){
 		if ( feof(file) != 0 ){
 			return FILECHECK_MALFORMED;
 		}
@@ -131,8 +131,8 @@ filecheck_w64_find_subchunk(
 			return FILECHECK_SEEK_ERROR;
 		}
 loop_entr:
-		t.z = fread(&rh, sizeof rh, (size_t) 1, file);
-		if ( t.z != (size_t) 1 ){
+		t.z = fread(&rh, sizeof rh, (size_t) 1u, file);
+		if ( t.z != (size_t) 1u ){
 			if ( feof(file) != 0 ){
 				return FILECHECK_MALFORMED;
 			}

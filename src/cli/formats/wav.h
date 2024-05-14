@@ -6,7 +6,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -66,13 +66,13 @@
 // all ints are little-endian
 
 struct RiffHeader {
-	char	id[4];
+	char	id[4u];
 	u32	size;	// size of the chunk, not including the header(8)
 } PACKED;
 
 struct RiffChunkHeader_Wave {
 	struct RiffHeader	rh;		// .id = .ascii "RIFF"
-	char			format[4];	// .ascii "WAVE"
+	char			format[4u];	// .ascii "WAVE"
 } PACKED;
 
 struct RiffSubChunk_WaveFormatEX_Body {

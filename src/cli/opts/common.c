@@ -60,12 +60,12 @@ opt_common_threads(uint optind, char *opt, enum OptMode mode)
 
 	switch ( mode ){
 	case OPTMODE_SHORT:
-		if ( opt[1] == '\0' ){
+		if ( opt[1u] == '\0' ){
 			optsget_argcheck(optind, opt, 1u);
 			subopt = g_argv[optind + 1u];
 			r = -1;
 		}
-		else {	subopt = &opt[1];
+		else {	subopt = &opt[1u];
 			t.z = strlen(subopt);
 			r = 0;
 			for ( i = 0; i < t.z; ++i ){
@@ -113,12 +113,12 @@ opt_common_outfile(uint optind, char *opt, enum OptMode mode)
 
 	switch ( mode ){
 	case OPTMODE_SHORT:
-		if ( opt[1] == '\0' ){
+		if ( opt[1u] == '\0' ){
 			optsget_argcheck(optind, opt, 1u);
 			subopt = g_argv[optind + 1u];
 			r = -1;
 		}
-		else {	subopt = &opt[1];
+		else {	subopt = &opt[1u];
 			r = (int) strlen(subopt);
 		}
 		break;

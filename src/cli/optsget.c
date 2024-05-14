@@ -127,15 +127,15 @@ optsget(uint optind, const struct OptDict *const restrict optdict)
 		if ( arg[0] != '-' ){	// return at first non-opt
 			break;
 		}
-		else if ( (arg[0] == '-') && (arg[1] != '-') ){
+		else if ( (arg[0] == '-') && (arg[1u] != '-') ){
 			t.d = shortoptsget(optind + i, optdict);
 			if UNLIKELY ( t.d < 0 ){
 				error_tta("bad shortopt: -%c", (char) -t.d);
 			}
 			i += t.d;
 		}
-		else if ( (arg[0] == '-') && (arg[1] == '-') ){
-			if ( arg[2] == '\0' ){	// "--" stops opt processing
+		else if ( (arg[0] == '-') && (arg[1u] == '-') ){
+			if ( arg[2u] == '\0' ){	// "--" stops opt processing
 				++i;
 				return -i;
 			}
@@ -166,7 +166,7 @@ shortoptsget(uint optind, const struct OptDict *const restrict optdict)
 		internalState
 @*/
 {
-	const char *const restrict opt = &g_argv[optind][1];
+	const char *const restrict opt = &g_argv[optind][1u];
 	uint i, j;
 	union {	int d; } t;
 
@@ -202,7 +202,7 @@ longoptget(uint optind, const struct OptDict *const restrict optdict)
 @*/
 {
 	int r = -1;
-	const char *const opt = &g_argv[optind][2];
+	const char *const opt = &g_argv[optind][2u];
 	const char *subopt;
 	size_t size = SIZE_MAX;
 	uint i;

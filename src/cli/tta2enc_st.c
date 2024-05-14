@@ -135,8 +135,10 @@ ttaenc_loop_st(
 
 		// write frame footer (crc)
 		user.crc = htole32(user.crc);
-		t.z = fwrite(&user.crc, sizeof user.crc, (size_t) 1, outfile);
-		if UNLIKELY ( t.z != (size_t) 1 ){
+		t.z = fwrite(
+			&user.crc, sizeof user.crc, (size_t) 1u, outfile
+		);
+		if UNLIKELY ( t.z != (size_t) 1u ){
 			error_sys_nf(errno, "fwrite", outfile_name);
 		}
 		user.nbytes_tta_total += sizeof user.crc;
@@ -147,7 +149,7 @@ ttaenc_loop_st(
 			outfile_name
 		);
 
-		estat.nframes		+= (size_t) 1;
+		estat.nframes		+= (size_t) 1u;
 		estat.nsamples		+= user.ni32_total;
 		estat.nsamples_perchan	+= (size_t) (user.ni32_total / nchan);
 		estat.nbytes_encoded	+= user.nbytes_tta_total;
@@ -247,7 +249,7 @@ loop_entr:
 
 		// write tta to outfile
 		t.z = fwrite(
-			encbuf->ttabuf, (size_t) 1, user.nbytes_tta, outfile
+			encbuf->ttabuf, (size_t) 1u, user.nbytes_tta, outfile
 		);
 		// nbytes_tta could be 0 for a small g_samplebuf_len
 		if UNLIKELY ( t.z != user.nbytes_tta ){

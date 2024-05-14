@@ -165,7 +165,7 @@ errprint_spinner(void)
 	const char spinner[] = {'|','\r','/','\r','-','\r','\\','\r'};
 	static uint i = 0;
 
-	(void) fwrite(&spinner[i], (size_t) 2, (size_t) 1, stderr);
+	(void) fwrite(&spinner[i], (size_t) 2u, (size_t) 1u, stderr);
 	i = (i + 2u != (uint) sizeof spinner ? i + 2u : 0);
 	return;
 }
@@ -249,7 +249,7 @@ errprint_stats_frame(const struct FileStats *const restrict stats)
 {
 	(void) fprintf(stderr, " frame\t: ");
 	(void) fprintf(stderr, "%zu sample%s",
-		stats->framelen, stats->framelen == (size_t) 1 ? "" : "s"
+		stats->framelen, stats->framelen == (size_t) 1u ? "" : "s"
 	);
 	//
 	(void) fprintf(stderr, "\t; ");
@@ -274,7 +274,7 @@ errprint_stats_pcm(double pcmtime, size_t nframes, size_t nbytes_pcm)
 	//
 	(void) fprintf(stderr, "\t; ");
 	(void) fprintf(stderr, "%zu frame%s",
-		nframes, nframes == (size_t) 1 ? "" : "s"
+		nframes, nframes == (size_t) 1u ? "" : "s"
 	);
 	//
 	(void) fprintf(stderr, "\t, ");

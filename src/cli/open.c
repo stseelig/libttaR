@@ -160,7 +160,7 @@ openedfiles_add(
 	assert(of->file != NULL);
 
 	 added = &of->file[of->nmemb - 1u];
-	*added = calloc((size_t) 1, sizeof **added);
+	*added = calloc((size_t) 1u, sizeof **added);
 	if UNLIKELY ( *added == NULL ){
 		error_sys(errno, "calloc", NULL);
 	}

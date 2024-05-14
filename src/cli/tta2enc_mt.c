@@ -537,16 +537,16 @@ encmt_frame_write(
 
 	// write frame
 	t.z = fwrite(
-		encbuf->ttabuf, user.nbytes_tta_total, (size_t) 1, outfile
+		encbuf->ttabuf, user.nbytes_tta_total, (size_t) 1u, outfile
 	);
-	if UNLIKELY ( t.z != (size_t) 1 ){
+	if UNLIKELY ( t.z != (size_t) 1u ){
 		error_sys_nf(errno, "fwrite", outfile_name);
 	}
 
 	// write frame footer (crc)
 	user.crc = htole32(user.crc);
-	t.z = fwrite(&user.crc, sizeof user.crc, (size_t) 1, outfile);
-	if UNLIKELY ( t.z != (size_t) 1 ){
+	t.z = fwrite(&user.crc, sizeof user.crc, (size_t) 1u, outfile);
+	if UNLIKELY ( t.z != (size_t) 1u ){
 		error_sys_nf(errno, "fwrite", outfile_name);
 	}
 	user.nbytes_tta_total += sizeof user.crc;
@@ -557,7 +557,7 @@ encmt_frame_write(
 	);
 
 	// update estat
-	estat.nframes		+= (size_t) 1;
+	estat.nframes		+= (size_t) 1u;
 	estat.nsamples		+= user.ni32_total;
 	estat.nsamples_perchan	+= (size_t) (user.ni32_total / nchan);
 	estat.nbytes_encoded	+= user.nbytes_tta_total;

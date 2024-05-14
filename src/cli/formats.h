@@ -59,7 +59,7 @@ enum FileCheck {
 
 //////////////////////////////////////////////////////////////////////////////
 
-#define SEEKTABLE_INIT_DEFAULT	((size_t) (60*60))	/* about one hour */
+#define SEEKTABLE_INIT_DEFAULT	((size_t) (60u*60u))	/* about one hour */
 struct SeekTable {
 	off_t	off;
 	size_t	nmemb;
@@ -78,11 +78,11 @@ struct FileStats {
 	//
 	size_t			framelen;	// nsamples_peridealframe
 	size_t			buflen;		// framelen * nchan
-	enum EncFormat		encfmt:8;
-	enum DecFormat		decfmt:8;
-	enum IntType		inttype:8;
-	enum Endian		endian:8;
-	enum TTASampleBytes	samplebytes:8;
+	enum EncFormat		encfmt:8u;
+	enum DecFormat		decfmt:8u;
+	enum IntType		inttype:8u;
+	enum Endian		endian:8u;
+	enum TTASampleBytes	samplebytes:8u;
 	u16			samplebits;
 	u16			nchan;
 	u32			samplerate;

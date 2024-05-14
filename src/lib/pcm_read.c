@@ -113,7 +113,7 @@ pcm_read_i16le(
 /*@modifies	*dest@*/
 {
 	register size_t i, j;
-	for ( i = 0, j = 0; i < nsamples; ++i, j += 2u ){
+	for ( i = 0, j = 0; i < nsamples; ++i, j += (size_t) 2u ){
 		read_i16le_to_i32h(&dest[i], &src[j]);
 	}
 	return i;
@@ -128,7 +128,7 @@ pcm_read_i24le(
 /*@modifies	*dest@*/
 {
 	register size_t i, j;
-	for ( i = 0, j = 0; i < nsamples; ++i, j += 3u ){
+	for ( i = 0, j = 0; i < nsamples; ++i, j += (size_t) 3u ){
 		read_i24le_to_i32h(&dest[i], &src[j]);
 	}
 	return i;
@@ -148,8 +148,8 @@ read_i16le_to_i32h(register i32 *const dest, register const u8 *const src)
 /*@modifies	*dest@*/
 {
 	register u32 *const t = (u32 *) dest;
-	*t  =  (u32)       src[0];
-	*t |= ((u32) ((i8) src[1])) << 8u;
+	*t  =  (u32)       src[0u];
+	*t |= ((u32) ((i8) src[1u])) << 8u;
 	return;
 }
 
@@ -158,9 +158,9 @@ read_i24le_to_i32h(register i32 *const dest, register const u8 *const src)
 /*@modifies	*dest@*/
 {
 	register u32 *const t = (u32 *) dest;
-	*t  =  (u32)       src[0];
-	*t |= ((u32)       src[1])  <<  8u;
-	*t |= ((u32) ((i8) src[2])) << 16u;
+	*t  =  (u32)       src[0u];
+	*t |= ((u32)       src[1u])  <<  8u;
+	*t |= ((u32) ((i8) src[2u])) << 16u;
 	return;
 }
 

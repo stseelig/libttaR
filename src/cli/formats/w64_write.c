@@ -91,8 +91,8 @@ write_w64_header(
 	(void) memcpy(&wt.data.guid, &RIFF64_GUID_DATA, sizeof wt.data.guid);
 	wt.data.size	= htole64(data_size + (sizeof wt.data));
 
-	t.z = fwrite(&wt, sizeof wt, (size_t) 1, outfile);
-	if UNLIKELY ( t.z != (size_t) 1 ){
+	t.z = fwrite(&wt, sizeof wt, (size_t) 1u, outfile);
+	if UNLIKELY ( t.z != (size_t) 1u ){
 		error_sys_nf(errno, "fwrite", outfile_name);
 	}
 

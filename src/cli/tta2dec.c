@@ -131,7 +131,7 @@ tta2dec(uint optind)
 	if UNLIKELY (
 	     (g_flag.outfile != NULL)
 	    &&
-	     (openedfiles.nmemb > (size_t) 1)
+	     (openedfiles.nmemb > (size_t) 1u)
 	    &&
 	     (! g_flag.outfile_is_dir)
 	){
@@ -167,7 +167,7 @@ tta2dec(uint optind)
 	}
 
 	// print multifile stats
-	if ( (! g_flag.quiet) && (openedfiles.nmemb > (size_t) 1) ){
+	if ( (! g_flag.quiet) && (openedfiles.nmemb > (size_t) 1u) ){
 		(void) clock_gettime(CLOCK_MONOTONIC, &ts_stop);
 		errprint_runtime(
 			timediff(&ts_start, &ts_stop), openedfiles.nmemb,
@@ -213,11 +213,11 @@ tta2dec_loop(struct OpenedFilesMember *const restrict ofm)
 	fstat->decfmt = g_flag.decfmt;
 	//
 	switch ( fstat->samplebytes ){
-	case 1u:
+	case TTASAMPLEBYTES_1:
 		fstat->inttype = INT_UNSIGNED;
 		break;
-	case 2u:
-	case 3u:
+	case TTASAMPLEBYTES_2:
+	case TTASAMPLEBYTES_3:
 		fstat->inttype = INT_SIGNED;
 		break;
 	}

@@ -53,7 +53,7 @@ print_error_sys(
 		g_nwarnings
 @*/
 {
-	#define BUFLEN	((size_t) 128)
+	#define BUFLEN	((size_t) 128u)
 	char buf[BUFLEN];
 	union {	int d; } t;
 

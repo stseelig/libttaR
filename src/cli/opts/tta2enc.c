@@ -57,10 +57,10 @@ const struct OptDict tta2enc_optdict[] = {
 //==========================================================================//
 
 static struct {
-	enum DecFormat		decfmt:8;
-	enum IntType		inttype:8;
-	u16			samplebits:8;
-	enum Endian		endian:8;
+	enum DecFormat		decfmt:8u;
+	enum IntType		inttype:8u;
+	u16			samplebits:8u;
+	enum Endian		endian:8u;
 	u16			nchan;
 	u32			samplerate;
 } f_rpstat;

@@ -96,8 +96,8 @@ write_tta1_header(
 	));
 
 	// write
-	t.z = fwrite(&h, sizeof h, (size_t) 1, outfile);
-	if UNLIKELY ( t.z != (size_t) 1 ){
+	t.z = fwrite(&h, sizeof h, (size_t) 1u, outfile);
+	if UNLIKELY ( t.z != (size_t) 1u ){
 		error_sys_nf(errno, "fwrite", outfile_name);
 	}
 
@@ -135,8 +135,8 @@ write_tta_seektable(
 	crc = libttaR_crc32(
 		(u8 *) st->table, st->nmemb * (sizeof *st->table)
 	);
-	t.z = fwrite(&crc, sizeof crc, (size_t) 1, outfile);
-	if UNLIKELY ( t.z != (size_t) 1 ){
+	t.z = fwrite(&crc, sizeof crc, (size_t) 1u, outfile);
+	if UNLIKELY ( t.z != (size_t) 1u ){
 		error_sys_nf(errno, "fwrite", outfile_name);
 	}
 

@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -35,31 +35,31 @@ guid128_format(
 	j = 0;
 	for ( i = (uint) (sizeof guid->d0); i-- > 0; j += 2u ){
 		(void) snprintf(
-			&buf[j], (size_t) 3, "%02"PRIX8"", guid->d0[i]
+			&buf[j], (size_t) 3u, "%02"PRIX8"", guid->d0[i]
 		);
 	}
 	buf[j++] = '-';
 	for ( i = (uint) (sizeof guid->d1); i-- > 0; j += 2u ){
 		(void) snprintf(
-			&buf[j], (size_t) 3, "%02"PRIX8"", guid->d1[i]
+			&buf[j], (size_t) 3u, "%02"PRIX8"", guid->d1[i]
 		);
 	}
 	buf[j++] = '-';
 	for ( i = (uint) (sizeof guid->d2); i-- > 0; j += 2u ){
 		(void) snprintf(
-			&buf[j], (size_t) 3, "%02"PRIX8"", guid->d2[i]
+			&buf[j], (size_t) 3u, "%02"PRIX8"", guid->d2[i]
 		);
 	}
 	buf[j++] = '-';
 	for ( i = 0; i < (uint) (sizeof guid->d3); ++i, j += 2u ){
 		(void) snprintf(
-			&buf[j], (size_t) 3, "%02"PRIX8"", guid->d3[i]
+			&buf[j], (size_t) 3u, "%02"PRIX8"", guid->d3[i]
 		);
 	}
 	buf[j++] = '-';
 	for ( i = 0; i < (uint) (sizeof guid->d4); ++i, j += 2u){
 		(void) snprintf(
-			&buf[j], (size_t) 3, "%02"PRIX8"", guid->d4[i]
+			&buf[j], (size_t) 3u, "%02"PRIX8"", guid->d4[i]
 		);
 	}
 
