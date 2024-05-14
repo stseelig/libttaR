@@ -147,8 +147,9 @@ readonly DIR0="$BUILD";
 readonly DIR1="$OBJ";
 readonly DIR2="$OBJ/cli";
 readonly DIR3="$OBJ/cli/formats";
-readonly DIR4="$OBJ/cli/opts";
-readonly DIR5="$OBJ/lib";
+readonly DIR4="$OBJ/cli/modes";
+readonly DIR5="$OBJ/cli/opts";
+readonly DIR6="$OBJ/lib";
 
 readonly HEADER="$SRC/libttaR.h";
 
@@ -160,30 +161,30 @@ readonly L_C04='lib/rice';
 readonly L_C05='lib/tta_dec';
 readonly L_C06='lib/tta_enc';
 
-readonly P_C00='cli/bufs';
-readonly P_C01='cli/cli';
-readonly P_C02='cli/debug';
-readonly P_C03='cli/formats/guid';
-readonly P_C04='cli/formats/metatags_skip';
-readonly P_C05='cli/formats/tta1_check';
-readonly P_C06='cli/formats/tta_seek';
-readonly P_C07='cli/formats/tta_seek_check';
-readonly P_C08='cli/formats/tta_write';
-readonly P_C09='cli/formats/w64_check';
-readonly P_C10='cli/formats/w64_write';
-readonly P_C11='cli/formats/wav_check';
-readonly P_C12='cli/formats/wav_write';
-readonly P_C13='cli/help';
-readonly P_C14='cli/main';
-readonly P_C15='cli/open';
-readonly P_C16='cli/opts/common';
-readonly P_C17='cli/opts/tta2dec';
-readonly P_C18='cli/opts/tta2enc';
-readonly P_C19='cli/optsget';
-readonly P_C20='cli/tta2dec';
-readonly P_C21='cli/tta2dec_st';
-readonly P_C22='cli/tta2enc';
-readonly P_C23='cli/tta2enc_loop';
+readonly P_C00='cli/cli';
+readonly P_C01='cli/debug';
+readonly P_C02='cli/formats/guid';
+readonly P_C03='cli/formats/metatags_skip';
+readonly P_C04='cli/formats/tta1_check';
+readonly P_C05='cli/formats/tta_seek';
+readonly P_C06='cli/formats/tta_seek_check';
+readonly P_C07='cli/formats/tta_write';
+readonly P_C08='cli/formats/w64_check';
+readonly P_C09='cli/formats/w64_write';
+readonly P_C10='cli/formats/wav_check';
+readonly P_C11='cli/formats/wav_write';
+readonly P_C12='cli/help';
+readonly P_C13='cli/main';
+readonly P_C14='cli/open';
+readonly P_C15='cli/opts/common';
+readonly P_C16='cli/opts/tta2dec';
+readonly P_C17='cli/opts/tta2enc';
+readonly P_C18='cli/optsget';
+readonly P_C19='cli/modes/bufs';
+readonly P_C20='cli/modes/mode_decode';
+readonly P_C21='cli/modes/mode_decode_st';
+readonly P_C22='cli/modes/mode_encode';
+readonly P_C23='cli/modes/mode_encode_loop';
 
 #----------------------------------------------------------------------------#
 
@@ -432,7 +433,7 @@ fi
 
 _cd "$ROOT";
 
-_mkdir "$DIR0" "$DIR1" "$DIR2" "$DIR3" "$DIR4" "$DIR5";
+_mkdir "$DIR0" "$DIR1" "$DIR2" "$DIR3" "$DIR4" "$DIR5" "$DIR6";
 
 _cc_mp	"$CFLAGS_COMMON $CFLAGS_LIB" \
 	"$L_C00" "$L_C01" "$L_C02" "$L_C03" "$L_C04" "$L_C05" "$L_C06";

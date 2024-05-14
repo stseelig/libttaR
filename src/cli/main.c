@@ -37,7 +37,7 @@ enum HandledSignals {
 
 //////////////////////////////////////////////////////////////////////////////
 
-extern int tta2enc(uint)
+extern int mode_encode(uint)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -46,7 +46,7 @@ extern int tta2enc(uint)
 @*/
 ;
 
-extern int tta2dec(uint)
+extern int mode_decode(uint)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -101,8 +101,8 @@ u8 g_nwarnings;
 /*@-fullinitblock@*/
 /*@checkmod@*/
 struct GlobalFlags g_flag = {
-	.decfmt		= DECFMT_W64,
-	.threadmode	= THREADMODE_UNSET
+	.threadmode	= THREADMODE_UNSET,
+	.decfmt		= DECFMT_W64
 };
 /*@=fullinitblock@*/
 
@@ -154,10 +154,10 @@ main(int argc, /*@dependent@*/ char **argv)
 
 	// enter a mode
 	if ( strcmp(argv[1u], "encode") == 0 ){
-		r = tta2enc(2u);
+		r = mode_encode(2u);
 	}
 	else if ( strcmp(argv[1u], "decode") == 0 ){
-		r = tta2dec(2u);
+		r = mode_decode(2u);
 	}
 	else if UNLIKELY ( true ) {
 		error_tta_nf("bad mode '%s'", argv[1u]);
