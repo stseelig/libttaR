@@ -86,7 +86,7 @@ static const char help_mode_usage1[] = {
 
 //1234567012345670123456701234567012345670123456701234567012345670123456701234
 #define OPT_COMMON_SINGLE_THREADED \
-"\t"    "-S, --single-threaded\t\t"     "can be more efficient\n"
+"\t"    "-S, --single-threaded\t\t"     "can be more efficient than -M\n"
 #define OPT_COMMON_MULTI_THREADED \
 "    [*]\t" \
         "-M, --multi-threaded\t\t"      "with NPROCESSORS_ONLN threads\n"

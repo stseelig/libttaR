@@ -14,7 +14,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <string.h>	// memset
 
 #include <pthread.h>
 #include <semaphore.h>
@@ -29,90 +29,8 @@
 #include "../main.h"
 
 #include "bufs.h"
+#include "mt-struct.h"
 #include "pqueue.h"
-
-//////////////////////////////////////////////////////////////////////////////
-
-struct FileStats_EncMT {
-	uint			nchan;
-	enum TTASampleBytes	samplebytes;
-	size_t			nsamples_perframe;
-	size_t			decpcm_size;
-};
-
-//--------------------------------------------------------------------------//
-
-struct MTPQueue {
-	pthread_spinlock_t	lock;
-	struct PQueue		q;
-};
-
-struct MTArg_EncIO_Frames {
-	uint				nmemb;
-	/*@owned@*/
-	sem_t				*navailable;
-
-	// parallel arrays
-	/*@owned@*/
-	sem_t				*post_encoder;
-	/*@owned@*/
-	size_t				*ni32_perframe;
-	/*@owned@*/
-	struct EncBuf			*encbuf;
-	/*@owned@*/
-	struct LibTTAr_CodecState_User	*user;
-};
-
-struct MTArg_Encoder_Frames {
-	/*@dependent@*/
-	sem_t				*navailable;
-
-	struct MTPQueue			queue;
-
-	// parallel arrays
-	/*@dependent@*/
-	sem_t				*post_encoder;
-	/*@dependent@*/
-	size_t				*ni32_perframe;
-	/*@dependent@*/
-	struct EncBuf			*encbuf;
-	/*@dependent@*/
-	struct LibTTAr_CodecState_User	*user;
-};
-
-struct MTArg_IO_Outfile {
-	/*@temp@*/
-	FILE		*fh;
-	/*@temp@*/
-	const char	*name;
-};
-
-struct MTArg_IO_Infile {
-	/*@temp@*/
-	FILE		*fh;
-	/*@temp@*/
-	const char	*name;
-};
-
-//--------------------------------------------------------------------------//
-
-struct MTArg_EncIO {
-	struct MTArg_EncIO_Frames	frames;
-	struct MTArg_IO_Outfile		outfile;
-	struct MTArg_IO_Infile 		infile;
-	/*@temp@*/
-	struct FileStats_EncMT		*fstat;
-	/*@temp@*/
-	struct SeekTable 		*seektable;
-	/*@temp@*/
-	struct EncStats			*estat_out;
-};
-
-struct MTArg_Encoder {
-	struct MTArg_Encoder_Frames	frames;
-	/*@temp@*/
-	struct FileStats_EncMT		*fstat;
-};
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -120,22 +38,22 @@ struct MTArg_Encoder {
 #undef user
 #undef encbuf
 static void enc_frame_encode(
+	struct EncBuf *const restrict encbuf,
 	/*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
 	/*@out@*/ struct LibTTAr_CodecState_User *const restrict user_out,
-	struct EncBuf *const restrict encbuf, size_t, enum TTASampleBytes,
-	uint
+	enum TTASampleBytes, uint, size_t
 )
 /*@globals	fileSystem,
 		internalState
 @*/
 /*@modifies	fileSystem,
 		internalState,
-		*priv,
-		*user_out,
 		encbuf->ttabuf_len,
 		*encbuf->i32buf,
 		encbuf->ttabuf,
 		*encbuf->ttabuf
+		*priv,
+		*user_out,
 @*/
 ;
 
@@ -206,72 +124,6 @@ static void *encmt_encoder(struct MTArg_Encoder *const restrict arg)
 @*/
 ;
 
-//--------------------------------------------------------------------------//
-
-#undef fstat_c
-static void encmt_fstat_init(
-	/*@out@*/ struct FileStats_EncMT *const restrict fstat_c,
-	const struct FileStats *const restrict
-)
-/*@modifies	*fstat_c@*/
-;
-
-#undef io
-#undef encoder
-static void
-encmt_state_init(
-	/*@out@*/ struct MTArg_EncIO *const restrict io,
-	/*@out@*/ struct MTArg_Encoder *const restrict encoder,
-	uint, size_t, uint, enum TTASampleBytes, const FILE *const restrict,
-	const char *const, const FILE *const restrict, const char *const,
-	const struct SeekTable *const restrict,
-	const struct EncStats *const restrict,
-	const struct FileStats_EncMT *const restrict
-)
-/*@globals	fileSystem,
-		internalState
-@*/
-/*@modifies	fileSystem,
-		internalState,
-		*io,
-		io->frames.navailable,
-		io->frames.post_encoder[],
-		*encoder,
-		encoder->frames.queue.lock
-@*/
-/*@allocates	io->frames.navailable,
-		io->frames.post_encoder,
-		io->frames.ni32_perframe,
-		io->frames.encbuf,
-		io->frames.user
-@*/
-;
-
-#undef io
-#undef encoder
-static void encmt_state_free(
-	struct MTArg_EncIO *const restrict io,
-	struct MTArg_Encoder *const restrict encoder, uint
-)
-/*@globals	fileSystem,
-		internalState
-@*/
-/*@modifies	fileSystem,
-		internalState,
-		*io,
-		io->frames.navailable,
-		io->frames.post_encoder[],
-		*encoder,
-		encoder->frames.queue.lock
-@*/
-/*@releases	io->frames.navailable,
-		io->frames.post_encoder,
-		io->frames.ni32_perframe,
-		io->frames.encbuf,
-		io->frames.user
-@*/
-;
-
 //////////////////////////////////////////////////////////////////////////////
 
 void
@@ -306,7 +158,7 @@ encst_loop(
 	//
 	size_t readlen, nmemb_read;
 	size_t ni32_perframe, nsamples_flat_read_total = 0;
-	bool at_end = false;
+	bool truncated = false;
 	size_t framecnt = 0;
 	union { uint	u;
 		size_t	z;
@@ -362,17 +214,17 @@ loop_entr:
 				"zero-padding", infile_name, framecnt
 			);
 			t.u = enc_frame_zeropad(
-				encbuf.pcmbuf, nmemb_read, t.u,
-				samplebytes, nchan
+				encbuf.pcmbuf, nmemb_read, t.u, samplebytes,
+				nchan
 			);
 			ni32_perframe += t.u;
-			at_end         = true;
+			truncated      = true;
 		}
 
 		// encode frame
 		enc_frame_encode(
-			priv, &user, &encbuf, ni32_perframe, samplebytes,
-			nchan
+			&encbuf, priv, &user, samplebytes, nchan,
+			ni32_perframe
 		);
 
 		// write frame
@@ -381,7 +233,7 @@ loop_entr:
 			outfile_name, nchan
 		);
 	}
-	while (	! at_end );
+	while (	! truncated );
 
 	// cleanup
 	free(priv);
@@ -469,22 +321,22 @@ encmt_loop(
 
 static void
 enc_frame_encode(
+	struct EncBuf *const restrict encbuf,
 	/*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
 	/*@out@*/ struct LibTTAr_CodecState_User *const restrict user_out,
-	struct EncBuf *const restrict encbuf, size_t ni32_perframe,
-	enum TTASampleBytes samplebytes, uint nchan
+	enum TTASampleBytes samplebytes, uint nchan, size_t ni32_perframe
 )
 /*@globals	fileSystem,
 		internalState
 @*/
 /*@modifies	fileSystem,
 		internalState,
-		*priv,
-		*user_out,
 		encbuf->ttabuf_len,
 		*encbuf->i32buf,
 		encbuf->ttabuf,
 		*encbuf->ttabuf
+		*priv,
+		*user_out,
 @*/
 {
 	struct LibTTAr_CodecState_User user = LIBTTAr_CODECSTATE_USER_INIT;
@@ -497,8 +349,7 @@ enc_frame_encode(
 #endif
 	// convert pcm to i32
 	t.z = libttaR_pcm_read(
-		encbuf->i32buf, encbuf->pcmbuf, ni32_target,
-		samplebytes
+		encbuf->i32buf, encbuf->pcmbuf, ni32_target, samplebytes
 	);
 	assert(t.z == ni32_target);
 
@@ -660,7 +511,7 @@ encmt_io(struct MTArg_EncIO *const restrict arg)
 	struct EncStats estat;
 	size_t readlen, nmemb_read;
 	size_t nsamples_flat_read_total = 0;
-	bool start_writing = false, at_end = false, truncated = false;
+	bool start_writing = false, truncated = false;
 	size_t framecnt = 0;
 	uint i = 0, last;
 	union {	uint u; } t;
@@ -674,7 +525,7 @@ encmt_io(struct MTArg_EncIO *const restrict arg)
 			if ( i == 0 ){
 				start_writing = true;
 			}
-			else {	goto io_read; }
+			else {	goto loop0_read; }
 		}
 
 		// wait for frame to finish encoding
@@ -689,7 +540,7 @@ loop0_entr:
 		if ( (! g_flag.quiet) && (framecnt % SPINNER_FRQ == 0) ){
 			errprint_spinner();
 		}
-io_read:
+loop0_read:
 		// read pcm from infile
 		readlen		= enc_readlen(
 			nsamples_perframe, nsamples_flat_read_total,
@@ -714,7 +565,6 @@ io_read:
 					infile_name, framecnt
 				);
 			}
-			at_end    = true;
 			truncated = true;
 		}
 		// check for truncated sample
@@ -728,14 +578,13 @@ io_read:
 				samplebytes, nchan
 			);
 			ni32_perframe[i] += t.u;
-			at_end    = true;
 			truncated = true;
 		}
 
 		// make frame available
 		(void) sem_post(nframes_avail);
 	}
-	while ( ! at_end );
+	while ( ! truncated );
 	if ( truncated ){
 		i = (i + 1u < framequeue_len ? i + 1u : 0);
 	}
@@ -752,9 +601,7 @@ io_read:
 	}
 
 	// write the remaining frames
-	if ( ! truncated ){
-		goto loop1_entr;
-	}
+	if ( ! truncated ){ goto loop1_entr; }
 	do {
 		// wait for frame to finish encoding
 		(void) sem_wait(&post_encoder[i]);
@@ -821,8 +668,8 @@ encmt_encoder(struct MTArg_Encoder *const restrict arg)
 	do {
 		// encode frame
 		enc_frame_encode(
-			priv, &user[i], &encbuf[i], ni32_perframe[i],
-			samplebytes, nchan
+			&encbuf[i], priv, &user[i], samplebytes, nchan,
+			ni32_perframe[i]
 		);
 
 		// unlock frame
@@ -842,210 +689,6 @@ loop_entr:
 	free(priv);
 
 	return NULL;
-}
-
-//==========================================================================//
-
-static void
-encmt_fstat_init(
-	/*@out@*/ struct FileStats_EncMT *const restrict fstat_c,
-	const struct FileStats *const restrict fstat
-)
-/*@modifies	*fstat_c@*/
-{
-	fstat_c->nchan			= (uint) fstat->nchan;
-	fstat_c->samplebytes		= fstat->samplebytes;
-	fstat_c->nsamples_perframe	= fstat->framelen;
-	fstat_c->decpcm_size		= fstat->decpcm_size;
-	return;
-}
-
-static void
-encmt_state_init(
-	/*@out@*/ struct MTArg_EncIO *const restrict io,
-	/*@out@*/ struct MTArg_Encoder *const restrict encoder,
-	uint framequeue_len, size_t samplebuf_len, uint nchan,
-	enum TTASampleBytes samplebytes,
-	const FILE *const restrict outfile, const char *const outfile_name,
-	const FILE *const restrict infile, const char *const infile_name,
-	const struct SeekTable *const restrict seektable,
-	const struct EncStats *const restrict estat_out,
-	const struct FileStats_EncMT *const restrict fstat
-)
-/*@globals	fileSystem,
-		internalState
-@*/
-/*@modifies	fileSystem,
-		internalState,
-		*io,
-		io->frames.navailable,
-		io->frames.post_encoder[],
-		*encoder,
-		encoder->frames.queue.lock
-@*/
-/*@allocates	io->frames.navailable,
-		io->frames.post_encoder,
-		io->frames.ni32_perframe,
-		io->frames.encbuf,
-		io->frames.user
-@*/
-{
-	uint i;
-	union {	size_t	z;
-		int	d;
-	} t;
-
-	// io->frames
-	io->frames.nmemb	= framequeue_len;
-	//
-	io->frames.navailable	= malloc(sizeof *io->frames.navailable);
-	if UNLIKELY ( io->frames.navailable == NULL ){
-		error_sys(errno, "malloc", NULL);
-	}
-	assert(io->frames.navailable != NULL);
-	t.d = sem_init(io->frames.navailable, 0, (uint) 0);
-	if UNLIKELY ( t.d != 0 ){
-		error_sys(t.d, "sem_init", NULL);
-	}
-	//
-	io->frames.post_encoder		= calloc(
-		(size_t) framequeue_len, sizeof *io->frames.post_encoder
-	);
-	io->frames.ni32_perframe	= calloc(
-		(size_t) framequeue_len, sizeof *io->frames.ni32_perframe
-	);
-	io->frames.encbuf		= calloc(
-		(size_t) framequeue_len, sizeof *io->frames.encbuf
-	);
-	io->frames.user			= calloc(
-		(size_t) framequeue_len, sizeof *io->frames.user
-	);
-	if UNLIKELY (
-	        (io->frames.post_encoder == NULL)
-	       ||
-	        (io->frames.ni32_perframe == NULL)
-	       ||
-	        (io->frames.encbuf == NULL)
-	       ||
-	        (io->frames.user == NULL)
-	){
-		error_sys(errno, "calloc", NULL);
-	}
-	assert(io->frames.post_encoder != NULL);
-	assert(io->frames.ni32_perframe != NULL);
-	assert(io->frames.encbuf != NULL);
-	assert(io->frames.user != NULL);
-	//
-	for ( i = 0; i < framequeue_len; ++i ){
-		t.d = sem_init(&io->frames.post_encoder[i], 0, 0);
-		if UNLIKELY ( t.d != 0 ){
-			error_sys(t.d, "sem_init", NULL);
-		}
-	}
-	for ( i = 0; i < framequeue_len; ++i ){
-		t.z = encbuf_init(
-			&io->frames.encbuf[i], samplebuf_len, nchan,
-			samplebytes
-		);
-		assert(t.z == samplebuf_len * nchan);
-	}
-
-	// io->outfile
-	io->outfile.fh			= (FILE *) outfile;
-	io->outfile.name		= outfile_name;
-
-	// io->infile
-	io->infile.fh			= (FILE *) infile;
-	io->infile.name			= infile_name;
-
-	// io other
-	io->fstat			= (struct FileStats_EncMT *) fstat;
-	io->seektable			= (struct SeekTable *) seektable;
-	io->estat_out			= (struct EncStats *) estat_out;
-
-	// encoder->frames
-	encoder->frames.navailable	=  io->frames.navailable;
-	//
-	t.d = pthread_spin_init(
-		&encoder->frames.queue.lock, PTHREAD_PROCESS_PRIVATE
-	);
-	if UNLIKELY ( t.d != 0 ){
-		error_sys(t.d, "pthread_spin_init", NULL);
-	}
-	pqueue_init(&encoder->frames.queue.q, framequeue_len);
-	//
-	encoder->frames.post_encoder	=  io->frames.post_encoder;
-	encoder->frames.ni32_perframe	=  io->frames.ni32_perframe;
-	encoder->frames.encbuf		=  io->frames.encbuf;
-	encoder->frames.user		=  io->frames.user;
-
-	// encoder other
-	encoder->fstat			= (struct FileStats_EncMT *) fstat;
-
-	return;
-}
-
-static void
-encmt_state_free(
-	struct MTArg_EncIO *const restrict io,
-	struct MTArg_Encoder *const restrict encoder, uint framequeue_len
-)
-/*@globals	fileSystem,
-		internalState
-@*/
-/*@modifies	fileSystem,
-		internalState,
-		*io,
-		io->frames.navailable,
-		io->frames.post_encoder[],
-		*encoder,
-		encoder->frames.queue.lock
-@*/
-/*@releases	io->frames.navailable,
-		io->frames.post_encoder,
-		io->frames.ni32_perframe,
-		io->frames.encbuf,
-		io->frames.user
-@*/
-{
-	uint i;
-	union {	int d; } t;
-
-	// io
-	t.d = sem_destroy(io->frames.navailable);
-	if ( t.d != 0 ){
-		if UNLIKELY ( t.d != 0 ){
-			error_sys_nf(t.d, "sem_destroy", NULL);
-		}
-	}
-	free(io->frames.navailable);
-	//
-	t.d = sem_destroy(io->frames.post_encoder);
-	if ( t.d != 0 ){
-		if UNLIKELY ( t.d != 0 ){
-			error_sys_nf(t.d, "sem_destroy", NULL);
-		}
-	}
-	free(io->frames.post_encoder);
-	//
-	free(io->frames.ni32_perframe);
-	//
-	for ( i = 0; i < framequeue_len; ++i ){
-		encbuf_free(&io->frames.encbuf[i]);
-	}
-	free(io->frames.encbuf);
-	//
-	free(io->frames.user);
-
-	// encoder
-	t.d = pthread_spin_destroy(&encoder->frames.queue.lock);
-	if ( t.d != 0 ){
-		if UNLIKELY ( t.d != 0 ){
-			error_sys_nf(t.d, "pthread_spin_destroy", NULL);
-		}
-	}
-
-	return;
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////

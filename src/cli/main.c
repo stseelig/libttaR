@@ -10,6 +10,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
+#include <errno.h>
 #include <signal.h>
 #include <stdbool.h>	// true
 #include <stdio.h>
@@ -145,7 +146,7 @@ main(int argc, /*@dependent@*/ char **argv)
 	    ||
 	     (signal((int) HS_TERM, (void (*)(int)) sighand) == SIG_ERR)
 	){
-		warning_tta("failed to setup sighandler");
+		error_sys_nf(errno, "signal", NULL);
 	}
 
 	// these are saved for argument parsing in the modes

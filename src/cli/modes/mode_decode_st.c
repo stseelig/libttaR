@@ -225,7 +225,7 @@ loop_entr:
 		);
 		if UNLIKELY ( nbytes_read != readlen ){
 			if UNLIKELY ( ferror(infile) != 0 ){
-				error_sys_nf(errno, "fread", infile_name);
+				error_sys(errno, "fread", infile_name);
 			}
 			else {	warning_tta("%s: frame %zu: truncated file",
 					infile_name, frame_num

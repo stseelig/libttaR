@@ -135,11 +135,6 @@ mode_encode(uint optind)
 		&openedfiles, optind, tta2enc_optdict
 	);
 
-	//// program intro
-	//if ( ! g_flag.quiet ){
-	//	errprint_program_intro();
-	//}
-
 	// get file stats
 	for ( i = 0; i < openedfiles.nmemb; ++i ){
 
