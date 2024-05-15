@@ -6,6 +6,7 @@
 	- CodecState_User fields changed, and must be init'd before calling
 	- tta_encode/tta_decode have a new parameter
 	- changed the version num/string layout
+	- performance impovements
 
 1.0.2 (2024-04-24):-----------------------------------------------------------
 

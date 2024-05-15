@@ -281,10 +281,10 @@ lsmask32(register u8 k, const enum ShiftMaskMode mode)
 #define rice_cmpsum(sum, k, value) \
 { \
 	*(sum) += (value) - (*(sum) >> 4u); \
-	if ( *(sum) < shift32p4_bit(*(k), SMM_TABLE) ){ \
+	if UNLIKELY ( *(sum) < shift32p4_bit(*(k), SMM_TABLE) ){ \
 		--(*(k)); \
 	} \
-	else if ( *(sum) > shift32p4_bit(*(k) + 1u, SMM_TABLE) ){ \
+	else if UNLIKELY ( *(sum) > shift32p4_bit(*(k) + 1u, SMM_TABLE) ){ \
 		++(*(k)); \
 	} else{;} \
 }
