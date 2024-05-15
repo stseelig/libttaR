@@ -304,10 +304,7 @@ encmt_loop(
 
 	// join
 	for ( i = 0; i < nthreads; ++i ){
-		t.d = pthread_join(thread_encode[i], NULL);
-		if UNLIKELY ( t.d != 0 ){
-			error_sys_nf(t.d, "pthread_join", NULL);
-		}
+		(void) pthread_join(thread_encode[i], NULL);
 	}
 
 	// cleanup

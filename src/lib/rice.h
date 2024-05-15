@@ -266,7 +266,7 @@ lsmask32(register u8 k, const enum ShiftMaskMode mode)
 	switch ( mode ){
 	case SMM_CONST:
 	case SMM_SHIFT:
-		r = (u32) (k != 0 ? 0xFFFFFFFFu >> (32u - k) : 0 );
+		r = (u32) (k != 0 ? 0xFFFFFFFFu >> ((u8) 32u - k) : 0);
 		break;
 	case SMM_TABLE:
 		r = lsmask32_table[k];
