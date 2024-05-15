@@ -76,12 +76,12 @@ extern void encbuf_adjust(
 
 #undef eb
 extern void encbuf_free(struct EncBuf *const restrict eb)
-/*@globals		internalState@*/
-/*@modifies		internalState,
-			*eb
+/*@globals	internalState@*/
+/*@modifies	internalState,
+		*eb
 @*/
-/*@releases		eb->i32buf,
-			eb->ttabuf
+/*@releases	eb->i32buf,
+		eb->ttabuf
 @*/
 ;
 
@@ -106,12 +106,12 @@ extern size_t decbuf_init(
 
 #undef db
 extern void decbuf_free(struct DecBuf *const restrict db)
-/*@globals		internalState@*/
-/*@modifies		internalState,
-			*db
+/*@globals	internalState@*/
+/*@modifies	internalState,
+		*db
 @*/
-/*@releases		db->pcmbuf,
-			db->ttabuf
+/*@releases	db->pcmbuf,
+		db->ttabuf
 @*/
 ;
 

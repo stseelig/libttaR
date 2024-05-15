@@ -131,17 +131,17 @@ encmt_state_init(
 	}
 
 	// io->outfile
-	io->outfile.fh			= (FILE *) outfile;
-	io->outfile.name		= outfile_name;
+	io->outfile.fh		= (FILE *) outfile;
+	io->outfile.name	= outfile_name;
 
 	// io->infile
-	io->infile.fh			= (FILE *) infile;
-	io->infile.name			= infile_name;
+	io->infile.fh		= (FILE *) infile;
+	io->infile.name		= infile_name;
 
 	// io other
-	io->fstat			= (struct FileStats_EncMT *) fstat;
-	io->seektable			= (struct SeekTable *) seektable;
-	io->estat_out			= (struct EncStats *) estat_out;
+	io->fstat		= (struct FileStats_EncMT *) fstat;
+	io->seektable		= (struct SeekTable *) seektable;
+	io->estat_out		= (struct EncStats *) estat_out;
 
 	// encoder->frames
 	encoder->frames.navailable	=  io->frames.navailable;

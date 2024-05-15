@@ -83,17 +83,13 @@ seektable_add(
 
 void
 seektable_free(struct SeekTable *const restrict st)
-/*@globals		internalState@*/
-/*@modifies		internalState,
-			*st
+/*@globals	internalState@*/
+/*@modifies	internalState,
+		*st
 @*/
-/*@releases		st->table@*/
-/*@ensures isnull	st->table@*/
+/*@releases	st->table@*/
 {
-	if ( st->table != NULL ){
-		free(st->table);
-		st->table = NULL;
-	}
+	free(st->table);
 	return;
 }
 

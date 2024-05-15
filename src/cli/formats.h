@@ -64,7 +64,7 @@ struct SeekTable {
 	off_t	off;
 	size_t	nmemb;
 	size_t	limit;
-	/*@only@*/ /*@relnull@*/
+	/*@only@*/
 	u32	*table;
 };
 
@@ -182,12 +182,11 @@ extern void seektable_add(
 
 #undef st
 extern void seektable_free(struct SeekTable *const restrict st)
-/*@globals		internalState@*/
-/*@modifies		internalState,
-			*st
+/*@globals	internalState@*/
+/*@modifies	internalState,
+		*st
 @*/
-/*@releases		st->table@*/
-/*@ensures isnull	st->table@*/
+/*@releases	st->table@*/
 ;
 
 //--------------------------------------------------------------------------//

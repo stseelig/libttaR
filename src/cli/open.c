@@ -178,10 +178,10 @@ openedfiles_add(
 
 void
 openedfiles_close_free(struct OpenedFiles *const restrict of)
-/*@globals		fileSystem@*/
-/*@modifies		*of@*/
-/*@releases		of->file,
-			of->file[]
+/*@globals	fileSystem@*/
+/*@modifies	*of@*/
+/*@releases	of->file,
+		of->file[]
 @*/
 {
 	size_t i;

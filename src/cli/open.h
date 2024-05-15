@@ -66,10 +66,10 @@ extern int openedfiles_add(
 #undef of
 extern void
 openedfiles_close_free(struct OpenedFiles *const restrict of)
-/*@globals		fileSystem@*/
-/*@modifies		*of@*/
-/*@releases		of->file,
-			of->file[]
+/*@globals	fileSystem@*/
+/*@modifies	*of@*/
+/*@releases	of->file,
+		of->file[]
 @*/
 ;
 

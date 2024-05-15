@@ -518,7 +518,7 @@ encmt_io(struct MTArg_EncIO *const restrict arg)
 	do {
 		++framecnt;
 		i = (i + 1u < framequeue_len ? i + 1u : 0);
-		if ( (! start_writing) ){
+		if ( ! start_writing ){
 			if ( i == 0 ){
 				start_writing = true;
 			}

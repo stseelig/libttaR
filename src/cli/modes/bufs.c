@@ -110,12 +110,12 @@ encbuf_adjust(
 
 void
 encbuf_free(struct EncBuf *const restrict eb)
-/*@globals		internalState@*/
-/*@modifies		internalState,
-			*eb
+/*@globals	internalState@*/
+/*@modifies	internalState,
+		*eb
 @*/
-/*@releases		eb->i32buf,
-			eb->ttabuf
+/*@releases	eb->i32buf,
+		eb->ttabuf
 @*/
 {
 	free(eb->i32buf);
@@ -176,12 +176,12 @@ decbuf_adjust()
 
 void
 decbuf_free(struct DecBuf *const restrict db)
-/*@globals		internalState@*/
-/*@modifies		internalState,
-			*db
+/*@globals	internalState@*/
+/*@modifies	internalState,
+		*db
 @*/
-/*@releases		db->pcmbuf,
-			db->ttabuf
+/*@releases	db->pcmbuf,
+		db->ttabuf
 @*/
 {
 	free(db->pcmbuf);
