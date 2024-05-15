@@ -189,41 +189,23 @@ encmt_state_free(
 @*/
 {
 	uint i;
-	union {	int d; } t;
 
 	// io
-	t.d = sem_destroy(io->frames.navailable);
-	if ( t.d != 0 ){
-		if UNLIKELY ( t.d != 0 ){
-			error_sys_nf(t.d, "sem_destroy", NULL);
-		}
-	}
+	(void) sem_destroy(io->frames.navailable);
 	free(io->frames.navailable);
-	//
-	t.d = sem_destroy(io->frames.post_encoder);
-	if ( t.d != 0 ){
-		if UNLIKELY ( t.d != 0 ){
-			error_sys_nf(t.d, "sem_destroy", NULL);
-		}
+	for ( i = 0; i < framequeue_len; ++i ){
+		(void) sem_destroy(&io->frames.post_encoder[i]);
 	}
 	free(io->frames.post_encoder);
-	//
 	free(io->frames.ni32_perframe);
-	//
 	for ( i = 0; i < framequeue_len; ++i ){
 		encbuf_free(&io->frames.encbuf[i]);
 	}
 	free(io->frames.encbuf);
-	//
 	free(io->frames.user);
 
 	// encoder
-	t.d = pthread_spin_destroy(&encoder->frames.queue.lock);
-	if ( t.d != 0 ){
-		if UNLIKELY ( t.d != 0 ){
-			error_sys_nf(t.d, "pthread_spin_destroy", NULL);
-		}
-	}
+	(void) pthread_spin_destroy(&encoder->frames.queue.lock);
 
 	return;
 }
