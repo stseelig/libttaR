@@ -69,7 +69,7 @@ filecheck_tta1(
 	fstat->nchan		= letoh16(hdr.nchan);
 	fstat->samplebits	= letoh16(hdr.samplebits);
 	fstat->samplerate	= letoh32(hdr.samplerate);
-	fstat->nsamples		= (size_t) letoh32(hdr.nsamples);
+	fstat->nsamples_enc	= (size_t) letoh32(hdr.nsamples);
 
 	fstat->enctta_off	= ftello(file);
 

@@ -235,7 +235,7 @@ dec_loop(struct OpenedFilesMember *const restrict ofm)
 	// already there for TTA1
 
 	// copy/check seektable
-	t.z = (fstat->nsamples + fstat->framelen - 1u) / fstat->framelen;
+	t.z = (fstat->nsamples_enc + fstat->framelen - 1u) / fstat->framelen;
 	t.fc = filecheck_tta_seektable(&seektable, t.z, infile);
 	if UNLIKELY ( t.fc != FILECHECK_OK ){
 		if ( t.fc == FILECHECK_CORRUPTED ){

@@ -77,7 +77,7 @@ ttadec_loop_st(
 {
 	const size_t              framelen     = fstat->framelen;
 	const size_t              buflen       = fstat->buflen;
-	const size_t              nsamples_enc = fstat->nsamples;
+	const size_t              nsamples_enc = fstat->nsamples_enc;
 	const uint                nchan        = (uint) fstat->nchan;
 	const enum TTASampleBytes samplebytes  = fstat->samplebytes;
 

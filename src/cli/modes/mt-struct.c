@@ -40,12 +40,13 @@ encmt_fstat_init(
 	return;
 }
 
+//==========================================================================//
+
 void
 encmt_state_init(
 	/*@out@*/ struct MTArg_EncIO *const restrict io,
 	/*@out@*/ struct MTArg_Encoder *const restrict encoder,
-	uint framequeue_len, size_t samplebuf_len, uint nchan,
-	enum TTASampleBytes samplebytes,
+	uint framequeue_len, size_t samplebuf_len,
 	const FILE *const restrict outfile, const char *const outfile_name,
 	const FILE *const restrict infile, const char *const infile_name,
 	const struct SeekTable *const restrict seektable,
@@ -124,10 +125,10 @@ encmt_state_init(
 	}
 	for ( i = 0; i < framequeue_len; ++i ){
 		t.z = encbuf_init(
-			&io->frames.encbuf[i], samplebuf_len, nchan,
-			samplebytes
+			&io->frames.encbuf[i], samplebuf_len, fstat->nchan,
+			fstat->samplebytes
 		);
-		assert(t.z == samplebuf_len * nchan);
+		assert(t.z == samplebuf_len * fstat->nchan);
 	}
 
 	// io->outfile
@@ -139,7 +140,7 @@ encmt_state_init(
 	io->infile.name		= infile_name;
 
 	// io other
-	io->fstat		= (struct FileStats_EncMT *) fstat;
+	io->fstat		= fstat;
 	io->seektable		= (struct SeekTable *) seektable;
 	io->estat_out		= (struct EncStats *) estat_out;
 
@@ -160,7 +161,7 @@ encmt_state_init(
 	encoder->frames.user		=  io->frames.user;
 
 	// encoder other
-	encoder->fstat			= (struct FileStats_EncMT *) fstat;
+	encoder->fstat			= fstat;
 
 	return;
 }

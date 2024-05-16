@@ -30,12 +30,22 @@ struct FileStats_EncMT {
 	size_t			decpcm_size;
 };
 
-//--------------------------------------------------------------------------//
+struct FileStats_DecMT {
+	uint			nchan;
+	enum TTASampleBytes	samplebytes;
+	size_t			nsamples_perframe;
+	size_t			enctta_size;
+	size_t			nsamples_enc;
+};
+
+//==========================================================================//
 
 struct MTPQueue {
 	pthread_spinlock_t	lock;
 	struct PQueue		q;
 };
+
+//--------------------------------------------------------------------------//
 
 struct MTArg_EncIO_Frames {
 	uint				nmemb;
@@ -63,12 +73,57 @@ struct MTArg_Encoder_Frames {
 	/*@dependent@*/
 	sem_t				*post_encoder;
 	/*@dependent@*/
-	size_t				*ni32_perframe;
+	const size_t			*ni32_perframe;
 	/*@dependent@*/
 	struct EncBuf			*encbuf;
 	/*@dependent@*/
 	struct LibTTAr_CodecState_User	*user;
 };
+
+//--------------------------------------------------------------------------//
+
+struct MTArg_DecIO_Frames {
+	uint				nmemb;
+	/*@owned@*/
+	sem_t				*navailable;
+
+	// parallel arrays
+	/*@owned@*/
+	sem_t				*post_decoder;
+	/*@owned@*/
+	size_t				*ni32_perframe;
+	/*@owned@*/
+	size_t				*nbytes_tta_perframe;
+	/*@owned@*/
+	u32				*crc_read;
+	/*@owned@*/
+	struct DecBuf			*decbuf;
+	/*@owned@*/
+	struct LibTTAr_CodecState_User	*user;
+};
+
+struct MTArg_Decoder_Frames {
+	/*@dependent@*/
+	sem_t				*navailable;
+
+	struct MTPQueue			queue;
+
+	// parallel arrays
+	/*@dependent@*/
+	sem_t				*post_decoder;
+	/*@dependent@*/
+	size_t				*ni32_perframe;
+	/*@dependent@*/
+	size_t				*nbytes_tta_perframe;
+	/*@dependent@*/
+	u32				*crc_read;
+	/*@dependent@*/
+	struct DecBuf			*decbuf;
+	/*@dependent@*/
+	struct LibTTAr_CodecState_User	*user;
+};
+
+//--------------------------------------------------------------------------//
 
 struct MTArg_IO_Outfile {
 	/*@temp@*/
@@ -84,14 +139,14 @@ struct MTArg_IO_Infile {
 	const char	*name;
 };
 
-//--------------------------------------------------------------------------//
+//==========================================================================//
 
 struct MTArg_EncIO {
 	struct MTArg_EncIO_Frames	frames;
 	struct MTArg_IO_Outfile		outfile;
 	struct MTArg_IO_Infile 		infile;
 	/*@temp@*/
-	struct FileStats_EncMT		*fstat;
+	const struct FileStats_EncMT	*fstat;
 	/*@temp@*/
 	struct SeekTable 		*seektable;
 	/*@temp@*/
@@ -101,7 +156,27 @@ struct MTArg_EncIO {
 struct MTArg_Encoder {
 	struct MTArg_Encoder_Frames	frames;
 	/*@temp@*/
-	struct FileStats_EncMT		*fstat;
+	const struct FileStats_EncMT	*fstat;
+};
+
+//--------------------------------------------------------------------------//
+
+struct MTArg_DecIO {
+	struct MTArg_DecIO_Frames	frames;
+	struct MTArg_IO_Outfile		outfile;
+	struct MTArg_IO_Infile 		infile;
+	/*@temp@*/
+	const struct FileStats_DecMT	*fstat;
+	/*@temp@*/
+	const struct SeekTable 		*seektable;
+	/*@temp@*/
+	struct DecStats			*dstat_out;
+};
+
+struct MTArg_Decoder {
+	struct MTArg_Decoder_Frames	frames;
+	/*@temp@*/
+	const struct FileStats_DecMT	*fstat;
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -120,8 +195,8 @@ extern void encmt_fstat_init(
 extern void encmt_state_init(
 	/*@out@*/ struct MTArg_EncIO *const restrict io,
 	/*@out@*/ struct MTArg_Encoder *const restrict encoder,
-	uint, size_t, uint, enum TTASampleBytes, const FILE *const restrict,
-	const char *const, const FILE *const restrict, const char *const,
+	uint, size_t, const FILE *const restrict, const char *const,
+	const FILE *const restrict, const char *const,
 	const struct SeekTable *const restrict,
 	const struct EncStats *const restrict,
 	const struct FileStats_EncMT *const restrict
@@ -169,6 +244,9 @@ extern void encmt_state_free(
 		io->frames.user
 @*/
 ;
+
+//--------------------------------------------------------------------------//
+
 
 
 // EOF ///////////////////////////////////////////////////////////////////////

@@ -72,7 +72,7 @@ seektable_add(
 	assert(st->table != NULL);
 
 	if UNLIKELY ( value > (size_t) UINT32_MAX ){
-		warning_tta("%s: frame %zu: seektable overflow",
+		warning_tta("%s: frame %zu: seektable entry overflow",
 			outfile_name, framenum
 		);
 	}

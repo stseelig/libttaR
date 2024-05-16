@@ -243,7 +243,7 @@ loop_entr:
 	return;
 }
 
-// deadlocks or aborts if (framequeue_len <= nthreads)
+// can deadlock or abort if (framequeue_len <= nthreads)
 void
 encmt_loop(
 	struct SeekTable *const restrict seektable,
@@ -266,7 +266,7 @@ encmt_loop(
 {
 	struct MTArg_EncIO state_io;
 	struct MTArg_Encoder state_encoder;
-	pthread_t *thread_encode = NULL;
+	pthread_t *thread_encoder = NULL;
 	struct FileStats_EncMT fstat_c;
 	const size_t samplebuf_len = fstat->buflen;
 	const uint framequeue_len = FRAMEQUEUE_LEN(nthreads);
@@ -278,20 +278,20 @@ encmt_loop(
 	//
 	encmt_state_init(
 		&state_io, &state_encoder, framequeue_len, samplebuf_len,
-		fstat_c.nchan, fstat_c.samplebytes, outfile, outfile_name,
-		infile, infile_name, seektable, estat_out, &fstat_c
+		outfile, outfile_name, infile, infile_name, seektable,
+		estat_out, &fstat_c
 	);
 	//
-	thread_encode = calloc((size_t) nthreads, sizeof *thread_encode);
-	assert(thread_encode != NULL);
-	if UNLIKELY ( thread_encode == NULL ){
+	thread_encoder = calloc((size_t) nthreads, sizeof *thread_encoder);
+	assert(thread_encoder != NULL);
+	if UNLIKELY ( thread_encoder == NULL ){
 		error_sys(errno, "calloc", NULL);
 	}
 
 	// create
 	for ( i = 0; i < nthreads; ++i ){
 		t.d = pthread_create(
-			&thread_encode[i], NULL,
+			&thread_encoder[i], NULL,
 			(void *(*)(void *)) encmt_encoder, &state_encoder
 		);
 		if UNLIKELY ( t.d != 0 ){
@@ -304,12 +304,12 @@ encmt_loop(
 
 	// join
 	for ( i = 0; i < nthreads; ++i ){
-		(void) pthread_join(thread_encode[i], NULL);
+		(void) pthread_join(thread_encoder[i], NULL);
 	}
 
 	// cleanup
 	encmt_state_free(&state_io, &state_encoder, framequeue_len);
-	free(thread_encode);
+	free(thread_encoder);
 
 	return;
 }
@@ -482,11 +482,11 @@ encmt_io(struct MTArg_EncIO *const restrict arg)
 		*arg->estat_out
 @*/
 {
-	struct MTArg_EncIO_Frames *const restrict frames  = &arg->frames;
-	struct MTArg_IO_Outfile   *const restrict outfile = &arg->outfile;
-	struct MTArg_IO_Infile    *const restrict infile  = &arg->infile;
-	struct FileStats_EncMT *const restrict fstat      =  arg->fstat;
-	struct SeekTable       *const restrict seektable  =  arg->seektable;
+	struct MTArg_EncIO_Frames *const restrict  frames  = &arg->frames;
+	struct MTArg_IO_Outfile   *const restrict  outfile = &arg->outfile;
+	struct MTArg_IO_Infile    *const restrict  infile  = &arg->infile;
+	const struct FileStats_EncMT *const restrict fstat =  arg->fstat;
+	struct SeekTable *const restrict         seektable =  arg->seektable;
 	//
 	sem_t          *const restrict nframes_avail =  frames->navailable;
 	sem_t          *const restrict post_encoder  =  frames->post_encoder;
@@ -564,6 +564,7 @@ loop0_read:
 			}
 			truncated = true;
 		}
+
 		// check for truncated sample
 		t.u = (uint) (nmemb_read % nchan);
 		if UNLIKELY ( t.u != 0 ){
@@ -582,23 +583,18 @@ loop0_read:
 		(void) sem_post(nframes_avail);
 	}
 	while ( ! truncated );
-	if ( truncated ){
-		i = (i + 1u < framequeue_len ? i + 1u : 0);
-	}
 	last = i;
 
-	// unlock any uninitialized frames (tiny infile)
+	// write the remaining frames
 	if ( ! start_writing ){
+		// unlock any uninitialized frames (tiny infile)
 		do {
 			(void) sem_post(nframes_avail);
 			i = (i + 1u < framequeue_len ? i + 1u : 0);
 		}
 		while ( i != 0 );
-		truncated = true;
 	}
-
-	// write the remaining frames
-	if ( ! truncated ){ goto loop1_entr; }
+	else {	goto loop1_not_tiny; }
 	do {
 		// wait for frame to finish encoding
 		(void) sem_wait(&post_encoder[i]);
@@ -612,7 +608,7 @@ loop0_read:
 		// mark frame as done and make available
 		ni32_perframe[i] = 0;
 		(void) sem_post(nframes_avail);
-loop1_entr:
+loop1_not_tiny:
 		i = (i + 1u < framequeue_len ? i + 1u : 0);
 	}
 	while ( i != last );
@@ -635,13 +631,13 @@ encmt_encoder(struct MTArg_Encoder *const restrict arg)
 		*arg->encbuf
 @*/
 {
-	struct MTArg_Encoder_Frames *const restrict frames = &arg->frames;
-	struct FileStats_EncMT      *const restrict fstat  =  arg->fstat;
+	struct MTArg_Encoder_Frames  *const restrict frames = &arg->frames;
+	const struct FileStats_EncMT *const restrict fstat  =  arg->fstat;
 	//
 	sem_t         *const restrict nframes_avail  =  frames->navailable;
 	struct MTPQueue *const restrict queue        = &frames->queue;
 	sem_t         *const restrict post_encoder   =  frames->post_encoder;
-	size_t        *const restrict ni32_perframe  =  frames->ni32_perframe;
+	const size_t  *const restrict ni32_perframe  =  frames->ni32_perframe;
 	struct EncBuf *const restrict encbuf         =  frames->encbuf;
 	struct LibTTAr_CodecState_User *const restrict user = frames->user;
 	//
