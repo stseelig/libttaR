@@ -187,6 +187,7 @@ ttadec_frame_st(
 @*/
 {
 	uint r = 0;
+	int dec_retval;
 	struct LibTTAr_CodecState_User user = LIBTTAr_CODECSTATE_USER_INIT;
 	size_t readlen, nbytes_read, ni32_target;
 	union {	size_t			z;
@@ -232,17 +233,21 @@ loop_entr:
 				);
 			}
 		}
-
 		// decode tta to i32
-		t.d = libttaR_tta_decode(
+		dec_retval = libttaR_tta_decode(
 			decbuf->i32buf, decbuf->ttabuf, decbuf->i32buf_len,
 			decbuf->ttabuf_len, ni32_target, nbytes_read, priv,
 			&user, samplebytes, nchan, ni32_perframe,
 			framesize_tta
 		);
-		assert((d == LIBTTAr_RET_OK) || (d == LIBTTAr_RET_DECFAIL));
+		assert( (dec_retval == LIBTTAr_RET_DONE)
+		       ||
+		        (dec_retval == LIBTTAr_RET_AGAIN)
+		       ||
+		        (dec_retval == LIBTTAr_RET_DECFAIL)
+		);
 
-		if UNLIKELY ( t.d == LIBTTAr_RET_DECFAIL ){
+		if UNLIKELY ( dec_retval == LIBTTAr_RET_DECFAIL ){
 			error_tta("%s: frame %zu: malformed seektable entry; "
 				"decoding without a seektable not supported",
 				infile_name, frame_num
@@ -250,7 +255,7 @@ loop_entr:
 		}
 
 		// check for truncated sample
-		if ( user.ncalls_codec == 0 ){
+		if ( dec_retval == LIBTTAr_RET_DONE ){
 			t.u = (uint) (user.ni32_total % nchan);
 			if UNLIKELY ( t.u != 0 ){
 				warning_tta("%s: frame %zu: "
@@ -281,7 +286,7 @@ loop_entr:
 			error_sys(errno, "fwrite", outfile_name);
 		}
 	}
-	while ( (user.ncalls_codec != 0) && (r == 0) );
+	while ( (dec_retval == LIBTTAr_RET_AGAIN) && (r == 0) );
 
 	*user_out = user;
 	return r;

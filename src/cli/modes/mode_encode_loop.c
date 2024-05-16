@@ -366,9 +366,12 @@ loop_entr:
 			ni32_target, priv, &user, samplebytes, nchan,
 			ni32_perframe
 		);
-		assert(t.d == LIBTTAr_RET_OK);
+		assert( (t.d == LIBTTAr_RET_DONE)
+		       ||
+		        (t.d == LIBTTAr_RET_AGAIN)
+		);
 	}
-	while ( user.ncalls_codec != 0 );
+	while ( t.d == LIBTTAr_RET_AGAIN );
 
 	*user_out = user;
 	return;

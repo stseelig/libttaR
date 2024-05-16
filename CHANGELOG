@@ -3,8 +3,12 @@
 
 1.1.0 (2024-XX-XX):-----------------------------------------------------------
 
-	- tta_encode/tta_decode have enum returns and new parameter(s)
-	- CodecState_User fields changed, and must be init'd before calling
+	- tta_encode/tta_decode:
+		- enum returns and new parameter(s)
+		- return determines if they finished or not, not struct field
+	- CodecState_User:
+		- fields changed
+		- must be init'd before calling
 	- changed the version num/string layout
 	- performance impovements
 

@@ -106,7 +106,7 @@ libttaR_tta_decode(
 		*user
 @*/
 {
-	size_t r = LIBTTAr_RET_OK;
+	size_t r = LIBTTAr_RET_AGAIN;
 	size_t nbytes_tta_dec;
 	const  u8 predict_k    = tta_predict_k(samplebytes);
 	const i32 filter_round = tta_filter_round(samplebytes);
@@ -202,19 +202,18 @@ libttaR_tta_decode(
 	}
 
 	// post-decode
-	user->ni32_total += user->ni32;
+	user->ni32_total       += user->ni32;
 	if ( user->ni32_total == ni32_perframe ){
-		user->ncalls_codec  = 0;
-		user->crc           = crc32_end(user->crc);
-
-		if UNLIKELY ( (user->nbytes_tta_total + nbytes_tta_dec)
-		             !=
-		              nbytes_tta_perframe
+		user->crc       = crc32_end(user->crc);
+		if ( (user->nbytes_tta_total + nbytes_tta_dec)
+		    !=
+		     nbytes_tta_perframe
 		){
 			r = LIBTTAr_RET_DECFAIL;
 		}
+		else {	r = LIBTTAr_RET_DONE; }
 	}
-	else {	user->ncalls_codec += (size_t) 1u; }
+	user->ncalls_codec     += (size_t) 1u;
 	user->nbytes_tta	= nbytes_tta_dec;
 	user->nbytes_tta_total += nbytes_tta_dec;
 

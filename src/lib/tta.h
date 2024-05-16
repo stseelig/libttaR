@@ -21,11 +21,14 @@
 //////////////////////////////////////////////////////////////////////////////
 
 enum LibTTAr_Ret {
-	// no error
-	LIBTTAr_RET_OK		 =  0,
+	// frame was finished without error
+	LIBTTAr_RET_DONE	 =  0,
 
-	// user->nbytes_tta_total != nbytes_tta_perframe
-	LIBTTAr_RET_DECFAIL      =  1,
+	// frame was not finished
+	LIBTTAr_RET_AGAIN	 =  1,
+
+	// frame was finished, but nbytes_tta_total != nbytes_tta_perframe
+	LIBTTAr_RET_DECFAIL      =  2,
 
 	// bad dest_len, src_len, ni32_target, nbytes_tta_target,
 	//   ni32_perframe, or nbytes_tta_perframe

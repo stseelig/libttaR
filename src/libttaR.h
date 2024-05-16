@@ -19,11 +19,14 @@
 /* ######################################################################## */
 
 enum LibTTAr_Ret {
-	/* no error */
-	LIBTTAr_RET_OK		 =  0,
+	/* frame was finished without error*/
+	LIBTTAr_RET_DONE	 =  0,
 
-	/* user->nbytes_tta_total != nbytes_tta_perframe */
-	LIBTTAr_RET_DECFAIL      =  1,
+	/* frame was not finished */
+	LIBTTAr_RET_AGAIN	 =  1,
+
+	/* frame was finished, but nbytes_tta_total != nbytes_tta_perframe */
+	LIBTTAr_RET_DECFAIL      =  2,
 
 	/* bad dest_len, src_len, ni32_target, nbytes_tta_target,
 	     ni32_perframe, or nbytes_tta_perframe */
@@ -68,8 +71,7 @@ struct LibTTAr_CodecState_Priv;
 // fields:                                                                  //
 //                                                                          //
 //      ncalls_codec:                                                       //
-//              will be 0 if the frame was finished coding, or it is the    //
-//          number of times the codec function has been called              //
+//              number of times the codec function has been called          //
 //                                                                          //
 //      crc:                                                                //
 //              frame CRC                                                   //
@@ -90,7 +92,7 @@ struct LibTTAr_CodecState_Priv;
 //                                                                          //
 /////////////////////////////////////////////////////////////////////////// */
 struct LibTTAr_CodecState_User {
-	uint32_t	ncalls_codec;		/* 0 if frame is finished   */
+	uint32_t	ncalls_codec;
 	uint32_t	crc;
 	size_t		ni32;			/* enc: n-read, dec: n-writ */
 	size_t		ni32_total;		/* ~                        */
@@ -143,11 +145,9 @@ extern const char *const libttaR_str_license;
 //                                                                          //
 // return:                                                                  //
 //                                                                          //
-//      LIBTTAr_RET_OK (0):                                                 //
-//              success                                                     //
-//                                                                          //
-//      LIBTTAr_RET_INVAL*:                                                 //
-//              bad parameters                                              //
+//      LIBTTAr_RET_DONE (0)                                                //
+//      LIBTTAr_RET_AGAIN                                                   //
+//      LIBTTAr_RET_INVAL*                                                  //
 //                                                                          //
 // parameters:                                                              //
 //                                                                          //
@@ -227,14 +227,10 @@ extern int libttaR_tta_encode(
 //                                                                          //
 // return:                                                                  //
 //                                                                          //
-//      LIBTTAr_RET_OK (0):                                                 //
-//              success                                                     //
-//                                                                          //
-//      LIBTTAr_RET_DECFAIL:                                                //
-//              user->nbytes_tta_total != nbytes_tta_perframe               //
-//                                                                          //
-//      LIBTTAr_RET_INVAL*:                                                 //
-//              bad parameters                                              //
+//      LIBTTAr_RET_DONE (0)                                                //
+//      LIBTTAr_RET_AGAIN                                                   //
+//      LIBTTAr_RET_DECFAIL                                                 //
+//      LIBTTAr_RET_INVAL*                                                  //
 //                                                                          //
 // parameters:                                                              //
 //                                                                          //
