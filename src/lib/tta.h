@@ -22,10 +22,10 @@
 
 enum LibTTAr_Ret {
 	// no error
-	LIBTTAr_RET_OK		=  0,
+	LIBTTAr_RET_OK		 =  0,
 
-	// library was misconfigured
-	LIBTTAr_RET_MISCONFIG	= -1,
+	// user->nbytes_tta_total != nbytes_tta_perframe
+	LIBTTAr_RET_DECFAIL      =  1,
 
 	// bad dest_len, src_len, ni32_target, nbytes_tta_target,
 	//   ni32_perframe, or nbytes_tta_perframe
@@ -34,8 +34,8 @@ enum LibTTAr_Ret {
 	// bad samplebytes or nchan
 	LIBTTAr_RET_INVAL_DIMEN,
 
-	// user->nbytes_tta_total != nbytes_tta_perframe
-	LIBTTAr_RET_DECFAIL,
+	// library was misconfigured; see libttaR_test_nchan
+	LIBTTAr_RET_MISCONFIG	 = -1
 };
 
 enum TTASampleBytes {

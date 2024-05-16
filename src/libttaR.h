@@ -20,21 +20,20 @@
 
 enum LibTTAr_Ret {
 	/* no error */
-	LIBTTAr_RET_OK		=  0,
+	LIBTTAr_RET_OK		 =  0,
 
-	/* library was misconfigured; see libttaR_test_nchan */
-	LIBTTAr_RET_MISCONFIG	= -1,
+	/* user->nbytes_tta_total != nbytes_tta_perframe */
+	LIBTTAr_RET_DECFAIL      =  1,
 
 	/* bad dest_len, src_len, ni32_target, nbytes_tta_target,
-	 *   ni32_perframe, or nbytes_tta_perframe
-	 */
+	     ni32_perframe, or nbytes_tta_perframe */
 	LIBTTAr_RET_INVAL_BOUNDS,
 
 	/* bad samplebytes or nchan */
 	LIBTTAr_RET_INVAL_DIMEN,
 
-	/* user->nbytes_tta_total != nbytes_tta_perframe */
-	LIBTTAr_RET_DECFAIL,
+	/* library was misconfigured; see libttaR_test_nchan */
+	LIBTTAr_RET_MISCONFIG	 = -1
 };
 
 enum TTASampleBytes {
@@ -195,7 +194,7 @@ extern const char *const libttaR_str_license;
 #undef nchan
 #undef ni32_perframe
 /*@external@*/ /*@unused@*/
-extern enum LibTTAr_Ret libttaR_tta_encode(
+extern int libttaR_tta_encode(
 	uint8_t *dest,
 	const int32_t *src,
 	size_t dest_len,
@@ -232,7 +231,7 @@ extern enum LibTTAr_Ret libttaR_tta_encode(
 //              success                                                     //
 //                                                                          //
 //      LIBTTAr_RET_DECFAIL:                                                //
-//              user->nbytes_tta_total does not match nbytes_tta_perframe   //
+//              user->nbytes_tta_total != nbytes_tta_perframe               //
 //                                                                          //
 //      LIBTTAr_RET_INVAL*:                                                 //
 //              bad parameters                                              //
@@ -289,7 +288,7 @@ extern enum LibTTAr_Ret libttaR_tta_encode(
 #undef ni32_perframe
 #undef nbytes_tta_total
 /*@external@*/ /*@unused@*/
-extern enum LibTTAr_Ret libttaR_tta_decode(
+extern int libttaR_tta_decode(
 	int32_t *dest,
 	const uint8_t *src,
 	size_t dest_len,

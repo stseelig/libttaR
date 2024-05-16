@@ -338,11 +338,11 @@ enc_frame_encode(
 {
 	struct LibTTAr_CodecState_User user = LIBTTAr_CODECSTATE_USER_INIT;
 	size_t ni32_target = ni32_perframe;
-	union {	size_t			z;
-		enum LibTTAr_Ret	ttaR;
+	union {	size_t	z;
+		int	d;
 	} t;
 #ifdef NDEBUG
-	(void) t.ttaR;	// gcc
+	(void) t.d;	// gcc
 #endif
 	// convert pcm to i32
 	t.z = libttaR_pcm_read(
@@ -358,7 +358,7 @@ enc_frame_encode(
 		);
 		ni32_target = ni32_perframe - user.ni32_total;
 loop_entr:
-		t.ttaR = libttaR_tta_encode(
+		t.d = libttaR_tta_encode(
 			&encbuf->ttabuf[user.nbytes_tta_total],
 			&encbuf->i32buf[user.ni32_total],
 			encbuf->ttabuf_len - user.nbytes_tta_total,
@@ -366,7 +366,7 @@ loop_entr:
 			ni32_target, priv, &user, samplebytes, nchan,
 			ni32_perframe
 		);
-		assert(t.ttaR == LIBTTAr_RET_OK);
+		assert(t.d == LIBTTAr_RET_OK);
 	}
 	while ( user.ncalls_codec != 0 );
 

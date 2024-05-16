@@ -91,7 +91,7 @@ tta_decode_2ch(
 
 
 // returns LIBTTAr_RET_OK (0) on success
-enum LibTTAr_Ret
+int
 libttaR_tta_decode(
 	i32 *const dest, const u8 *const src,
 	size_t dest_len, size_t src_len,

@@ -193,7 +193,6 @@ ttadec_frame_st(
 		uint			u;
 		int			d;
 		off_t			o;
-		enum LibTTAr_Ret	ttaR;
 	} t;
 
 	ni32_target = (decbuf->i32buf_len < ni32_perframe
@@ -235,18 +234,15 @@ loop_entr:
 		}
 
 		// decode tta to i32
-		t.ttaR = libttaR_tta_decode(
+		t.d = libttaR_tta_decode(
 			decbuf->i32buf, decbuf->ttabuf, decbuf->i32buf_len,
 			decbuf->ttabuf_len, ni32_target, nbytes_read, priv,
 			&user, samplebytes, nchan, ni32_perframe,
 			framesize_tta
 		);
-		assert( (t.ttaR == LIBTTAr_RET_OK)
-		       ||
-		        (t.ttaR == LIBTTAr_RET_DECFAIL)
-		);
+		assert((d == LIBTTAr_RET_OK) || (d == LIBTTAr_RET_DECFAIL));
 
-		if UNLIKELY ( t.ttaR == LIBTTAr_RET_DECFAIL ){
+		if UNLIKELY ( t.d == LIBTTAr_RET_DECFAIL ){
 			error_tta("%s: frame %zu: malformed seektable entry; "
 				"decoding without a seektable not supported",
 				infile_name, frame_num

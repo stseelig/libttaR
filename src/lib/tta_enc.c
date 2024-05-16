@@ -90,7 +90,7 @@ tta_encode_2ch(
 //////////////////////////////////////////////////////////////////////////////
 
 // returns LIBTTAr_RET_OK (0) on success
-enum LibTTAr_Ret
+int
 libttaR_tta_encode(
 	u8 *const dest, const i32 *const src,
 	size_t dest_len, size_t src_len, size_t ni32_target,
