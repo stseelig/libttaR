@@ -83,7 +83,7 @@ extern u8 g_nwarnings;
 extern struct GlobalFlags g_flag;
 
 /*@checkmod@*/
-extern int g_nthreads;
+extern uint g_nthreads;
 
 /*@checkmod@*/ /*@dependent@*/ /*@null@*/
 extern char *g_rm_on_sigint;

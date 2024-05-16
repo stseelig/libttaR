@@ -283,10 +283,10 @@ encmt_loop(
 	);
 	//
 	thread_encoder = calloc((size_t) nthreads, sizeof *thread_encoder);
-	assert(thread_encoder != NULL);
 	if UNLIKELY ( thread_encoder == NULL ){
 		error_sys(errno, "calloc", NULL);
 	}
+	assert(thread_encoder != NULL);
 
 	// create
 	for ( i = 0; i < nthreads; ++i ){
@@ -338,11 +338,11 @@ enc_frame_encode(
 {
 	struct LibTTAr_CodecState_User user = LIBTTAr_CODECSTATE_USER_INIT;
 	size_t ni32_target = ni32_perframe;
-	union {	size_t	z;
-		int	d;
+	union {	size_t			z;
+		enum LibTTAr_Ret	ttaR;
 	} t;
 #ifdef NDEBUG
-	(void) t.d;	// gcc
+	(void) t.ttaR;	// gcc
 #endif
 	// convert pcm to i32
 	t.z = libttaR_pcm_read(
@@ -358,7 +358,7 @@ enc_frame_encode(
 		);
 		ni32_target = ni32_perframe - user.ni32_total;
 loop_entr:
-		t.d = libttaR_tta_encode(
+		t.ttaR = libttaR_tta_encode(
 			&encbuf->ttabuf[user.nbytes_tta_total],
 			&encbuf->i32buf[user.ni32_total],
 			encbuf->ttabuf_len - user.nbytes_tta_total,
@@ -366,7 +366,7 @@ loop_entr:
 			ni32_target, priv, &user, samplebytes, nchan,
 			ni32_perframe
 		);
-		assert(t.d == 0);
+		assert(t.ttaR == LIBTTAr_RET_OK);
 	}
 	while ( user.ncalls_codec != 0 );
 
@@ -420,7 +420,7 @@ enc_frame_write(
 
 	// update estat
 	estat.nframes          += (size_t) 1u;
-	estat.nsamples         += user.ni32_total;
+	estat.nsamples_flat    += user.ni32_total;
 	estat.nsamples_perchan += (size_t) (user.ni32_total / nchan);
 	estat.nbytes_encoded   += user.nbytes_tta_total;
 

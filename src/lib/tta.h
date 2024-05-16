@@ -20,8 +20,24 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-#ifndef xENUM_TTASAMPLEBYTES
-#define xENUM_TTASAMPLEBYTES
+enum LibTTAr_Ret {
+	// no error
+	LIBTTAr_RET_OK		=  0,
+
+	// library was misconfigured
+	LIBTTAr_RET_MISCONFIG	= -1,
+
+	// bad dest_len, src_len, ni32_target, nbytes_tta_target,
+	//   ni32_perframe, or nbytes_tta_perframe
+	LIBTTAr_RET_INVAL_BOUNDS,
+
+	// bad samplebytes or nchan
+	LIBTTAr_RET_INVAL_DIMEN,
+
+	// user->nbytes_tta_total != nbytes_tta_perframe
+	LIBTTAr_RET_DECFAIL,
+};
+
 enum TTASampleBytes {
 	TTASAMPLEBYTES_1 = 1u,
 	TTASAMPLEBYTES_2 = 2u,
@@ -29,7 +45,6 @@ enum TTASampleBytes {
 };
 #define TTA_SAMPLEBYTES_MAX	((unsigned int) TTASAMPLEBYTES_3)
 #define TTA_SAMPLEBITS_MAX	((uint) (8u*TTA_SAMPLEBYTES_MAX))
-#endif
 
 // unary + binary
 #define TTABUF_SAFETY_MARGIN_PER_NCHAN		((size_t) (256u + 256u))

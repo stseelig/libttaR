@@ -12,10 +12,10 @@
 #include <stddef.h>	// ptrdiff_t
 #include <stdio.h>
 
+#include "../libttaR.h"
+
 #include "cli.h"
 #include "main.h"
-
-#include "../libttaR.h"
 
 //////////////////////////////////////////////////////////////////////////////
 

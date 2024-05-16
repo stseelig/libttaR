@@ -17,6 +17,7 @@
 #include <semaphore.h>
 
 #include "../../bits.h"
+#include "../../libttaR.h"	// sizeof *user
 
 #include "../debug.h"
 #include "../formats.h"

@@ -95,7 +95,7 @@ struct FileStats {
 
 struct EncStats {
 	size_t	nframes;
-	size_t	nsamples;
+	size_t	nsamples_flat;
 	size_t	nsamples_perchan;	// for overflow protection
 	size_t	nbytes_encoded;
 	double	encodetime;
@@ -103,7 +103,7 @@ struct EncStats {
 
 struct DecStats {
 	size_t	nframes;
-	size_t	nsamples;
+	size_t	nsamples_flat;
 	size_t	nsamples_perchan;	// for overflow protection
 	size_t	nbytes_decoded;
 	double	decodetime;

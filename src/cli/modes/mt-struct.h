@@ -14,7 +14,6 @@
 #include <stddef.h>
 
 #include "../../bits.h"
-#include "../../libttaR.h"
 
 #include "../formats.h"
 
@@ -95,9 +94,9 @@ struct MTArg_DecIO_Frames {
 	/*@owned@*/
 	size_t				*nbytes_tta_perframe;
 	/*@owned@*/
-	u32				*crc_read;
-	/*@owned@*/
 	struct DecBuf			*decbuf;
+	/*@owned@*/
+	u32				*crc_read;
 	/*@owned@*/
 	struct LibTTAr_CodecState_User	*user;
 };
@@ -115,8 +114,6 @@ struct MTArg_Decoder_Frames {
 	size_t				*ni32_perframe;
 	/*@dependent@*/
 	size_t				*nbytes_tta_perframe;
-	/*@dependent@*/
-	u32				*crc_read;
 	/*@dependent@*/
 	struct DecBuf			*decbuf;
 	/*@dependent@*/

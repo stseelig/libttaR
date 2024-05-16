@@ -3,8 +3,8 @@
 
 1.1.0 (2024-XX-XX):-----------------------------------------------------------
 
+	- tta_encode/tta_decode have enum returns and new parameter(s)
 	- CodecState_User fields changed, and must be init'd before calling
-	- tta_encode/tta_decode have a new parameter
 	- changed the version num/string layout
 	- performance impovements
 

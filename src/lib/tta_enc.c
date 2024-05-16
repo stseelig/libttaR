@@ -89,8 +89,8 @@ tta_encode_2ch(
 
 //////////////////////////////////////////////////////////////////////////////
 
-// returns 0 on success
-int
+// returns LIBTTAr_RET_OK (0) on success
+enum LibTTAr_Ret
 libttaR_tta_encode(
 	u8 *const dest, const i32 *const src,
 	size_t dest_len, size_t src_len, size_t ni32_target,
@@ -103,7 +103,7 @@ libttaR_tta_encode(
 		*user
 @*/
 {
-	size_t r;
+	size_t nbytes_tta_enc;
 	const  u8 predict_k    = tta_predict_k(samplebytes);
 	const i32 filter_round = tta_filter_round(samplebytes);
 	const  u8 filter_k     = tta_filter_k(samplebytes);
@@ -118,35 +118,38 @@ libttaR_tta_encode(
 
 	// check for bad parameters
 	// having these checks makes it faster, and the order and different
-	//  return values matter. not really sure why, probably something with
-	//  bounds checking
-	if ( (ni32_target == 0) || (ni32_target > src_len)
+	//  return values matter. not completely sure why
+	if ( (src_len == 0) || (dest_len == 0)
+	    ||
+	     (ni32_target == 0) || (ni32_perframe == 0)
+	){
+		return LIBTTAr_RET_INVAL_BOUNDS;
+	}
+	if ( (ni32_target > src_len)
 	    ||
 	     (ni32_target + user->ni32_total > ni32_perframe)
 	    ||
 	     (ni32_target % nchan != 0)
+	    ||
+	     (	dest_len
+	       <=
+	        (size_t) (TTABUF_SAFETY_MARGIN_FAST * nchan * samplebytes)
+	     )
 	){
-		return 1;
+		return LIBTTAr_RET_INVAL_BOUNDS;
 	}
-	if ( dest_len
-	    <=
-	     (size_t) (TTABUF_SAFETY_MARGIN_FAST * nchan * samplebytes)
+	if ( (nchan == 0) || (((uint) samplebytes) == 0)
+	    ||
+	     (((uint) samplebytes) > ((uint) TTA_SAMPLEBYTES_MAX))
 	){
-		return 2;
-	}
-	if ( nchan == 0 ){
-		return 3;
-	}
-	if ( (samplebytes == 0) || ((uint) samplebytes > TTA_SAMPLEBYTES_MAX)
-	){
-		return 4;
+		return LIBTTAr_RET_INVAL_DIMEN;
 	}
 
 	// encode
 	switch ( nchan ){
 #ifndef LIBTTAr_DISABLE_UNROLLED_1CH
 	case 1u:
-		r = tta_encode_1ch(
+		nbytes_tta_enc = tta_encode_1ch(
 			dest, src, &user->crc, &user->ni32, &priv->bitcache,
 			priv->codec, ni32_target, safety_margin, predict_k,
 			filter_round, filter_k
@@ -155,7 +158,7 @@ libttaR_tta_encode(
 #endif
 #ifndef LIBTTAr_DISABLE_UNROLLED_2CH
 	case 2u:
-		r = tta_encode_2ch(
+		nbytes_tta_enc = tta_encode_2ch(
 			dest, src, &user->crc, &user->ni32, &priv->bitcache,
 			priv->codec, ni32_target, safety_margin, predict_k,
 			filter_round, filter_k
@@ -164,14 +167,14 @@ libttaR_tta_encode(
 #endif
 	default:
 #ifndef LIBTTAr_DISABLE_MCH
-		r = tta_encode_mch(
+		nbytes_tta_enc = tta_encode_mch(
 			dest, src, &user->crc, &user->ni32, &priv->bitcache,
 			priv->codec, ni32_target, safety_margin, predict_k,
 			filter_round, filter_k, nchan
 		);
 		break;
 #else
-		return -1;
+		return LIBTTAr_RET_MISCONFIG;
 #endif
 
 #if defined(LIBTTAr_DISABLE_UNROLLED_1CH) \
@@ -184,18 +187,18 @@ libttaR_tta_encode(
 	// post-encode
 	user->ni32_total += user->ni32;
 	if ( user->ni32_total == ni32_perframe ){
-		r = rice_encode_cacheflush(
-			dest, r, &priv->bitcache.cache, &priv->bitcache.count,
-			&user->crc
+		nbytes_tta_enc = rice_encode_cacheflush(
+			dest, nbytes_tta_enc, &priv->bitcache.cache,
+			&priv->bitcache.count, &user->crc
 		);
 		user->ncalls_codec  = 0;
 		user->crc           = crc32_end(user->crc);
 	}
 	else {	user->ncalls_codec += (size_t) 1u; }
-	user->nbytes_tta	= r;
-	user->nbytes_tta_total += r;
+	user->nbytes_tta	= nbytes_tta_enc;
+	user->nbytes_tta_total += nbytes_tta_enc;
 
-	return 0;
+	return LIBTTAr_RET_OK;
 }
 
 //--------------------------------------------------------------------------//

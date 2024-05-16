@@ -117,9 +117,9 @@ errprint_stats_postcodec(
 /*@modifies	fileSystem@*/
 {
 	const size_t nbytes_pcm	= (size_t) (
-		estat->nsamples * fstat->samplebytes
+		estat->nsamples_flat * fstat->samplebytes
 	);
-	const double pcmtime	= calc_time_pcm(estat->nsamples, fstat);
+	const double pcmtime	= calc_time_pcm(estat->nsamples_flat, fstat);
 
 	errprint_stats_pcm(pcmtime, estat->nframes, nbytes_pcm);
 	errprint_stats_tta(pcmtime, nbytes_pcm, estat->nbytes_encoded);

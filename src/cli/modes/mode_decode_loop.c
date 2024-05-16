@@ -34,7 +34,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-
+static size_t dec_ni32_perframe(size_t, size_t, size_t, uint) /*@*/;
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -77,10 +77,10 @@ decmt_loop(
 	);
 	//
 	thread_decoder = calloc((size_t) nthreads, sizeof *thread_decoder);
-	assert(thread_decoder != NULL);
 	if UNLIKELY ( thread_decoder == NULL ){
 		error_sys(errno, "calloc", NULL);
 	}
+	assert(thread_decoder != NULL);
 
 	// create
 	for ( i = 0; i < nthreads; ++i ){
@@ -110,7 +110,19 @@ decmt_loop(
 
 //==========================================================================//
 
-
+// returns ni32_perframe
+static size_t
+dec_ni32_perframe(
+	size_t nsamples_dec, size_t nsamples_enc, size_t nsamples_perframe,
+	uint nchan
+)
+/*@*/
+{
+	if ( nsamples_dec + nsamples_perframe > nsamples_enc ){
+		return (size_t) ((nsamples_enc - nsamples_dec) * nchan);
+	}
+	else {	return (size_t) (nsamples_perframe * nchan); }
+}
 
 //==========================================================================//
 
@@ -147,8 +159,10 @@ decmt_io(struct MTArg_DecIO *const restrict arg)
 	const size_t nsamples_enc             = fstat->nsamples_enc;
 
 	struct DecStats dstat;
-	size_t readlen, nmemb_read;
-	size_t nsamples_flat_read_total = 0;
+	size_t nbytes_read, nbytes_read_total = 0;
+	size_t ni32_perframe;
+	size_t nsamples_perchan_dec_total = 0;
+	u32 crc_read;
 	bool start_writing = false, truncated = false;
 	size_t framecnt = 0;
 	uint i = 0, last;
@@ -182,10 +196,40 @@ loop0_entr:
 		}
 loop0_read:
 		// read tta from infile
+		nbytes_tta_perframe  = letoh32(seektable->table[framecnt]);
+		nbytes_tta_perframe -= (sizeof crc_read);
+		if ( nbytes_tta_perframe == 0 ){
+			nbytes_tta_perframe[i] = 0;
+			break;
+		}
+		ni32_perframe = dec_ni32_perframe(
+			dstat.nsamples_perframe, nsamples_enc,
+			nsamples_perframe, nchan
+		);
+		nbytes_read = fread(
+			decbuf.ttabuf, (size_t) 1u, nbytes_tta_perframe,
+			infile
+		);
+		ni32_perframe[i]       = ni32_perframe;
+		nbytes_tta_perframe[i] = nbytes_read;
+		//
+		if UNLIKELY ( nbytes_read != nbytes_tta_perframe ){
+			if UNLIKELY ( ferror(infile_fh) != 0 ){
+				error_sys(errno, "fread", infile_name);
+			}
+			else {	warning_tta("%s: frame %zu: truncated file",
+					infile_name, framecnt
+				);
+			}
+			truncated = true;
+		}
+
 
 		// make frame available
 
 	} while ( ! truncated );
+
+	// TODO
 
 	*arg->dstat_out = dstat;
 	return NULL;

@@ -21,9 +21,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-#ifndef LibTTAr_H
-#ifndef xENUM_TTASAMPLEBYTES
-#define xENUM_TTASAMPLEBYTES
+#ifndef LIBTTAr_H
 enum TTASampleBytes {
 	TTASAMPLEBYTES_1 = 1u,
 	TTASAMPLEBYTES_2 = 2u,
@@ -31,7 +29,6 @@ enum TTASampleBytes {
 };
 #define TTA_SAMPLEBYTES_MAX	((unsigned int) TTASAMPLEBYTES_3)
 #define TTA_SAMPLEBITS_MAX	((unsigned int) (8u*TTA_SAMPLEBYTES_MAX))
-#endif
 
 #define TTA_FRAME_TIME		((double) 1.04489795918367346939)
 #endif

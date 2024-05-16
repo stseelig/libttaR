@@ -299,16 +299,16 @@ dec_loop(struct OpenedFilesMember *const restrict ofm)
 		rewind(outfile);
 		write_w64_header(
 			outfile,
-			(size_t) (dstat.nsamples * fstat->samplebytes), fstat,
-			outfile_name
+			(size_t) (dstat.nsamples_flat * fstat->samplebytes),
+			fstat, outfile_name
 		);
 		break;
 	case DECFMT_WAV:
 		rewind(outfile);
 		write_wav_header(
 			outfile,
-			(size_t) (dstat.nsamples * fstat->samplebytes), fstat,
-			outfile_name
+			(size_t) (dstat.nsamples_flat * fstat->samplebytes),
+			fstat, outfile_name
 		);
 		break;
 	}
