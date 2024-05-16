@@ -195,7 +195,7 @@ extern const char *const libttaR_str_license;
 #undef nchan
 #undef ni32_perframe
 /*@external@*/ /*@unused@*/
-enum LibTTAr_Ret libttaR_tta_encode(
+extern enum LibTTAr_Ret libttaR_tta_encode(
 	uint8_t *dest,
 	const int32_t *src,
 	size_t dest_len,
@@ -289,7 +289,7 @@ enum LibTTAr_Ret libttaR_tta_encode(
 #undef ni32_perframe
 #undef nbytes_tta_total
 /*@external@*/ /*@unused@*/
-enum LibTTAr_Ret libttaR_tta_decode(
+extern enum LibTTAr_Ret libttaR_tta_decode(
 	int32_t *dest,
 	const uint8_t *src,
 	size_t dest_len,
@@ -487,11 +487,11 @@ extern size_t libttaR_pcm_read(
 //                                                                          //
 // description:                                                             //
 //                                                                          //
-//             converts I32 to u8, i16le, or i24le                          //
+//              converts I32 to u8, i16le, or i24le                         //
 //                                                                          //
 // return:                                                                  //
 //                                                                          //
-//             nsamples                                                     //
+//              nsamples                                                    //
 //                                                                          //
 // parameters:                                                              //
 //                                                                          //
