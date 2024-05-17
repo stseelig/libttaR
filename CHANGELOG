@@ -8,7 +8,7 @@
 		- return determines if they finished or not, not struct field
 	- CodecState_User:
 		- fields changed
-		- must be init'd with before calling
+		- must be init'd w/ CODECSTATE_USER_INIT before calling
 	- changed the version num/string layout
 	- performance impovements
 

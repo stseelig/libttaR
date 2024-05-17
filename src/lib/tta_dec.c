@@ -90,7 +90,7 @@ tta_decode_2ch(
 //////////////////////////////////////////////////////////////////////////////
 
 
-// returns LIBTTAr_RET_OK (0) on success
+// returns LIBTTAr_RET_DONE or LIBTTAr_RET_AGAIN on success
 int
 libttaR_tta_decode(
 	i32 *const dest, const u8 *const src,
@@ -106,7 +106,7 @@ libttaR_tta_decode(
 		*user
 @*/
 {
-	size_t r = LIBTTAr_RET_AGAIN;
+	int r = LIBTTAr_RET_AGAIN;
 	size_t nbytes_tta_dec;
 	const  u8 predict_k    = tta_predict_k(samplebytes);
 	const i32 filter_round = tta_filter_round(samplebytes);
