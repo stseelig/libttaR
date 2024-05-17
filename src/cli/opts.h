@@ -21,10 +21,10 @@
 //////////////////////////////////////////////////////////////////////////////
 
 /*@unchecked@*/
-extern const struct OptDict tta2enc_optdict[];
+extern const struct OptDict encode_optdict[];
 
 /*@unchecked@*/
-extern const struct OptDict tta2dec_optdict[];
+extern const struct OptDict decode_optdict[];
 
 //////////////////////////////////////////////////////////////////////////////
 

@@ -314,7 +314,8 @@ extern int libttaR_tta_decode(
 //                                                                          //
 // description:                                                             //
 //                                                                          //
-//              calculates the size of the private state struct             //
+//              calculates the size of the private state struct (for        //
+//          passing to an allocator)                                        //
 //                                                                          //
 // return:                                                                  //
 //                                                                          //

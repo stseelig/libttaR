@@ -84,7 +84,7 @@ mode_decode(uint optind)
 
 	// process opts/args
 	nerrors_file = optargs_process(
-		&openedfiles, optind, tta2dec_optdict
+		&openedfiles, optind, decode_optdict
 	);
 
 	// get file stats
