@@ -12,6 +12,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include "../bits.h"
+#include "../libttaR.h"
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -52,23 +53,8 @@ struct GlobalFlags {
 
 //////////////////////////////////////////////////////////////////////////////
 
-struct TTArInfo {
-	unsigned int	 version;
-	unsigned int	 version_major;
-	unsigned int 	 version_minor;
-	unsigned int	 version_revis;
-	/*@observer@*/
-	const char	*version_extra;
-	/*@observer@*/
-	const char	*version_date;
-	/*@observer@*/
-	const char	*copyright;
-	/*@observer@*/
-	const char	*license;
-};
-
 /*@unchecked@*/ /*@unused@*/
-extern const struct TTArInfo ttaR_info;
+extern const struct LibTTAr_VersionInfo ttaR_info;
 
 //--------------------------------------------------------------------------//
 

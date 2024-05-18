@@ -18,7 +18,7 @@
 
 /* ######################################################################## */
 
-enum LibTTAr_Ret {
+enum LibTTAr_RetVal {
 	/* frame was finished */
 	LIBTTAr_RET_DONE	 =  0,
 
@@ -58,7 +58,7 @@ enum TTASampleBytes {
 
 /* ######################################################################## */
 
-struct LibTTArInfo {
+struct LibTTAr_VersionInfo {
 	unsigned int	 version;
 	unsigned int	 version_major;
 	unsigned int 	 version_minor;
@@ -74,7 +74,7 @@ struct LibTTArInfo {
 };
 
 /*@unchecked@*/ /*@unused@*/
-extern const struct LibTTArInfo libttaR_info;
+extern const struct LibTTAr_VersionInfo libttaR_info;
 
 /* ######################################################################## */
 

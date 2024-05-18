@@ -20,14 +20,14 @@
 //////////////////////////////////////////////////////////////////////////////
 
 static void errprint_program_intro(
-	const struct TTArInfo *, const struct LibTTArInfo *
+	const struct LibTTAr_VersionInfo *, const struct LibTTAr_VersionInfo *
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;
 
 static void errprint_ttaR_version(
-	const char *name, const struct TTArInfo *info
+	const char *name, const struct LibTTAr_VersionInfo *info
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
@@ -184,7 +184,8 @@ errprint_help_mode_decode(void)
 
 static void
 errprint_program_intro(
-	const struct TTArInfo *info_p, const struct LibTTArInfo *info_l
+	const struct LibTTAr_VersionInfo *info_p,
+	const struct LibTTAr_VersionInfo *info_l
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
@@ -192,7 +193,7 @@ errprint_program_intro(
 	(void) fputc('\n', stderr);
 	errprint_ttaR_version("ttaR", info_p);
 	errprint_libstr_copyright(info_p->copyright);
-	errprint_ttaR_version("libttaR", (const struct TTArInfo *) info_l);
+	errprint_ttaR_version("libttaR", info_l);
 	errprint_libstr_copyright(info_l->copyright);
 	(void) fputc('\n', stderr);
 	(void) fprintf(stderr, intro_licence_blurb);
@@ -201,7 +202,9 @@ errprint_program_intro(
 }
 
 static void
-errprint_ttaR_version(const char *name, const struct TTArInfo *info)
+errprint_ttaR_version(
+	const char *name, const struct LibTTAr_VersionInfo *info
+)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 {

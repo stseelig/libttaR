@@ -20,6 +20,7 @@
 #include <unistd.h>
 
 #include "../bits.h"
+#include "../libttaR.h"
 #include "../version.h"
 
 #include "debug.h"
@@ -70,7 +71,7 @@ static void sighand(enum HandledSignals)
 //////////////////////////////////////////////////////////////////////////////
 
 /*@unchecked@*/ /*@unused@*/
-const struct TTArInfo ttaR_info = {
+const struct LibTTAr_VersionInfo ttaR_info = {
 	TTAr_VERSION_NUM,
 	TTAr_VERSION_NUM_MAJOR,
 	TTAr_VERSION_NUM_MINOR,

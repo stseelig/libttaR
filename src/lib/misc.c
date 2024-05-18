@@ -20,7 +20,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-struct LibTTArInfo {
+struct LibTTAr_VersionInfo {
 	unsigned int	 version;
 	unsigned int	 version_major;
 	unsigned int 	 version_minor;
@@ -36,7 +36,7 @@ struct LibTTArInfo {
 };
 
 /*@unchecked@*/ /*@unused@*/
-const struct LibTTArInfo libttaR_info = {
+const struct LibTTAr_VersionInfo libttaR_info = {
 	LIBTTAr_VERSION_NUM,
 	LIBTTAr_VERSION_NUM_MAJOR,
 	LIBTTAr_VERSION_NUM_MINOR,
