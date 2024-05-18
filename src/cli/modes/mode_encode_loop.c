@@ -159,7 +159,6 @@ encst_loop(
 	//
 	size_t readlen, nmemb_read;
 	size_t ni32_perframe, nsamples_flat_read_total = 0;
-	bool truncated = false;
 	size_t nframes_read = 0;
 	union { uint	u;
 		size_t	z;
@@ -180,19 +179,7 @@ encst_loop(
 	memset(&estat, 0x00, sizeof estat);
 	goto loop_entr;
 	do {
-		++nframes_read;
-loop_entr:
-		if ( (! g_flag.quiet) && (nframes_read % SPINNER_FRQ == 0) ){
-			errprint_spinner();
-		}
-
-		// read pcm from infile
-		readlen		= enc_readlen(
-			nsamples_perframe, nsamples_flat_read_total,
-			decpcm_size, samplebytes, nchan
-		);
-		if ( readlen == 0 ){ break; }
-		nmemb_read	= fread(
+		nmemb_read = fread(
 			encbuf.pcmbuf, (size_t) samplebytes, readlen,
 			infile
 		);
@@ -200,6 +187,7 @@ loop_entr:
 		nsamples_flat_read_total += nmemb_read;
 		//
 		if UNLIKELY ( nmemb_read != readlen ){
+			// ??? not sure if the filechecks allow us to be here
 			if UNLIKELY ( ferror(infile) != 0 ){
 				error_sys(errno, "fread", infile_name);
 			}
@@ -207,6 +195,8 @@ loop_entr:
 					infile, nframes_read
 				);
 			}
+			// forces readlen to 0
+			nsamples_flat_read_total = SIZE_MAX;
 		}
 
 		// check for truncated sample
@@ -220,7 +210,6 @@ loop_entr:
 				nchan
 			);
 			ni32_perframe += t.u;
-			truncated      = true;
 		}
 
 		// encode frame
@@ -234,8 +223,20 @@ loop_entr:
 			&encbuf, seektable, &estat, &user, outfile,
 			outfile_name, nchan
 		);
+
+		++nframes_read;
+loop_entr:
+		if ( (! g_flag.quiet) && (nframes_read % SPINNER_FRQ == 0) ){
+			errprint_spinner();
+		}
+
+		// read pcm from infile
+		readlen	 = enc_readlen(
+			nsamples_perframe, nsamples_flat_read_total,
+			decpcm_size, samplebytes, nchan
+		);
 	}
-	while (	! truncated );
+	while (	readlen != 0 );
 
 	// cleanup
 	free(priv);
