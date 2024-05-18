@@ -52,25 +52,23 @@ struct GlobalFlags {
 
 //////////////////////////////////////////////////////////////////////////////
 
-/*@unchecked@*/
-extern const uint ttaR_num_version;
-/*@unchecked@*/
-extern const uint ttaR_num_version_major;
-/*@unchecked@*/
-extern const uint ttaR_num_version_minor;
-/*@unchecked@*/
-extern const uint ttaR_num_version_revis;
+struct TTArInfo {
+	unsigned int	 version;
+	unsigned int	 version_major;
+	unsigned int 	 version_minor;
+	unsigned int	 version_revis;
+	/*@observer@*/
+	const char	*version_extra;
+	/*@observer@*/
+	const char	*version_date;
+	/*@observer@*/
+	const char	*copyright;
+	/*@observer@*/
+	const char	*license;
+};
 
-/*@unchecked@*/
-extern const char ttaR_str_version_extra[];
-/*@unchecked@*/
-extern const char ttaR_str_version_date[];
-
-/*@unchecked@*/
-extern const char ttaR_str_copyright[];
-/*@unchecked@*/
-extern const char ttaR_str_license[];
-
+/*@unchecked@*/ /*@unused@*/
+extern const struct TTArInfo ttaR_info;
 
 //--------------------------------------------------------------------------//
 

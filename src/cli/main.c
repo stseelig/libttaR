@@ -70,23 +70,16 @@ static void sighand(enum HandledSignals)
 //////////////////////////////////////////////////////////////////////////////
 
 /*@unchecked@*/ /*@unused@*/
-const uint ttaR_num_version         = TTAr_NUM_VERSION;
-/*@unchecked@*/ /*@unused@*/
-const uint ttaR_num_version_major   = TTAr_NUM_VERSION_MAJOR;
-/*@unchecked@*/ /*@unused@*/
-const uint ttaR_num_version_minor   = TTAr_NUM_VERSION_MINOR;
-/*@unchecked@*/ /*@unused@*/
-const uint ttaR_num_version_revis   = TTAr_NUM_VERSION_REVIS;
-
-/*@unchecked@*/ /*@unused@*/ /*@observer@*/
-const char ttaR_str_version_extra[] = TTAr_STR_VERSION_EXTRA;
-/*@unchecked@*/ /*@unused@*/ /*@observer@*/
-const char ttaR_str_version_date[]  = TTAr_STR_VERSION_DATE;
-
-/*@unchecked@*/ /*@unused@*/ /*@observer@*/
-const char ttaR_str_copyright[]     = TTAr_STR_COPYRIGHT;
-/*@unchecked@*/ /*@unused@*/ /*@observer@*/
-const char ttaR_str_license[]       = TTAr_STR_LICENSE;
+const struct TTArInfo ttaR_info = {
+	TTAr_VERSION_NUM,
+	TTAr_VERSION_NUM_MAJOR,
+	TTAr_VERSION_NUM_MINOR,
+	TTAr_VERSION_NUM_REVIS,
+	TTAr_VERSION_STR_EXTRA,
+	TTAr_VERSION_STR_DATE,
+	TTAr_COPYRIGHT_STR,
+	TTAr_LICENSE_STR
+};
 
 //--------------------------------------------------------------------------//
 

@@ -20,24 +20,32 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-/*@unchecked@*/ /*@unused@*/
-const uint libttaR_num_version        = LIBTTAr_NUM_VERSION;
-/*@unchecked@*/ /*@unused@*/
-const uint libttaR_num_version_major  = LIBTTAr_NUM_VERSION_MAJOR;
-/*@unchecked@*/ /*@unused@*/
-const uint libttaR_num_version_minor  = LIBTTAr_NUM_VERSION_MINOR;
-/*@unchecked@*/ /*@unused@*/
-const uint libttaR_num_version_revis  = LIBTTAr_NUM_VERSION_REVIS;
+struct LibTTArInfo {
+	unsigned int	 version;
+	unsigned int	 version_major;
+	unsigned int 	 version_minor;
+	unsigned int	 version_revis;
+	/*@observer@*/
+	const char	*version_extra;
+	/*@observer@*/
+	const char	*version_date;
+	/*@observer@*/
+	const char	*copyright;
+	/*@observer@*/
+	const char	*license;
+};
 
-/*@observer@*/ /*@unchecked@*/ /*@unused@*/
-const char *libttaR_str_version_extra = LIBTTAr_STR_VERSION_EXTRA;
-/*@observer@*/ /*@unchecked@*/ /*@unused@*/
-const char *libttaR_str_version_date  = LIBTTAr_STR_VERSION_DATE;
-
-/*@observer@*/ /*@unchecked@*/ /*@unused@*/
-const char *libttaR_str_copyright     = LIBTTAr_STR_COPYRIGHT;
-/*@observer@*/ /*@unchecked@*/ /*@unused@*/
-const char *libttaR_str_license       = LIBTTAr_STR_LICENSE;
+/*@unchecked@*/ /*@unused@*/
+const struct LibTTArInfo libttaR_info = {
+	LIBTTAr_VERSION_NUM,
+	LIBTTAr_VERSION_NUM_MAJOR,
+	LIBTTAr_VERSION_NUM_MINOR,
+	LIBTTAr_VERSION_NUM_REVIS,
+	LIBTTAr_VERSION_STR_EXTRA,
+	LIBTTAr_VERSION_STR_DATE,
+	LIBTTAr_COPYRIGHT_STR,
+	LIBTTAr_LICENSE_STR
+};
 
 //////////////////////////////////////////////////////////////////////////////
 

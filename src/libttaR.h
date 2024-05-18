@@ -58,6 +58,26 @@ enum TTASampleBytes {
 
 /* ######################################################################## */
 
+struct LibTTArInfo {
+	unsigned int	 version;
+	unsigned int	 version_major;
+	unsigned int 	 version_minor;
+	unsigned int	 version_revis;
+	/*@observer@*/
+	const char	*version_extra;
+	/*@observer@*/
+	const char	*version_date;
+	/*@observer@*/
+	const char	*copyright;
+	/*@observer@*/
+	const char	*license;
+};
+
+/*@unchecked@*/ /*@unused@*/
+extern const struct LibTTArInfo libttaR_info;
+
+/* ######################################################################## */
+
 /* private state for the codec functions; see libttaR_codecstate_priv_size */
 struct LibTTAr_CodecState_Priv;
 
@@ -108,32 +128,6 @@ struct LibTTAr_CodecState_User {
 #define LIBTTAr_CODECSTATE_USER_INIT ((struct LibTTAr_CodecState_User) \
 	{0, TTA_CRC32_INIT, 0, 0, 0, 0} \
 )
-
-/* ######################################################################## */
-
-/* version numbers */
-/*@unchecked@*/ /*@unused@*/
-extern const unsigned int libttaR_num_version;
-/*@unchecked@*/ /*@unused@*/
-extern const unsigned int libttaR_num_version_major;
-/*@unchecked@*/ /*@unused@*/
-extern const unsigned int libttaR_num_version_minor;
-/*@unchecked@*/ /*@unused@*/
-extern const unsigned int libttaR_num_version_revis;
-
-/* version strings */
-/*@observer@*/ /*@unchecked@*/ /*@unused@*/
-extern const char *const libttaR_str_version_extra;
-/*@observer@*/ /*@unchecked@*/ /*@unused@*/
-extern const char *const libttaR_str_version_date;
-
-/* copyright string */
-/*@observer@*/ /*@unchecked@*/ /*@unused@*/
-extern const char *const libttaR_str_copyright;
-
-/* license string */
-/*@observer@*/ /*@unchecked@*/ /*@unused@*/
-extern const char *const libttaR_str_license;
 
 /* ######################################################################## */
 
