@@ -539,6 +539,7 @@ encmt_io(struct MTArg_EncIO *const restrict arg)
 		nsamples_flat_read_total += nmemb_read;
 		//
 		if UNLIKELY ( nmemb_read != readlen ){
+			// ??? not sure if the filechecks allow us to be here
 			if UNLIKELY ( ferror(infile_fh) != 0 ){
 				error_sys(errno, "fread", infile_name);
 			}
@@ -599,15 +600,12 @@ loop0_read:
 	last = i;
 
 	// write the remaining frames
-	if ( ! start_writing ){
-		// unlock any uninitialized frames (tiny infile)
-		do {
-			(void) sem_post(nframes_avail);
+	if ( start_writing ){ goto loop1_not_tiny; }
+	else {	// unlock any uninitialized frames (tiny infile)
+		do {	(void) sem_post(nframes_avail);
 			i = (i + 1u < framequeue_len ? i + 1u : 0);
-		}
-		while ( i != 0 );
+		} while ( i != 0 );
 	}
-	else {	goto loop1_not_tiny; }
 	do {
 		// wait for frame to finish encoding
 		(void) sem_wait(&post_encoder[i]);

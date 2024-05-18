@@ -206,7 +206,7 @@ libttaR_tta_decode(
 	user->nbytes_tta_total += nbytes_tta_dec;
 	if ( (user->ni32_total == ni32_perframe)
 	    ||
-	     (user->nbytes_tta_total >= nbytes_tta_perframe)
+	     (user->nbytes_tta_total > nbytes_tta_perframe)
 	){
 		user->crc       = crc32_end(user->crc);
 		if ( user->nbytes_tta_total != nbytes_tta_perframe ){

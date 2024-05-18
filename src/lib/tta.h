@@ -29,7 +29,7 @@ enum LibTTAr_Ret {
 
 	// frame was finished, but nbytes_tta_total != nbytes_tta_perframe
 	//||
-	// frame was not finished, and nbytes_tta_total >= nbytes_tta_perframe
+	// frame was not finished, and nbytes_tta_total > nbytes_tta_perframe
 	LIBTTAr_RET_DECFAIL      =  2,
 
 	// bad dest_len, src_len, ni32_target, nbytes_tta_target,

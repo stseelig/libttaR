@@ -27,7 +27,7 @@ enum LibTTAr_Ret {
 
 	/* frame was finished, but nbytes_tta_total != nbytes_tta_perframe
 	  ||
-	   frame was not finished, and nbytes_tta_total >= nbytes_tta_perframe
+	   frame was not finished, but nbytes_tta_total > nbytes_tta_perframe
 	*/
 	LIBTTAr_RET_DECFAIL      =  2,
 
@@ -70,12 +70,13 @@ struct LibTTAr_CodecState_Priv;
 // description:                                                             //
 //                                                                          //
 //              user readable state for the codec functions. _must_ be      //
-//          initialized before the first call to code a frame               //
+//          initialized before the first call for every frame               //
 //                                                                          //
 // fields:                                                                  //
 //                                                                          //
 //      ncalls_codec:                                                       //
-//              number of times the codec function has been called          //
+//              number of times the codec function has been called for the  //
+//          current frame                                                   //
 //                                                                          //
 //      crc:                                                                //
 //              frame CRC                                                   //
@@ -85,14 +86,14 @@ struct LibTTAr_CodecState_Priv;
 //                                                                          //
 //      ni32_total:                                                         //
 //              total number of I32 read/written across all calls for the   //
-//          same frame                                                      //
+//          current frame                                                   //
 //                                                                          //
 //      nbytes_tta:                                                         //
 //              number of TTA bytes written/read in call                    //
 //                                                                          //
 //      nbytes_tta_total:                                                   //
 //              total number of TTA bytes written/read across all calls for //
-//          the same frame                                                  //
+//          the current frame                                               //
 //                                                                          //
 /////////////////////////////////////////////////////////////////////////// */
 struct LibTTAr_CodecState_User {
@@ -149,9 +150,10 @@ extern const char *const libttaR_str_license;
 //                                                                          //
 // return:                                                                  //
 //                                                                          //
-//      LIBTTAr_RET_DONE (0)                                                //
+//      LIBTTAr_RET_DONE                                                    //
 //      LIBTTAr_RET_AGAIN                                                   //
 //      LIBTTAr_RET_INVAL*                                                  //
+//      LIBTTAr_RET_MISCONFIG                                               //
 //                                                                          //
 // parameters:                                                              //
 //                                                                          //
@@ -231,10 +233,11 @@ extern int libttaR_tta_encode(
 //                                                                          //
 // return:                                                                  //
 //                                                                          //
-//      LIBTTAr_RET_DONE (0)                                                //
+//      LIBTTAr_RET_DONE                                                    //
 //      LIBTTAr_RET_AGAIN                                                   //
 //      LIBTTAr_RET_DECFAIL                                                 //
 //      LIBTTAr_RET_INVAL*                                                  //
+//      LIBTTAr_RET_MISCONFIG                                               //
 //                                                                          //
 // parameters:                                                              //
 //                                                                          //
@@ -310,6 +313,8 @@ extern int libttaR_tta_decode(
 @*/
 ;
 
+/* ######################################################################## */
+
 /* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // libttaR_codecstate_priv_size                                             //
@@ -379,33 +384,6 @@ extern size_t libttaR_ttabuf_size(
 
 /* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// libttaR_test_nchan                                                       //
-//                                                                          //
-//////////////////////////////////////////////////////////////////////////////
-//                                                                          //
-// description:                                                             //
-//                                                                          //
-//              tests whether libttaR was configured to support nchan audio //
-//          channels                                                        //
-//                                                                          //
-// return:                                                                  //
-//                                                                          //
-//              true or false                                               //
-//                                                                          //
-// parameters:                                                              //
-//                                                                          //
-//      nchan:                                                              //
-//              number of audio channels                                    //
-//                                                                          //
-/////////////////////////////////////////////////////////////////////////// */
-#undef nchan
-/*@external@*/ /*@unused@*/
-extern bool libttaR_test_nchan(unsigned int nchan)
-/*@*/
-;
-
-/* ///////////////////////////////////////////////////////////////////////////
-//                                                                          //
 // libttaR_nsamples_perframe                                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -433,6 +411,33 @@ extern size_t libttaR_nsamples_perframe(size_t samplerate)
 #define libttaR_nsamples_perframe(samplerate) ( \
 	(size_t) (TTA_FRAME_TIME * samplerate) \
 )
+
+/* ///////////////////////////////////////////////////////////////////////////
+//                                                                          //
+// libttaR_test_nchan                                                       //
+//                                                                          //
+//////////////////////////////////////////////////////////////////////////////
+//                                                                          //
+// description:                                                             //
+//                                                                          //
+//              tests whether libttaR was configured to support nchan audio //
+//          channels                                                        //
+//                                                                          //
+// return:                                                                  //
+//                                                                          //
+//              true or false                                               //
+//                                                                          //
+// parameters:                                                              //
+//                                                                          //
+//      nchan:                                                              //
+//              number of audio channels                                    //
+//                                                                          //
+/////////////////////////////////////////////////////////////////////////// */
+#undef nchan
+/*@external@*/ /*@unused@*/
+extern bool libttaR_test_nchan(unsigned int nchan)
+/*@*/
+;
 
 /* ######################################################################## */
 
