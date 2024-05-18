@@ -102,6 +102,7 @@ static void *encmt_io(struct MTArg_EncIO *const restrict arg)
 		*arg->frames.navailable,
 		*arg->frames.post_encoder,
 		*arg->frames.ni32_perframe,
+		*arg->frames.encbuf,
 		arg->outfile.outfile_fh,
 		arg->infile.infile_fh,
 		*arg->seektable,
@@ -159,7 +160,7 @@ encst_loop(
 	size_t readlen, nmemb_read;
 	size_t ni32_perframe, nsamples_flat_read_total = 0;
 	bool truncated = false;
-	size_t framecnt = 0;
+	size_t nframes_read = 0;
 	union { uint	u;
 		size_t	z;
 	} t;
@@ -179,9 +180,9 @@ encst_loop(
 	memset(&estat, 0x00, sizeof estat);
 	goto loop_entr;
 	do {
-		++framecnt;
+		++nframes_read;
 loop_entr:
-		if ( (! g_flag.quiet) && (framecnt % SPINNER_FRQ == 0) ){
+		if ( (! g_flag.quiet) && (nframes_read % SPINNER_FRQ == 0) ){
 			errprint_spinner();
 		}
 
@@ -203,15 +204,16 @@ loop_entr:
 				error_sys(errno, "fread", infile_name);
 			}
 			else {	warning_tta("%s: frame %zu: truncated file",
-					infile, estat.nframes
+					infile, nframes_read
 				);
 			}
 		}
+
 		// check for truncated sample
 		t.u = (uint) (nmemb_read % nchan);
 		if UNLIKELY ( t.u != 0 ){
 			warning_tta("%s: frame %zu: last sample truncated, "
-				"zero-padding", infile_name, framecnt
+				"zero-padding", infile_name, nframes_read
 			);
 			t.u = enc_frame_zeropad(
 				encbuf.pcmbuf, nmemb_read, t.u, samplebytes,
@@ -366,9 +368,9 @@ loop_entr:
 			ni32_target, priv, &user, samplebytes, nchan,
 			ni32_perframe
 		);
-		assert( (t.d == LIBTTAr_RET_DONE)
-		       ||
-		        (t.d == LIBTTAr_RET_AGAIN)
+		assert((t.d == LIBTTAr_RET_DONE)
+		      ||
+		       (t.d == LIBTTAr_RET_AGAIN)
 		);
 	}
 	while ( t.d == LIBTTAr_RET_AGAIN );
@@ -434,19 +436,28 @@ enc_frame_write(
 // returns nmemb for fread
 static size_t
 enc_readlen(
-	size_t nsamples_perframe, size_t nsamples_encoded,
+	size_t nsamples_perframe, size_t nsamples_flat_read,
 	size_t decpcm_size, enum TTASampleBytes samplebytes, uint nchan
 )
 /*@*/
 {
 	size_t r = nsamples_perframe * nchan;
+	size_t new_total;
 	union { size_t z; } t;
 
-	t.z = (size_t) ((nsamples_encoded + r) * samplebytes);
+	// truncated short circuit
+	if ( nsamples_flat_read == SIZE_MAX ){
+		return 0;
+	}
+
+	t.z = (size_t) ((nsamples_flat_read + r) * samplebytes);
 	if ( t.z > decpcm_size ){
-		r  = decpcm_size;
-		r -= (size_t) (nsamples_encoded * samplebytes);
-		r /= (size_t) samplebytes;
+		new_total = (size_t) (nsamples_flat_read * samplebytes);
+		if ( new_total < decpcm_size ){
+			r  = decpcm_size - new_total;
+			r /= (size_t) samplebytes;
+		}
+		else {	r = 0; }
 	}
 	return r;
 }
@@ -465,7 +476,6 @@ enc_frame_zeropad(
 	return (uint) r;
 }
 
-
 //==========================================================================//
 
 /*@null@*/
@@ -479,6 +489,7 @@ encmt_io(struct MTArg_EncIO *const restrict arg)
 		*arg->frames.navailable,
 		*arg->frames.post_encoder,
 		*arg->frames.ni32_perframe,
+		*arg->frames.encbuf,
 		arg->outfile.outfile_fh,
 		arg->infile.infile_fh,
 		*arg->seektable,
@@ -511,15 +522,51 @@ encmt_io(struct MTArg_EncIO *const restrict arg)
 	struct EncStats estat;
 	size_t readlen, nmemb_read;
 	size_t nsamples_flat_read_total = 0;
-	bool start_writing = false, truncated = false;
-	size_t framecnt = 0;
+	bool start_writing = false;
+	size_t nframes_read = 0;
 	uint i = 0, last;
 	union {	uint u; } t;
 
 	memset(&estat, 0x00, sizeof estat);
 	goto loop0_entr;
 	do {
-		++framecnt;
+		// read pcm from infile
+		nmemb_read = fread(
+			encbuf[i].pcmbuf, (size_t) samplebytes, readlen,
+			infile_fh
+		);
+		ni32_perframe[i]          = nmemb_read;
+		nsamples_flat_read_total += nmemb_read;
+		//
+		if UNLIKELY ( nmemb_read != readlen ){
+			if UNLIKELY ( ferror(infile_fh) != 0 ){
+				error_sys(errno, "fread", infile_name);
+			}
+			else {	warning_tta("%s: frame %zu: truncated file",
+					infile_name, nframes_read
+				);
+			}
+			// forces readlen to 0
+			nsamples_flat_read_total = SIZE_MAX;
+		}
+
+		// check for truncated sample
+		t.u = (uint) (nmemb_read % nchan);
+		if UNLIKELY ( t.u != 0 ){
+			warning_tta("%s: frame %zu: last sample truncated, "
+				"zero-padding", infile_name, nframes_read
+			);
+			t.u = enc_frame_zeropad(
+				encbuf[i].pcmbuf, nmemb_read, t.u,
+				samplebytes, nchan
+			);
+			ni32_perframe[i] += t.u;
+		}
+
+		// make frame available
+		(void) sem_post(nframes_avail);
+
+		++nframes_read;
 		i = (i + 1u < framequeue_len ? i + 1u : 0);
 		if ( ! start_writing ){
 			if ( i == 0 ){
@@ -537,55 +584,18 @@ encmt_io(struct MTArg_EncIO *const restrict arg)
 			outfile_name, nchan
 		);
 loop0_entr:
-		if ( (! g_flag.quiet) && (framecnt % SPINNER_FRQ == 0) ){
+		if ( (! g_flag.quiet) && (nframes_read % SPINNER_FRQ == 0) ){
 			errprint_spinner();
 		}
 loop0_read:
-		// read pcm from infile
-		readlen		= enc_readlen(
+		// calc size of pcm to read from infile
+		readlen = enc_readlen(
 			nsamples_perframe, nsamples_flat_read_total,
 			decpcm_size, samplebytes, nchan
 		);
-		if ( readlen == 0 ){
-			ni32_perframe[i] = 0;
-			break;
-		}
-		nmemb_read	= fread(
-			encbuf[i].pcmbuf, (size_t) samplebytes, readlen,
-			infile_fh
-		);
-		ni32_perframe[i]          = nmemb_read;
-		nsamples_flat_read_total += nmemb_read;
-		//
-		if UNLIKELY ( nmemb_read != readlen ){
-			if UNLIKELY ( ferror(infile_fh) != 0 ){
-				error_sys(errno, "fread", infile_name);
-			}
-			else {	warning_tta("%s: frame %zu: truncated file",
-					infile_name, framecnt
-				);
-			}
-			truncated = true;
-		}
-
-		// check for truncated sample
-		t.u = (uint) (nmemb_read % nchan);
-		if UNLIKELY ( t.u != 0 ){
-			warning_tta("%s: frame %zu: last sample truncated, "
-				"zero-padding", infile_name, framecnt
-			);
-			t.u = enc_frame_zeropad(
-				encbuf[i].pcmbuf, nmemb_read, t.u,
-				samplebytes, nchan
-			);
-			ni32_perframe[i] += t.u;
-			truncated = true;
-		}
-
-		// make frame available
-		(void) sem_post(nframes_avail);
 	}
-	while ( ! truncated );
+	while ( readlen != 0 );
+	ni32_perframe[i] = 0;
 	last = i;
 
 	// write the remaining frames

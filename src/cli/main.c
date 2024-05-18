@@ -70,23 +70,23 @@ static void sighand(enum HandledSignals)
 //////////////////////////////////////////////////////////////////////////////
 
 /*@unchecked@*/ /*@unused@*/
-const uint ttaR_num_version = TTAr_NUM_VERSION;
+const uint ttaR_num_version         = TTAr_NUM_VERSION;
 /*@unchecked@*/ /*@unused@*/
-const uint ttaR_num_version_major = TTAr_NUM_VERSION_MAJOR;
+const uint ttaR_num_version_major   = TTAr_NUM_VERSION_MAJOR;
 /*@unchecked@*/ /*@unused@*/
-const uint ttaR_num_version_minor = TTAr_NUM_VERSION_MINOR;
+const uint ttaR_num_version_minor   = TTAr_NUM_VERSION_MINOR;
 /*@unchecked@*/ /*@unused@*/
-const uint ttaR_num_version_revis = TTAr_NUM_VERSION_REVIS;
+const uint ttaR_num_version_revis   = TTAr_NUM_VERSION_REVIS;
 
 /*@unchecked@*/ /*@unused@*/ /*@observer@*/
 const char ttaR_str_version_extra[] = TTAr_STR_VERSION_EXTRA;
 /*@unchecked@*/ /*@unused@*/ /*@observer@*/
-const char ttaR_str_version_date[] = TTAr_STR_VERSION_DATE;
+const char ttaR_str_version_date[]  = TTAr_STR_VERSION_DATE;
 
 /*@unchecked@*/ /*@unused@*/ /*@observer@*/
-const char ttaR_str_copyright[] = TTAr_STR_COPYRIGHT;
+const char ttaR_str_copyright[]     = TTAr_STR_COPYRIGHT;
 /*@unchecked@*/ /*@unused@*/ /*@observer@*/
-const char ttaR_str_license[] = TTAr_STR_LICENSE;
+const char ttaR_str_license[]       = TTAr_STR_LICENSE;
 
 //--------------------------------------------------------------------------//
 
@@ -102,8 +102,8 @@ u8 g_nwarnings;
 /*@-fullinitblock@*/
 /*@checkmod@*/
 struct GlobalFlags g_flag = {
-	.threadmode	= THREADMODE_UNSET,
-	.decfmt		= DECFMT_W64
+	.threadmode = THREADMODE_UNSET,
+	.decfmt     = DECFMT_W64
 };
 /*@=fullinitblock@*/
 

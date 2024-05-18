@@ -88,7 +88,8 @@ encbuf_adjust(
 /*@globals	fileSystem,
 		internalState
 @*/
-/*@modifies	internalState,
+/*@modifies	fileSystem,
+		internalState,
 		eb->ttabuf_len,
 		eb->ttabuf
 @*/
@@ -145,6 +146,8 @@ decbuf_init(
 	const size_t r = samplebuf_len * nchan;
 
 	db->i32buf_len = r;
+// TODO ttabuf_len should be 0, and ttabuf should be NULL
+//      no allocating it here for multi/new-single
 	db->ttabuf_len = libttaR_ttabuf_size(
 		samplebuf_len, nchan, samplebytes
 	);
@@ -168,9 +171,32 @@ decbuf_init(
 }
 
 void
-decbuf_adjust()
-// TODO
+decbuf_check_adjust(
+	struct DecBuf *const restrict db, size_t newsize, uint nchan,
+	enum TTASampleBytes samplebytes
+)
+/*@globals	fileSystem,
+		internalState
+@*/
+/*@modifies	fileSystem,
+		internalState,
+		db->ttabuf_len,
+		db->ttabuf
+@*/
 {
+	union {	size_t z; } t;
+
+	t.z = newsize + libttaR_ttabuf_size((size_t) 1u, nchan, samplebytes);
+	assert(t.z != 0);
+	if ( t.z > db->ttabuf_len ){
+		db->ttabuf_len = t.z;
+		db->ttabuf     = realloc(db->ttabuf, t.z);
+		if UNLIKELY ( db->ttabuf == NULL ){
+			error_sys(errno, "realloc", NULL);
+		}
+		assert(db->ttabuf != NULL);
+	}
+
 	return;
 }
 

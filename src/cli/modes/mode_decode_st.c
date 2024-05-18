@@ -247,11 +247,14 @@ loop_entr:
 		        (dec_retval == LIBTTAr_RET_DECFAIL)
 		);
 
+printf("nbytes_tta_perframe:\t%zu\n", framesize_tta);
+printf("user.nbytes_tta_total:\t%zu\n", user.nbytes_tta_total);
 		if UNLIKELY ( dec_retval == LIBTTAr_RET_DECFAIL ){
-			error_tta("%s: frame %zu: malformed seektable entry; "
-				"decoding without a seektable not supported",
-				infile_name, frame_num
-			);
+puts("DECFAIL");
+			//error_tta("%s: frame %zu: malformed seektable entry; "
+			//	"decoding without a seektable not supported",
+			//	infile_name, frame_num
+			//);
 		}
 
 		// check for truncated sample

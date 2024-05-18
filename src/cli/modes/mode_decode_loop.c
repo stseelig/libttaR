@@ -34,6 +34,22 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
+#undef decbuf
+#undef priv
+#undef user_out
+static int dec_frame_decode(
+	struct DecBuf *const restrict decbuf,
+	/*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
+	/*@out@*/ struct LibTTAr_CodecState_User *const restrict user_out,
+	enum TTASampleBytes, uint, size_t, size_t
+)
+/*@modifies	*decbuf->i32buf,
+		*decbuf->pcmbuf,
+		*priv,
+		*user_out
+@*/
+;
+
 static size_t dec_ni32_perframe(size_t, size_t, size_t, uint) /*@*/;
 
 //////////////////////////////////////////////////////////////////////////////
@@ -110,6 +126,109 @@ decmt_loop(
 
 //==========================================================================//
 
+// returns what libttaR_tta_decode returned
+static int
+dec_frame_decode(
+	struct DecBuf *const restrict decbuf,
+	/*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
+	/*@out@*/ struct LibTTAr_CodecState_User *const restrict user_out,
+	enum TTASampleBytes samplebytes, uint nchan, size_t ni32_perframe,
+	size_t nbytes_tta_perframe
+)
+/*@modifies	*decbuf->i32buf,
+		*decbuf->pcmbuf,
+		*priv,
+		*user_out
+@*/
+{
+	int r;
+	struct LibTTAr_CodecState_User user = LIBTTAr_CODECSTATE_USER_INIT;
+	union {	size_t z; } t;
+#ifdef NDEBUG
+	(void) t.z;	// gcc
+#endif
+	// decode tta to i32
+	r = libttaR_tta_decode(
+		decbuf->i32buf, decbuf->ttabuf, decbuf->i32buf_len,
+		decbuf->ttabuf_len, ni32_perframe, nbytes_tta_perframe, priv,
+		&user, samplebytes, nchan, ni32_perframe, nbytes_tta_perframe
+	);
+	// with the way the decoding is setup, RET_AGAIN can't happen here
+	assert((r == LIBTTAr_RET_DONE) || (r == LIBTTAr_RET_DECFAIL));
+
+	// convert i32 to pcm
+	t.z = libttaR_pcm_write(
+		decbuf->pcmbuf, decbuf->i32buf, user.ni32, samplebytes
+	);
+	assert(t.z == user.ni32);
+
+	*user_out = user;
+	return r;
+}
+
+static void
+dec_frame_write(
+	struct DecBuf *const restrict decbuf,
+	/*@in@*/ struct DecStats *const restrict dstat_out,
+	struct LibTTAr_CodecState_User *const restrict user_in,
+	FILE *const restrict outfile, const char *const restrict outfile_name,
+	enum TTASamplebytes samplebytes, uint nchan, u32 crc_read,
+	ichar dec_retval, size_t framecnt
+)
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem,
+		*decbuf->pcmbuf,
+		*dstat_out,
+		outfile
+@*/
+{
+	struct LibTTAr_CodecState_User user = *user_in;
+	struct DecStats dstat = *dstat_out;
+	union { uint	u;
+		size_t	z;
+	} t;
+
+	// check if frame is DECFAIL or truncated and zero-pad
+	if UNLIKELY ( dec_retval == (ichar) LIBTTAr_RET_DECFAIL ){
+		// TODO
+	}
+	else {	t.u = user.ni32_total % nchan;
+		if UNLIKELY ( t.u != 0 ){
+			warning_tta("%s: frame %zu: "
+				"last sample truncated, zero-padding",
+				outfile_name, frame_num
+			);
+			// TODO zeropad
+			user.ni32       += t.z;
+			user.ni32_total += t.z;
+		}
+	}
+
+	// write frame
+	t.z = fwrite(decbuf->pcmbuf, samplebytes, user.ni32_total, outfile);
+	if UNLIKELY ( t.z != user.ni32 ){
+		error_sys(errno, "fwrite", outfile_name);
+	}
+
+	// check frame crc
+	if UNLIKELY ( user.crc != crc_read ){
+		warning_tta("%s: frame %zu is corrupted; bad crc",
+			outfile_name, dstat.nframes
+		);
+	}
+	user.nbytes_tta_total += sizeof crc_read;
+
+	// update dstat
+	dstat.nframes          += (size_t) 1u;
+	dstat.nsamples_flat    += user.ni32_total;
+	dstat.nsamples_perchan += (size_t) (user.ni32_total / nchan);
+	dstat.nbytes_decoded   += user.nbytes_tta_total;
+
+	*dstat_out = dstat;
+	return;
+}
+
+
 // returns ni32_perframe
 static size_t
 dec_ni32_perframe(
@@ -137,14 +256,16 @@ decmt_io(struct MTArg_DecIO *const restrict arg)
 	const struct FileStats_DecMT *const restrict fstat =  arg->fstat;
 	const struct SeekTable *const restrict seektable   =  arg->seektable;
 	//
-	sem_t         *const restrict nframes_avail =  frames->navailable;
-	sem_t         *const restrict post_encoder  =  frames->post_encoder;
-	size_t        *const restrict ni32_perframe =  frames->ni32_perframe;
+	sem_t         *const restrict nframes_avail = frames->navailable;
+	sem_t         *const restrict post_decoder  = frames->post_decoder;
+	size_t        *const restrict ni32_perframe = frames->ni32_perframe;
 	size_t        *const restrict nbytes_tta_perframe   = (
 		frames->nbytes_tta_perframe
 	);
-	struct EncBuf *const restrict encbuf        =  frames->encbuf;
+	struct DecBuf *const restrict decbuf        = frames->decbuf;
+	u32           *const restrict crc_read      = frames->crc_read;
 	struct LibTTAr_CodecState_User *const restrict user = frames->user;
+	ichar         *const restrict dec_retval    = frames->dec_retval;
 	//
 	FILE       *const restrict outfile_fh   = outfile->fh;
 	const char *const restrict outfile_name = outfile->name;
@@ -155,23 +276,24 @@ decmt_io(struct MTArg_DecIO *const restrict arg)
 	const uint nchan                      = fstat->nchan;
 	const enum TTASampleBytes samplebytes = fstat->samplebytes;
 	const size_t nsamples_perframe        = fstat->nsamples_perframe;
-	const size_t enctta_size              = fstat->encpcm_size;
+	const size_t enctta_size              = fstat->enctta_size;
 	const size_t nsamples_enc             = fstat->nsamples_enc;
 
 	struct DecStats dstat;
 	size_t nbytes_read, nbytes_read_total = 0;
 	size_t ni32_perframe;
 	size_t nsamples_perchan_dec_total = 0;
-	u32 crc_read;
 	bool start_writing = false, truncated = false;
-	size_t framecnt = 0;
+	size_t nframes_read = 0, nframes_written = 0;
 	uint i = 0, last;
-	union {	uint u; } t;
+	union {	uint	u;
+		size_t	z;
+	} t;
 
 	memset(&dstat, 0x00, sizeof dstat);
 	goto loop0_entr;
 	do {
-		++framecnt;
+		++nframes_read;
 		i = (i + 1u < framequeue_len ? i + 1u : 0);
 		if ( ! start_writing ){
 			if ( i == 0 ){
@@ -180,31 +302,34 @@ decmt_io(struct MTArg_DecIO *const restrict arg)
 			else {	goto loop0_read; }
 		}
 
-		// check for truncated sample
-
-		// wait for frame to finish encoding
+		// wait for frame to finish decoding
 		(void) sem_wait(&post_decoder[i]);
 
 		// write pcm to outfile
 		dec_frame_write(
-			&decbuf[i], seektable, &dstat, &user[i], outfile_fh,
-			outfile_name, nchan
+			&decbuf[i], &dstat, &user[i], outfile_fh,
+			outfile_name, samplebytes, nchan, crc_read[i],
+			dec_retval[i]
 		);
+		++nframes_written;
 loop0_entr:
-		if ( (! g_flag.quiet) && (framecnt % SPINNER_FRQ == 0) ){
+		if ( (! g_flag.quiet) && (nframes_read % SPINNER_FRQ == 0) ){
 			errprint_spinner();
 		}
 loop0_read:
 		// read tta from infile
-		nbytes_tta_perframe  = letoh32(seektable->table[framecnt]);
-		nbytes_tta_perframe -= (sizeof crc_read);
-		if ( nbytes_tta_perframe == 0 ){
+		nbytes_tta_perframe = letoh32(seektable->table[framecnt]);
+		if ( nbytes_tta_perframe <= (sizeof *crc_read) ){
 			nbytes_tta_perframe[i] = 0;
 			break;
 		}
+		else {	nbytes_tta_perframe -= (sizeof *crc_read); }
 		ni32_perframe = dec_ni32_perframe(
 			dstat.nsamples_perframe, nsamples_enc,
 			nsamples_perframe, nchan
+		);
+		decbuf_check_adjust(
+			decbuf, nbytes_tta_perframe, nchan, samplebytes
 		);
 		nbytes_read = fread(
 			decbuf.ttabuf, (size_t) 1u, nbytes_tta_perframe,
@@ -218,16 +343,34 @@ loop0_read:
 				error_sys(errno, "fread", infile_name);
 			}
 			else {	warning_tta("%s: frame %zu: truncated file",
-					infile_name, framecnt
+					infile_name, nframes_read
 				);
 			}
-			truncated = true;
+			goto loop0_truncated;
 		}
 
+		// read frame footer (crc)
+		t.z = fread(
+			&crc_read[i], sizeof crc_read, (size_t) 1u, infile
+		);
+		if UNLIKELY ( t.z != (size_t) 1u ){
+			if UNLIKELY ( ferror(infile_fh) != 0 ){
+				error_sys(errno, "fread", infile_name);
+			}
+			else {	warning_tta("%s: frame %zu: truncated file",
+					infile_name, nframes_read
+				);
+			}
+loop0_truncated:
+			truncated   = true;
+			crc_read[i] = 0;
+		}
+		else {	crc_read[i] = letoh32(crc_read[i]); }
 
 		// make frame available
-
-	} while ( ! truncated );
+		(void) sem_post(nframes_avail);
+	}
+	while ( ! truncated );
 
 	// TODO
 
@@ -252,6 +395,7 @@ decmt_decoder(struct MTArg_Decoder *const restrict arg)
 	);
 	struct DecBuf *const restrict decbuf       =  frames->decbuf;
 	struct LibTTAr_CodecState_User *const restrict user = frames->user;
+	ichar         *const restrict dec_retval   =  frames->dec_retval;
 	//
 	const uint nchan                      = fstat->nchan;
 	const enum TTASampleBytes samplebytes = fstat->samplebytes;
@@ -272,7 +416,7 @@ decmt_decoder(struct MTArg_Decoder *const restrict arg)
 	goto loop_entr;
 	do {
 		// decode frame
-		dec_frame_decode(
+		dec_retval[i] = (ichar) dec_frame_decode(
 			&decbuf[i], priv, &user[i], samplebytes, nchan,
 			ni32_perframe[i], nbytes_tta_perframe[i]
 		);

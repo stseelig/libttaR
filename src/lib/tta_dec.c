@@ -10,7 +10,6 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
-#include <stdbool.h>	// true
 #include <stddef.h>	// size_t
 
 #include "../bits.h"
@@ -203,20 +202,20 @@ libttaR_tta_decode(
 
 	// post-decode
 	user->ni32_total       += user->ni32;
-	if ( user->ni32_total == ni32_perframe ){
+	user->nbytes_tta	= nbytes_tta_dec;
+	user->nbytes_tta_total += nbytes_tta_dec;
+	if ( (user->ni32_total == ni32_perframe)
+	    ||
+	     (user->nbytes_tta_total >= nbytes_tta_perframe)
+	){
 		user->crc       = crc32_end(user->crc);
-		if ( (user->nbytes_tta_total + nbytes_tta_dec)
-		    !=
-		     nbytes_tta_perframe
-		){
+		if ( user->nbytes_tta_total != nbytes_tta_perframe ){
 			r = LIBTTAr_RET_DECFAIL;
 		}
 		else {	r = LIBTTAr_RET_DONE; }
 	}
-	user->ncalls_codec     += (size_t) 1u;
-	user->nbytes_tta	= nbytes_tta_dec;
-	user->nbytes_tta_total += nbytes_tta_dec;
 
+	user->ncalls_codec     += (size_t) 1u;
 	return r;
 }
 

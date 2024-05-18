@@ -105,6 +105,20 @@ extern size_t decbuf_init(
 ;
 
 #undef db
+extern void decbuf_check_adjust(
+	struct DecBuf *const restrict db, size_t, uint, enum TTASampleBytes
+)
+/*@globals	fileSystem,
+		internalState
+@*/
+/*@modifies	fileSystem,
+		internalState,
+		db->ttabuf_len,
+		db->ttabuf
+@*/
+;
+
+#undef db
 extern void decbuf_free(struct DecBuf *const restrict db)
 /*@globals	internalState@*/
 /*@modifies	internalState,

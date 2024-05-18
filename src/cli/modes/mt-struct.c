@@ -28,22 +28,6 @@
 //////////////////////////////////////////////////////////////////////////////
 
 void
-encmt_fstat_init(
-	/*@out@*/ struct FileStats_EncMT *const restrict fstat_c,
-	const struct FileStats *const restrict fstat
-)
-/*@modifies	*fstat_c@*/
-{
-	fstat_c->nchan			= (uint) fstat->nchan;
-	fstat_c->samplebytes		= fstat->samplebytes;
-	fstat_c->nsamples_perframe	= fstat->framelen;
-	fstat_c->decpcm_size		= fstat->decpcm_size;
-	return;
-}
-
-//==========================================================================//
-
-void
 encmt_state_init(
 	/*@out@*/ struct MTArg_EncIO *const restrict io,
 	/*@out@*/ struct MTArg_Encoder *const restrict encoder,

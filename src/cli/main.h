@@ -17,11 +17,14 @@
 
 #define SAMPLEBUF_LEN_DEFAULT		((size_t) BUFSIZ)
 
+// multi-threaded ver. can deadlock or abort if (framequeue_len <= nthreads)
 #define FRAMEQUEUE_LEN(nthreads)	((uint) (2u*(nthreads)))
 
 //--------------------------------------------------------------------------//
 
 #define PATH_DELIM	'/'
+
+//--------------------------------------------------------------------------//
 
 enum ProgramMode {
 	MODE_ENCODE,
@@ -33,6 +36,8 @@ enum ThreadMode {
 	THREADMODE_SINGLE,
 	THREADMODE_MULTI
 };
+
+//==========================================================================//
 
 struct GlobalFlags {
 	/*@dependent@*/ /*@null@*/
@@ -47,7 +52,6 @@ struct GlobalFlags {
 
 //////////////////////////////////////////////////////////////////////////////
 
-#ifndef TTA_MAIN_C
 /*@unchecked@*/
 extern const uint ttaR_num_version;
 /*@unchecked@*/
@@ -70,8 +74,10 @@ extern const char ttaR_str_license[];
 
 //--------------------------------------------------------------------------//
 
+#ifndef TTA_MAIN_C
 /*@checkmod@*/
 extern const uint g_argc;
+#endif
 
 /*@checkmod@*/ /*@dependent@*/
 extern char **g_argv;
@@ -87,7 +93,6 @@ extern uint g_nthreads;
 
 /*@checkmod@*/ /*@dependent@*/ /*@null@*/
 extern char *g_rm_on_sigint;
-#endif
 
 // EOF ///////////////////////////////////////////////////////////////////////
 #endif

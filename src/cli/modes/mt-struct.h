@@ -99,6 +99,8 @@ struct MTArg_DecIO_Frames {
 	u32				*crc_read;
 	/*@owned@*/
 	struct LibTTAr_CodecState_User	*user;
+	/*@owned@*/
+	signed char			*dec_retval;
 };
 
 struct MTArg_Decoder_Frames {
@@ -118,6 +120,8 @@ struct MTArg_Decoder_Frames {
 	struct DecBuf			*decbuf;
 	/*@dependent@*/
 	struct LibTTAr_CodecState_User	*user;
+	/*@dependent@*/
+	signed char			*dec_retval;
 };
 
 //--------------------------------------------------------------------------//
@@ -180,9 +184,9 @@ struct MTArg_Decoder {
 
 
 #undef fstat_c
-extern void encmt_fstat_init(
-	/*@out@*/ struct FileStats_EncMT *const restrict fstat_c,
-	const struct FileStats *const restrict
+INLINE void encmt_fstat_init(
+	/*@out@*/ register struct FileStats_EncMT *const restrict fstat_c,
+	register const struct FileStats *const restrict
 )
 /*@modifies	*fstat_c@*/
 ;
@@ -244,7 +248,42 @@ extern void encmt_state_free(
 
 //--------------------------------------------------------------------------//
 
+INLINE void decmt_fstat_init(
+	/*@out@*/ register struct FileStats_DecMT *const restrict fstat_c,
+	register const struct FileStats *const restrict
+)
+/*@modifies	*fstat_c@*/
+;
 
+//////////////////////////////////////////////////////////////////////////////
+
+INLINE void
+encmt_fstat_init(
+	/*@out@*/ register struct FileStats_EncMT *const restrict fstat_c,
+	register const struct FileStats *const restrict fstat
+)
+/*@modifies	*fstat_c@*/
+{
+	fstat_c->nchan			= (uint) fstat->nchan;
+	fstat_c->samplebytes		= fstat->samplebytes;
+	fstat_c->nsamples_perframe	= fstat->framelen;
+	fstat_c->decpcm_size		= fstat->decpcm_size;
+	return;
+}
+
+INLINE void
+decmt_fstat_init(
+	/*@out@*/ register struct FileStats_DecMT *const restrict fstat_c,
+	register const struct FileStats *const restrict fstat
+)
+/*@modifies	*fstat_c@*/
+{
+	fstat_c->nchan			= (uint) fstat->nchan;
+	fstat_c->samplebytes		= fstat->samplebytes;
+	fstat_c->nsamples_perframe	= fstat->framelen;
+	fstat_c->enctta_size		= fstat->enctta_size;
+	fstat_c->nsamples_enc		= fstat->nsamples_enc;
+}
 
 // EOF ///////////////////////////////////////////////////////////////////////
 #endif

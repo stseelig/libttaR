@@ -10,7 +10,6 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
-#include <stdbool.h>
 #include <stddef.h>	// size_t
 
 #include "../bits.h"
@@ -195,10 +194,10 @@ libttaR_tta_encode(
 		user->crc       = crc32_end(user->crc);
 		r = LIBTTAr_RET_DONE;
 	}
-	user->ncalls_codec     += (size_t) 1u;
 	user->nbytes_tta	= nbytes_tta_enc;
 	user->nbytes_tta_total += nbytes_tta_enc;
 
+	user->ncalls_codec     += (size_t) 1u;
 	return r;
 }
 

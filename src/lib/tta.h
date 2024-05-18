@@ -21,17 +21,19 @@
 //////////////////////////////////////////////////////////////////////////////
 
 enum LibTTAr_Ret {
-	// frame was finished without error
+	// frame was finished
 	LIBTTAr_RET_DONE	 =  0,
 
 	// frame was not finished
 	LIBTTAr_RET_AGAIN	 =  1,
 
 	// frame was finished, but nbytes_tta_total != nbytes_tta_perframe
+	//||
+	// frame was not finished, and nbytes_tta_total >= nbytes_tta_perframe
 	LIBTTAr_RET_DECFAIL      =  2,
 
 	// bad dest_len, src_len, ni32_target, nbytes_tta_target,
-	//   ni32_perframe, or nbytes_tta_perframe
+	// ni32_perframe, or nbytes_tta_perframe
 	LIBTTAr_RET_INVAL_BOUNDS,
 
 	// bad samplebytes or nchan
@@ -136,7 +138,6 @@ tta_predict_k(register enum TTASampleBytes samplebytes)
 /*@*/
 {
 	register u8 r;
-
 	switch ( samplebytes ){
 	case TTASAMPLEBYTES_1:
 		r = (u8) 4u;
@@ -154,7 +155,6 @@ tta_filter_round(register enum TTASampleBytes samplebytes)
 /*@*/
 {
 	register i32 r;
-
 	switch ( samplebytes ){
 	case TTASAMPLEBYTES_1:
 	case TTASAMPLEBYTES_3:
@@ -172,7 +172,6 @@ tta_filter_k(register enum TTASampleBytes samplebytes)
 /*@*/
 {
 	register u8 r;
-
 	switch ( samplebytes ){
 	case TTASAMPLEBYTES_1:
 	case TTASAMPLEBYTES_3:
