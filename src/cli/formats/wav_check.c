@@ -134,7 +134,7 @@ filecheck_wav_read_subchunk_fmt(
 
 	format = letoh16(chunk.fmt.format);
 	fstat->wavformat	= format;
-	if ( (format !=  WAVE_FMT_PCM) && (format !=  WAVE_FMT_EXTENSIBLE) ){
+	if ( (format != WAVE_FMT_PCM) && (format != WAVE_FMT_EXTENSIBLE) ){
 		return FILECHECK_UNSUPPORTED_DATATYPE;
 	}
 
@@ -171,6 +171,9 @@ filecheck_wav_read_subchunk_fmt(
 		}
 
 		// seek to end of Extensible
+		if ( letoh16(chunk.wfx.size) == 0 ){
+			return FILECHECK_MALFORMED;
+		}
 		t.o = (off_t) (
 			  (sizeof chunk.wfx)
 			- (letoh16(chunk.wfx.size) + (sizeof chunk.wfx.size))
@@ -201,7 +204,7 @@ filecheck_wav_find_subchunk(
 	goto loop_entr;
 	do {
 		// seek to end of current subchunk
-		t.d = fseeko(file, (off_t) rh.size, SEEK_CUR);
+		t.d = fseeko(file, (off_t) letoh32(rh.size), SEEK_CUR);
 		if ( t.d != 0 ){
 			return FILECHECK_SEEK_ERROR;
 		}
@@ -212,6 +215,10 @@ loop_entr:
 				return FILECHECK_MALFORMED;
 			}
 			return FILECHECK_READ_ERROR;
+		}
+
+		if ( letoh32(rh.size) == 0 ){
+			return FILECHECK_MALFORMED;
 		}
 	}
 	while ( memcmp(&rh.id, target, sizeof rh.id) != 0 );

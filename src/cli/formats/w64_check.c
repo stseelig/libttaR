@@ -103,8 +103,12 @@ filecheck_w64(
 
 	fstat->decfmt      = DECFMT_W64;
 	fstat->decpcm_off  = ftello(file);
-	fstat->decpcm_size = (size_t) letoh64(
-		chunk.rh.size - sizeof(struct Riff64Header)
+
+	if ( (size_t) letoh64(chunk.rh.size) <= sizeof(struct Riff64Header) ){
+		return FILECHECK_MALFORMED;
+	}
+	fstat->decpcm_size = (size_t) (
+		letoh64(chunk.rh.size) - sizeof(struct Riff64Header)
 	);
 
 	return FILECHECK_OK;
@@ -126,7 +130,7 @@ filecheck_w64_find_subchunk(
 	goto loop_entr;
 	do {
 		// seek to end of current subchunk
-		t.d = fseeko(file, (off_t) rh.size, SEEK_CUR);
+		t.d = fseeko(file, (off_t) letoh64(rh.size), SEEK_CUR);
 		if ( t.d != 0 ){
 			return FILECHECK_SEEK_ERROR;
 		}
@@ -137,6 +141,10 @@ loop_entr:
 				return FILECHECK_MALFORMED;
 			}
 			return FILECHECK_READ_ERROR;
+		}
+
+		if ( letoh64(rh.size) <= sizeof(struct Riff64Header) ){
+			return FILECHECK_MALFORMED;
 		}
 	}
 	while ( memcmp(&rh.guid, target, sizeof rh.guid) != 0 );

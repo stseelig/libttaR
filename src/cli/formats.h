@@ -83,7 +83,7 @@ struct FileStats {
 	enum DecFormat		decfmt:8u;
 	enum IntType		inttype:8u;
 	enum Endian		endian:8u;
-	enum TTASampleBytes	samplebytes:8u;
+	enum TTASampleBytes	samplebytes;
 	u16			samplebits;
 	u16			nchan;
 	u32			samplerate;
