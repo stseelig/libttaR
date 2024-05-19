@@ -165,7 +165,10 @@ encst_loop(
 	} t;
 
 	// setup buffers
-	t.z = encbuf_init(&encbuf, samplebuf_len, nchan, samplebytes);
+	t.z = encbuf_init(
+		&encbuf, samplebuf_len, SAMPLEBUF_LEN_DEFAULT, nchan,
+		samplebytes
+	);
 	assert(t.z == (size_t) (samplebuf_len * nchan));
 	//
 	t.z = libttaR_codecstate_priv_size(nchan);

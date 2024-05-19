@@ -37,8 +37,9 @@
 // returns (samplebuf_len * nchan) (for sanity check)
 size_t
 encbuf_init(
-	/*@out@*/ struct EncBuf *const restrict eb, size_t samplebuf_len,
-	uint nchan, enum TTASampleBytes samplebytes
+	/*@out@*/ struct EncBuf *const restrict eb, size_t ni32_samplebuf_len,
+	size_t init_ttabuf_len_perchan, uint nchan,
+	enum TTASampleBytes samplebytes
 )
 /*@globals	fileSystem,
 		internalState
@@ -51,13 +52,13 @@ encbuf_init(
 		eb->ttabuf
 @*/
 {
-	const size_t r = (size_t) (samplebuf_len * nchan);
+	const size_t r = (size_t) (ni32_samplebuf_len * nchan);
 	const size_t pcmbuf_size = (size_t) (r * samplebytes);
 	union {	uintptr_t p; } t;
 
 	eb->i32buf_len = r + I32BUF_SAFETY_MARGIN;
 	eb->ttabuf_len = libttaR_ttabuf_size(
-		samplebuf_len, nchan, samplebytes
+		init_ttabuf_len_perchan, nchan, samplebytes
 	);
 	assert(eb->ttabuf_len != 0);
 
@@ -129,8 +130,9 @@ encbuf_free(struct EncBuf *const restrict eb)
 // returns (samplebuf_len * nchan) (for sanity check)
 size_t
 decbuf_init(
-	/*@out@*/ struct DecBuf *const restrict db, size_t samplebuf_len,
-	uint nchan, enum TTASampleBytes samplebytes
+	/*@out@*/ struct DecBuf *const restrict db, size_t ni32_samplebuf_len,
+	size_t init_ttabuf_len_perchan, uint nchan,
+	enum TTASampleBytes samplebytes
 )
 /*@globals	fileSystem,
 		internalState
@@ -143,13 +145,11 @@ decbuf_init(
 		db->ttabuf
 @*/
 {
-	const size_t r = samplebuf_len * nchan;
+	const size_t r = ni32_samplebuf_len * nchan;
 
 	db->i32buf_len = r;
-// TODO ttabuf_len should be 0, and ttabuf should be NULL
-//      no allocating it here for multi/new-single
 	db->ttabuf_len = libttaR_ttabuf_size(
-		samplebuf_len, nchan, samplebytes
+		init_ttabuf_len_perchan, nchan, samplebytes
 	);
 	assert(db->ttabuf_len != 0);
 

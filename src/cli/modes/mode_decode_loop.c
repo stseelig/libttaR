@@ -191,6 +191,8 @@ dec_frame_write(
 	// check if frame is DECFAIL or truncated and zero-pad
 	if UNLIKELY ( dec_retval == (ichar) LIBTTAr_RET_DECFAIL ){
 		// TODO
+
+		// letoh32 on crc; kept as little-endian
 	}
 	else {	t.u = user.ni32_total % nchan;
 		if UNLIKELY ( t.u != 0 ){
@@ -355,7 +357,7 @@ loop0_read:
 			goto loop0_truncated;
 		}
 
-		// read frame footer (crc)
+		// read frame footer (crc); kept as little-endian
 		t.z = fread(
 			&crc_read[i], sizeof crc_read, (size_t) 1u, infile
 		);
@@ -371,7 +373,6 @@ loop0_truncated:
 			truncated   = true;
 			crc_read[i] = 0;
 		}
-		else {	crc_read[i] = letoh32(crc_read[i]); }
 
 		// make frame available
 		(void) sem_post(nframes_avail);

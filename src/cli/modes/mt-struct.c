@@ -21,6 +21,7 @@
 
 #include "../debug.h"
 #include "../formats.h"
+#include "../main.h"		// SAMPLEBUF_LEN_DEFAULT
 
 #include "mt-struct.h"
 #include "pqueue.h"
@@ -110,7 +111,8 @@ encmt_state_init(
 	}
 	for ( i = 0; i < framequeue_len; ++i ){
 		t.z = encbuf_init(
-			&io->frames.encbuf[i], samplebuf_len, fstat->nchan,
+			&io->frames.encbuf[i], samplebuf_len,
+			SAMPLEBUF_LEN_DEFAULT, fstat->nchan,
 			fstat->samplebytes
 		);
 		assert(t.z == samplebuf_len * fstat->nchan);
@@ -303,7 +305,8 @@ decmt_state_init(
 	}
 	for ( i = 0; i < framequeue_len; ++i ){
 		t.z = decbuf_init(
-			&io->frames.decbuf[i], samplebuf_len, fstat->nchan,
+			&io->frames.decbuf[i], samplebuf_len,
+			SAMPLEBUF_LEN_DEFAULT, fstat->nchan,
 			fstat->samplebytes
 		);
 		assert(t.z == samplebuf_len * fstat->nchan);

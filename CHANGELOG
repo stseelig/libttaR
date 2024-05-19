@@ -9,7 +9,7 @@
 	- LibTTAr_CodecState_User:
 		- fields changed
 		- must be init'd with LIBTTAr_CODECSTATE_USER_INIT before
-	    calling for each frame
+	    calling for each new frame
 	- put the version num/str's into the struct libttaR_info
 	- performance impovements
 

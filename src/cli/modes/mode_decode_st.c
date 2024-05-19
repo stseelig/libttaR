@@ -94,7 +94,10 @@ ttadec_loop_st(
 	} t;
 
 	// setup buffers
-	t.z = decbuf_init(&decbuf, SAMPLEBUF_LEN_DEFAULT, nchan, samplebytes);
+	t.z = decbuf_init(
+		&decbuf, SAMPLEBUF_LEN_DEFAULT, SAMPLEBUF_LEN_DEFAULT, nchan,
+		samplebytes
+	);
 	assert(t.z == (size_t) (SAMPLEBUF_LEN_DEFAULT * nchan));
 	//
 	t.z = libttaR_codecstate_priv_size(nchan);

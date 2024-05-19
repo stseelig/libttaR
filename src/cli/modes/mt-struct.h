@@ -96,7 +96,7 @@ struct MTArg_DecIO_Frames {
 	/*@owned@*/
 	struct DecBuf			*decbuf;
 	/*@owned@*/
-	u32				*crc_read;
+	u32				*crc_read;	// little-endian
 	/*@owned@*/
 	struct LibTTAr_CodecState_User	*user;
 	/*@owned@*/

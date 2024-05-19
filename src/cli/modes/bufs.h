@@ -45,7 +45,7 @@ struct DecBuf {
 
 #undef eb
 extern size_t encbuf_init(
-	/*@out@*/ struct EncBuf *const restrict eb, size_t, uint,
+	/*@out@*/ struct EncBuf *const restrict eb, size_t, size_t, uint,
 	enum TTASampleBytes
 )
 /*@globals	fileSystem,
@@ -89,7 +89,7 @@ extern void encbuf_free(struct EncBuf *const restrict eb)
 
 #undef db
 extern size_t decbuf_init(
-	/*@out@*/ struct DecBuf *const restrict db, size_t, uint,
+	/*@out@*/ struct DecBuf *const restrict db, size_t, size_t, uint,
 	enum TTASampleBytes
 )
 /*@globals	fileSystem,
