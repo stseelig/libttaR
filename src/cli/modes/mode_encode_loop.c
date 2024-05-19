@@ -607,8 +607,7 @@ loop0_read:
 			i = (i + 1u < framequeue_len ? i + 1u : 0);
 		} while ( i != 0 );
 	}
-	do {
-		// wait for frame to finish encoding
+	do {	// wait for frame to finish encoding
 		(void) sem_wait(&post_encoder[i]);
 
 		// write tta to outfile

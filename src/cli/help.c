@@ -93,6 +93,7 @@ static const char help_mode_usage1[] = {
 "    [*]\t" \
         "-M, --multi-threaded\t\t"      "with NPROCESSORS_ONLN threads\n"
 
+//1234567012345670123456701234567012345670123456701234567012345670123456701234
 #define OPT_COMMON_DELETE_SRC \
 "\t"    "-d, --delete-src\t\t"          "delete each infile after coding\n"
 #define OPT_COMMON_OUTFILE \
@@ -184,17 +185,17 @@ errprint_help_mode_decode(void)
 
 static void
 errprint_program_intro(
-	const struct LibTTAr_VersionInfo *info_p,
-	const struct LibTTAr_VersionInfo *info_l
+	const struct LibTTAr_VersionInfo *cli,
+	const struct LibTTAr_VersionInfo *lib
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 {
 	(void) fputc('\n', stderr);
-	errprint_ttaR_version("ttaR", info_p);
-	errprint_libstr_copyright(info_p->copyright);
-	errprint_ttaR_version("libttaR", info_l);
-	errprint_libstr_copyright(info_l->copyright);
+	errprint_ttaR_version("ttaR", cli);
+	errprint_libstr_copyright(cli->copyright);
+	errprint_ttaR_version("libttaR", lib);
+	errprint_libstr_copyright(lib->copyright);
 	(void) fputc('\n', stderr);
 	(void) fprintf(stderr, intro_licence_blurb);
 	(void) fputc('\n', stderr);
@@ -238,7 +239,8 @@ errprint_libstr_copyright(const char *str)
 			str = &substr[1u];
 		}
 		else { (void) fprintf(stderr, "\t%s\n", str); }
-	} while ( substr != NULL );
+	}
+	while ( substr != NULL );
 
 	return;
 }

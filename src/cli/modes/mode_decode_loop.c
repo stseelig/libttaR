@@ -323,7 +323,13 @@ loop0_read:
 			nbytes_tta_perframe[i] = 0;
 			break;
 		}
-		else {	nbytes_tta_perframe -= (sizeof *crc_read); }
+		else {	// ENCFMT_TTA1
+			if ( nbytes_tta_perframe <= (sizeof *crc_read) ){
+				// TODO warning
+			}
+			nbytes_tta_perframe -= (sizeof *crc_read);
+
+		}
 		ni32_perframe = dec_ni32_perframe(
 			dstat.nsamples_perframe, nsamples_enc,
 			nsamples_perframe, nchan
@@ -370,9 +376,34 @@ loop0_truncated:
 		// make frame available
 		(void) sem_post(nframes_avail);
 	}
+// TODO end condition like encmt
 	while ( ! truncated );
+	last = i;
 
-	// TODO
+	// write the remaining frames
+	if ( start_writing ){ goto loop1_not_tiny; }
+	else {	// unlock any uninitialized frames (tiny infile)
+		do {	(void) sem_post(nframes_avail);
+			i = (i + 1u < framequeue_len ? i + 1u : 0);
+		} while ( i != 0 );
+	}
+	do {	// wait for frame to finish encoding
+		(void) sem_wait(&post_decoder[i]);
+
+		// write tta to outfile
+		dec_frame_write(
+			&decbuf[i], &dstat, &user[i], outfile_fh,
+			outfile_name, samplebytes, nchan, crc_read[i],
+			dec_retval[i]
+		);
+
+		// mark frame as done and make available
+		nbyte_tta_perframe[i] = 0;
+		(void) sem_post(nframes_avail);
+loop1_not_tiny:
+		i = (i + 1u < framequeue_len ? i + 1u : 0);
+	}
+	while ( i != last );
 
 	*arg->dstat_out = dstat;
 	return NULL;

@@ -248,11 +248,74 @@ extern void encmt_state_free(
 
 //--------------------------------------------------------------------------//
 
+#undef fstat_c
 INLINE void decmt_fstat_init(
 	/*@out@*/ register struct FileStats_DecMT *const restrict fstat_c,
 	register const struct FileStats *const restrict
 )
 /*@modifies	*fstat_c@*/
+;
+
+#undef io
+#undef decoder
+void decmt_state_init(
+	/*@out@*/ struct MTArg_DecIO *const restrict io,
+	/*@out@*/ struct MTArg_Decoder *const restrict decoder,
+	uint, size_t, const FILE *const restrict, const char *const,
+	const FILE *const restrict, const char *const,
+	const struct SeekTable *const restrict,
+	const struct DecStats *const restrict,
+	const struct FileStats_DecMT *const restrict
+)
+/*@globals	fileSystem,
+		internalState
+@*/
+/*@modifies	fileSystem,
+		internalState,
+		*io,
+		*io->frames.navailable,
+		io->frames.post_decoder[],
+		*decoder,
+		decoder->frames.queue.lock
+@*/
+/*@allocates	io->frames.navailable,
+		io->frames.post_decoder,
+		io->frames.ni32_perframe,
+		io->frames.nbytes_tta_perframe,
+		io->frames.decbuf,
+		io->frames.crc_read,
+		io->frames.user,
+		io->frames.dec_retval
+@*/
+;
+
+#undef io
+#undef decoder
+void decmt_state_free(
+	struct MTArg_DecIO *const restrict io,
+	struct MTArg_Decoder *const restrict decoder, uint
+)
+
+/*@globals	fileSystem,
+		internalState
+@*/
+/*@modifies	fileSystem,
+		internalState,
+		*io,
+		*io->frames.navailable,
+		io->frames.post_decoder[],
+		*decoder,
+		decoder->frames.queue.lock
+@*/
+/*@releases	io->frames.navailable,
+		io->frames.post_decoder,
+		io->frames.ni32_perframe,
+		io->frames.nbytes_tta_perframe,
+		io->frames.decbuf,
+		io->frames.crc_read,
+		io->frames.user,
+		io->frames.dec_retval
+@*/
 ;
 
 //////////////////////////////////////////////////////////////////////////////
