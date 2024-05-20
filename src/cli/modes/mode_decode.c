@@ -17,6 +17,8 @@
 #include <string.h>
 #include <time.h>
 
+#include <unistd.h>
+
 #include "../../bits.h"
 #include "../../libttaR.h"
 #include "../../splint.h"
@@ -29,7 +31,29 @@
 #include "../opts.h"
 
 #include "bufs.h"
-#include "tta2.h"
+
+#include "tta2.h"	// TODO rm
+
+//////////////////////////////////////////////////////////////////////////////
+
+void
+decmt_loop(
+	const struct SeekTable *const restrict,
+	/*@out@*/ struct DecStats *const restrict dstat_out,
+	const struct FileStats *const restrict,
+	FILE *const restrict outfile, const char *const,
+	FILE *const restrict infile, const char *const, uint
+)
+/*@globals	fileSystem,
+		internalState
+@*/
+/*@modifies	fileSystem,
+		internalState,
+		*dstat_out,
+		outfile,
+		infile
+@*/
+;
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -201,6 +225,10 @@ dec_loop(struct OpenedFilesMember *const restrict ofm)
 		infile_name, get_decfmt_sfx(g_flag.decfmt)
 	);
 	//
+	const uint nthreads = (g_nthreads != 0
+		? g_nthreads : (uint) sysconf(_SC_NPROCESSORS_ONLN)
+	);
+	//
 	struct DecStats dstat;
 	struct SeekTable seektable;
 	bool ignore_seektable = false;
@@ -276,12 +304,31 @@ dec_loop(struct OpenedFilesMember *const restrict ofm)
 		(void) clock_gettime(CLOCK_MONOTONIC, &ts_start);
 	}
 
+	//// decode
+	//ttadec_loop_st(
+		//&seektable, &dstat, fstat, outfile, outfile_name, infile,
+		//infile_name
+	//);
+
 	// decode
-	memset(&dstat, 0x00, sizeof dstat);
-	ttadec_loop_st(
-		&seektable, &dstat, fstat, outfile, outfile_name, infile,
-		infile_name
-	);
+	switch ( g_flag.threadmode ){
+	case THREADMODE_UNSET:
+		if ( nthreads > 1u ){ goto encode_multi; }
+		/*@fallthrough@*/
+	case THREADMODE_SINGLE:
+		ttadec_loop_st(
+			&seektable, &dstat, fstat, outfile, outfile_name,
+			infile, infile_name
+		);
+		break;
+	case THREADMODE_MULTI:
+encode_multi:
+		decmt_loop(
+			&seektable, &dstat, fstat, outfile, outfile_name,
+			infile, infile_name, (uint) nthreads
+		);
+		break;
+	}
 
 	if UNLIKELY (
 		(! ignore_seektable) && (dstat.nframes != seektable.nmemb)

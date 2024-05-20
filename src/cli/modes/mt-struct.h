@@ -263,7 +263,7 @@ INLINE void decmt_fstat_init(
 
 #undef io
 #undef decoder
-void decmt_state_init(
+extern void decmt_state_init(
 	/*@out@*/ struct MTArg_DecIO *const restrict io,
 	/*@out@*/ struct MTArg_Decoder *const restrict decoder,
 	uint, size_t, const FILE *const restrict, const char *const,
@@ -296,7 +296,7 @@ void decmt_state_init(
 
 #undef io
 #undef decoder
-void decmt_state_free(
+extern void decmt_state_free(
 	struct MTArg_DecIO *const restrict io,
 	struct MTArg_Decoder *const restrict decoder, uint
 )

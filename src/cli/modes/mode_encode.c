@@ -320,6 +320,7 @@ enc_loop(const struct OpenedFilesMember *const restrict ofm)
 		(void) clock_gettime(CLOCK_MONOTONIC, &ts_start);
 	}
 
+	// encode
 	switch ( g_flag.threadmode ){
 	case THREADMODE_UNSET:
 		if ( nthreads > 1u ){ goto encode_multi; }

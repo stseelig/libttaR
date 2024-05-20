@@ -50,7 +50,39 @@ static int dec_frame_decode(
 @*/
 ;
 
+#undef decbuf
+#undef dstat_out
+#undef outfile
+static void dec_frame_write(
+	struct DecBuf *const restrict decbuf,
+	/*@in@*/ struct DecStats *const restrict dstat_out,
+	struct LibTTAr_CodecState_User *const restrict,
+	FILE *const restrict outfile, const char *const restrict,
+	enum TTASampleBytes, uint, u32, ichar
+)
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem,
+		*decbuf->pcmbuf,
+		*dstat_out,
+		outfile
+@*/
+;
+
 static size_t dec_ni32_perframe(size_t, size_t, size_t, uint) /*@*/;
+
+//--------------------------------------------------------------------------//
+
+#undef arg
+/*@null@*/
+static void *decmt_io(struct MTArg_DecIO *const restrict arg)
+// TODO
+;
+
+#undef arg
+/*@null@*/
+static void *decmt_decoder(struct MTArg_Decoder *const restrict arg)
+// TODO
+;
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -172,8 +204,8 @@ dec_frame_write(
 	/*@in@*/ struct DecStats *const restrict dstat_out,
 	struct LibTTAr_CodecState_User *const restrict user_in,
 	FILE *const restrict outfile, const char *const restrict outfile_name,
-	enum TTASamplebytes samplebytes, uint nchan, u32 crc_read,
-	ichar dec_retval, size_t framecnt
+	enum TTASampleBytes samplebytes, uint nchan, u32 crc_read,
+	ichar dec_retval
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -198,7 +230,7 @@ dec_frame_write(
 		if UNLIKELY ( t.u != 0 ){
 			warning_tta("%s: frame %zu: "
 				"last sample truncated, zero-padding",
-				outfile_name, frame_num
+				outfile_name, dstat.nframes
 			);
 			// TODO zeropad
 			user.ni32       += t.z;
@@ -282,8 +314,9 @@ decmt_io(struct MTArg_DecIO *const restrict arg)
 	const size_t nsamples_enc             = fstat->nsamples_enc;
 
 	struct DecStats dstat;
-	size_t nbytes_read, nbytes_read_total = 0;
-	size_t ni32_perframe;
+	size_t framesize_tta, nbytes_read;
+	size_t nbytes_read_total = 0;
+	size_t ni32_perframe_calc;
 	size_t nsamples_perchan_dec_total = 0;
 	bool start_writing = false, truncated = false;
 	size_t nframes_read = 0, nframes_written = 0;
@@ -310,8 +343,8 @@ decmt_io(struct MTArg_DecIO *const restrict arg)
 		// write pcm to outfile
 		dec_frame_write(
 			&decbuf[i], &dstat, &user[i], outfile_fh,
-			outfile_name, samplebytes, nchan, crc_read[i],
-			dec_retval[i]
+			outfile_name, samplebytes, nchan,
+			letoh32(crc_read[i]), dec_retval[i]
 		);
 		++nframes_written;
 loop0_entr:
@@ -320,31 +353,28 @@ loop0_entr:
 		}
 loop0_read:
 		// read tta from infile
-		nbytes_tta_perframe = letoh32(seektable->table[framecnt]);
-		if ( nbytes_tta_perframe <= (sizeof *crc_read) ){
+		// ENCFMT_TTA1
+		framesize_tta = letoh32(seektable->table[nframes_read]);
+		if ( framesize_tta <= (sizeof *crc_read) ){
+			// TODO warning
 			nbytes_tta_perframe[i] = 0;
 			break;
 		}
-		else {	// ENCFMT_TTA1
-			if ( nbytes_tta_perframe <= (sizeof *crc_read) ){
-				// TODO warning
-			}
-			nbytes_tta_perframe -= (sizeof *crc_read);
-
-		}
-		ni32_perframe = dec_ni32_perframe(
-			dstat.nsamples_perframe, nsamples_enc,
+		else {	framesize_tta -= (sizeof *crc_read); }
+		ni32_perframe_calc = dec_ni32_perframe(
+			nsamples_perchan_dec_total, nsamples_enc,
 			nsamples_perframe, nchan
 		);
-		decbuf_check_adjust(decbuf, nbytes_tta_perframe, nchan);
+		// MAYBE nbytes_tta_perframe_calc
+		decbuf_check_adjust(&decbuf[i], framesize_tta, nchan);
 		nbytes_read = fread(
-			decbuf.ttabuf, (size_t) 1u, nbytes_tta_perframe,
-			infile
+			decbuf[i].ttabuf, (size_t) 1u, framesize_tta,
+			infile_fh
 		);
-		ni32_perframe[i]       = ni32_perframe;
+		ni32_perframe[i]       = ni32_perframe_calc;
 		nbytes_tta_perframe[i] = nbytes_read;
 		//
-		if UNLIKELY ( nbytes_read != nbytes_tta_perframe ){
+		if UNLIKELY ( nbytes_read != framesize_tta ){
 			if UNLIKELY ( ferror(infile_fh) != 0 ){
 				error_sys(errno, "fread", infile_name);
 			}
@@ -357,7 +387,7 @@ loop0_read:
 
 		// read frame footer (crc); kept as little-endian
 		t.z = fread(
-			&crc_read[i], sizeof crc_read, (size_t) 1u, infile
+			&crc_read[i], sizeof *crc_read, (size_t) 1u, infile_fh
 		);
 		if UNLIKELY ( t.z != (size_t) 1u ){
 			if UNLIKELY ( ferror(infile_fh) != 0 ){
@@ -397,7 +427,7 @@ loop0_truncated:
 		);
 
 		// mark frame as done and make available
-		nbyte_tta_perframe[i] = 0;
+		nbytes_tta_perframe[i] = 0;
 		(void) sem_post(nframes_avail);
 loop1_not_tiny:
 		i = (i + 1u < framequeue_len ? i + 1u : 0);

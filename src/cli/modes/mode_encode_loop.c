@@ -91,8 +91,8 @@ static uint enc_frame_zeropad(
 
 //--------------------------------------------------------------------------//
 
-/*@null@*/
 #undef arg
+/*@null@*/
 static void *encmt_io(struct MTArg_EncIO *const restrict arg)
 /*@globals	fileSystem,
 		internalState
@@ -110,8 +110,8 @@ static void *encmt_io(struct MTArg_EncIO *const restrict arg)
 @*/
 ;
 
-/*@null@*/
 #undef arg
+/*@null@*/
 static void *encmt_encoder(struct MTArg_Encoder *const restrict arg)
 /*@globals	fileSystem,
 		internalState

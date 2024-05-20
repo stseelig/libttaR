@@ -56,8 +56,8 @@ CFLAGS_COMMON="$CFLAGS_COMMON -std=c99";
 CFLAGS_COMMON="$CFLAGS_COMMON -march=native";
 CFLAGS_COMMON="$CFLAGS_COMMON -mtune=native";
 
-#CFLAGS_COMMON="$CFLAGS_COMMON -gdwarf";
-CFLAGS_COMMON="$CFLAGS_COMMON -DNDEBUG";
+CFLAGS_COMMON="$CFLAGS_COMMON -gdwarf";
+#CFLAGS_COMMON="$CFLAGS_COMMON -DNDEBUG";
 
 #CFLAGS_COMMON="$CFLAGS_COMMON -fno-inline";
 
@@ -184,10 +184,11 @@ readonly P_C17='cli/opts/encode';
 readonly P_C18='cli/optsget';
 readonly P_C19='cli/modes/bufs';
 readonly P_C20='cli/modes/mode_decode';
-readonly P_C21='cli/modes/mode_decode_st';
-readonly P_C22='cli/modes/mode_encode';
-readonly P_C23='cli/modes/mode_encode_loop';
-readonly P_C24='cli/modes/mt-struct';
+readonly P_C21='cli/modes/mode_decode_loop';
+readonly P_C22='cli/modes/mode_decode_st';
+readonly P_C23='cli/modes/mode_encode';
+readonly P_C24='cli/modes/mode_encode_loop';
+readonly P_C25='cli/modes/mt-struct';
 
 #----------------------------------------------------------------------------#
 
@@ -224,6 +225,7 @@ readonly P_O21="$OBJ/$P_C21.o";
 readonly P_O22="$OBJ/$P_C22.o";
 readonly P_O23="$OBJ/$P_C23.o";
 readonly P_O24="$OBJ/$P_C24.o";
+readonly P_O25="$OBJ/$P_C25.o";
 
 ##############################################################################
 
@@ -445,7 +447,7 @@ _cc_mp	"$CFLAGS_COMMON $CFLAGS_CLI" \
 	"$P_C00" "$P_C01" "$P_C02" "$P_C03" "$P_C04" "$P_C05" "$P_C06" \
 	"$P_C07" "$P_C08" "$P_C09" "$P_C10" "$P_C11" "$P_C12" "$P_C13" \
 	"$P_C14" "$P_C15" "$P_C16" "$P_C17" "$P_C18" "$P_C19" "$P_C20" \
-	"$P_C21" "$P_C22" "$P_C23" "$P_C24";
+	"$P_C21" "$P_C22" "$P_C23" "$P_C24" "$P_C25";
 wait;
 
 _ld "$LDFLAGS_LIB" "$LDFLAGS_LIB_END" "$BUILD/$LIBRARY" \
@@ -454,7 +456,7 @@ _ld "$LDFLAGS_CLI" "$LDFLAGS_CLI_END" "$BUILD/$PROGRAM" \
 	"$P_O00" "$P_O01" "$P_O02" "$P_O03" "$P_O04" "$P_O05" "$P_O06" \
 	"$P_O07" "$P_O08" "$P_O09" "$P_O10" "$P_O11" "$P_O12" "$P_O13" \
 	"$P_O14" "$P_O15" "$P_O16" "$P_O17" "$P_O18" "$P_O19" "$P_O20" \
-	"$P_O21" "$P_O22" "$P_O23" "$P_O24";
+	"$P_O21" "$P_O22" "$P_O23" "$P_O24" "$P_O25";
 
 if [ -n "$STRIP" ] && [ $STRIP -ne 0 ]; then
 	_strip "$BUILD/$PROGRAM";
