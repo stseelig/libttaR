@@ -80,7 +80,8 @@ CFLAGS_CLI=;
 CFLAGS_CLI="$CFLAGS_CLI -D_GNU_SOURCE";	# reallocarray, memrchr, strchr
 CFLAGS_CLI="$CFLAGS_CLI -D_FILE_OFFSET_BITS=64";
 
-CFLAGS_CLI="$CFLAGS_CLI -O3";
+# -O3 is safe, but it can be slower
+CFLAGS_CLI="$CFLAGS_CLI -O2";
 CFLAGS_CLI="$CFLAGS_CLI -ffast-math";
 
 readonly CFLAGS_CLI;
@@ -89,7 +90,8 @@ readonly CFLAGS_CLI;
 
 CFLAGS_LIB=;
 
-CFLAGS_LIB="$CFLAGS_LIB -O3";
+# -O3 is safe, but it can be slower
+CFLAGS_LIB="$CFLAGS_LIB -O2";
 
 CFLAGS_LIB="$CFLAGS_LIB -fPIC";
 

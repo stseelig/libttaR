@@ -336,9 +336,7 @@ loop0_read:
 			dstat.nsamples_perframe, nsamples_enc,
 			nsamples_perframe, nchan
 		);
-		decbuf_check_adjust(
-			decbuf, nbytes_tta_perframe, nchan, samplebytes
-		);
+		decbuf_check_adjust(decbuf, nbytes_tta_perframe, nchan);
 		nbytes_read = fread(
 			decbuf.ttabuf, (size_t) 1u, nbytes_tta_perframe,
 			infile

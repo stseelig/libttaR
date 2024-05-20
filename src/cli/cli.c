@@ -17,6 +17,7 @@
 #include <string.h>
 #include <inttypes.h>
 
+#include "../bits.h"
 #include "../splint.h"
 
 #include "debug.h"
@@ -223,7 +224,7 @@ errprint_stats_format(
 	(void) fprintf(stderr, "%"PRIu16"", stats->samplebits);
 	if ( stats->samplebits > (u16) 8u ){
 		(void) fprintf(stderr, "%s",
-			stats->endian == xENDIAN_BIG ? "be" : "le"
+			stats->endian == xENDIAN_LITTLE ? "le" : "be"
 		);
 	}
 	//

@@ -107,11 +107,11 @@ libttaR_tta_encode(
 	const  u8 predict_k    = tta_predict_k(samplebytes);
 	const i32 filter_round = tta_filter_round(samplebytes);
 	const  u8 filter_k     = tta_filter_k(samplebytes);
-	const size_t safety_margin = (
-		dest_len - (TTABUF_SAFETY_MARGIN_FAST * nchan * samplebytes)
-	);
+	const size_t safety_margin = TTABUF_SAFETY_MARGIN_FAST * nchan;
+	const size_t safety_target = dest_len - safety_margin;
 
 	// initial state setup
+	// faster/smaller binary if this is before the checks
 	if ( user->ncalls_codec == 0 ){
 		state_priv_init(priv, nchan);
 	}
@@ -123,7 +123,7 @@ libttaR_tta_encode(
 	    ||
 	     (ni32_target == 0) || (ni32_perframe == 0)
 	){
-		return LIBTTAr_RET_INVAL_BOUNDS;
+		return LIBTTAr_RET_INVAL + 0;
 	}
 	if ( (ni32_target > src_len)
 	    ||
@@ -131,18 +131,15 @@ libttaR_tta_encode(
 	    ||
 	     (ni32_target % nchan != 0)
 	    ||
-	     (	dest_len
-	       <=
-	        (size_t) (TTABUF_SAFETY_MARGIN_FAST * nchan * samplebytes)
-	     )
+	     (dest_len < safety_margin)
 	){
-		return LIBTTAr_RET_INVAL_BOUNDS;
+		return LIBTTAr_RET_INVAL + 1;
 	}
-	if ( (nchan == 0) || (((uint) samplebytes) == 0)
+	if ( (nchan == 0) || ((uint) samplebytes == 0)
 	    ||
-	     (((uint) samplebytes) > ((uint) TTA_SAMPLEBYTES_MAX))
+	     ((uint) samplebytes > TTA_SAMPLEBYTES_MAX)
 	){
-		return LIBTTAr_RET_INVAL_DIMEN;
+		return LIBTTAr_RET_INVAL + 2;
 	}
 
 	// encode
@@ -151,7 +148,7 @@ libttaR_tta_encode(
 	case 1u:
 		nbytes_tta_enc = tta_encode_1ch(
 			dest, src, &user->crc, &user->ni32, &priv->bitcache,
-			priv->codec, ni32_target, safety_margin, predict_k,
+			priv->codec, ni32_target, safety_target, predict_k,
 			filter_round, filter_k
 		);
 		break;
@@ -160,7 +157,7 @@ libttaR_tta_encode(
 	case 2u:
 		nbytes_tta_enc = tta_encode_2ch(
 			dest, src, &user->crc, &user->ni32, &priv->bitcache,
-			priv->codec, ni32_target, safety_margin, predict_k,
+			priv->codec, ni32_target, safety_target, predict_k,
 			filter_round, filter_k
 		);
 		break;
@@ -169,7 +166,7 @@ libttaR_tta_encode(
 #ifndef LIBTTAr_DISABLE_MCH
 		nbytes_tta_enc = tta_encode_mch(
 			dest, src, &user->crc, &user->ni32, &priv->bitcache,
-			priv->codec, ni32_target, safety_margin, predict_k,
+			priv->codec, ni32_target, safety_target, predict_k,
 			filter_round, filter_k, nchan
 		);
 		break;
@@ -211,7 +208,7 @@ tta_encode_mch(
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
 	struct Codec *const restrict codec, size_t ni32_target,
-	size_t safety_margin, u8 predict_k, i32 filter_round, u8 filter_k,
+	size_t safety_target, u8 predict_k, i32 filter_round, u8 filter_k,
 	uint nchan
 )
 /*@modifies	*dest,
@@ -228,7 +225,7 @@ tta_encode_mch(
 	uint j;
 
 	for ( i = 0; i < ni32_target; i += (size_t) nchan ){
-		if ( r > safety_margin ){ break; }
+		if ( r > safety_target ){ break; }
 #ifdef LIBTTAr_DISABLE_UNROLLED_1CH
 		prev = 0;	// for mono
 #endif
@@ -277,7 +274,7 @@ tta_encode_1ch(
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
 	struct Codec *const restrict codec, size_t ni32_target,
-	size_t safety_margin, u8 predict_k, i32 filter_round, u8 filter_k
+	size_t safety_target, u8 predict_k, i32 filter_round, u8 filter_k
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -292,7 +289,7 @@ tta_encode_1ch(
 	size_t i;
 
 	for ( i = 0; i < ni32_target; ++i ){
-		if ( r > safety_margin ){ break; }
+		if ( r > safety_target ){ break; }
 
 		// get
 		curr = src[i];
@@ -328,7 +325,7 @@ tta_encode_2ch(
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
 	struct Codec *const restrict codec, size_t ni32_target,
-	size_t safety_margin, u8 predict_k, i32 filter_round, u8 filter_k
+	size_t safety_target, u8 predict_k, i32 filter_round, u8 filter_k
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -343,7 +340,7 @@ tta_encode_2ch(
 	size_t i;
 
 	for ( i = 0; i < ni32_target; i += (size_t) 2u ){
-		if ( r > safety_margin ){ break; }
+		if ( r > safety_target ){ break; }
 
 	// 0	// correlate
 		next = src[i + 1u];

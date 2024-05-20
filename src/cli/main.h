@@ -16,13 +16,6 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-#define SAMPLEBUF_LEN_DEFAULT		((size_t) BUFSIZ)
-
-// multi-threaded ver. can deadlock or abort if (framequeue_len <= nthreads)
-#define FRAMEQUEUE_LEN(nthreads)	((uint) (2u*(nthreads)))
-
-//--------------------------------------------------------------------------//
-
 #define PATH_DELIM	'/'
 
 //--------------------------------------------------------------------------//

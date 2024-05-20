@@ -23,13 +23,12 @@
 #include "../../libttaR.h"
 
 #include "../debug.h"
-#include "../main.h"
 
 #include "bufs.h"
 
 //////////////////////////////////////////////////////////////////////////////
 
-// value is 16, because aligning buf to 16
+// value is 16, because aligning bufs to 16
 #define I32BUF_SAFETY_MARGIN	((size_t) 16u)
 
 //////////////////////////////////////////////////////////////////////////////
@@ -172,8 +171,7 @@ decbuf_init(
 
 void
 decbuf_check_adjust(
-	struct DecBuf *const restrict db, size_t newsize, uint nchan,
-	enum TTASampleBytes samplebytes
+	struct DecBuf *const restrict db, size_t newsize, uint nchan
 )
 /*@globals	fileSystem,
 		internalState
@@ -186,8 +184,9 @@ decbuf_check_adjust(
 {
 	union {	size_t z; } t;
 
-	t.z = newsize + libttaR_ttabuf_size((size_t) 1u, nchan, samplebytes);
+	t.z  = libttaR_ttabuf_size(0, nchan, TTASAMPLEBYTES_1);
 	assert(t.z != 0);
+	t.z += newsize;
 	if ( t.z > db->ttabuf_len ){
 		db->ttabuf_len = t.z;
 		db->ttabuf     = realloc(db->ttabuf, t.z);

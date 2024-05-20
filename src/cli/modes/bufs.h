@@ -19,6 +19,10 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
+#define SAMPLEBUF_LEN_DEFAULT		((size_t) BUFSIZ)
+
+//////////////////////////////////////////////////////////////////////////////
+
 struct EncBuf {
 	size_t	i32buf_len;
 	size_t	ttabuf_len;
@@ -105,8 +109,8 @@ extern size_t decbuf_init(
 ;
 
 #undef db
-extern void decbuf_check_adjust(
-	struct DecBuf *const restrict db, size_t, uint, enum TTASampleBytes
+extern void decbuf_check_adjust(\
+	struct DecBuf *const restrict db, size_t, uint
 )
 /*@globals	fileSystem,
 		internalState

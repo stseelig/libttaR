@@ -22,6 +22,11 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
+// multi-threaded ver. can deadlock or abort if (framequeue_len <= nthreads)
+#define FRAMEQUEUE_LEN(nthreads)	((uint) (2u*(nthreads)))
+
+//////////////////////////////////////////////////////////////////////////////
+
 struct FileStats_EncMT {
 	uint			nchan;
 	enum TTASampleBytes	samplebytes;

@@ -2,7 +2,7 @@
 #define LIBTTAr_H
 /* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// libttaR.h - 1.1.0                                                        //
+// libttaR.h - 1.1                                                          //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
@@ -31,13 +31,8 @@ enum LibTTAr_RetVal {
 	*/
 	LIBTTAr_RET_DECFAIL      =  2,
 
-	/* bad dest_len, src_len, ni32_target, nbytes_tta_target,
-	   ni32_perframe, or nbytes_tta_perframe
-	*/
-	LIBTTAr_RET_INVAL_BOUNDS,
-
-	/* bad samplebytes or nchan */
-	LIBTTAr_RET_INVAL_DIMEN,
+	/* bad parameter; used as the base, can return greater numbers */
+	LIBTTAr_RET_INVAL,
 
 	/* library was misconfigured; see libttaR_test_nchan */
 	LIBTTAr_RET_MISCONFIG	 = -1
@@ -146,8 +141,7 @@ struct LibTTAr_CodecState_User {
 //                                                                          //
 //      LIBTTAr_RET_DONE                                                    //
 //      LIBTTAr_RET_AGAIN                                                   //
-//      LIBTTAr_RET_INVAL*                                                  //
-//      LIBTTAr_RET_MISCONFIG                                               //
+//      >= LIBTTAr_RET_INVAL                                                //
 //                                                                          //
 // parameters:                                                              //
 //                                                                          //
@@ -230,8 +224,7 @@ extern int libttaR_tta_encode(
 //      LIBTTAr_RET_DONE                                                    //
 //      LIBTTAr_RET_AGAIN                                                   //
 //      LIBTTAr_RET_DECFAIL                                                 //
-//      LIBTTAr_RET_INVAL*                                                  //
-//      LIBTTAr_RET_MISCONFIG                                               //
+//      >= LIBTTAr_RET_INVAL                                                //
 //                                                                          //
 // parameters:                                                              //
 //                                                                          //
@@ -345,7 +338,17 @@ extern size_t libttaR_codecstate_priv_size(unsigned int nchan)
 // description:                                                             //
 //                                                                          //
 //              calculates a buffer size for the dest/src buffer for        //
-//          tta_encode/tta_decode, respectively                             //
+//          libttaR_tta_encode/libttaR_tta_decode, respectively.            //
+//                                                                          //
+//              not using this function may result in a                     //
+//          LIBTTAr_RET_INVAL_BOUNDS return from a codec function.          //
+//                                                                          //
+//              the return is not the maximum theoretical size (although    //
+//          there is a maximum per sample), but a size that almost always   //
+//          will be more than enough. when decoding the whole frame at      //
+//          once, if nsamples == 0 and samplebytes == TTASAMPLEBYTES_1, the //
+//          return value is how much to pad the src ttabuf by to ensure     //
+//          that a second function call will not be needed.                 //
 //                                                                          //
 // return:                                                                  //
 //                                                                          //
@@ -403,7 +406,7 @@ extern size_t libttaR_nsamples_perframe(size_t samplerate)
 ;
 
 #define libttaR_nsamples_perframe(samplerate) ( \
-	(size_t) (TTA_FRAME_TIME * samplerate) \
+	(size_t) (TTA_FRAME_TIME * (samplerate)) \
 )
 
 /* ///////////////////////////////////////////////////////////////////////////

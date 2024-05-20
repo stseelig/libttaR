@@ -21,7 +21,6 @@
 
 #include "../debug.h"
 #include "../formats.h"
-#include "../main.h"		// SAMPLEBUF_LEN_DEFAULT
 
 #include "mt-struct.h"
 #include "pqueue.h"

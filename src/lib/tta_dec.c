@@ -110,14 +110,13 @@ libttaR_tta_decode(
 	const  u8 predict_k    = tta_predict_k(samplebytes);
 	const i32 filter_round = tta_filter_round(samplebytes);
 	const  u8 filter_k     = tta_filter_k(samplebytes);
-	size_t safety_margin = (
-		src_len - (TTABUF_SAFETY_MARGIN_FAST * nchan * samplebytes)
+	const size_t safety_margin = TTABUF_SAFETY_MARGIN_FAST * nchan;
+	const size_t safety_target = (nbytes_tta_target < safety_margin
+		? src_len - safety_margin : nbytes_tta_target
 	);
-	if ( nbytes_tta_target < safety_margin ){
-		safety_margin = nbytes_tta_target;
-	}
 
 	// initial state setup
+	// faster/smaller binary if this is before the checks
 	if ( user->ncalls_codec == 0 ){
 		state_priv_init(priv, nchan);
 	}
@@ -131,7 +130,7 @@ libttaR_tta_decode(
 	    ||
 	     (ni32_perframe == 0) || (nbytes_tta_perframe == 0)
 	){
-		return LIBTTAr_RET_INVAL_BOUNDS;
+		return LIBTTAr_RET_INVAL + 0;
 	}
 	if ( (ni32_target > dest_len)
 	    ||
@@ -141,23 +140,20 @@ libttaR_tta_decode(
 	    ||
 	     (nbytes_tta_target > src_len)
 	    ||
+	     (src_len < (size_t) (TTABUF_SAFETY_MARGIN_FAST * nchan))
+	    ||
 	     (	nbytes_tta_target + user->nbytes_tta_total
 	       >
 	        nbytes_tta_perframe
 	     )
-	    ||
-	     (	src_len
-	       <=
-	        (size_t) (TTABUF_SAFETY_MARGIN_FAST * nchan * samplebytes)
-	     )
 	){
-		return LIBTTAr_RET_INVAL_BOUNDS;
+		return LIBTTAr_RET_INVAL + 1;
 	}
-	if ( (nchan == 0) || (((uint) samplebytes) == 0)
+	if ( (nchan == 0) || ((uint) samplebytes == 0)
 	    ||
-	     (((uint) samplebytes) > ((uint) TTA_SAMPLEBYTES_MAX))
+	     ((uint) samplebytes > TTA_SAMPLEBYTES_MAX)
 	){
-		return LIBTTAr_RET_INVAL_DIMEN;
+		return LIBTTAr_RET_INVAL + 2;
 	}
 
 	// decode
@@ -167,7 +163,7 @@ libttaR_tta_decode(
 		nbytes_tta_dec = tta_decode_1ch(
 			dest, src, &user->crc, &user->ni32,
 			&priv->bitcache, priv->codec, ni32_target,
-			safety_margin, predict_k, filter_round, filter_k
+			safety_target, predict_k, filter_round, filter_k
 		);
 		break;
 #endif
@@ -176,7 +172,7 @@ libttaR_tta_decode(
 		nbytes_tta_dec = tta_decode_2ch(
 			dest, src, &user->crc, &user->ni32,
 			&priv->bitcache, priv->codec, ni32_target,
-			safety_margin, predict_k, filter_round, filter_k
+			safety_target, predict_k, filter_round, filter_k
 		);
 		break;
 #endif
@@ -185,7 +181,7 @@ libttaR_tta_decode(
 		nbytes_tta_dec = tta_decode_mch(
 			dest, src, &user->crc, &user->ni32,
 			&priv->bitcache, priv->codec, ni32_target,
-			safety_margin, predict_k, filter_round, filter_k,
+			safety_target, predict_k, filter_round, filter_k,
 			nchan
 		);
 		break;
@@ -229,7 +225,7 @@ tta_decode_mch(
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
 	struct Codec *const restrict codec, size_t ni32_target,
-	size_t safety_margin, u8 predict_k, i32 filter_round, u8 filter_k,
+	size_t safety_target, u8 predict_k, i32 filter_round, u8 filter_k,
 	uint nchan
 )
 /*@modifies	*dest,
@@ -246,7 +242,7 @@ tta_decode_mch(
 	uint j;
 
 	for ( i = 0; i < ni32_target; i += (size_t) nchan ){
-		if ( r > safety_margin ){ break; }
+		if ( r > safety_target ){ break; }
 #ifdef LIBTTAr_DISABLE_UNROLLED_1CH
 		prev = 0;	// for mono
 #endif
@@ -299,7 +295,7 @@ tta_decode_1ch(
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
 	struct Codec *const restrict codec, size_t ni32_target,
-	size_t safety_margin, u8 predict_k, i32 filter_round, u8 filter_k
+	size_t safety_target, u8 predict_k, i32 filter_round, u8 filter_k
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -314,7 +310,7 @@ tta_decode_1ch(
 	size_t i;
 
 	for ( i = 0; i < ni32_target; ++i ){
-		if ( r > safety_margin ){ break; }
+		if ( r > safety_target ){ break; }
 
 		// decode
 		r = rice_decode(
@@ -349,7 +345,7 @@ tta_decode_2ch(
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
 	struct Codec *const restrict codec, size_t ni32_target,
-	size_t safety_margin, u8 predict_k, i32 filter_round, u8 filter_k
+	size_t safety_target, u8 predict_k, i32 filter_round, u8 filter_k
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -364,7 +360,7 @@ tta_decode_2ch(
 	size_t i;
 
 	for ( i = 0; i < ni32_target; i += (size_t) 2u ){
-		if ( r > safety_margin ){ break; }
+		if ( r > safety_target ){ break; }
 
 	// 0	// decode
 		r = rice_decode(
