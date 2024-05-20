@@ -390,6 +390,7 @@ decmt_state_free(
 		decbuf_free(&io->frames.decbuf[i]);
 	}
 	free(io->frames.decbuf);
+	free(io->frames.crc_read);
 	free(io->frames.user);
 	free(io->frames.dec_retval);
 

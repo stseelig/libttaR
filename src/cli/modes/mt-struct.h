@@ -38,7 +38,6 @@ struct FileStats_DecMT {
 	uint			nchan;
 	enum TTASampleBytes	samplebytes;
 	size_t			nsamples_perframe;
-	size_t			enctta_size;
 	size_t			nsamples_enc;
 };
 
@@ -349,7 +348,6 @@ decmt_fstat_init(
 	fstat_c->nchan			= (uint) fstat->nchan;
 	fstat_c->samplebytes		= fstat->samplebytes;
 	fstat_c->nsamples_perframe	= fstat->framelen;
-	fstat_c->enctta_size		= fstat->enctta_size;
 	fstat_c->nsamples_enc		= fstat->nsamples_enc;
 }
 

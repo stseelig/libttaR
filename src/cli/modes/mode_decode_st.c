@@ -193,10 +193,10 @@ ttadec_frame_st(
 	int dec_retval;
 	struct LibTTAr_CodecState_User user = LIBTTAr_CODECSTATE_USER_INIT;
 	size_t readlen, nbytes_read, ni32_target;
-	union {	size_t			z;
-		uint			u;
-		int			d;
-		off_t			o;
+	union {	size_t	z;
+		uint	u;
+		int	d;
+		off_t	o;
 	} t;
 
 	ni32_target = (decbuf->i32buf_len < ni32_perframe

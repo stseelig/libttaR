@@ -310,16 +310,13 @@ decmt_io(struct MTArg_DecIO *const restrict arg)
 	const uint nchan                      = fstat->nchan;
 	const enum TTASampleBytes samplebytes = fstat->samplebytes;
 	const size_t nsamples_perframe        = fstat->nsamples_perframe;
-	const size_t enctta_size              = fstat->enctta_size;
 	const size_t nsamples_enc             = fstat->nsamples_enc;
 
 	struct DecStats dstat;
 	size_t framesize_tta, nbytes_read;
-	size_t nbytes_read_total = 0;
-	size_t ni32_perframe_calc;
 	size_t nsamples_perchan_dec_total = 0;
-	bool start_writing = false, truncated = false;
-	size_t nframes_read = 0, nframes_written = 0;
+	bool start_writing = false;
+	size_t nframes_target = seektable->nmemb, nframes_read = 0;
 	uint i = 0, last;
 	union {	uint	u;
 		size_t	z;
@@ -328,7 +325,62 @@ decmt_io(struct MTArg_DecIO *const restrict arg)
 	memset(&dstat, 0x00, sizeof dstat);
 	goto loop0_entr;
 	do {
+		// ENCFMT_TTA1
+		// get size of tta-frame from seektable
+		framesize_tta = letoh32(seektable->table[nframes_read]);
+		if ( framesize_tta <= (sizeof *crc_read) ){
+			// TODO warning
+			nbytes_tta_perframe[i] = 0;
+			break;
+		}
+		else {	framesize_tta -= (sizeof *crc_read); }
+		ni32_perframe[i] = dec_ni32_perframe(
+			nsamples_perchan_dec_total, nsamples_enc,
+			nsamples_perframe, nchan
+		);
+		// malformed seektable check
+		if ( ni32_perframe[i] == 0 ){ break; }
+		nsamples_perchan_dec_total += ni32_perframe[i] / nchan;
+
+		// read tta from infile
+		decbuf_check_adjust(&decbuf[i], framesize_tta, nchan);
+		nbytes_read = fread(
+			decbuf[i].ttabuf, (size_t) 1u, framesize_tta,
+			infile_fh
+		);
+		nbytes_tta_perframe[i] = nbytes_read;
+		//
+		if UNLIKELY ( nbytes_read != framesize_tta ){
+			if UNLIKELY ( ferror(infile_fh) != 0 ){
+				error_sys(errno, "fread", infile_name);
+			}
+			else {	warning_tta("%s: frame %zu: truncated file",
+					infile_name, nframes_read
+				);
+			}
+			goto loop0_truncated;
+		}
+		// read frame footer (crc); kept as little-endian
+		t.z = fread(
+			&crc_read[i], sizeof *crc_read, (size_t) 1u, infile_fh
+		);
+		if UNLIKELY ( t.z != (size_t) 1u ){
+			if UNLIKELY ( ferror(infile_fh) != 0 ){
+				error_sys(errno, "fread", infile_name);
+			}
+			else {	warning_tta("%s: frame %zu: truncated file",
+					infile_name, nframes_read
+				);
+			}
+loop0_truncated:
+			crc_read[i]    = 0;
+			nframes_target = 0;
+		}
 		++nframes_read;
+
+		// make frame available
+		(void) sem_post(nframes_avail);
+
 		i = (i + 1u < framequeue_len ? i + 1u : 0);
 		if ( ! start_writing ){
 			if ( i == 0 ){
@@ -346,67 +398,14 @@ decmt_io(struct MTArg_DecIO *const restrict arg)
 			outfile_name, samplebytes, nchan,
 			letoh32(crc_read[i]), dec_retval[i]
 		);
-		++nframes_written;
 loop0_entr:
 		if ( (! g_flag.quiet) && (nframes_read % SPINNER_FRQ == 0) ){
 			errprint_spinner();
 		}
 loop0_read:
-		// read tta from infile
-		// ENCFMT_TTA1
-		framesize_tta = letoh32(seektable->table[nframes_read]);
-		if ( framesize_tta <= (sizeof *crc_read) ){
-			// TODO warning
-			nbytes_tta_perframe[i] = 0;
-			break;
-		}
-		else {	framesize_tta -= (sizeof *crc_read); }
-		ni32_perframe_calc = dec_ni32_perframe(
-			nsamples_perchan_dec_total, nsamples_enc,
-			nsamples_perframe, nchan
-		);
-		// MAYBE nbytes_tta_perframe_calc
-		decbuf_check_adjust(&decbuf[i], framesize_tta, nchan);
-		nbytes_read = fread(
-			decbuf[i].ttabuf, (size_t) 1u, framesize_tta,
-			infile_fh
-		);
-		ni32_perframe[i]       = ni32_perframe_calc;
-		nbytes_tta_perframe[i] = nbytes_read;
-		//
-		if UNLIKELY ( nbytes_read != framesize_tta ){
-			if UNLIKELY ( ferror(infile_fh) != 0 ){
-				error_sys(errno, "fread", infile_name);
-			}
-			else {	warning_tta("%s: frame %zu: truncated file",
-					infile_name, nframes_read
-				);
-			}
-			goto loop0_truncated;
-		}
-
-		// read frame footer (crc); kept as little-endian
-		t.z = fread(
-			&crc_read[i], sizeof *crc_read, (size_t) 1u, infile_fh
-		);
-		if UNLIKELY ( t.z != (size_t) 1u ){
-			if UNLIKELY ( ferror(infile_fh) != 0 ){
-				error_sys(errno, "fread", infile_name);
-			}
-			else {	warning_tta("%s: frame %zu: truncated file",
-					infile_name, nframes_read
-				);
-			}
-loop0_truncated:
-			truncated   = true;
-			crc_read[i] = 0;
-		}
-
-		// make frame available
-		(void) sem_post(nframes_avail);
+		;
 	}
-// TODO end condition like encmt
-	while ( ! truncated );
+	while ( nframes_target-- != 0 );
 	last = i;
 
 	// write the remaining frames
