@@ -141,7 +141,8 @@ struct LibTTAr_CodecState_User {
 //                                                                          //
 //      LIBTTAr_RET_DONE                                                    //
 //      LIBTTAr_RET_AGAIN                                                   //
-//      >= LIBTTAr_RET_INVAL                                                //
+//      >=LIBTTAr_RET_INVAL                                                 //
+//      LIBTTAr_RET_MISCONFIG                                               //
 //                                                                          //
 // parameters:                                                              //
 //                                                                          //
@@ -224,7 +225,8 @@ extern int libttaR_tta_encode(
 //      LIBTTAr_RET_DONE                                                    //
 //      LIBTTAr_RET_AGAIN                                                   //
 //      LIBTTAr_RET_DECFAIL                                                 //
-//      >= LIBTTAr_RET_INVAL                                                //
+//      >=LIBTTAr_RET_INVAL                                                 //
+//      LIBTTAr_RET_MISCONFIG                                               //
 //                                                                          //
 // parameters:                                                              //
 //                                                                          //
@@ -341,7 +343,7 @@ extern size_t libttaR_codecstate_priv_size(unsigned int nchan)
 //          libttaR_tta_encode/libttaR_tta_decode, respectively.            //
 //                                                                          //
 //              not using this function may result in a                     //
-//          LIBTTAr_RET_INVAL_BOUNDS return from a codec function.          //
+//          >=LIBTTAr_RET_INVAL return from a codec function.               //
 //                                                                          //
 //              the return is not the maximum theoretical size (although    //
 //          there is a maximum per sample), but a size that almost always   //

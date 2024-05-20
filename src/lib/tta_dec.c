@@ -140,7 +140,7 @@ libttaR_tta_decode(
 	    ||
 	     (nbytes_tta_target > src_len)
 	    ||
-	     (src_len < (size_t) (TTABUF_SAFETY_MARGIN_FAST * nchan))
+	     (src_len < safety_margin)
 	    ||
 	     (	nbytes_tta_target + user->nbytes_tta_total
 	       >
