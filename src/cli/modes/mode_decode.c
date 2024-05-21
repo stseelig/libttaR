@@ -32,12 +32,33 @@
 
 #include "bufs.h"
 
-#include "tta2.h"	// TODO rm
-
 //////////////////////////////////////////////////////////////////////////////
 
-void
-decmt_loop(
+#undef dstat_out
+#undef outfile
+#undef infile
+void decst_loop(
+	const struct SeekTable *const restrict,
+	/*@out@*/ struct DecStats *const restrict dstat_out,
+	const struct FileStats *const restrict,
+	FILE *const restrict outfile, const char *const,
+	FILE *const restrict infile, const char *const
+)
+/*@globals	fileSystem,
+		internalState
+@*/
+/*@modifies	fileSystem,
+		internalState,
+		*dstat_out,
+		outfile,
+		infile
+@*/
+;
+
+#undef dstat_out
+#undef outfile
+#undef infile
+void decmt_loop(
 	const struct SeekTable *const restrict,
 	/*@out@*/ struct DecStats *const restrict dstat_out,
 	const struct FileStats *const restrict,
@@ -316,7 +337,7 @@ dec_loop(struct OpenedFilesMember *const restrict ofm)
 		if ( nthreads > 1u ){ goto encode_multi; }
 		/*@fallthrough@*/
 	case THREADMODE_SINGLE:
-		ttadec_loop_st(
+		decst_loop(
 			&seektable, &dstat, fstat, outfile, outfile_name,
 			infile, infile_name
 		);

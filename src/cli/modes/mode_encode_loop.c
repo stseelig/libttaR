@@ -148,7 +148,7 @@ encst_loop(
 {
 	const size_t              decpcm_size       = fstat->decpcm_size;
 	const size_t              nsamples_perframe = fstat->framelen;
-	const size_t              samplebuf_len     = fstat->buflen;
+	const size_t              buflen            = fstat->buflen;
 	const uint                nchan             = (uint) fstat->nchan;
 	const enum TTASampleBytes samplebytes       = fstat->samplebytes;
 
@@ -166,10 +166,9 @@ encst_loop(
 
 	// setup buffers
 	t.z = encbuf_init(
-		&encbuf, samplebuf_len, SAMPLEBUF_LEN_DEFAULT, nchan,
-		samplebytes
+		&encbuf, buflen, SAMPLEBUF_LEN_DEFAULT, nchan, samplebytes
 	);
-	assert(t.z == (size_t) (samplebuf_len * nchan));
+	assert(t.z == (size_t) (buflen * nchan));
 	//
 	t.z = libttaR_codecstate_priv_size(nchan);
 	assert(t.z != 0);

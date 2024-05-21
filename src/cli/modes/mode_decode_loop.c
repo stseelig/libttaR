@@ -110,6 +110,141 @@ static void *decmt_decoder(struct MTArg_Decoder *const restrict arg)
 
 //////////////////////////////////////////////////////////////////////////////
 
+void
+decst_loop(
+	const struct SeekTable *const restrict seektable,
+	/*@out@*/ struct DecStats *const restrict dstat_out,
+	const struct FileStats *const restrict fstat,
+	FILE *const restrict outfile, const char *const outfile_name,
+	FILE *const restrict infile, const char *const infile_name
+)
+/*@globals	fileSystem,
+		internalState
+@*/
+/*@modifies	fileSystem,
+		internalState,
+		*dstat_out,
+		outfile,
+		infile
+@*/
+{
+	const size_t              framelen     = fstat->framelen;
+	const size_t              buflen       = fstat->buflen;
+	const size_t              nsamples_enc = fstat->nsamples_enc;
+	const uint                nchan        = (uint) fstat->nchan;
+	const enum TTASampleBytes samplebytes  = fstat->samplebytes;
+
+	struct LibTTAr_CodecState_Priv *priv = NULL;
+	struct LibTTAr_CodecState_User user;
+	struct DecBuf decbuf;
+	struct DecStats dstat;
+	//
+	size_t ni32_perframe, nbytes_tta_perframe, framesize_tta, nbytes_read;
+	size_t nsamples_perchan_dec_total = 0;
+	size_t nframes_target = seektable->nmemb, nframes_read = 0;
+	ichar dec_retval;
+	u32 crc_read;
+	union {	size_t	z;
+		int	d;
+	} t;
+
+	// setup buffers
+	t.z = decbuf_init(
+		&decbuf, buflen, SAMPLEBUF_LEN_DEFAULT, nchan,
+		samplebytes
+	);
+	assert(t.z == (size_t) (SAMPLEBUF_LEN_DEFAULT * nchan));
+	//
+	t.z = libttaR_codecstate_priv_size(nchan);
+	assert(t.z != 0);
+	priv = malloc(t.z);
+	if UNLIKELY ( priv == NULL ){
+		error_sys(errno, "malloc", NULL);
+	}
+	assert(priv != NULL);
+
+	memset(&dstat, 0x00, sizeof dstat);
+	goto loop_entr;
+	do {
+		// ENCFMT_TTA1
+		// get size of tta-frame from seektable
+		framesize_tta = letoh32(seektable->table[nframes_read]);
+		if ( framesize_tta <= (sizeof crc_read) ){
+			warning_tta(
+				"%s: frame %zu: malformed seektable entry",
+				infile_name, nframes_read
+			);
+			break;
+		}
+		else {	framesize_tta -= (sizeof crc_read); }
+		ni32_perframe = dec_ni32_perframe(
+			nsamples_perchan_dec_total, nsamples_enc, framelen,
+			nchan
+		);
+		// malformed seektable check
+		if ( ni32_perframe == 0 ){ break; }
+		nsamples_perchan_dec_total += ni32_perframe / nchan;
+
+		// read tta from infile
+		decbuf_check_adjust(&decbuf, framesize_tta, nchan);
+		nbytes_read = fread(
+			decbuf.ttabuf, (size_t) 1u, framesize_tta, infile
+		);
+		nbytes_tta_perframe = nbytes_read;
+		//
+		if UNLIKELY ( nbytes_read != framesize_tta ){
+			if UNLIKELY ( ferror(infile) != 0 ){
+				error_sys(errno, "fread", infile_name);
+			}
+			else {	warning_tta("%s: frame %zu: truncated file",
+					infile_name, nframes_read
+				);
+			}
+			goto loop0_truncated;
+		}
+		// read frame footer (crc); kept as little-endian
+		t.z = fread(&crc_read, sizeof crc_read, (size_t) 1u, infile);
+		if UNLIKELY ( t.z != (size_t) 1u ){
+			if UNLIKELY ( ferror(infile) != 0 ){
+				error_sys(errno, "fread", infile_name);
+			}
+			else {	warning_tta("%s: frame %zu: truncated file",
+					infile_name, nframes_read
+				);
+			}
+loop0_truncated:
+			crc_read       = 0;
+			nframes_target = 0;
+		}
+		++nframes_read;
+
+		// decode frame
+		dec_retval = dec_frame_decode(
+			&decbuf, priv, &user, samplebytes, nchan,
+			ni32_perframe, nbytes_tta_perframe
+		);
+
+		// write pcm to outfile
+		dec_frame_write(
+			&decbuf, &dstat, &user, infile_name, outfile,
+			outfile_name, samplebytes, nchan, letoh32(crc_read),
+			dec_retval
+		);
+loop_entr:
+		if ( (! g_flag.quiet) && (nframes_read % SPINNER_FRQ == 0) ){
+			errprint_spinner();
+		}
+	}
+	while ( nframes_target-- != 0 );
+
+	// cleanup
+	free(priv);
+	decbuf_free(&decbuf);
+
+	*dstat_out = dstat;
+	return;
+}
+
 // can deadlock or abort if (framequeue_len <= nthreads)
 void
 decmt_loop(
