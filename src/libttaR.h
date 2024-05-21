@@ -19,19 +19,21 @@
 /* ######################################################################## */
 
 enum LibTTAr_RetVal {
-	/* frame was finished */
+	/* frame finished */
 	LIBTTAr_RET_DONE	 =  0,
 
-	/* frame was not finished */
+	/* frame not finished */
 	LIBTTAr_RET_AGAIN	 =  1,
 
-	/* frame was finished, but nbytes_tta_total != nbytes_tta_perframe
+	/* frame finished, but (nbytes_tta_total != nbytes_tta_perframe)
 	  ||
-	   frame was not finished, but nbytes_tta_total > nbytes_tta_perframe
+	   frame not finished, but (nbytes_tta_total > nbytes_tta_perframe)
 	*/
 	LIBTTAr_RET_DECFAIL      =  2,
 
-	/* bad parameter; used as the base, can return greater numbers */
+	/* (ni32_target % nchan != 0) or other bad parameter
+	   used as the base value, can return greater values
+	*/
 	LIBTTAr_RET_INVAL,
 
 	/* library was misconfigured; see libttaR_test_nchan */
@@ -139,10 +141,7 @@ struct LibTTAr_CodecState_User {
 //                                                                          //
 // return:                                                                  //
 //                                                                          //
-//      LIBTTAr_RET_DONE                                                    //
-//      LIBTTAr_RET_AGAIN                                                   //
-//      >=LIBTTAr_RET_INVAL                                                 //
-//      LIBTTAr_RET_MISCONFIG                                               //
+//      LIBTTAr_RET_(DONE | AGAIN | TRUNC | >=INVAL | MISCONFIG)            //
 //                                                                          //
 // parameters:                                                              //
 //                                                                          //
@@ -222,11 +221,7 @@ extern int libttaR_tta_encode(
 //                                                                          //
 // return:                                                                  //
 //                                                                          //
-//      LIBTTAr_RET_DONE                                                    //
-//      LIBTTAr_RET_AGAIN                                                   //
-//      LIBTTAr_RET_DECFAIL                                                 //
-//      >=LIBTTAr_RET_INVAL                                                 //
-//      LIBTTAr_RET_MISCONFIG                                               //
+//      LIBTTAr_RET_(DONE | AGAIN | DECFAIL | TRUNC | >=INVAL | MISCONFIG)  //
 //                                                                          //
 // parameters:                                                              //
 //                                                                          //

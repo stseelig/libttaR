@@ -15,7 +15,7 @@
 //  Shortopts can be concatenated like :                                    //
 //      '-a', '-ab', '-avalue0bvalue1',  '-a value0 -b value1'              //
 //                                                                          //
-//  Opt processing continues until the first non-opt or "--".               //
+//  '--' ends opt processing (filenames only from then on)                  //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 

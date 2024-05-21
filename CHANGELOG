@@ -31,7 +31,7 @@
 
 1.1.0 (2024-XX-XX):-----------------------------------------------------------
 
-	- multi-threaded encoder
+	- multi-threaded encoder and decoder
 	- faster single-threaded encoder
 	- improved wav and w64 parsing
 	- updated for libttaR 1.1.0

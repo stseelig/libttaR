@@ -57,8 +57,8 @@ static void dec_frame_write(
 	struct DecBuf *const restrict decbuf,
 	/*@in@*/ struct DecStats *const restrict dstat_out,
 	struct LibTTAr_CodecState_User *const restrict,
-	FILE *const restrict outfile, const char *const restrict,
-	enum TTASampleBytes, uint, u32, ichar
+	const char *const restrict, FILE *const restrict outfile,
+	const char *const restrict, enum TTASampleBytes, uint, u32, ichar
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -75,13 +75,37 @@ static size_t dec_ni32_perframe(size_t, size_t, size_t, uint) /*@*/;
 #undef arg
 /*@null@*/
 static void *decmt_io(struct MTArg_DecIO *const restrict arg)
-// TODO
+/*@globals	fileSystem,
+		internalState
+@*/
+/*@modifies	fileSystem,
+		internalState,
+		*arg->frames.navailable,
+		*arg->frames.post_decoder,
+		*arg->frames.ni32_perframe,
+		*arg->frames.decbuf,
+		*arg->frames.crc_read,
+		arg->outfile.fh,
+		arg->infile.fh,
+		*arg->seektable,
+		*arg->dstat_out
+@*/
 ;
 
 #undef arg
 /*@null@*/
 static void *decmt_decoder(struct MTArg_Decoder *const restrict arg)
-// TODO
+/*@globals	fileSystem,
+		internalState
+@*/
+/*@modifies	fileSystem,
+		internalState,
+		*arg->frames.navailable,
+		arg->frames.queue,
+		*arg->frames.post_decoder,
+		*arg->frames.decbuf,
+		*arg->frames.dec_retval
+@*/
 ;
 
 //////////////////////////////////////////////////////////////////////////////
@@ -186,7 +210,14 @@ dec_frame_decode(
 		&user, samplebytes, nchan, ni32_perframe, nbytes_tta_perframe
 	);
 	// with the way the decoding is setup, RET_AGAIN can't happen here
-	assert((r == LIBTTAr_RET_DONE) || (r == LIBTTAr_RET_DECFAIL));
+// TODO check for and handle zero-padding
+//   RET_INVAL may happen if the last sample is truncated
+	assert((r == LIBTTAr_RET_DONE)
+	      ||
+	       (r == LIBTTAr_RET_DECFAIL)
+	      ||
+	       (r == LIBTTAR_RET_INVAL)	// truncated sample
+	);
 
 	// convert i32 to pcm
 	t.z = libttaR_pcm_write(
@@ -203,6 +234,7 @@ dec_frame_write(
 	struct DecBuf *const restrict decbuf,
 	/*@in@*/ struct DecStats *const restrict dstat_out,
 	struct LibTTAr_CodecState_User *const restrict user_in,
+	const char *const restrict infile_name,
 	FILE *const restrict outfile, const char *const restrict outfile_name,
 	enum TTASampleBytes samplebytes, uint nchan, u32 crc_read,
 	ichar dec_retval
@@ -220,37 +252,31 @@ dec_frame_write(
 		size_t	z;
 	} t;
 
-	// check if frame is DECFAIL or truncated and zero-pad
-	if UNLIKELY ( dec_retval == (ichar) LIBTTAr_RET_DECFAIL ){
-		// TODO
-
-		// letoh32 on crc; kept as little-endian
-	}
-	else {	t.u = user.ni32_total % nchan;
-		if UNLIKELY ( t.u != 0 ){
-			warning_tta("%s: frame %zu: "
-				"last sample truncated, zero-padding",
-				outfile_name, dstat.nframes
-			);
-			// TODO zeropad
-			user.ni32       += t.z;
-			user.ni32_total += t.z;
+	// DECFAIL or INVAL; zero-padding + warning
+	if UNLIKELY ( dec_retval != (ichar) LIBTTAr_RET_DONE ){
+		if ( dec_retval == (ichar) LIBTTAr_RET_DECFAIL ){
+			// TODO zero-padding
 		}
+		else if ( dec_retval >= (ichar) LIBTTAr_RET_INVAL ){
+			// TODO zero-padding
+		}
+		else {	assert(false); }
+		//warning_tta(/*TODO padding message*/);
 	}
+
+	// check frame crc
+	if UNLIKELY ( user.crc != crc_read ){
+		warning_tta("%s: frame %zu is corrupted; bad crc",
+			infile_name, dstat.nframes
+		);
+	}
+	user.nbytes_tta_total += sizeof crc_read;
 
 	// write frame
 	t.z = fwrite(decbuf->pcmbuf, samplebytes, user.ni32_total, outfile);
 	if UNLIKELY ( t.z != user.ni32 ){
 		error_sys(errno, "fwrite", outfile_name);
 	}
-
-	// check frame crc
-	if UNLIKELY ( user.crc != crc_read ){
-		warning_tta("%s: frame %zu is corrupted; bad crc",
-			outfile_name, dstat.nframes
-		);
-	}
-	user.nbytes_tta_total += sizeof crc_read;
 
 	// update dstat
 	dstat.nframes          += (size_t) 1u;
@@ -261,7 +287,6 @@ dec_frame_write(
 	*dstat_out = dstat;
 	return;
 }
-
 
 // returns ni32_perframe
 static size_t
@@ -282,7 +307,21 @@ dec_ni32_perframe(
 /*@null@*/
 static void *
 decmt_io(struct MTArg_DecIO *const restrict arg)
-// TODO
+/*@globals	fileSystem,
+		internalState
+@*/
+/*@modifies	fileSystem,
+		internalState,
+		*arg->frames.navailable,
+		*arg->frames.post_decoder,
+		*arg->frames.ni32_perframe,
+		*arg->frames.decbuf,
+		*arg->frames.crc_read,
+		arg->outfile.fh,
+		arg->infile.fh,
+		*arg->seektable,
+		*arg->dstat_out
+@*/
 {
 	struct MTArg_DecIO_Frames *const restrict  frames  = &arg->frames;
 	struct MTArg_IO_Outfile   *const restrict  outfile = &arg->outfile;
@@ -293,7 +332,7 @@ decmt_io(struct MTArg_DecIO *const restrict arg)
 	sem_t         *const restrict nframes_avail = frames->navailable;
 	sem_t         *const restrict post_decoder  = frames->post_decoder;
 	size_t        *const restrict ni32_perframe = frames->ni32_perframe;
-	size_t        *const restrict nbytes_tta_perframe   = (
+	size_t        *const restrict nbytes_tta_perframe  = (
 		frames->nbytes_tta_perframe
 	);
 	struct DecBuf *const restrict decbuf        = frames->decbuf;
@@ -329,7 +368,10 @@ decmt_io(struct MTArg_DecIO *const restrict arg)
 		// get size of tta-frame from seektable
 		framesize_tta = letoh32(seektable->table[nframes_read]);
 		if ( framesize_tta <= (sizeof *crc_read) ){
-			// TODO warning
+			warning_tta(
+				"%s: frame %zu: malformed seektable entry",
+				infile_name, nframes_read
+			);
 			nbytes_tta_perframe[i] = 0;
 			break;
 		}
@@ -394,7 +436,7 @@ loop0_truncated:
 
 		// write pcm to outfile
 		dec_frame_write(
-			&decbuf[i], &dstat, &user[i], outfile_fh,
+			&decbuf[i], &dstat, &user[i], infile_name, outfile_fh,
 			outfile_name, samplebytes, nchan,
 			letoh32(crc_read[i]), dec_retval[i]
 		);
@@ -420,7 +462,7 @@ loop0_read:
 
 		// write tta to outfile
 		dec_frame_write(
-			&decbuf[i], &dstat, &user[i], outfile_fh,
+			&decbuf[i], &dstat, &user[i], infile_name, outfile_fh,
 			outfile_name, samplebytes, nchan, crc_read[i],
 			dec_retval[i]
 		);
@@ -440,7 +482,17 @@ loop1_not_tiny:
 /*@null@*/
 static void *
 decmt_decoder(struct MTArg_Decoder *const restrict arg)
-// TODO
+/*@globals	fileSystem,
+		internalState
+@*/
+/*@modifies	fileSystem,
+		internalState,
+		*arg->frames.navailable,
+		arg->frames.queue,
+		*arg->frames.post_decoder,
+		*arg->frames.decbuf,
+		*arg->frames.dec_retval
+@*/
 {
 	struct MTArg_Decoder_Frames  *const restrict frames = &arg->frames;
 	const struct FileStats_DecMT *const restrict fstat  =  arg->fstat;

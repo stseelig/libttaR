@@ -122,6 +122,8 @@ libttaR_tta_encode(
 	if ( (src_len == 0) || (dest_len == 0)
 	    ||
 	     (ni32_target == 0) || (ni32_perframe == 0)
+	    ||
+	     (nchan == 0)
 	){
 		return LIBTTAr_RET_INVAL + 0;
 	}
@@ -135,7 +137,7 @@ libttaR_tta_encode(
 	){
 		return LIBTTAr_RET_INVAL + 1;
 	}
-	if ( (nchan == 0) || ((uint) samplebytes == 0)
+	if ( ((uint) samplebytes == 0)
 	    ||
 	     ((uint) samplebytes > TTA_SAMPLEBYTES_MAX)
 	){

@@ -103,8 +103,8 @@ static void *encmt_io(struct MTArg_EncIO *const restrict arg)
 		*arg->frames.post_encoder,
 		*arg->frames.ni32_perframe,
 		*arg->frames.encbuf,
-		arg->outfile.outfile_fh,
-		arg->infile.infile_fh,
+		arg->outfile.fh,
+		arg->infile.fh,
 		*arg->seektable,
 		*arg->estat_out
 @*/
@@ -121,7 +121,7 @@ static void *encmt_encoder(struct MTArg_Encoder *const restrict arg)
 		*arg->frames.navailable,
 		arg->frames.queue,
 		*arg->frames.post_encoder,
-		*arg->encbuf
+		*arg->frames.encbuf
 @*/
 ;
 
@@ -494,8 +494,8 @@ encmt_io(struct MTArg_EncIO *const restrict arg)
 		*arg->frames.post_encoder,
 		*arg->frames.ni32_perframe,
 		*arg->frames.encbuf,
-		arg->outfile.outfile_fh,
-		arg->infile.infile_fh,
+		arg->outfile.fh,
+		arg->infile.fh,
 		*arg->seektable,
 		*arg->estat_out
 @*/
@@ -642,7 +642,7 @@ encmt_encoder(struct MTArg_Encoder *const restrict arg)
 		*arg->frames.navailable,
 		arg->frames.queue,
 		*arg->frames.post_encoder,
-		*arg->encbuf
+		*arg->frames.encbuf
 @*/
 {
 	struct MTArg_Encoder_Frames  *const restrict frames = &arg->frames;

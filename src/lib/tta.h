@@ -21,18 +21,19 @@
 //////////////////////////////////////////////////////////////////////////////
 
 enum LibTTAr_RetVal {
-	// frame was finished
+	// frame finished
 	LIBTTAr_RET_DONE	 =  0,
 
-	// frame was not finished
+	// frame not finished
 	LIBTTAr_RET_AGAIN	 =  1,
 
-	// frame was finished, but nbytes_tta_total != nbytes_tta_perframe
+	// frame finished, but (nbytes_tta_total != nbytes_tta_perframe)
 	//||
-	// frame was not finished, and nbytes_tta_total > nbytes_tta_perframe
+	// frame not finished, but (nbytes_tta_total > nbytes_tta_perframe)
 	LIBTTAr_RET_DECFAIL      =  2,
 
-	// bad parameter; used as the base, can return greater numbers
+	// (ni32_target % nchan != 0) or other bad parameter
+	// used as the base value, can return greater values
 	LIBTTAr_RET_INVAL,
 
 	// library was misconfigured; see libttaR_test_nchan
