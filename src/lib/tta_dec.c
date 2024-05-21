@@ -213,7 +213,7 @@ libttaR_tta_decode(
 		else {	r = LIBTTAr_RET_DONE; }
 	}
 
-	user->ncalls_codec     += (size_t) 1u;
+	user->ncalls_codec     += 1u;
 	return r;
 }
 
