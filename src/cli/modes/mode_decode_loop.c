@@ -272,6 +272,8 @@ decmt_loop(
 	uint i;
 	union {	int d; } t;
 
+	assert(nthreads >= 1u);
+
 	// init
 	decmt_fstat_init(&fstat_c, fstat);
 	//
@@ -281,13 +283,15 @@ decmt_loop(
 		dstat_out, &fstat_c
 	);
 	//
-	thread_decoder = calloc(
-		(size_t) (nthreads - 1u), sizeof *thread_decoder
-	);
-	if UNLIKELY ( thread_decoder == NULL ){
-		error_sys(errno, "calloc", NULL);
+	if ( nthreads > 1u ){
+		thread_decoder = calloc(
+			(size_t) (nthreads - 1u), sizeof *thread_decoder
+		);
+		if UNLIKELY ( thread_decoder == NULL ){
+			error_sys(errno, "calloc", NULL);
+		}
+		assert(thread_decoder != NULL);
 	}
-	assert(thread_decoder != NULL);
 
 	// create
 	t.d = pthread_create(
@@ -318,7 +322,9 @@ decmt_loop(
 
 	// cleanup
 	decmt_state_free(&state_io, &state_decoder, framequeue_len);
-	free(thread_decoder);
+	if ( nthreads > 1u ){
+		free(thread_decoder);
+	}
 
 	return;
 }

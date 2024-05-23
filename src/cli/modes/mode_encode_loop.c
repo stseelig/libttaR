@@ -289,6 +289,8 @@ encmt_loop(
 	uint i;
 	union {	int d; } t;
 
+	assert(nthreads >= 1u);
+
 	// init
 	encmt_fstat_init(&fstat_c, fstat);
 	//
@@ -298,13 +300,15 @@ encmt_loop(
 		estat_out, &fstat_c
 	);
 	//
-	thread_encoder = calloc(
-		(size_t) (nthreads - 1u), sizeof *thread_encoder
-	);
-	if UNLIKELY ( thread_encoder == NULL ){
-		error_sys(errno, "calloc", NULL);
+	if ( nthreads > 1u ){
+		thread_encoder = calloc(
+			(size_t) (nthreads - 1u), sizeof *thread_encoder
+		);
+		if UNLIKELY ( thread_encoder == NULL ){
+			error_sys(errno, "calloc", NULL);
+		}
+		assert(thread_encoder != NULL);
 	}
-	assert(thread_encoder != NULL);
 
 	// create
 	t.d = pthread_create(
@@ -335,7 +339,9 @@ encmt_loop(
 
 	// cleanup
 	encmt_state_free(&state_io, &state_encoder, framequeue_len);
-	free(thread_encoder);
+	if ( nthreads > 1u ){
+		free(thread_encoder);
+	}
 
 	return;
 }

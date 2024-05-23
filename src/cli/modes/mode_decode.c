@@ -156,7 +156,6 @@ mode_decode(uint optind)
 		}
 
 		// the rest of fstat
-		//ofm->fstat.encfmt      = FORMAT_TTA1;
 		ofm->fstat.framelen    = libttaR_nsamples_perframe_tta1(
 			ofm->fstat.samplerate
 		);
@@ -324,12 +323,6 @@ dec_loop(struct OpenedFilesMember *const restrict ofm)
 	if ( ! g_flag.quiet ){
 		(void) clock_gettime(CLOCK_MONOTONIC, &ts_start);
 	}
-
-	//// decode
-	//ttadec_loop_st(
-		//&seektable, &dstat, fstat, outfile, outfile_name, infile,
-		//infile_name
-	//);
 
 	// decode
 	switch ( g_flag.threadmode ){
