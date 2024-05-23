@@ -242,7 +242,7 @@ loop_entr:
 	return;
 }
 
-// can deadlock or abort if (framequeue_len <= nthreads)
+// see encmt_loop in mode_encode_loop.c for a comment on the threads layout
 void
 decmt_loop(
 	const struct SeekTable *const restrict seektable,
@@ -264,6 +264,7 @@ decmt_loop(
 {
 	struct MTArg_DecIO state_io;
 	struct MTArg_Decoder state_decoder;
+	pthread_t thread_io;
 	pthread_t *thread_decoder = NULL;
 	struct FileStats_DecMT fstat_c;
 	const size_t samplebuf_len = fstat->buflen;
@@ -280,14 +281,23 @@ decmt_loop(
 		dstat_out, &fstat_c
 	);
 	//
-	thread_decoder = calloc((size_t) nthreads, sizeof *thread_decoder);
+	thread_decoder = calloc(
+		(size_t) (nthreads - 1u), sizeof *thread_decoder
+	);
 	if UNLIKELY ( thread_decoder == NULL ){
 		error_sys(errno, "calloc", NULL);
 	}
 	assert(thread_decoder != NULL);
 
 	// create
-	for ( i = 0; i < nthreads; ++i ){
+	t.d = pthread_create(
+		&thread_io, NULL, (void *(*)(void *)) decmt_io, &state_io
+	);
+	if UNLIKELY ( t.d != 0 ){
+		error_sys(t.d, "pthread_create", NULL);
+	}
+	//
+	for ( i = 0; i < nthreads - 1u; ++i ){
 		t.d = pthread_create(
 			&thread_decoder[i], NULL,
 			(void *(*)(void *)) decmt_decoder, &state_decoder
@@ -296,14 +306,15 @@ decmt_loop(
 			error_sys(t.d, "pthread_create", NULL);
 		}
 	}
-
-	// the main thread does the file-io
-	(void) decmt_io(&state_io);
+	//
+	(void) decmt_decoder(&state_decoder);
 
 	// join
-	for ( i = 0; i < nthreads; ++i ){
+	for ( i = 0; i < nthreads - 1u; ++i ){
 		(void) pthread_join(thread_decoder[i], NULL);
 	}
+	//
+	(void) pthread_join(thread_io, NULL);
 
 	// cleanup
 	decmt_state_free(&state_io, &state_decoder, framequeue_len);

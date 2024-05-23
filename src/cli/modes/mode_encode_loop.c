@@ -248,7 +248,17 @@ loop_entr:
 	return;
 }
 
-// can deadlock or abort if (framequeue_len <= nthreads)
+// threads layout:
+//
+//	- the io thread is created first, so it can get a head start on
+//  filling up the framequeue
+//
+//      - then (nthreads - 1u) coder threads are created
+//
+//      - the main thread then becomes the last coder thread
+//
+//      - after the main thread finishes coding, the other coder threads are
+//  joined, and then finally, the io thread is joined
 void
 encmt_loop(
 	struct SeekTable *const restrict seektable,
@@ -271,6 +281,7 @@ encmt_loop(
 {
 	struct MTArg_EncIO state_io;
 	struct MTArg_Encoder state_encoder;
+	pthread_t thread_io;
 	pthread_t *thread_encoder = NULL;
 	struct FileStats_EncMT fstat_c;
 	const size_t samplebuf_len = fstat->buflen;
@@ -287,14 +298,23 @@ encmt_loop(
 		estat_out, &fstat_c
 	);
 	//
-	thread_encoder = calloc((size_t) nthreads, sizeof *thread_encoder);
+	thread_encoder = calloc(
+		(size_t) (nthreads - 1u), sizeof *thread_encoder
+	);
 	if UNLIKELY ( thread_encoder == NULL ){
 		error_sys(errno, "calloc", NULL);
 	}
 	assert(thread_encoder != NULL);
 
 	// create
-	for ( i = 0; i < nthreads; ++i ){
+	t.d = pthread_create(
+		&thread_io, NULL, (void *(*)(void *)) encmt_io, &state_io
+	);
+	if UNLIKELY ( t.d != 0 ){
+		error_sys(t.d, "pthread_create", NULL);
+	}
+	//
+	for ( i = 0; i < nthreads - 1u; ++i ){
 		t.d = pthread_create(
 			&thread_encoder[i], NULL,
 			(void *(*)(void *)) encmt_encoder, &state_encoder
@@ -303,14 +323,15 @@ encmt_loop(
 			error_sys(t.d, "pthread_create", NULL);
 		}
 	}
-
-	// the main thread does the file-io
-	(void) encmt_io(&state_io);
+	//
+	(void) encmt_encoder(&state_encoder);
 
 	// join
-	for ( i = 0; i < nthreads; ++i ){
+	for ( i = 0; i < nthreads - 1u; ++i ){
 		(void) pthread_join(thread_encoder[i], NULL);
 	}
+	//
+	(void) pthread_join(thread_io, NULL);
 
 	// cleanup
 	encmt_state_free(&state_io, &state_encoder, framequeue_len);
