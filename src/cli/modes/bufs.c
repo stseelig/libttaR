@@ -37,8 +37,7 @@
 size_t
 encbuf_init(
 	/*@out@*/ struct EncBuf *const restrict eb, size_t ni32_samplebuf_len,
-	size_t init_ttabuf_len_perchan, uint nchan,
-	enum TTASampleBytes samplebytes
+	size_t ttabuf_len, uint nchan, enum TTASampleBytes samplebytes
 )
 /*@globals	fileSystem,
 		internalState
@@ -56,9 +55,8 @@ encbuf_init(
 	union {	uintptr_t p; } t;
 
 	eb->i32buf_len = r + I32BUF_SAFETY_MARGIN;
-	eb->ttabuf_len = libttaR_ttabuf_size(
-		init_ttabuf_len_perchan, nchan, samplebytes
-	);
+	assert(eb->i32buf_len != 0);
+	eb->ttabuf_len = ttabuf_len + libttaR_ttabuf_safety_margin(nchan);
 	assert(eb->ttabuf_len != 0);
 
 	eb->i32buf = calloc(eb->i32buf_len, sizeof *eb->i32buf);
@@ -82,8 +80,7 @@ encbuf_init(
 
 void
 encbuf_adjust(
-	struct EncBuf *const restrict eb, size_t samplebuf_len, uint nchan,
-	enum TTASampleBytes samplebytes
+	struct EncBuf *const restrict eb, size_t samplebuf_len, uint nchan
 )
 /*@globals	fileSystem,
 		internalState
@@ -94,11 +91,8 @@ encbuf_adjust(
 		eb->ttabuf
 @*/
 {
-	union {	size_t z; } t;
-
-	t.z = libttaR_ttabuf_size(samplebuf_len, nchan, samplebytes);
-	assert(t.z != 0);
-	eb->ttabuf_len += t.z;
+	eb->ttabuf_len += samplebuf_len + libttaR_ttabuf_safety_margin(nchan);
+	assert(eb->ttabuf_len != 0);
 
 	eb->ttabuf = realloc(eb->ttabuf, eb->ttabuf_len);
 	if UNLIKELY ( eb->ttabuf == NULL ){
@@ -130,8 +124,7 @@ encbuf_free(struct EncBuf *const restrict eb)
 size_t
 decbuf_init(
 	/*@out@*/ struct DecBuf *const restrict db, size_t ni32_samplebuf_len,
-	size_t init_ttabuf_len_perchan, uint nchan,
-	enum TTASampleBytes samplebytes
+	size_t ttabuf_len, uint nchan
 )
 /*@globals	fileSystem,
 		internalState
@@ -147,9 +140,8 @@ decbuf_init(
 	const size_t r = ni32_samplebuf_len * nchan;
 
 	db->i32buf_len = r;
-	db->ttabuf_len = libttaR_ttabuf_size(
-		init_ttabuf_len_perchan, nchan, samplebytes
-	);
+	assert(db->i32buf_len != 0);
+	db->ttabuf_len = ttabuf_len + libttaR_ttabuf_safety_margin(nchan);
 	assert(db->ttabuf_len != 0);
 
 	db->pcmbuf = calloc(r + I32BUF_SAFETY_MARGIN, sizeof(i32));
@@ -182,14 +174,12 @@ decbuf_check_adjust(
 		db->ttabuf
 @*/
 {
-	union {	size_t z; } t;
+	newsize += libttaR_ttabuf_safety_margin(nchan);
+	assert(newsize != 0);
 
-	t.z  = libttaR_ttabuf_size(0, nchan, TTASAMPLEBYTES_1);
-	assert(t.z != 0);
-	t.z += newsize;
-	if ( t.z > db->ttabuf_len ){
-		db->ttabuf_len = t.z;
-		db->ttabuf     = realloc(db->ttabuf, t.z);
+	if ( newsize > db->ttabuf_len ){
+		db->ttabuf_len = newsize;
+		db->ttabuf     = realloc(db->ttabuf, newsize);
 		if UNLIKELY ( db->ttabuf == NULL ){
 			error_sys(errno, "realloc", NULL);
 		}

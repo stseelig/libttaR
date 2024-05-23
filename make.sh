@@ -10,7 +10,7 @@
 #                                                                            #
 ##############################################################################
 
-NPROC=$(nproc) || NPROC=1;	# MAYBE add a '-j' opt
+NPROC=$(nproc) || NPROC=1;
 readonly NPROC;
 
 #----------------------------------------------------------------------------#
@@ -28,8 +28,8 @@ readonly PROGRAM='ttaR';
 #   main reasons that gcc is slower:
 #       - gcc doesn't have a builtin memmove (this is extra funny considering
 # the glibc memcpy backwards fiasco from last decade)
-#       - clang is better at auto-SIMDing
-#       - it can do dumb stuff if you don't use gcc-isms like the example in
+#       - clang is better at SIMDing and inlining
+#       - gcc can do dumb stuff if you don't use gcc-isms, like the example in
 # the previous paragraph
 #
 #	AMD Ryzen 7 1700
@@ -102,7 +102,7 @@ CFLAGS_LIB="$CFLAGS_LIB -fPIC";
 # disable the multichannel/general decoder
 #CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_DISABLE_MCH";
 
-# disable tzcnt builtin if no native tzcnt instruction
+# enable if no native tzcnt/ctz instruction
 #CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_NO_INSTRUCTION_TZCNT";
 
 readonly CFLAGS_LIB;

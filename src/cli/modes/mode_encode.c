@@ -171,7 +171,7 @@ mode_encode(uint optind)
 
 		// the rest of fstat
 		ofm->fstat.encfmt      = ENCFMT_TTA1;
-		ofm->fstat.framelen    = libttaR_nsamples_perframe(
+		ofm->fstat.framelen    = libttaR_nsamples_perframe_tta1(
 			ofm->fstat.samplerate
 		);
 		ofm->fstat.buflen      = (size_t) (

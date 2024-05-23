@@ -32,7 +32,7 @@ enum LibTTAr_RetVal {
 	LIBTTAr_RET_DECFAIL      =  2,
 
 	/* (ni32_target % nchan != 0) or other bad parameter
-	   used as the base value, can return greater values
+	   used as the base value; can return greater values
 	*/
 	LIBTTAr_RET_INVAL,
 
@@ -48,10 +48,15 @@ enum TTASampleBytes {
 #define TTA_SAMPLEBYTES_MAX	((unsigned int) TTASAMPLEBYTES_3)
 #define TTA_SAMPLEBITS_MAX	((unsigned int) (8u*TTA_SAMPLEBYTES_MAX))
 
-/* seconds per TTA frame */
-#define TTA_FRAME_TIME		((double) 1.04489795918367346939)
+/* seconds per TTA1 frame */
+#define TTA1_FRAME_TIME		((double) 1.04489795918367346939)
 
 #define TTA_CRC32_INIT		((uint32_t) 0xFFFFFFFFu)
+
+/* perchannel safety margin;
+   > the max nbytes_tta that could be read/written for 1 sample
+*/
+#define TTABUF_SAFETY_MARGIN	((size_t) 1024u)
 
 /* ######################################################################## */
 
@@ -141,7 +146,7 @@ struct LibTTAr_CodecState_User {
 //                                                                          //
 // return:                                                                  //
 //                                                                          //
-//      LIBTTAr_RET_(DONE | AGAIN | TRUNC | >=INVAL | MISCONFIG)            //
+//      LIBTTAr_RET_(DONE | AGAIN | >=INVAL | MISCONFIG)                    //
 //                                                                          //
 // parameters:                                                              //
 //                                                                          //
@@ -174,7 +179,7 @@ struct LibTTAr_CodecState_User {
 //              number of audio channels                                    //
 //                                                                          //
 //      ni32_perframe:                                                      //
-//              number of I32 per frame                                     //
+//              number of I32 in the frame to encode                        //
 //                                                                          //
 /////////////////////////////////////////////////////////////////////////// */
 #undef dest
@@ -221,7 +226,7 @@ extern int libttaR_tta_encode(
 //                                                                          //
 // return:                                                                  //
 //                                                                          //
-//      LIBTTAr_RET_(DONE | AGAIN | DECFAIL | TRUNC | >=INVAL | MISCONFIG)  //
+//      LIBTTAr_RET_(DONE | AGAIN | DECFAIL | >=INVAL | MISCONFIG)          //
 //                                                                          //
 // parameters:                                                              //
 //                                                                          //
@@ -257,7 +262,7 @@ extern int libttaR_tta_encode(
 //              number of audio channels                                    //
 //                                                                          //
 //      ni32_perframe:                                                      //
-//              number of I32 per frame                                     //
+//              number of I32 in the frame to decode                        //
 //                                                                          //
 //      nbytes_tta_perframe:                                                //
 //              number of TTA bytes in the frame to decode                  //
@@ -328,67 +333,55 @@ extern size_t libttaR_codecstate_priv_size(unsigned int nchan)
 
 /* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// libttaR_ttabuf_size                                                      //
+// libttaR_ttabuf_safety_margin                                             //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // description:                                                             //
 //                                                                          //
-//              calculates a buffer size for the dest/src buffer for        //
-//          libttaR_tta_encode/libttaR_tta_decode, respectively.            //
+//              calculates a per channel safety-margin size for the         //
+//          dest/src buffer for libttaR_tta_encode/libttaR_tta_decode,      //
+//          respectively. when decoding the whole frame at once, the return //
+//          value is how much to pad the src TTA buffer by to ensure that a //
+//          second function call will not be needed.                        //
 //                                                                          //
-//              not using this function may result in a                     //
-//          >=LIBTTAr_RET_INVAL return from a codec function.               //
-//                                                                          //
-//              the return is not the maximum theoretical size (although    //
-//          there is a maximum per sample), but a size that almost always   //
-//          will be more than enough. when decoding the whole frame at      //
-//          once, if nsamples == 0 and samplebytes == TTASAMPLEBYTES_1, the //
-//          return value is how much to pad the src ttabuf by to ensure     //
-//          that a second function call will not be needed.                 //
+//              not using this function may result in a >=LIBTTAr_RET_INVAL //
+//          return from a codec function if the dest/src buffer len is too  //
+//          small.                                                          //
 //                                                                          //
 // return:                                                                  //
 //                                                                          //
-//              size for a TTA buffer that is safe, or 0 on failure (bad    //
-//          parameters)                                                     //
+//              safety margin for the a TTA buffer                          //
 //                                                                          //
 // parameters:                                                              //
-//                                                                          //
-//      nsamples:                                                           //
-//              target number of PCM samples-per-channel to code            //
 //                                                                          //
 //      nchan:                                                              //
 //              number of audio channels                                    //
 //                                                                          //
-//      samplesbytes:                                                       //
-//              bytes-per-sample (1u, 2u, 3u)                               //
-//                                                                          //
 /////////////////////////////////////////////////////////////////////////// */
-#undef nsamples
 #undef nchan
-#undef samplebytes
 /*@external@*/ /*@unused@*/
-extern size_t libttaR_ttabuf_size(
-	size_t nsamples,
-	unsigned int nchan,
-	enum TTASampleBytes samplebytes
-)
+extern size_t libttaR_ttabuf_safety_margin(unsigned int nchan)
 /*@*/
 ;
 
+#define libttaR_ttabuf_safety_margin(nchan) ( \
+	(size_t) (TTABUF_SAFETY_MARGIN * (nchan)) \
+)
+
 /* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// libttaR_nsamples_perframe                                                //
+// libttaR_nsamples_perframe_tta1                                           //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // description:                                                             //
 //                                                                          //
-//              calculates the number of samples-per-channel per TTA frame  //
+//              calculates the number of samples-per-channel per TTA1 frame //
 //                                                                          //
 // return:                                                                  //
 //                                                                          //
-//              the number of samples-per-channel per TTA frame             //
+//              the number of samples-per-channel per TTA1 frame            //
 //                                                                          //
 // parameters:                                                              //
 //                                                                          //
@@ -398,12 +391,12 @@ extern size_t libttaR_ttabuf_size(
 /////////////////////////////////////////////////////////////////////////// */
 #undef samplerate
 /*@external@*/ /*@unused@*/
-extern size_t libttaR_nsamples_perframe(size_t samplerate)
+extern size_t libttaR_nsamples_perframe_tta1(size_t samplerate)
 /*@*/
 ;
 
-#define libttaR_nsamples_perframe(samplerate) ( \
-	(size_t) (TTA_FRAME_TIME * (samplerate)) \
+#define libttaR_nsamples_perframe_tta1(samplerate) ( \
+	(size_t) (TTA1_FRAME_TIME * (samplerate)) \
 )
 
 /* ///////////////////////////////////////////////////////////////////////////

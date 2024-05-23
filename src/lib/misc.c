@@ -66,28 +66,6 @@ libttaR_codecstate_priv_size(uint nchan)
 	return r;
 }
 
-// returns a TTA buffer size that is safe
-// returns 0 on error
-size_t
-libttaR_ttabuf_size(
-	size_t nsamples, uint nchan, enum TTASampleBytes samplebytes
-)
-/*@*/
-{	size_t r = 0;
-	const size_t samplesize_flat = (size_t) (nchan * samplebytes);
-
-	if ( (nchan == 0) || ((uint) samplebytes == 0)
-	    ||
-	     ((uint) samplebytes > TTA_SAMPLEBYTES_MAX)
-	){
-		return r;
-	}
-
-	r  = samplesize_flat * nsamples;
-	r += (size_t) (nchan * TTABUF_SAFETY_MARGIN_FAST);
-	return r;
-}
-
 // returns whether libttaR was configured to support nchan audio channels
 bool
 libttaR_test_nchan(uint nchan)
