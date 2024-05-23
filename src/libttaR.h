@@ -53,8 +53,9 @@ enum TTASampleBytes {
 
 #define TTA_CRC32_INIT		((uint32_t) 0xFFFFFFFFu)
 
-/* perchannel safety margin;
-   > the max nbytes_tta that could be read/written for 1 sample
+/* perchannel safety margin
+  >
+   the max nbytes_tta that could be read/written for 1 sample
 */
 #define TTABUF_SAFETY_MARGIN	((size_t) 1024u)
 
@@ -92,7 +93,7 @@ struct LibTTAr_CodecState_Priv;
 // description:                                                             //
 //                                                                          //
 //              user readable state for the codec functions. _must_ be      //
-//          initialized before the first call for every frame               //
+//          initialized before the first call for every new frame           //
 //                                                                          //
 // fields:                                                                  //
 //                                                                          //
@@ -142,7 +143,7 @@ struct LibTTAr_CodecState_User {
 // description:                                                             //
 //                                                                          //
 //              a re-entrant TTA encoder that can work on an arbitrary      //
-//          number of samples-per-channel at a time                         //
+//          number of samples at a time                                     //
 //                                                                          //
 // return:                                                                  //
 //                                                                          //
@@ -222,7 +223,7 @@ extern int libttaR_tta_encode(
 // description:                                                             //
 //                                                                          //
 //              a re-entrant TTA decoder that can work on an arbitrary      //
-//          number of samples-per-channel at a time                         //
+//          number of samples at a time                                     //
 //                                                                          //
 // return:                                                                  //
 //                                                                          //
@@ -339,19 +340,18 @@ extern size_t libttaR_codecstate_priv_size(unsigned int nchan)
 //                                                                          //
 // description:                                                             //
 //                                                                          //
-//              calculates a per channel safety-margin size for the         //
-//          dest/src buffer for libttaR_tta_encode/libttaR_tta_decode,      //
-//          respectively. when decoding the whole frame at once, the return //
-//          value is how much to pad the src TTA buffer by to ensure that a //
-//          second function call will not be needed.                        //
+//              calculates a safety-margin size for the dest/src buffer for //
+//          libttaR_tta_encode/libttaR_tta_decode, respectively. when       //
+//          decoding the whole frame at once, the return value is how much  //
+//          to pad the src TTA buffer by to ensure that a second function   //
+//          call will not be needed.                                        //
 //                                                                          //
 //              not using this function may result in a >=LIBTTAr_RET_INVAL //
-//          return from a codec function if the dest/src buffer len is too  //
-//          small.                                                          //
+//          return from a codec function if the dest/src _len is too small. //                                                          //
 //                                                                          //
 // return:                                                                  //
 //                                                                          //
-//              safety margin for the a TTA buffer                          //
+//              safety margin for the TTA buffer                            //
 //                                                                          //
 // parameters:                                                              //
 //                                                                          //
@@ -377,11 +377,11 @@ extern size_t libttaR_ttabuf_safety_margin(unsigned int nchan)
 //                                                                          //
 // description:                                                             //
 //                                                                          //
-//              calculates the number of samples-per-channel per TTA1 frame //
+//              calculates the number of samples per TTA1 frame             //
 //                                                                          //
 // return:                                                                  //
 //                                                                          //
-//              the number of samples-per-channel per TTA1 frame            //
+//              the number of samples per TTA1 frame                        //
 //                                                                          //
 // parameters:                                                              //
 //                                                                          //

@@ -12,7 +12,6 @@
 	    calling for each new frame
 	- reworked libttaR_ttabuf_size into libttaR_ttabuf_safety_margin
 	- renamed libttaR_nsamples_perframe to libttaR_nsamples_perframe_tta1
-		- renamed TTA_FRAME_TIME to TTA1_FRAME_TIME
 	- put the version num/str's into the struct libttaR_info
 	- performance impovements
 

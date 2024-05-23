@@ -65,7 +65,7 @@ extern size_t encbuf_init(
 ;
 
 #undef eb
-extern void encbuf_adjust(struct EncBuf *const restrict eb, size_t, uint)
+extern void encbuf_adjust(struct EncBuf *const restrict eb, size_t)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -106,9 +106,7 @@ extern size_t decbuf_init(
 ;
 
 #undef db
-extern void decbuf_check_adjust(
-	struct DecBuf *const restrict db, size_t, uint
-)
+extern void decbuf_check_adjust(struct DecBuf *const restrict db, size_t)
 /*@globals	fileSystem,
 		internalState
 @*/

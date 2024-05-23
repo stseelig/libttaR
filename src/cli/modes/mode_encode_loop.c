@@ -358,7 +358,7 @@ enc_frame_encode(
 	// encode i32 to tta
 	goto loop_entr;
 	do {
-		encbuf_adjust(encbuf, SAMPLEBUF_LEN_DEFAULT, nchan);
+		encbuf_adjust(encbuf, SAMPLEBUF_LEN_DEFAULT);
 		ni32_target = ni32_perframe - user.ni32_total;
 loop_entr:
 		t.d = libttaR_tta_encode(
