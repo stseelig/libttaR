@@ -106,7 +106,9 @@ extern size_t decbuf_init(
 ;
 
 #undef db
-extern void decbuf_check_adjust(struct DecBuf *const restrict db, size_t)
+extern void decbuf_check_adjust(
+	struct DecBuf *const restrict db, size_t, uint
+)
 /*@globals	fileSystem,
 		internalState
 @*/

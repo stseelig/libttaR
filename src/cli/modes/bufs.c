@@ -89,7 +89,7 @@ encbuf_adjust(struct EncBuf *const restrict eb, size_t samplebuf_len)
 		eb->ttabuf
 @*/
 {
-	// should already have added the safety-margin by here
+	// the safety-margin should have already been added by here
 	eb->ttabuf_len += samplebuf_len;
 	assert(eb->ttabuf_len != 0);
 
@@ -161,7 +161,9 @@ decbuf_init(
 }
 
 void
-decbuf_check_adjust(struct DecBuf *const restrict db, size_t newsize)
+decbuf_check_adjust(
+	struct DecBuf *const restrict db, size_t newsize, uint nchan
+)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -171,7 +173,8 @@ decbuf_check_adjust(struct DecBuf *const restrict db, size_t newsize)
 		db->ttabuf
 @*/
 {
-	// should already have added the safety-margin by here
+	// the safety-margin needs to be re-applied here
+	newsize += libttaR_ttabuf_safety_margin(nchan);
 	assert(newsize != 0);
 
 	if ( newsize > db->ttabuf_len ){
