@@ -36,7 +36,7 @@ filecheck_tta1(
 	const off_t start = ftello(file);
 	union {	size_t		z;
 		int		d;
-		u32		u32;
+		u32		u_32;
 		enum FileCheck	fc;
 	} t;
 
@@ -56,8 +56,8 @@ filecheck_tta1(
 		return FILECHECK_MISMATCH;
 	}
 
-	t.u32 = libttaR_crc32((u8 *) &hdr, (sizeof hdr) - (sizeof hdr.crc));
-	if ( t.u32 != letoh32(hdr.crc) ){
+	t.u_32 = libttaR_crc32((u8 *) &hdr, (sizeof hdr) - (sizeof hdr.crc));
+	if ( t.u_32 != letoh32(hdr.crc) ){
 		return FILECHECK_CORRUPTED;
 	}
 

@@ -43,7 +43,7 @@ filecheck_tta_seektable(
 	u32 crc;
 	union {	size_t	z;
 		int	d;
-		u32	u32;
+		u32	u_32;
 	} t;
 
 	st->nmemb = nframes;
@@ -69,10 +69,10 @@ filecheck_tta_seektable(
 		return FILECHECK_READ_ERROR;
 	}
 
-	t.u32 = libttaR_crc32(
+	t.u_32 = libttaR_crc32(
 		(u8 *) st->table, st->nmemb * (sizeof *st->table)
 	);
-	if ( t.u32 != letoh32(crc) ){
+	if ( t.u_32 != letoh32(crc) ){
 		return FILECHECK_CORRUPTED;
 	}
 
