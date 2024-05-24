@@ -87,20 +87,20 @@ encmt_state_init(
 		(size_t) framequeue_len, sizeof *io->frames.user
 	);
 	if UNLIKELY (
-	        (io->frames.post_encoder == NULL)
+	        (io->frames.post_encoder	== NULL)
 	       ||
-	        (io->frames.ni32_perframe == NULL)
+	        (io->frames.ni32_perframe	== NULL)
 	       ||
-	        (io->frames.encbuf == NULL)
+	        (io->frames.encbuf		== NULL)
 	       ||
-	        (io->frames.user == NULL)
+	        (io->frames.user		== NULL)
 	){
 		error_sys(errno, "calloc", NULL);
 	}
-	assert(io->frames.post_encoder != NULL);
-	assert(io->frames.ni32_perframe != NULL);
-	assert(io->frames.encbuf != NULL);
-	assert(io->frames.user != NULL);
+	assert(io->frames.post_encoder	!= NULL);
+	assert(io->frames.ni32_perframe	!= NULL);
+	assert(io->frames.encbuf	!= NULL);
+	assert(io->frames.user		!= NULL);
 	//
 	for ( i = 0; i < framequeue_len; ++i ){
 		t.d = sem_init(&io->frames.post_encoder[i], 0, 0);
@@ -228,7 +228,8 @@ decmt_state_init(
 		io->frames.decbuf,
 		io->frames.crc_read,
 		io->frames.user,
-		io->frames.dec_retval
+		io->frames.dec_retval,
+		io->frames.nsamples_flat_2pad
 @*/
 {
 	uint i;
@@ -271,30 +272,36 @@ decmt_state_init(
 	io->frames.dec_retval		= calloc(
 		(size_t) framequeue_len, sizeof *io->frames.dec_retval
 	);
+	io->frames.nsamples_flat_2pad	= calloc(
+		(size_t) framequeue_len, sizeof *io->frames.nsamples_flat_2pad
+	);
 	if UNLIKELY (
-	        (io->frames.post_decoder == NULL)
+	        (io->frames.post_decoder	== NULL)
 	       ||
-	        (io->frames.ni32_perframe == NULL)
+	        (io->frames.ni32_perframe	== NULL)
 	       ||
-	        (io->frames.nbytes_tta_perframe == NULL)
+	        (io->frames.nbytes_tta_perframe	== NULL)
 	       ||
-	        (io->frames.decbuf == NULL)
+	        (io->frames.decbuf		== NULL)
 	       ||
-	        (io->frames.crc_read == NULL)
+	        (io->frames.crc_read		== NULL)
 	       ||
-	        (io->frames.user == NULL)
+	        (io->frames.user		== NULL)
 	       ||
-	        (io->frames.dec_retval == NULL)
+	        (io->frames.dec_retval		== NULL)
+	       ||
+	        (io->frames.nsamples_flat_2pad	== NULL)
 	){
 		error_sys(errno, "calloc", NULL);
 	}
-	assert(io->frames.post_decoder != NULL);
-	assert(io->frames.ni32_perframe != NULL);
-	assert(io->frames.nbytes_tta_perframe != NULL);
-	assert(io->frames.decbuf != NULL);
-	assert(io->frames.crc_read != NULL);
-	assert(io->frames.user != NULL);
-	assert(io->frames.dec_retval != NULL);
+	assert(io->frames.post_decoder		!= NULL);
+	assert(io->frames.ni32_perframe		!= NULL);
+	assert(io->frames.nbytes_tta_perframe	!= NULL);
+	assert(io->frames.decbuf		!= NULL);
+	assert(io->frames.crc_read		!= NULL);
+	assert(io->frames.user			!= NULL);
+	assert(io->frames.dec_retval		!= NULL);
+	assert(io->frames.nsamples_flat_2pad	!= NULL);
 	//
 	for ( i = 0; i < framequeue_len; ++i ){
 		t.d = sem_init(&io->frames.post_decoder[i], 0, 0);
@@ -324,7 +331,7 @@ decmt_state_init(
 	io->dstat_out		= (struct DecStats *) dstat_out;
 
 	// decoder->frames
-	decoder->frames.navailable	=  io->frames.navailable;
+	decoder->frames.navailable          =  io->frames.navailable;
 	//
 	t.d = pthread_spin_init(
 		&decoder->frames.queue.lock, PTHREAD_PROCESS_PRIVATE
@@ -340,9 +347,10 @@ decmt_state_init(
 	decoder->frames.decbuf              = io->frames.decbuf;
 	decoder->frames.user                = io->frames.user;
 	decoder->frames.dec_retval          = io->frames.dec_retval;
+	decoder->frames.nsamples_flat_2pad  = io->frames.nsamples_flat_2pad;
 
 	// decoder other
-	decoder->fstat			= fstat;
+	decoder->fstat                      = fstat;
 
 	return;
 }
@@ -371,7 +379,8 @@ decmt_state_free(
 		io->frames.decbuf,
 		io->frames.crc_read,
 		io->frames.user,
-		io->frames.dec_retval
+		io->frames.dec_retval,
+		io->frames.nsamples_flat_2pad
 @*/
 {
 	uint i;
@@ -392,6 +401,7 @@ decmt_state_free(
 	free(io->frames.crc_read);
 	free(io->frames.user);
 	free(io->frames.dec_retval);
+	free(io->frames.nsamples_flat_2pad);
 
 	// decoder
 	(void) pthread_spin_destroy(&decoder->frames.queue.lock);

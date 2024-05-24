@@ -82,11 +82,11 @@ static size_t enc_readlen(size_t, size_t, size_t, enum TTASampleBytes, uint)
 /*@*/
 ;
 
-#undef buf
+#undef pcmbuf
 static uint enc_frame_zeropad(
-	u8 *const restrict buf, size_t, uint, enum TTASampleBytes, uint
+	u8 *const restrict pcmbuf, size_t, uint, enum TTASampleBytes, uint
 )
-/*@modifies	*buf@*/
+/*@modifies	*pcmbuf@*/
 ;
 
 //--------------------------------------------------------------------------//
@@ -493,14 +493,14 @@ enc_readlen(
 // returns nmemb of buf zero-padded
 static uint
 enc_frame_zeropad(
-	u8 *const restrict buf, size_t nmemb_read, uint diff,
+	u8 *const restrict pcmbuf, size_t nmemb_read, uint diff,
 	enum TTASampleBytes samplebytes, uint nchan
 )
-/*@modifies	*buf@*/
+/*@modifies	*pcmbuf@*/
 {
 	const size_t r   = (size_t) (nchan - diff);
 	const size_t ind = (size_t) (nmemb_read * samplebytes);
-	memset(&buf[ind], 0x00, (size_t) (r * samplebytes));
+	memset(&pcmbuf[ind], 0x00, (size_t) (r * samplebytes));
 	return (uint) r;
 }
 

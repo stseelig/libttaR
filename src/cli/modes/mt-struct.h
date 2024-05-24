@@ -104,7 +104,9 @@ struct MTArg_DecIO_Frames {
 	/*@owned@*/
 	struct LibTTAr_CodecState_User	*user;
 	/*@owned@*/
-	signed char			*dec_retval;
+	ichar				*dec_retval;
+	/*@owned@*/
+	size_t				*nsamples_flat_2pad;
 };
 
 struct MTArg_Decoder_Frames {
@@ -125,7 +127,9 @@ struct MTArg_Decoder_Frames {
 	/*@dependent@*/
 	struct LibTTAr_CodecState_User	*user;
 	/*@dependent@*/
-	signed char			*dec_retval;
+	ichar				*dec_retval;
+	/*@dependent@*/
+	size_t				*nsamples_flat_2pad;
 };
 
 //--------------------------------------------------------------------------//
@@ -289,7 +293,8 @@ extern void decmt_state_init(
 		io->frames.decbuf,
 		io->frames.crc_read,
 		io->frames.user,
-		io->frames.dec_retval
+		io->frames.dec_retval,
+		io->frames.nsamples_flat_2pad
 @*/
 ;
 
@@ -318,7 +323,8 @@ extern void decmt_state_free(
 		io->frames.decbuf,
 		io->frames.crc_read,
 		io->frames.user,
-		io->frames.dec_retval
+		io->frames.dec_retval,
+		io->frames.nsamples_flat_2pad
 @*/
 ;
 

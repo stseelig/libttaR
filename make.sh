@@ -39,7 +39,7 @@ readonly PROGRAM='ttaR';
 readonly CC='clang';
 readonly LD="$CC";
 
-#=============================================================================
+#============================================================================#
 
 readonly ROOT="$(realpath "$(dirname "$0")")";
 # relative to ROOT
@@ -95,14 +95,14 @@ CFLAGS_LIB="$CFLAGS_LIB -O2";
 
 CFLAGS_LIB="$CFLAGS_LIB -fPIC";
 
-# disable the unrolled mono/stereo codec loop. bit faster, but larger binary
+# disables the unrolled mono/stereo codec loops; bit faster, but larger binary
 #CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_DISABLE_UNROLLED_1CH";
 #CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_DISABLE_UNROLLED_2CH";
 
-# disable the multichannel/general decoder
+# disables the multichannel/general decoder
 #CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_DISABLE_MCH";
 
-# enable if no native tzcnt/ctz instruction
+# uncomment if no native tzcnt/ctz instruction
 #CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_NO_INSTRUCTION_TZCNT";
 
 readonly CFLAGS_LIB;
@@ -296,6 +296,7 @@ _exit(){
 		printf -- "${PRINT}(${T_B_RED}${1}: failed${T_RESET})\n";
 		exec 1<&- && exec 2<&-;	# close stdout and stderr
 		sleep 0.05;		# let anything that got through print
+					# ^^^ doesn't really work
 	fi
 	exit $1
 }
