@@ -397,7 +397,8 @@ loop_entr:
 	while ( r >= LIBTTAr_RET_INVAL );
 
 	if ( r == LIBTTAr_RET_DECFAIL ){
-		pad_target = ni32_perframe - user.ni32_total;
+		pad_target      = ni32_perframe - user.ni32_total;
+		user.ni32_total = ni32_perframe;
 	}
 
 	// convert i32 to pcm
