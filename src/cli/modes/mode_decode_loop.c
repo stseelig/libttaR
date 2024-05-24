@@ -509,6 +509,7 @@ dec_frame_zeropad(
 	);
 	const size_t padsize = (size_t) (nsamples_flat_2pad * samplebytes);
 	memset(&pcmbuf[ind], 0x00, padsize);
+	return;
 }
 
 //==========================================================================//
