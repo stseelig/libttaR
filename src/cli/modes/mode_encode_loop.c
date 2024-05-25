@@ -284,6 +284,7 @@ encmt_loop(
 	pthread_t thread_io;
 	pthread_t *thread_encoder = NULL;
 	struct FileStats_EncMT fstat_c;
+	struct EncStats estat;
 	const size_t samplebuf_len = fstat->buflen;
 	const uint framequeue_len = FRAMEQUEUE_LEN(nthreads);
 	uint i;
@@ -292,12 +293,12 @@ encmt_loop(
 	assert(nthreads >= 1u);
 
 	// init
+	memset(&estat, 0x00, sizeof estat);
 	encmt_fstat_init(&fstat_c, fstat);
-	//
 	encmt_state_init(
 		&state_io, &state_encoder, framequeue_len, samplebuf_len,
-		outfile, outfile_name, infile, infile_name, seektable,
-		estat_out, &fstat_c
+		outfile, outfile_name, infile, infile_name, seektable, &estat,
+		&fstat_c
 	);
 	//
 	if ( nthreads > 1u ){
@@ -343,6 +344,7 @@ encmt_loop(
 		free(thread_encoder);
 	}
 
+	*estat_out = estat;
 	return;
 }
 
@@ -498,10 +500,10 @@ enc_frame_zeropad(
 )
 /*@modifies	*pcmbuf@*/
 {
-	const size_t r   = (size_t) (nchan - diff);
+	const uint   r   = nchan - diff;
 	const size_t ind = (size_t) (nmemb_read * samplebytes);
 	memset(&pcmbuf[ind], 0x00, (size_t) (r * samplebytes));
-	return (uint) r;
+	return r;
 }
 
 //==========================================================================//
@@ -555,7 +557,6 @@ encmt_io(struct MTArg_EncIO *const restrict arg)
 	uint i = 0, last;
 	union {	uint u; } t;
 
-	memset(&estat, 0x00, sizeof estat);
 	goto loop0_entr;
 	do {
 		// read pcm from infile

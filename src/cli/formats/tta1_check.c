@@ -28,7 +28,7 @@ filecheck_tta1(
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
-		fstat,
+		*fstat,
 		file
 @*/
 {

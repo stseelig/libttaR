@@ -274,6 +274,7 @@ extern int libttaR_tta_encode(
 #undef dest_len
 #undef src_len
 #undef ni32_target
+#undef nbytes_tta_target
 #undef priv
 #undef user
 #undef samplebytes

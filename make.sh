@@ -294,9 +294,6 @@ _exit(){
 		printf -- "${PRINT})\n";
 	else
 		printf -- "${PRINT}(${T_B_RED}${1}: failed${T_RESET})\n";
-		exec 1<&- && exec 2<&-;	# close stdout and stderr
-		sleep 0.05;		# let anything that got through print
-					# ^^^ doesn't really work
 	fi
 	exit $1
 }

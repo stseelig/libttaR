@@ -141,6 +141,98 @@ extern int setrlimit(int, /*@in@*/ struct rlimit *)
 /*@modifies	internalState@*/
 ;
 
+//==========================================================================//
+
+#undef thread
+/*@external@*/ /*@unused@*/
+extern int pthread_create(
+	pthread_t *thread, /*@null@*/ const pthread_attr_t *,
+	void *(*) (void *), /*@null@*/ void *
+)
+/*@globals	internalState@*/
+/*@modifies	internalState,
+		*thread
+@*/
+;
+
+/*@external@*/ /*@unused@*/
+extern int pthread_join(pthread_t, /*@null@*/ void **)
+/*@globals	internalState@*/
+/*@modifies	internalState@*/
+;
+
+#undef lock
+/*@external@*/ /*@unused@*/
+extern int pthread_spin_destroy(pthread_spinlock_t *lock)
+/*@globals	internalState@*/
+/*@modifies	internalState,
+		*lock
+@*/
+;
+
+#undef lock
+/*@external@*/ /*@unused@*/
+extern int pthread_spin_init(pthread_spinlock_t *lock, int)
+/*@globals	internalState@*/
+/*@modifies	internalState,
+		*lock
+@*/
+;
+
+#undef lock
+/*@external@*/ /*@unused@*/
+extern int pthread_spin_lock(pthread_spinlock_t *lock)
+/*@globals	internalState@*/
+/*@modifies	internalState,
+		*lock
+@*/
+;
+
+#undef lock
+/*@external@*/ /*@unused@*/
+extern int pthread_spin_unlock(pthread_spinlock_t *lock)
+/*@globals	internalState@*/
+/*@modifies	internalState,
+		*lock
+@*/
+;
+
+#undef sem
+/*@external@*/ /*@unused@*/
+extern int sem_destroy(sem_t *sem)
+/*@globals	internalState@*/
+/*@modifies	internalState,
+		*sem
+@*/
+;
+
+#undef sem
+/*@external@*/ /*@unused@*/
+extern int sem_init(sem_t *sem, int, uint)
+/*@globals	internalState@*/
+/*@modifies	internalState,
+		*sem
+@*/
+;
+
+#undef sem
+/*@external@*/ /*@unused@*/
+extern int sem_post(sem_t *sem)
+/*@globals	internalState@*/
+/*@modifies	internalState,
+		*sem
+@*/
+;
+
+#undef sem
+/*@external@*/ /*@unused@*/
+extern int sem_wait(sem_t *sem)
+/*@globals	internalState@*/
+/*@modifies	internalState,
+		*sem
+@*/
+;
+
 // EOF ///////////////////////////////////////////////////////////////////////
 #endif
 #endif

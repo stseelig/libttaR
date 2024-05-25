@@ -28,8 +28,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-// value is 16, because aligning bufs to 16
-#define I32BUF_SAFETY_MARGIN	((size_t) 16u)
+#define BUF_ALIGN	16u
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -54,7 +53,7 @@ encbuf_init(
 	const size_t pcmbuf_size = (size_t) (r * samplebytes);
 	union {	uintptr_t p; } t;
 
-	eb->i32buf_len = r + I32BUF_SAFETY_MARGIN;
+	eb->i32buf_len = r + BUF_ALIGN;
 	assert(eb->i32buf_len != 0);
 	eb->ttabuf_len = ttabuf_len + libttaR_ttabuf_safety_margin(nchan);
 	assert(eb->ttabuf_len != 0);
@@ -67,7 +66,7 @@ encbuf_init(
 
 	t.p	    = (uintptr_t) &eb->i32buf[eb->i32buf_len];
 	t.p        -= pcmbuf_size + 1u;
-	eb->pcmbuf  = (u8 *) (t.p - (t.p % 16u));
+	eb->pcmbuf  = (u8 *) (t.p - (t.p % BUF_ALIGN));
 
 	eb->ttabuf = malloc(eb->ttabuf_len);
 	if UNLIKELY ( eb->ttabuf == NULL ){
@@ -143,13 +142,13 @@ decbuf_init(
 	db->ttabuf_len = ttabuf_len + libttaR_ttabuf_safety_margin(nchan);
 	assert(db->ttabuf_len != 0);
 
-	db->pcmbuf = calloc(r + I32BUF_SAFETY_MARGIN, sizeof(i32));
+	db->pcmbuf = calloc(r + BUF_ALIGN, sizeof(i32));
 	if UNLIKELY ( db->pcmbuf == NULL ){
 		error_sys(errno, "calloc", NULL);
 	}
 	assert(db->pcmbuf != NULL);
 
-	db->i32buf = (i32 *) &db->pcmbuf[I32BUF_SAFETY_MARGIN * sizeof(i32)];
+	db->i32buf = (i32 *) &db->pcmbuf[BUF_ALIGN * sizeof(i32)];
 
 	db->ttabuf = malloc(db->ttabuf_len);
 	if UNLIKELY ( db->ttabuf == NULL ){

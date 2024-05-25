@@ -53,6 +53,8 @@ encmt_state_init(
 		io->frames.post_encoder,
 		io->frames.ni32_perframe,
 		io->frames.encbuf,
+		io->frames.encbuf[].i32buf,
+		io->frames.encbuf[].ttabuf,
 		io->frames.user
 @*/
 {
@@ -171,6 +173,8 @@ encmt_state_free(
 /*@releases	io->frames.navailable,
 		io->frames.post_encoder,
 		io->frames.ni32_perframe,
+		io->frames.encbuf[].i32buf,
+		io->frames.encbuf[].ttabuf,
 		io->frames.encbuf,
 		io->frames.user
 @*/
@@ -226,6 +230,8 @@ decmt_state_init(
 		io->frames.ni32_perframe,
 		io->frames.nbytes_tta_perframe,
 		io->frames.decbuf,
+		io->frames.decbuf[].pcmbuf,
+		io->frames.decbuf[].ttabuf,
 		io->frames.crc_read,
 		io->frames.user,
 		io->frames.dec_retval,
@@ -376,6 +382,8 @@ decmt_state_free(
 		io->frames.post_decoder,
 		io->frames.ni32_perframe,
 		io->frames.nbytes_tta_perframe,
+		io->frames.decbuf[].pcmbuf,
+		io->frames.decbuf[].ttabuf,
 		io->frames.decbuf,
 		io->frames.crc_read,
 		io->frames.user,

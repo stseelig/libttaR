@@ -35,8 +35,8 @@ filecheck_tta_seektable(
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
-		st,
-		fstat,
+		*st,
+		*fstat,
 		file
 @*/
 {

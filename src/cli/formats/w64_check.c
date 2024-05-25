@@ -35,7 +35,7 @@ enum FileCheck
 filecheck_w64(
 	struct FileStats *const restrict fstat, FILE *const restrict file
 )
-/*@modifies	fstat,
+/*@modifies	*fstat,
 		file
 @*/
 {
@@ -62,8 +62,7 @@ filecheck_w64(
 	     ) != 0)
 	    ||
 	     (memcmp(
-		&chunk.wave.guid, &RIFF64_GUID_WAVE,
-		sizeof chunk.wave.guid
+		&chunk.wave.guid, &RIFF64_GUID_WAVE, sizeof chunk.wave.guid
 	     ) != 0)
 	){
 		// reset file stream and return

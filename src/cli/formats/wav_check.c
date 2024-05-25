@@ -35,7 +35,7 @@ enum FileCheck
 filecheck_wav(
 	struct FileStats *const restrict fstat, FILE *const restrict file
 )
-/*@modifies	fstat,
+/*@modifies	*fstat,
 		file
 @*/
 {
@@ -111,7 +111,7 @@ enum FileCheck
 filecheck_wav_read_subchunk_fmt(
 	struct FileStats *const restrict fstat, FILE *const restrict file
 )
-/*@modifies	fstat,
+/*@modifies	*fstat,
 		file
 @*/
 {

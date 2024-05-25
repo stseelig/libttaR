@@ -281,6 +281,7 @@ decmt_loop(
 	pthread_t thread_io;
 	pthread_t *thread_decoder = NULL;
 	struct FileStats_DecMT fstat_c;
+	struct DecStats dstat;
 	const size_t samplebuf_len = fstat->buflen;
 	const uint framequeue_len = FRAMEQUEUE_LEN(nthreads);
 	uint i;
@@ -289,12 +290,12 @@ decmt_loop(
 	assert(nthreads >= 1u);
 
 	// init
+	memset(&dstat, 0x00, sizeof dstat);
 	decmt_fstat_init(&fstat_c, fstat);
-	//
 	decmt_state_init(
 		&state_io, &state_decoder, framequeue_len, samplebuf_len,
-		outfile, outfile_name, infile, infile_name, seektable,
-		dstat_out, &fstat_c
+		outfile, outfile_name, infile, infile_name, seektable, &dstat,
+		&fstat_c
 	);
 	//
 	if ( nthreads > 1u ){
@@ -340,6 +341,7 @@ decmt_loop(
 		free(thread_decoder);
 	}
 
+	*dstat_out = dstat;
 	return;
 }
 
@@ -436,7 +438,7 @@ dec_frame_write(
 		size_t	z;
 	} t;
 
-	// DECFAIL or INVAL
+	// DECFAIL or >=INVAL
 	if UNLIKELY ( dec_retval != (ichar) LIBTTAr_RET_DONE ){
 		if ( dec_retval == (ichar) LIBTTAr_RET_DECFAIL ){
 			warning_tta("%s: frame %zu: decoding failed",
@@ -574,7 +576,6 @@ decmt_io(struct MTArg_DecIO *const restrict arg)
 		size_t	z;
 	} t;
 
-	memset(&dstat, 0x00, sizeof dstat);
 	goto loop0_entr;
 	do {
 		// ENCFMT_TTA1
