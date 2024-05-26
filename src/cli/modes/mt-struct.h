@@ -364,6 +364,7 @@ decmt_fstat_init(
 	fstat_c->samplebytes		= fstat->samplebytes;
 	fstat_c->nsamples_perframe	= fstat->framelen;
 	fstat_c->nsamples_enc		= fstat->nsamples_enc;
+	return;
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////

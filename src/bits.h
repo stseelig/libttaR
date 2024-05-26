@@ -254,8 +254,6 @@ asl32(register i32 x, register u8 k)
 	return (i32) (((u32) x) << k);
 }
 
-//--------------------------------------------------------------------------//
-
 ALWAYS_INLINE i32
 asr32(register i32 x, register u8 k)
 /*@*/
