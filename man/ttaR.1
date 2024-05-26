@@ -1,0 +1,161 @@
+'\# t
+.\#     Title: ttaR
+.\#    Author: Shane Seelig
+.\#      Date: 2024-05-26
+.\#    Source: ttaR 1.1
+.\#  Language: English
+.\#
+.\############################################################################
+
+.TH "TTAr" "1" "2024\-06\-01" "ttaR 1.1"
+
+.\############################################################################
+
+.SH "NAME"
+ttaR \- Tau's True Audio returns
+.BR
+
+.\############################################################################
+
+.SH "SYNOPSIS"
+\fBttaR\fR \fB\fIMODE\fR [\fB\fI\-options\fR\fR] \fB\fIINFILE\fR\fR...
+[\fB\-o\ \fR\fB\fIOUTFILE\fR|\fB\fIOUTDIR\fR\fR]
+.BR
+
+.\############################################################################
+
+.SH "DESCRIPTION"
+TTA is a lossless audio codec designed around realtime hardware coding, and
+\fBttaR\fR is the reference program for \fBlibttaR\fR.
+.BR
+
+.\############################################################################
+
+.SH "MODES"
+
+.\#--------------------------------------------------------------------------#
+
+\fBencode\fR \- encode a TTA file
+
+.RS 8
+\h'-04'\(bu\h'+03'\c
+Microsoft RIFF/WAVE
+
+\h'-04'\(bu\h'+03'\c
+Sony Wave64
+
+\h'-04'\(bu\h'+03'\c
+Raw PCM (u8, i16le, or i24le only)
+.RE
+
+.\#--------------------------------------------------------------------------#
+
+\fBdecode\fR \- decode a TTA file
+
+.RS 8
+\h'-04'\(bu\h'+03'\c
+TTA1
+.RE
+.BR
+
+.\############################################################################
+
+.SH "OPTIONS"
+
+.\#--------------------------------------------------------------------------#
+
+.SS "Common Options"
+.RS 4
+
+\fB\-?, \-\-help\fR
+.RS 4
+Print a brief description of the mode's options.
+.RE
+
+\fB\-S, \-\-single-threaded\fR
+.RS 4
+Single\-threaded mode.
+Using only one thread can be more CPU efficient than multi\-threaded mode,
+especially for batch coding.
+.RE
+
+\fB\-M, \-\-multi-threaded\fR
+.RS 4
+Multi\-threaded mode with NPROCESSORS_ONLN coder threads.
+.RE
+
+\fB\-d, \-\-delete-src\fR
+.RS 4
+Delete each infile after coding.
+.RE
+
+\fB\-o, \-\-outfile\fR[\=]\fB\fIFILE\fR\fR|\fB\fIDIR\fR\fR
+.RS 4
+Outfile name or directory.
+.RE
+
+\fB\-q, \-\-quiet\fR
+.RS 4
+Only warnings and errors will be printed.
+.RE
+
+\fB\-t, \-\-threads\fR[\=]\fB\fIN\fR\fR
+.RS 4
+Multi-threaded mode with N coder threads.
+.RE
+.RE
+.BR
+
+.\#--------------------------------------------------------------------------#
+
+.SS "Encode Specific Options"
+.RS 4
+
+\fB\-\-rawpcm\fR[\=]\fB\fIFMT\fR\fR,\fB\fISRATE\fR\fR,\fB\fINCHAN\fR\fR
+.RS 4
+Raw PCM file stats.
+.BR
+.RS 4
+FMT:    byte format (u8, i16le, i24le)
+
+SRATE:  samplerate in hertz
+
+NCHAN:  number of channels
+.RE
+.RE
+
+.RE
+.BR
+
+.\#--------------------------------------------------------------------------#
+
+.SS "Decode Specific Options"
+.RS 4
+
+\fB\-f, \-\-format\fR[\=]\fB\fIFMT\fR\fR
+.RS 4
+Outfile format.
+.BR
+.RS 4
+FMT:    wav, w64, raw
+.RE
+.RE
+
+.RE
+.BR
+
+.\############################################################################
+
+.SH "BUGS"
+https://github.com/stseelig/libttaR/issues
+.BR
+
+.\############################################################################
+
+.SH "AUTHOR"
+\fBShane Seelig\fR
+.RS 4
+Developer
+.RE
+
+.\# EOF ######################################################################
