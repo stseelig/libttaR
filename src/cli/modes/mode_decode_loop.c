@@ -163,7 +163,7 @@ decst_loop(
 
 	// setup buffers
 	t.z = decbuf_init(&decbuf, buflen, SAMPLEBUF_LEN_DEFAULT, nchan);
-	assert(t.z == (size_t) (SAMPLEBUF_LEN_DEFAULT * nchan));
+	assert(t.z == (size_t) (buflen * nchan));
 	//
 	t.z = libttaR_codecstate_priv_size(nchan);
 	assert(t.z != 0);
@@ -449,16 +449,14 @@ dec_frame_write(
 			warning_tta("%s: frame %zu: last sample truncated, "
 				"zero-padding", infile_name, dstat.nframes
 			);
-
-			// re-calc crc
-			user.crc = libttaR_crc32(
-				decbuf->ttabuf, nbytes_tta_perframe
-			);
 		}
+		// zero-pad
 		dec_frame_zeropad(
 			decbuf->pcmbuf, user.ni32_total, nsamples_flat_2pad,
 			samplebytes
 		);
+		// re-calc crc
+		user.crc = libttaR_crc32(decbuf->ttabuf, nbytes_tta_perframe);
 	}
 
 	// check frame crc

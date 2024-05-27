@@ -107,7 +107,7 @@ rice_encode(
 #undef cache
 #undef count
 #undef crc
-ALWAYS_INLINE size_t
+INLINE size_t
 rice_encode_cacheflush(
 	register u8 *const restrict dest, register size_t,
 	register u32 *const restrict cache, register u8 *const restrict count,
@@ -346,7 +346,7 @@ rice_encode(
 }
 
 // returns nbytes written to dest + r
-ALWAYS_INLINE size_t
+INLINE size_t
 rice_encode_cacheflush(
 	register u8 *const restrict dest, register size_t r,
 	register u32 *const restrict cache, register u8 *const restrict count,

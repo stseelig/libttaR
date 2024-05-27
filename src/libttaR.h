@@ -32,7 +32,7 @@ enum LibTTAr_RetVal {
 	LIBTTAr_RET_DECFAIL      =  2,
 
 	/* (ni32_target % nchan != 0) or other bad parameter
-	   used as the base value; can return greater values
+	   used as the base value; functions can return greater values
 	*/
 	LIBTTAr_RET_INVAL,
 

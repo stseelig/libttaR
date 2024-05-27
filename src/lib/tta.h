@@ -48,14 +48,14 @@ enum TTASampleBytes {
 #define TTA_SAMPLEBYTES_MAX	((unsigned int) TTASAMPLEBYTES_3)
 #define TTA_SAMPLEBITS_MAX	((uint) (8u*TTA_SAMPLEBYTES_MAX))
 
-// max unary output (second possible loop for 24-bit)
-#define TTABUF_SAFETY_MARGIN_UNARY		((size_t) (256u + 256u))
+// max unary output (second loop possible for 24-bit)
+#define TTABUF_SAFETY_MARGIN_UNARY	((size_t) (256u + 256u))
 // max binary output
-#define TTABUF_SAFETY_MARGIN_BINARY		((size_t) 256u)
+#define TTABUF_SAFETY_MARGIN_BINARY	((size_t) 256u)
 // only needed for encode
-#define TTABUF_SAFETY_MARGIN_MAX_CACHEFLUSH	((size_t) 32u)
+#define TTABUF_SAFETY_MARGIN_CACHEFLUSH	((size_t) 32u)
 // rounded up to the nearest power of 2
-#define TTABUF_SAFETY_MARGIN_FAST		((size_t) 1024u)
+#define TTABUF_SAFETY_MARGIN_FAST	((size_t) 1024u)
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -90,9 +90,9 @@ INLINE void codec_init(
 
 //--------------------------------------------------------------------------//
 
-ALWAYS_INLINE u8 tta_predict_k(register enum TTASampleBytes) /*@*/;
-ALWAYS_INLINE i32 tta_filter_round(register enum TTASampleBytes) /*@*/;
-ALWAYS_INLINE u8 tta_filter_k(register enum TTASampleBytes) /*@*/;
+INLINE u8 tta_predict_k(register enum TTASampleBytes) /*@*/;
+INLINE i32 tta_filter_round(register enum TTASampleBytes) /*@*/;
+INLINE u8 tta_filter_k(register enum TTASampleBytes) /*@*/;
 
 //--------------------------------------------------------------------------//
 
@@ -130,7 +130,7 @@ codec_init(
 
 //--------------------------------------------------------------------------//
 
-ALWAYS_INLINE u8
+INLINE u8
 tta_predict_k(register enum TTASampleBytes samplebytes)
 /*@*/
 {
@@ -147,7 +147,7 @@ tta_predict_k(register enum TTASampleBytes samplebytes)
 	return r;
 }
 
-ALWAYS_INLINE i32
+INLINE i32
 tta_filter_round(register enum TTASampleBytes samplebytes)
 /*@*/
 {
@@ -164,7 +164,7 @@ tta_filter_round(register enum TTASampleBytes samplebytes)
 	return r;
 }
 
-ALWAYS_INLINE u8
+INLINE u8
 tta_filter_k(register enum TTASampleBytes samplebytes)
 /*@*/
 {
@@ -225,11 +225,10 @@ tta_filter(
 	register uint i;
 
 	// there is a compiler quirk where putting the ==0 branch !first slows
-	//  everything down considerably. it adds an extra if-statement or two
-	//  to reduce code size a bit, but that borks the assembler. the ==0
-	//  branch should be last, because it is the least likely to happen
-	//  (but not enough for UNLIKELY; main exception being silence)
-	//
+	//   everything down considerably. it adds an extra if-statement or
+	//   two to reduce code size a bit, but that is just slower. the ==0
+	//   branch should be last, because it is the least likely to happen
+	//   (but not enough for UNLIKELY; main exception being silence)
 	// for-loops SIMD better than unrolled
 	if ( filter->error == 0 ){
 		for ( i = 0; i < 8u; ++i ){

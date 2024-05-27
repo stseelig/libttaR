@@ -32,7 +32,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-// returns (samplebuf_len * nchan) (for sanity check)
+// returns (ni32_samplebuf_len * nchan) (for sanity check)
 size_t
 encbuf_init(
 	/*@out@*/ struct EncBuf *const restrict eb, size_t ni32_samplebuf_len,
@@ -118,7 +118,7 @@ encbuf_free(struct EncBuf *const restrict eb)
 
 //==========================================================================//
 
-// returns (samplebuf_len * nchan) (for sanity check)
+// returns (ni32_samplebuf_len * nchan) (for sanity check)
 size_t
 decbuf_init(
 	/*@out@*/ struct DecBuf *const restrict db, size_t ni32_samplebuf_len,
@@ -135,7 +135,7 @@ decbuf_init(
 		db->ttabuf
 @*/
 {
-	const size_t r = ni32_samplebuf_len * nchan;
+	const size_t r = (size_t) (ni32_samplebuf_len * nchan);
 
 	db->i32buf_len = r;
 	assert(db->i32buf_len != 0);
