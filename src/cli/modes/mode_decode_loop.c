@@ -178,7 +178,9 @@ decst_loop(
 	do {
 		// ENCFMT_TTA1
 		// get size of tta-frame from seektable
-		framesize_tta = letoh32(seektable->table[nframes_read]);
+		framesize_tta = (size_t) letoh32(
+			seektable->table[nframes_read]
+		);
 		if ( framesize_tta <= (sizeof crc_read) ){
 			warning_tta(
 				"%s: frame %zu: malformed seektable entry",
@@ -238,7 +240,7 @@ loop0_truncated:
 		// write pcm to outfile
 		dec_frame_write(
 			&decbuf, &dstat, &user, infile_name, outfile,
-			outfile_name, samplebytes, nchan, letoh32(crc_read),
+			outfile_name, samplebytes, nchan, crc_read,
 			dec_retval, nsamples_flat_2pad, nbytes_tta_perframe
 		);
 loop_entr:
@@ -434,6 +436,7 @@ dec_frame_write(
 {
 	struct LibTTAr_CodecState_User user = *user_in;
 	struct DecStats dstat = *dstat_out;
+	u32 crc_read_h = letoh32(crc_read);
 	union { uint	u;
 		size_t	z;
 	} t;
@@ -460,12 +463,12 @@ dec_frame_write(
 	}
 
 	// check frame crc
-	if UNLIKELY ( user.crc != crc_read ){
+	if UNLIKELY ( user.crc != crc_read_h ){
 		warning_tta("%s: frame %zu is corrupted; bad crc",
 			infile_name, dstat.nframes
 		);
 	}
-	user.nbytes_tta_total += sizeof crc_read;
+	user.nbytes_tta_total += sizeof crc_read_h;
 
 	// write frame
 	t.z = fwrite(decbuf->pcmbuf, samplebytes, user.ni32_total, outfile);
@@ -578,7 +581,9 @@ decmt_io(struct MTArg_DecIO *const restrict arg)
 	do {
 		// ENCFMT_TTA1
 		// get size of tta-frame from seektable
-		framesize_tta = letoh32(seektable->table[nframes_read]);
+		framesize_tta = (size_t) letoh32(
+			seektable->table[nframes_read]
+		);
 		if ( framesize_tta <= (sizeof *crc_read) ){
 			warning_tta(
 				"%s: frame %zu: malformed seektable entry",
@@ -649,9 +654,9 @@ loop0_truncated:
 		// write pcm to outfile
 		dec_frame_write(
 			&decbuf[i], &dstat, &user[i], infile_name, outfile_fh,
-			outfile_name, samplebytes, nchan,
-			letoh32(crc_read[i]), dec_retval[i],
-			nsamples_flat_2pad[i], nbytes_tta_perframe[i]
+			outfile_name, samplebytes, nchan, crc_read[i],
+			dec_retval[i], nsamples_flat_2pad[i],
+			nbytes_tta_perframe[i]
 		);
 loop0_entr:
 		if ( (! g_flag.quiet) && (nframes_read % SPINNER_FRQ == 0) ){
@@ -676,8 +681,8 @@ loop0_read:
 		// write tta to outfile
 		dec_frame_write(
 			&decbuf[i], &dstat, &user[i], infile_name, outfile_fh,
-			outfile_name, samplebytes, nchan, crc_read[i],
-			dec_retval[i], nsamples_flat_2pad[i],
+			outfile_name, samplebytes, nchan,
+			crc_read[i], dec_retval[i], nsamples_flat_2pad[i],
 			nbytes_tta_perframe[i]
 		);
 

@@ -36,6 +36,7 @@
 	- multi-threaded encoder and decoder
 	- faster single-threaded encoder and decoder
 	- improved wav and w64 parsing
+	- fixed endianness bugs (hope I found them all; not testing a BE CPU)
 	- updated for libttaR 1.1.0
 
 1.0.2 (2024-05-05):-----------------------------------------------------------

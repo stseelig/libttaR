@@ -40,7 +40,7 @@ filecheck_tta_seektable(
 		file
 @*/
 {
-	u32 crc;
+	u32 crc;	// little-endian
 	union {	size_t	z;
 		int	d;
 		u32	u_32;

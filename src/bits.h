@@ -258,7 +258,7 @@ asr32(register i32 x, register u8 k)
 /*@*/
 {
 	if ( (! HAS_ASR(i32)) && (x < 0) ){
-		return (i32) ~(((u32) ~x) >> k);
+		return (i32) ~((~((u32) x)) >> k);
 	}
 	else {	/*@-shiftimplementation@*/
 		return (i32) (x >> k);

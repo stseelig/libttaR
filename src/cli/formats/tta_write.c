@@ -132,9 +132,9 @@ write_tta_seektable(
 	}
 
 	// calc then write seektable crc
-	crc = libttaR_crc32(
+	crc = htole32(libttaR_crc32(
 		(u8 *) st->table, st->nmemb * (sizeof *st->table)
-	);
+	));
 	t.z = fwrite(&crc, sizeof crc, (size_t) 1u, outfile);
 	if UNLIKELY ( t.z != (size_t) 1u ){
 		error_sys(errno, "fwrite", outfile_name);

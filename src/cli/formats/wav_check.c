@@ -142,10 +142,9 @@ filecheck_wav_read_subchunk_fmt(
 	fstat->nchan		= letoh16(chunk.fmt.nchan);
 	fstat->samplebits	= letoh16(chunk.fmt.samplebits);
 	fstat->samplerate	= letoh32(chunk.fmt.samplerate);
-	if ( fstat->samplebits <= (u16) 8u ){
-		fstat->inttype 	= INT_UNSIGNED;
-	}
-	else {	fstat->inttype	= INT_SIGNED; }
+	fstat->inttype		= (
+		fstat->samplebits <= (u16) 8u ? INT_UNSIGNED : INT_SIGNED
+	);
 
 	if ( format == WAVE_FMT_EXTENSIBLE ){
 		t.z = fread(&chunk.wfx, sizeof chunk.wfx, (size_t) 1u, file);
