@@ -225,8 +225,8 @@ tta_filter(
 	register uint i;
 
 	// there is a compiler quirk where putting the ==0 branch !first slows
-	//   everything down considerably. it adds an extra if-statement or
-	//   two to reduce code size a bit, but that is just slower. the ==0
+	//   everything down considerably. it adds an branch or two to reduce
+	//   code size a bit, but that is just slower. logically, the ==0
 	//   branch should be last, because it is the least likely to happen
 	//   (but not enough for UNLIKELY; main exception being silence)
 	// for-loops SIMD better than unrolled

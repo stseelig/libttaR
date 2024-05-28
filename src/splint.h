@@ -49,8 +49,10 @@ struct timespec {
 #define SIZE_MAX	((size_t) 0xFFFFFFFFFFFFFFFFu)
 #endif
 
+//--------------------------------------------------------------------------//
+
 #ifndef CLOCK_MONOTONIC
-#define CLOCK_MONOTONIC	((clockid_t) 1) /*bogus*/
+#define CLOCK_MONOTONIC	((clockid_t) 1)	/* bogus */
 #endif
 
 //--------------------------------------------------------------------------//
@@ -59,16 +61,16 @@ struct timespec {
 #define PRIX8	"hhX"
 #endif
 
+#ifndef PRIX16
+#define PRIX16	"hX"
+#endif
+
 #ifndef PRIu16
 #define PRIu16	"hu"
 #endif
 
 #ifndef PRIu32
 #define PRIu32	"u"
-#endif
-
-#ifndef PRIX16
-#define PRIX16	"hX"
 #endif
 
 //////////////////////////////////////////////////////////////////////////////

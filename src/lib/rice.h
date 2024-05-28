@@ -359,7 +359,7 @@ rice_encode_cacheflush(
 @*/
 {
 	while ( *count != 0 ){
-		dest[r++] = rice_crc32((u8) (*cache & 0xFFu), crc);
+		dest[r++] = rice_crc32((u8) *cache, crc);
 		*cache  >>= 8u;
 		*count    = (*count > (u8) 8u ? *count - 8u : 0);
 	}
@@ -387,7 +387,7 @@ rice_unary_put(
 		*count += 23u;
 loop_entr:
 		while ( *count >= (u8) 8u ){
-			dest[r++] = rice_crc32((u8) (*cache & 0xFFu), crc);
+			dest[r++] = rice_crc32((u8) *cache, crc);
 			*cache  >>= 8u;
 			*count   -= 8u;
 		}
@@ -413,7 +413,7 @@ rice_binary_put(
 @*/
 {
 	while ( *count >= (u8) 8u ){
-		dest[r++] = rice_crc32((u8) (*cache & 0xFFu), crc);
+		dest[r++] = rice_crc32((u8) *cache, crc);
 		*cache  >>= 8u;
 		*count   -= 8u;
 	}

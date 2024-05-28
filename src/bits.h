@@ -55,7 +55,7 @@
 
 //--------------------------------------------------------------------------//
 
-// these should always be tested; not always beneficial
+// these should always be A/B tested; not always beneficial
 
 #if HAS_BUILTIN(__builtin_expect)
 #define LIKELY(cond)		(__builtin_expect(!!(cond), true))
@@ -97,14 +97,13 @@
 
 typedef unsigned int	uint;
 
+typedef signed char	ichar;
 typedef long long	longlong;
 
 typedef  uint8_t	 u8;
 typedef uint16_t	u16;
 typedef uint32_t	u32;
 typedef uint64_t	u64;
-
-typedef signed char	ichar;
 
 typedef   int8_t	 i8;
 typedef  int16_t	i16;

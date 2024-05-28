@@ -184,8 +184,7 @@ shortoptsget(uint optind, const struct OptDict *const restrict optdict)
 		}
 		return (int) -opt[i];	// shortopt not found
 cont_outer_loop:
-		continue;
-
+		;
 	}
 	return 0;
 }

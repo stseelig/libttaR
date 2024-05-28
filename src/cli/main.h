@@ -46,7 +46,7 @@ struct GlobalFlags {
 
 //////////////////////////////////////////////////////////////////////////////
 
-/*@unchecked@*/ /*@unused@*/
+/*@unchecked@*/
 extern const struct LibTTAr_VersionInfo ttaR_info;
 
 //--------------------------------------------------------------------------//
@@ -56,7 +56,7 @@ extern const struct LibTTAr_VersionInfo ttaR_info;
 extern const uint g_argc;
 #endif
 
-/*@checkmod@*/ /*@dependent@*/
+/*@checkmod@*/ /*@temp@*/
 extern char **g_argv;
 
 /*@checkmod@*/

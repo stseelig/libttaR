@@ -233,7 +233,7 @@ loop_entr:
 		}
 
 		// read pcm from infile
-		readlen	 = enc_readlen(
+		readlen	= enc_readlen(
 			nsamples_perframe, nsamples_flat_read_total,
 			decpcm_size, samplebytes, nchan
 		);

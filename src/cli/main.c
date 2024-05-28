@@ -70,7 +70,7 @@ static void sighand(enum HandledSignals)
 
 //////////////////////////////////////////////////////////////////////////////
 
-/*@unchecked@*/ /*@unused@*/
+/*@unchecked@*/
 const struct LibTTAr_VersionInfo ttaR_info = {
 	TTAr_VERSION_NUM,
 	TTAr_VERSION_NUM_MAJOR,
@@ -87,7 +87,7 @@ const struct LibTTAr_VersionInfo ttaR_info = {
 /*@checkmod@*/
 uint g_argc;
 
-/*@checkmod@*/ /*@dependent@*/
+/*@checkmod@*/ /*@temp@*/
 char **g_argv;
 
 /*@checkmod@*/
