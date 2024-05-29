@@ -90,15 +90,15 @@ INLINE void codec_init(
 
 //--------------------------------------------------------------------------//
 
-INLINE u8 tta_predict_k(register enum TTASampleBytes) /*@*/;
-INLINE i32 tta_filter_round(register enum TTASampleBytes) /*@*/;
-INLINE u8 tta_filter_k(register enum TTASampleBytes) /*@*/;
+INLINE CONST u8 tta_predict_k(register enum TTASampleBytes) /*@*/;
+INLINE CONST i32 tta_filter_round(register enum TTASampleBytes) /*@*/;
+INLINE CONST u8 tta_filter_k(register enum TTASampleBytes) /*@*/;
 
 //--------------------------------------------------------------------------//
 
-ALWAYS_INLINE i32 tta_predict1(register i32, register u8) /*@*/;
-ALWAYS_INLINE i32 tta_postfilter_enc(register i32) /*@*/;
-ALWAYS_INLINE i32 tta_prefilter_dec(register i32) /*@*/;
+ALWAYS_INLINE CONST i32 tta_predict1(register i32, register u8) /*@*/;
+ALWAYS_INLINE CONST i32 tta_postfilter_enc(register i32) /*@*/;
+ALWAYS_INLINE CONST i32 tta_prefilter_dec(register i32) /*@*/;
 
 //--------------------------------------------------------------------------//
 
@@ -130,7 +130,7 @@ codec_init(
 
 //--------------------------------------------------------------------------//
 
-INLINE u8
+INLINE CONST u8
 tta_predict_k(register enum TTASampleBytes samplebytes)
 /*@*/
 {
@@ -147,7 +147,7 @@ tta_predict_k(register enum TTASampleBytes samplebytes)
 	return r;
 }
 
-INLINE i32
+INLINE CONST i32
 tta_filter_round(register enum TTASampleBytes samplebytes)
 /*@*/
 {
@@ -164,7 +164,7 @@ tta_filter_round(register enum TTASampleBytes samplebytes)
 	return r;
 }
 
-INLINE u8
+INLINE CONST u8
 tta_filter_k(register enum TTASampleBytes samplebytes)
 /*@*/
 {
@@ -183,21 +183,21 @@ tta_filter_k(register enum TTASampleBytes samplebytes)
 
 //==========================================================================//
 
-ALWAYS_INLINE i32
+ALWAYS_INLINE CONST i32
 tta_predict1(register i32 x, register u8 k)
 /*@*/
 {
 	return (i32) (((((u64fast) x) << k) - x) >> k);
 }
 
-ALWAYS_INLINE i32
+ALWAYS_INLINE CONST i32
 tta_postfilter_enc(register i32 x)
 /*@*/
 {
 	return (x > 0 ? asl32(x, (u8) 1u) - 1 : asl32(-x, (u8) 1u));
 }
 
-ALWAYS_INLINE i32
+ALWAYS_INLINE CONST i32
 tta_prefilter_dec(register i32 x)
 /*@*/
 {

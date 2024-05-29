@@ -38,7 +38,7 @@
 #undef estat_out
 #undef outfile
 #undef infile
-extern void encst_loop(
+extern HOT void encst_loop(
 	struct SeekTable *const restrict seektable,
 	/*@out@*/ struct EncStats *const restrict estat_out,
 	const struct FileStats *const restrict,
@@ -414,7 +414,8 @@ filecheck_decfmt(
 
 end_check:
 	// check that file stats are within bounds / reasonable
-	if ( (fstat->nchan == 0)
+	if UNLIKELY (
+	     (fstat->nchan == 0)
 	    ||
 	     (fstat->samplerate == 0)
 	    ||

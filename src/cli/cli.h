@@ -24,7 +24,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-INLINE double timediff(
+INLINE CONST double timediff(
 	register const struct timespec *const restrict,
 	register const struct timespec *const restrict
 )
@@ -54,7 +54,7 @@ extern void errprint_runtime(double, size_t, enum ProgramMode)
 /*@modifies	fileSystem@*/
 ;
 
-extern void errprint_spinner(void)
+extern HOT void errprint_spinner(void)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -65,7 +65,7 @@ extern void errprint_spinner(void)
 
 //////////////////////////////////////////////////////////////////////////////
 
-INLINE double
+INLINE CONST double
 timediff(
 	register const struct timespec *const restrict start,
 	register const struct timespec *const restrict finish

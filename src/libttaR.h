@@ -16,7 +16,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
-/* ######################################################################## */
+/* //////////////////////////////////////////////////////////////////////// */
+
+#define LIBTTAr_PURE		__attribute__((pure))
+#define LIBTTAr_CONST		__attribute__((const))
+
+/* //////////////////////////////////////////////////////////////////////// */
 
 enum LibTTAr_RetVal {
 	/* frame finished */
@@ -329,7 +334,7 @@ extern int libttaR_tta_decode(
 /////////////////////////////////////////////////////////////////////////// */
 #undef nchan
 /*@external@*/ /*@unused@*/
-extern size_t libttaR_codecstate_priv_size(unsigned int nchan)
+extern LIBTTAr_CONST size_t libttaR_codecstate_priv_size(unsigned int nchan)
 /*@*/
 ;
 
@@ -362,7 +367,7 @@ extern size_t libttaR_codecstate_priv_size(unsigned int nchan)
 /////////////////////////////////////////////////////////////////////////// */
 #undef nchan
 /*@external@*/ /*@unused@*/
-extern size_t libttaR_ttabuf_safety_margin(unsigned int nchan)
+extern LIBTTAr_CONST size_t libttaR_ttabuf_safety_margin(unsigned int nchan)
 /*@*/
 ;
 
@@ -392,7 +397,7 @@ extern size_t libttaR_ttabuf_safety_margin(unsigned int nchan)
 /////////////////////////////////////////////////////////////////////////// */
 #undef samplerate
 /*@external@*/ /*@unused@*/
-extern size_t libttaR_nsamples_perframe_tta1(size_t samplerate)
+extern LIBTTAr_CONST size_t libttaR_nsamples_perframe_tta1(size_t samplerate)
 /*@*/
 ;
 
@@ -423,7 +428,7 @@ extern size_t libttaR_nsamples_perframe_tta1(size_t samplerate)
 /////////////////////////////////////////////////////////////////////////// */
 #undef nchan
 /*@external@*/ /*@unused@*/
-extern bool libttaR_test_nchan(unsigned int nchan)
+extern LIBTTAr_CONST bool libttaR_test_nchan(unsigned int nchan)
 /*@*/
 ;
 
@@ -546,7 +551,7 @@ extern size_t libttaR_pcm_write(
 #undef buf
 #undef size
 /*@external@*/ /*@unused@*/
-extern uint32_t libttaR_crc32(const uint8_t *buf, size_t size)
+extern LIBTTAr_PURE uint32_t libttaR_crc32(const uint8_t *buf, size_t size)
 /*@*/
 ;
 

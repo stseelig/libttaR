@@ -72,10 +72,10 @@ static void dec_frame_write(
 @*/
 ;
 
-static size_t dec_ni32_perframe(size_t, size_t, size_t, uint) /*@*/;
+static CONST size_t dec_ni32_perframe(size_t, size_t, size_t, uint) /*@*/;
 
 #undef pcmbuf
-static void dec_frame_zeropad(
+static COLD void dec_frame_zeropad(
 	u8 *const restrict pcmbuf, size_t, size_t, enum TTASampleBytes
 )
 /*@modifies	*pcmbuf@*/
@@ -85,7 +85,7 @@ static void dec_frame_zeropad(
 
 #undef arg
 /*@null@*/
-static void *decmt_io(struct MTArg_DecIO *const restrict arg)
+static HOT void *decmt_io(struct MTArg_DecIO *const restrict arg)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -105,7 +105,7 @@ static void *decmt_io(struct MTArg_DecIO *const restrict arg)
 
 #undef arg
 /*@null@*/
-static void *decmt_decoder(struct MTArg_Decoder *const restrict arg)
+static HOT void *decmt_decoder(struct MTArg_Decoder *const restrict arg)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -121,7 +121,7 @@ static void *decmt_decoder(struct MTArg_Decoder *const restrict arg)
 
 //////////////////////////////////////////////////////////////////////////////
 
-void
+HOT void
 decst_loop(
 	const struct SeekTable *const restrict seektable,
 	/*@out@*/ struct DecStats *const restrict dstat_out,
@@ -487,7 +487,7 @@ dec_frame_write(
 }
 
 // returns ni32_perframe
-static size_t
+static CONST size_t
 dec_ni32_perframe(
 	size_t nsamples_dec, size_t nsamples_enc, size_t nsamples_perframe,
 	uint nchan
@@ -500,7 +500,7 @@ dec_ni32_perframe(
 	else {	return (size_t) (nsamples_perframe * nchan); }
 }
 
-static void
+static COLD void
 dec_frame_zeropad(
 	u8 *const restrict pcmbuf, size_t pcmbuf_nsamples_flat,
 	size_t nsamples_flat_2pad, enum TTASampleBytes samplebytes
@@ -518,7 +518,7 @@ dec_frame_zeropad(
 //==========================================================================//
 
 /*@null@*/
-static void *
+static HOT void *
 decmt_io(struct MTArg_DecIO *const restrict arg)
 /*@globals	fileSystem,
 		internalState
@@ -699,7 +699,7 @@ loop1_not_tiny:
 }
 
 /*@null@*/
-static void *
+static HOT void *
 decmt_decoder(struct MTArg_Decoder *const restrict arg)
 /*@globals	fileSystem,
 		internalState

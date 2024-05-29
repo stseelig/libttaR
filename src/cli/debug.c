@@ -29,7 +29,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-static int inc_nwarnings(void)
+static COLD int inc_nwarnings(void)
 /*@globals	g_nwarnings@*/
 /*@modifies	g_nwarnings@*/
 {
@@ -41,7 +41,7 @@ static int inc_nwarnings(void)
 
 //==========================================================================//
 
-void
+COLD void
 print_error_sys(
 	enum Fatality fatality, int errnum, const char *const name,
 	/*@null@*/ const char *const extra
@@ -79,7 +79,7 @@ print_error_sys(
 	else {	return; }
 }
 
-void
+COLD void
 print_error_tta(enum Fatality fatality, const char *const format, ...)
 /*@globals	fileSystem,
 		g_nwarnings
@@ -111,7 +111,7 @@ print_error_tta(enum Fatality fatality, const char *const format, ...)
 	else {	return; }
 }
 
-void
+COLD void
 warning_tta(const char *const format, ...)
 /*@globals	fileSystem,
 		g_nwarnings
@@ -143,7 +143,7 @@ warning_tta(const char *const format, ...)
 
 //--------------------------------------------------------------------------//
 
-void
+COLD void
 error_filecheck(
 	enum FileCheck fc, const struct FileStats *const restrict fstat,
 	const char *const restrict filename, int errnum

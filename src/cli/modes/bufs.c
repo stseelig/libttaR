@@ -77,7 +77,8 @@ encbuf_init(
 	return r;
 }
 
-void
+// in encode loop
+HOT void
 encbuf_adjust(struct EncBuf *const restrict eb, size_t samplebuf_len)
 /*@globals	fileSystem,
 		internalState
@@ -159,7 +160,8 @@ decbuf_init(
 	return r;
 }
 
-void
+// in decode loop
+HOT void
 decbuf_check_adjust(
 	struct DecBuf *const restrict db, size_t newsize, uint nchan
 )

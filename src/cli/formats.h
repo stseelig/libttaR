@@ -168,7 +168,7 @@ extern void seektable_init(
 ;
 
 #undef st
-extern void seektable_add(
+extern HOT void seektable_add(
 	struct SeekTable *const restrict st, size_t, size_t, const char *
 )
 /*@globals	fileSystem,

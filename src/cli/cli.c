@@ -63,16 +63,18 @@ static void errprint_stats_codectime(double, double, size_t)
 ;
 
 /*@observer@*/
-static const char *decfmt_name(enum DecFormat)
+static CONST const char *decfmt_name(enum DecFormat)
 /*@*/
 ;
 
 /*@observer@*/
-static const char *encfmt_name(enum EncFormat)
+static CONST const char *encfmt_name(enum EncFormat)
 /*@*/
 ;
 
-static double calc_time_pcm(size_t, const struct FileStats *const restrict)
+static CONST double calc_time_pcm(
+	size_t, const struct FileStats *const restrict
+)
 /*@*/
 ;
 
@@ -154,7 +156,7 @@ errprint_runtime(double runtime, size_t files, enum ProgramMode mode)
 	return;
 }
 
-void
+HOT void
 errprint_spinner(void)
 /*@globals	fileSystem,
 		internalState
@@ -327,7 +329,7 @@ errprint_stats_codectime(double pcmtime, double encodetime, size_t nbytes_pcm)
 //--------------------------------------------------------------------------//
 
 /*@observer@*/
-static const char *
+static CONST const char *
 decfmt_name(enum DecFormat fmt)
 /*@*/
 {
@@ -348,7 +350,7 @@ decfmt_name(enum DecFormat fmt)
 }
 
 /*@observer@*/
-static const char *
+static CONST const char *
 encfmt_name(enum EncFormat fmt)
 /*@*/
 {
@@ -362,7 +364,7 @@ encfmt_name(enum EncFormat fmt)
 	return r;
 }
 
-static double
+static CONST double
 calc_time_pcm(size_t nsamples, const struct FileStats *const restrict stats)
 /*@*/
 {

@@ -37,7 +37,7 @@
 #undef dstat_out
 #undef outfile
 #undef infile
-void decst_loop(
+void HOT decst_loop(
 	const struct SeekTable *const restrict,
 	/*@out@*/ struct DecStats *const restrict dstat_out,
 	const struct FileStats *const restrict,
@@ -427,7 +427,8 @@ filecheck_encfmt(
 
 end_check:
 	// check that file stats are within bounds / reasonable
-	if ( (fstat->nchan == 0)
+	if UNLIKELY (
+	     (fstat->nchan == 0)
 	    ||
 	     (fstat->samplerate == 0)
 	    ||

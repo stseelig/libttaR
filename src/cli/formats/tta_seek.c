@@ -47,7 +47,7 @@ seektable_init(/*@out@*/ struct SeekTable *const restrict st, size_t nframes)
 }
 
 // in encode loop
-void
+HOT void
 seektable_add(
 	struct SeekTable *const restrict st, size_t value, size_t framenum,
 	const char *outfile_name

@@ -199,7 +199,7 @@ openedfiles_close_free(struct OpenedFiles *const restrict of)
 //==========================================================================//
 
 /*@observer@*/
-const char *
+CONST const char *
 get_encfmt_sfx(enum EncFormat format)
 /*@*/
 {
@@ -214,7 +214,7 @@ get_encfmt_sfx(enum EncFormat format)
 }
 
 /*@observer@*/
-const char *
+CONST const char *
 get_decfmt_sfx(enum DecFormat format)
 /*@*/
 {

@@ -74,10 +74,10 @@ openedfiles_close_free(struct OpenedFiles *const restrict of)
 ;
 
 /*@observer@*/
-extern const char *get_encfmt_sfx(enum EncFormat) /*@*/;
+extern CONST const char *get_encfmt_sfx(enum EncFormat) /*@*/;
 
 /*@observer@*/
-extern const char *get_decfmt_sfx(enum DecFormat) /*@*/;
+extern CONST const char *get_decfmt_sfx(enum DecFormat) /*@*/;
 
 /*@only@*/
 extern char *get_outfile_name(const char *, const char *)

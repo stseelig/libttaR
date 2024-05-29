@@ -51,7 +51,7 @@ const struct LibTTAr_VersionInfo libttaR_info = {
 
 // calculates the size of the private state struct
 // returns 0 on error
-size_t
+CONST size_t
 libttaR_codecstate_priv_size(uint nchan)
 /*@*/
 {
@@ -67,7 +67,7 @@ libttaR_codecstate_priv_size(uint nchan)
 }
 
 // returns whether libttaR was configured to support nchan audio channels
-bool
+CONST bool
 libttaR_test_nchan(uint nchan)
 /*@*/
 {

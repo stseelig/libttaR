@@ -146,7 +146,7 @@ OPT_COMMON_THREADS
 
 //////////////////////////////////////////////////////////////////////////////
 
-void
+void COLD
 errprint_help_main(void)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
@@ -156,7 +156,7 @@ errprint_help_main(void)
 	return;
 }
 
-void
+void COLD
 errprint_help_mode_encode(void)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
@@ -168,7 +168,7 @@ errprint_help_mode_encode(void)
 	return;
 }
 
-void
+void COLD
 errprint_help_mode_decode(void)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/

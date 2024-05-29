@@ -59,7 +59,7 @@ extern int mode_decode(uint)
 
 //--------------------------------------------------------------------------//
 
-static void sighand(enum HandledSignals)
+static COLD NORETURN void sighand(enum HandledSignals)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -167,7 +167,7 @@ print_main_help:
 //--------------------------------------------------------------------------//
 
 // only async-signal-safe functions should be used ($ man signal-safe)
-static void
+static COLD NORETURN void
 sighand(enum HandledSignals signum)
 /*@globals	fileSystem,
 		internalState

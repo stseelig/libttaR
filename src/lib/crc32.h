@@ -27,7 +27,7 @@ extern const u32 crc32_table[];
 
 //////////////////////////////////////////////////////////////////////////////
 
-ALWAYS_INLINE u32
+ALWAYS_INLINE PURE u32
 crc32_cont(register u8 x, register u32 crc)
 /*@*/
 {
@@ -35,7 +35,7 @@ crc32_cont(register u8 x, register u32 crc)
 	return (u32) ((crc >> 8u) ^ lookup);
 }
 
-ALWAYS_INLINE u32
+ALWAYS_INLINE CONST u32
 crc32_end(register u32 crc)
 /*@*/
 {

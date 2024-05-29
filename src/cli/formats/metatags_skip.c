@@ -58,7 +58,7 @@ static enum FileCheck id3tag_skip(FILE *const restrict file)
 @*/
 ;
 
-static u32 id3syncsafeint(u8, u8, u8, u8) /*@*/;
+static CONST u32 id3syncsafeint(u8, u8, u8, u8) /*@*/;
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -182,7 +182,7 @@ id3tag_skip(FILE *const restrict file)
 	return FILECHECK_OK;
 }
 
-static u32
+static CONST u32
 id3syncsafeint(u8 x0, u8 x1, u8 x2, u8 x3)
 /*@*/
 {

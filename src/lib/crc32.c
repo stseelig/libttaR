@@ -96,7 +96,7 @@ HIDDEN const u32 crc32_table[] = {
 
 //////////////////////////////////////////////////////////////////////////////
 
-u32
+PURE u32
 libttaR_crc32(const u8 *const restrict buf, size_t size)
 /*@*/
 {

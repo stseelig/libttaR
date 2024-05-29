@@ -78,12 +78,14 @@ static void enc_frame_write(
 @*/
 ;
 
-static size_t enc_readlen(size_t, size_t, size_t, enum TTASampleBytes, uint)
+static CONST size_t enc_readlen(
+	size_t, size_t, size_t, enum TTASampleBytes, uint
+)
 /*@*/
 ;
 
 #undef pcmbuf
-static uint enc_frame_zeropad(
+static COLD uint enc_frame_zeropad(
 	u8 *const restrict pcmbuf, size_t, uint, enum TTASampleBytes, uint
 )
 /*@modifies	*pcmbuf@*/
@@ -93,7 +95,7 @@ static uint enc_frame_zeropad(
 
 #undef arg
 /*@null@*/
-static void *encmt_io(struct MTArg_EncIO *const restrict arg)
+static HOT void *encmt_io(struct MTArg_EncIO *const restrict arg)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -112,7 +114,7 @@ static void *encmt_io(struct MTArg_EncIO *const restrict arg)
 
 #undef arg
 /*@null@*/
-static void *encmt_encoder(struct MTArg_Encoder *const restrict arg)
+static HOT void *encmt_encoder(struct MTArg_Encoder *const restrict arg)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -127,7 +129,7 @@ static void *encmt_encoder(struct MTArg_Encoder *const restrict arg)
 
 //////////////////////////////////////////////////////////////////////////////
 
-void
+HOT void
 encst_loop(
 	struct SeekTable *const restrict seektable,
 	/*@out@*/ struct EncStats *const restrict estat_out,
@@ -464,7 +466,7 @@ enc_frame_write(
 }
 
 // returns nmemb for fread
-static size_t
+static CONST size_t
 enc_readlen(
 	size_t nsamples_perframe, size_t nsamples_flat_read,
 	size_t decpcm_size, enum TTASampleBytes samplebytes, uint nchan
@@ -493,7 +495,7 @@ enc_readlen(
 }
 
 // returns nmemb of buf zero-padded
-static uint
+static COLD uint
 enc_frame_zeropad(
 	u8 *const restrict pcmbuf, size_t nmemb_read, uint diff,
 	enum TTASampleBytes samplebytes, uint nchan
@@ -509,7 +511,7 @@ enc_frame_zeropad(
 //==========================================================================//
 
 /*@null@*/
-static void *
+static HOT void *
 encmt_io(struct MTArg_EncIO *const restrict arg)
 /*@globals	fileSystem,
 		internalState
@@ -657,7 +659,7 @@ loop1_not_tiny:
 }
 
 /*@null@*/
-static void *
+static HOT void *
 encmt_encoder(struct MTArg_Encoder *const restrict arg)
 /*@globals	fileSystem,
 		internalState

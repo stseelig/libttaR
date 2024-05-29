@@ -11,17 +11,17 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
-extern void errprint_help_main(void)
+extern COLD void errprint_help_main(void)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;
 
-extern void errprint_help_mode_encode(void)
+extern COLD void errprint_help_mode_encode(void)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;
 
-extern void errprint_help_mode_decode(void)
+extern COLD void errprint_help_mode_decode(void)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;

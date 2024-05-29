@@ -29,7 +29,7 @@ enum Fatality {
 
 //////////////////////////////////////////////////////////////////////////////
 
-extern void print_error_sys(
+extern COLD void print_error_sys(
 	enum Fatality, int, const char *const, /*@null@*/ const char *const
 )
 /*@globals	fileSystem,
@@ -40,7 +40,9 @@ extern void print_error_sys(
 @*/
 ;
 
-extern void error_sys(int, const char *const, /*@null@*/ const char *const)
+extern COLD NORETURN void error_sys(
+	int, const char *const, /*@null@*/ const char *const
+)
 /*@globals	fileSystem,
 		g_nwarnings
 @*/
@@ -49,7 +51,9 @@ extern void error_sys(int, const char *const, /*@null@*/ const char *const)
 @*/
 ;
 
-extern void error_sys_nf(int, const char *const, /*@null@*/ const char *const)
+extern COLD void error_sys_nf(
+	int, const char *const, /*@null@*/ const char *const
+)
 /*@globals	fileSystem,
 		g_nwarnings
 @*/
@@ -58,7 +62,7 @@ extern void error_sys_nf(int, const char *const, /*@null@*/ const char *const)
 @*/
 ;
 
-extern void print_error_tta(
+extern COLD void print_error_tta(
 	enum Fatality fatality, const char *const, ...
 )
 /*@globals	fileSystem,
@@ -69,7 +73,7 @@ extern void print_error_tta(
 @*/
 ;
 
-extern void error_tta(const char *const, ...)
+extern COLD NORETURN void error_tta(const char *const, ...)
 /*@globals	fileSystem,
 		g_nwarnings
 @*/
@@ -78,7 +82,7 @@ extern void error_tta(const char *const, ...)
 @*/
 ;
 
-extern void error_tta_nf(const char *const, ...)
+extern COLD void error_tta_nf(const char *const, ...)
 /*@globals	fileSystem,
 		g_nwarnings
 @*/
@@ -87,7 +91,7 @@ extern void error_tta_nf(const char *const, ...)
 @*/
 ;
 
-extern void warning_tta(const char *const, ...)
+extern COLD void warning_tta(const char *const, ...)
 /*@globals	fileSystem,
 		g_nwarnings
 @*/
@@ -96,7 +100,7 @@ extern void warning_tta(const char *const, ...)
 @*/
 ;
 
-extern void error_filecheck(
+extern COLD void error_filecheck(
 	enum FileCheck, const struct FileStats *const restrict,
 	const char *const restrict, int
 )
@@ -108,14 +112,18 @@ extern void error_filecheck(
 @*/
 ;
 
-#define error_sys(errnum, name, extra) \
-	print_error_sys(FATAL, errnum, name, extra)
+#define error_sys(errnum, name, extra) { \
+	print_error_sys(FATAL, errnum, name, extra); \
+	UNREACHABLE \
+}
 
 #define error_sys_nf(errnum, name, extra) \
 	print_error_sys(NONFATAL, errnum, name, extra)
 
-#define error_tta(...) \
-	print_error_tta(FATAL, __VA_ARGS__)
+#define error_tta(...) { \
+	print_error_tta(FATAL, __VA_ARGS__); \
+	UNREACHABLE \
+}
 
 #define error_tta_nf(...) \
 	print_error_tta(NONFATAL, __VA_ARGS__)

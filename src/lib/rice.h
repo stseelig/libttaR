@@ -60,9 +60,17 @@ rice_init(
 
 //--------------------------------------------------------------------------//
 
-ALWAYS_INLINE u32 shift32_bit(register u8) /*@*/;
-ALWAYS_INLINE u32 shift32p4_bit(register u8, const enum ShiftMaskMode) /*@*/;
-ALWAYS_INLINE u32 lsmask32(register u8, const enum ShiftMaskMode) /*@*/;
+ALWAYS_INLINE CONST u32 shift32_bit(register u8)
+/*@*/
+;
+
+ALWAYS_INLINE CONST u32 shift32p4_bit(register u8, const enum ShiftMaskMode)
+/*@*/
+;
+
+ALWAYS_INLINE CONST u32 lsmask32(register u8, const enum ShiftMaskMode)
+/*@*/
+;
 
 //--------------------------------------------------------------------------//
 
@@ -226,7 +234,7 @@ rice_init(
 
 //==========================================================================//
 
-ALWAYS_INLINE u32
+ALWAYS_INLINE CONST u32
 shift32_bit(register u8 k)
 /*@*/
 {
@@ -234,7 +242,7 @@ shift32_bit(register u8 k)
 }
 
 // keeps rice.kN in check
-ALWAYS_INLINE u32
+ALWAYS_INLINE CONST u32
 shift32p4_bit(register u8 k, const enum ShiftMaskMode mode)
 /*@*/
 {
@@ -257,7 +265,7 @@ shift32p4_bit(register u8 k, const enum ShiftMaskMode mode)
 	return r;
 }
 
-ALWAYS_INLINE u32
+ALWAYS_INLINE CONST u32
 lsmask32(register u8 k, const enum ShiftMaskMode mode)
 /*@*/
 {
