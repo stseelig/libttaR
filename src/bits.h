@@ -12,7 +12,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include <limits.h>
-#include <stdbool.h>
+#include <stdbool.h>	// true, false
 #include <stdint.h>
 #include <string.h>	// memmove, memset
 

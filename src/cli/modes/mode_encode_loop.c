@@ -551,7 +551,7 @@ encmt_io(struct MTArg_EncIO *const restrict arg)
 	const size_t nsamples_perframe        = fstat->nsamples_perframe;
 	const size_t decpcm_size              = fstat->decpcm_size;
 
-	struct EncStats estat;
+	struct EncStats estat = *arg->estat_out;
 	size_t readlen, nmemb_read;
 	size_t nsamples_flat_read_total = 0;
 	bool start_writing = false;

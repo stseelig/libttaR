@@ -20,7 +20,6 @@
 #include <unistd.h>
 
 #include "../../bits.h"
-#include "../../libttaR.h"
 #include "../../splint.h"
 
 #include "../cli.h"
@@ -89,20 +88,6 @@ static void dec_loop(struct OpenedFilesMember *const restrict)
 @*/
 ;
 
-#undef fstat
-#undef seektable
-#undef file
-static enum FileCheck filecheck_encfmt(
-	struct FileStats *const restrict fstat, FILE *const restrict file,
-	const char *const restrict
-)
-/*@globals	fileSystem@*/
-/*@modifies	fileSystem,
-		fstat,
-		file
-@*/
-;
-
 //////////////////////////////////////////////////////////////////////////////
 
 int
@@ -115,13 +100,12 @@ mode_decode(uint optind)
 @*/
 {
 	struct OpenedFiles openedfiles;
-	struct OpenedFilesMember *ofm;
 	uint nerrors_file = 0;
 	struct timespec ts_start, ts_stop;
-	size_t i;
-	union {	int	d;
-		bool	b;
-	} t;
+		size_t i;
+		union {	int	d;
+			bool	b;
+		} t;
 
 	memset(&openedfiles, 0x00, sizeof openedfiles);
 
@@ -134,36 +118,8 @@ mode_decode(uint optind)
 
 	// get file stats
 	for ( i = 0; i < openedfiles.nmemb; ++i ){
-
-		ofm = openedfiles.file[i];
-		if ( ofm->infile == NULL ){ continue; } // bad filename
-
-		// check for supported filetypes and fill most of fstat
-		t.b = (bool) filecheck_encfmt(
-			&ofm->fstat, ofm->infile, ofm->infile_name
-		);
-		if ( t.b ){
-			++nerrors_file;
-			continue;
-		}
-
-		if UNLIKELY ( ! libttaR_test_nchan((uint) ofm->fstat.nchan) ){
-			++nerrors_file;
-			error_tta_nf("%s: libttaR built without support for"
-				" nchan of %u", ofm->infile_name,
-				ofm->fstat.nchan
-			);
-		}
-
-		// the rest of fstat
-		ofm->fstat.framelen    = libttaR_nsamples_perframe_tta1(
-			ofm->fstat.samplerate
-		);
-		ofm->fstat.buflen      = (size_t) (
-			ofm->fstat.framelen * ofm->fstat.nchan
-		);
-		ofm->fstat.samplebytes = (enum TTASampleBytes) (
-			(ofm->fstat.samplebits + 7u) / 8u
+		nerrors_file += filestats_get(
+			openedfiles.file[i], MODE_DECODE
 		);
 	}
 
@@ -181,8 +137,12 @@ mode_decode(uint optind)
 	}
 
 	// exit if any errors
-	if ( nerrors_file != 0 ){
+	if UNLIKELY ( nerrors_file != 0 ){
 		exit((int) nerrors_file);
+	}
+	//
+	if UNLIKELY ( openedfiles.nmemb == 0 ){
+		warning_tta("nothing to do");
 	}
 
 	// decode each file
@@ -205,9 +165,6 @@ mode_decode(uint optind)
 				);
 			}
 		}
-	}
-	if UNLIKELY ( openedfiles.nmemb == 0 ){
-		warning_tta("nothing to do");
 	}
 
 	// print multifile stats
@@ -397,52 +354,6 @@ encode_multi:
 	g_rm_on_sigint = NULL;
 	free(outfile_name);
 	seektable_free(&seektable);
-}
-
-static enum FileCheck
-filecheck_encfmt(
-	struct FileStats *const restrict fstat,	FILE *const restrict file,
-	const char *const restrict filename
-)
-/*@globals	fileSystem@*/
-/*@modifies	fileSystem,
-		fstat,
-		file
-@*/
-{
-	union {	enum FileCheck	fc; } t;
-
-	// seek past any metadata on the input file
-	t.fc = metatags_skip(file);
-	if ( t.fc != FILECHECK_MISMATCH ){
-		error_filecheck(t.fc, fstat, filename, errno);
-		return t.fc;
-	}
-
-	// TTA1
-	t.fc = filecheck_tta1(fstat, file);
-	if ( t.fc == FILECHECK_OK ){ goto end_check; }
-	error_filecheck(t.fc, fstat, filename, errno);
-	return t.fc;
-
-end_check:
-	// check that file stats are within bounds / reasonable
-	if UNLIKELY (
-	     (fstat->nchan == 0)
-	    ||
-	     (fstat->samplerate == 0)
-	    ||
-	     (fstat->samplebits == 0)
-	    ||
-	     (fstat->samplebits > (u16) TTA_SAMPLEBITS_MAX)
-	){
-		error_filecheck(
-			FILECHECK_UNSUPPORTED_RESOLUTION, fstat, filename,
-			errno
-		);
-		return FILECHECK_UNSUPPORTED_RESOLUTION;
-	}
-	return FILECHECK_OK;
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////

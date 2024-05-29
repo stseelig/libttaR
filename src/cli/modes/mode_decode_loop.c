@@ -567,7 +567,7 @@ decmt_io(struct MTArg_DecIO *const restrict arg)
 	const size_t nsamples_perframe        = fstat->nsamples_perframe;
 	const size_t nsamples_enc             = fstat->nsamples_enc;
 
-	struct DecStats dstat;
+	struct DecStats dstat = *arg->dstat_out;
 	size_t framesize_tta, nbytes_read;
 	size_t nsamples_perchan_dec_total = 0;
 	bool start_writing = false;

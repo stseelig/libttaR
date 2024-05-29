@@ -73,6 +73,16 @@ openedfiles_close_free(struct OpenedFiles *const restrict of)
 @*/
 ;
 
+#undef ofm
+extern uint filestats_get(
+	struct OpenedFilesMember *const restrict ofm, const enum ProgramMode
+)
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem,
+		ofm->fstat
+@*/
+;
+
 /*@observer@*/
 extern CONST const char *get_encfmt_sfx(enum EncFormat) /*@*/;
 

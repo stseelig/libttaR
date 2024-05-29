@@ -17,9 +17,12 @@
 
 #include <sys/resource.h>
 
+#include "../libttaR.h"
+
 #include "debug.h"
 #include "main.h"
 #include "open.h"
+#include "opts.h"
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -38,6 +41,21 @@ static void fdlimit_check(void)
 @*/
 /*@modifies	fileSystem,
 		internalState
+@*/
+;
+
+//--------------------------------------------------------------------------//
+
+#undef fstat
+#undef file
+static enum FileCheck filecheck_codecfmt(
+	struct FileStats *const restrict fstat, FILE *const restrict file,
+	const char *const restrict, const enum ProgramMode
+)
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem,
+		fstat,
+		file
 @*/
 ;
 
@@ -194,6 +212,131 @@ openedfiles_close_free(struct OpenedFiles *const restrict of)
 	free(of->file);
 	of->nmemb = 0;
 	return;
+}
+
+//==========================================================================//
+
+// returns 0 on success, or number of errors
+uint
+filestats_get(
+	struct OpenedFilesMember *const restrict ofm,
+	const enum ProgramMode mode
+)
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem,
+		ofm->fstat
+@*/
+{
+	union {	int		d;
+		enum FileCheck	fc;
+	} t;
+
+	// bad filename check; would have already inc. error count
+	if ( ofm->infile == NULL ){ return 0; }
+
+	// check for supported filetypes and fill most of fstat
+	if ( (mode == MODE_ENCODE) && g_flag.rawpcm ){
+		rawpcm_statcopy(&ofm->fstat);
+		// TODO mode for stdin reading
+		t.d = fseeko(ofm->infile, 0, SEEK_END);
+		if UNLIKELY ( t.d != 0 ){
+			error_sys(errno, "fseeko", ofm->infile_name);
+		}
+		ofm->fstat.decpcm_off  = 0;
+		ofm->fstat.decpcm_size = (size_t) ftello(ofm->infile);
+	}
+	else {	t.fc = filecheck_codecfmt(
+			&ofm->fstat, ofm->infile, ofm->infile_name, mode
+		);
+		if ( t.fc != FILECHECK_OK ){ return 1u; }
+	}
+
+	if UNLIKELY ( ! libttaR_test_nchan((uint)ofm->fstat.nchan) ){
+		error_tta_nf("%s: libttaR built without support for "
+			"%u audio channels", ofm->infile_name,
+			ofm->fstat.nchan
+		);
+		return 1u;
+	}
+
+	// the rest of fstat
+	ofm->fstat.framelen    = libttaR_nsamples_perframe_tta1(
+		ofm->fstat.samplerate
+	);
+	ofm->fstat.buflen      = (size_t) (
+		ofm->fstat.framelen * ofm->fstat.nchan
+	);
+	ofm->fstat.samplebytes = (enum TTASampleBytes) (
+		(ofm->fstat.samplebits + 7u) / 8u
+	);
+
+	return 0;
+}
+
+//--------------------------------------------------------------------------//
+
+static enum FileCheck
+filecheck_codecfmt(
+	struct FileStats *const restrict fstat, FILE *const restrict file,
+	const char *const restrict filename, const enum ProgramMode mode
+)
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem,
+		fstat,
+		file
+@*/
+{
+	union {	enum FileCheck	fc; } t;
+
+	// seek past any metadata on the input file
+	t.fc = metatags_skip(file);
+	if ( t.fc != FILECHECK_MISMATCH ){
+		error_filecheck(t.fc, fstat, filename, errno);
+		return t.fc;
+	}
+
+	switch ( mode ){
+	case MODE_ENCODE:
+		// wav
+		t.fc = filecheck_wav(fstat, file);
+		if ( t.fc == FILECHECK_OK ){ goto end_check; }
+		if ( t.fc != FILECHECK_MISMATCH ){
+			error_filecheck(t.fc, fstat, filename, errno);
+			return t.fc;
+		}
+		// w64
+		t.fc = filecheck_w64(fstat, file);
+		if ( t.fc == FILECHECK_OK ){ goto end_check; }
+		error_filecheck(t.fc, fstat, filename, errno);
+		return t.fc;
+		break;
+	case MODE_DECODE:
+		// tta1
+		t.fc = filecheck_tta1(fstat, file);
+		if ( t.fc == FILECHECK_OK ){ goto end_check; }
+		error_filecheck(t.fc, fstat, filename, errno);
+		return t.fc;
+		break;
+	}
+
+end_check:
+	// check that file stats are within bounds / reasonable
+	if UNLIKELY (
+	     (fstat->nchan == 0)
+	    ||
+	     (fstat->samplerate == 0)
+	    ||
+	     (fstat->samplebits == 0)
+	    ||
+	     (fstat->samplebits > (u16) TTA_SAMPLEBITS_MAX)
+	){
+		error_filecheck(
+			FILECHECK_UNSUPPORTED_RESOLUTION, fstat, filename,
+			errno
+		);
+		return FILECHECK_UNSUPPORTED_RESOLUTION;
+	}
+	return FILECHECK_OK;
 }
 
 //==========================================================================//
