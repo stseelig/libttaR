@@ -26,22 +26,22 @@
 struct EncBuf {
 	size_t	i32buf_len;
 	size_t	ttabuf_len;
-	/*@owned@*/
+	/*@only@*/
 	i32	*i32buf;
 	/*@temp@*/
 	u8	*pcmbuf;
-	/*@owned@*/
+	/*@only@*/
 	u8	*ttabuf;
 };
 
 struct DecBuf {
 	size_t	i32buf_len;
 	size_t	ttabuf_len;
-	/*@owned@*/
+	/*@only@*/
 	u8	*pcmbuf;
 	/*@temp@*/
 	i32	*i32buf;
-	/*@owned@*/
+	/*@only@*/
 	u8	*ttabuf;
 };
 

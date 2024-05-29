@@ -64,7 +64,7 @@ struct SeekTable {
 	off_t	off;
 	size_t	nmemb;
 	size_t	limit;
-	/*@owned@*/
+	/*@only@*/
 	u32	*table;
 };
 
