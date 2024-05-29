@@ -94,7 +94,7 @@
 #if HAS_BUILTIN(__builtin_unreachable)
 #define UNREACHABLE		__builtin_unreachable();
 #else
-	UNREACHABLE		;
+#define UNREACHABLE		;
 #endif
 
 //--------------------------------------------------------------------------//
