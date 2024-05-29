@@ -184,8 +184,8 @@ decbuf_check_adjust(
 		if UNLIKELY ( db->ttabuf == NULL ){
 			error_sys(errno, "realloc", NULL);
 		}
-		assert(db->ttabuf != NULL);
 	}
+	assert(db->ttabuf != NULL);
 
 	return;
 }

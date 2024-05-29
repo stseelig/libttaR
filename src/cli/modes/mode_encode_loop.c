@@ -51,9 +51,9 @@ static void enc_frame_encode(
 		encbuf->ttabuf_len,
 		*encbuf->i32buf,
 		encbuf->ttabuf,
-		*encbuf->ttabuf
+		*encbuf->ttabuf,
 		*priv,
-		*user_out,
+		*user_out
 @*/
 ;
 
@@ -367,9 +367,9 @@ enc_frame_encode(
 		encbuf->ttabuf_len,
 		*encbuf->i32buf,
 		encbuf->ttabuf,
-		*encbuf->ttabuf
+		*encbuf->ttabuf,
 		*priv,
-		*user_out,
+		*user_out
 @*/
 {
 	struct LibTTAr_CodecState_User user = LIBTTAr_CODECSTATE_USER_INIT;

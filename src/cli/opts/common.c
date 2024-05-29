@@ -160,7 +160,7 @@ opt_common_outfile(uint optind, char *opt, enum OptMode mode)
 		(void) strtok(opt, "=");
 		subopt = strtok(NULL, "");
 		if UNLIKELY ( subopt == NULL ){
-			error_tta("%s: missing argument", "--format");
+			error_tta("%s: missing argument", "--outfile");
 		}
 		r = 0;
 		break;

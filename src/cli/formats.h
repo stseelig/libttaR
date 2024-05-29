@@ -23,10 +23,10 @@
 //////////////////////////////////////////////////////////////////////////////
 
 enum EncFormat {
-	ENCFMT_TTA1
-	//ENCFMT_TTA2
-	//ENCFMT_MKA_TTA1
-	//ENCFMT_MKA_TTA2
+	xENCFMT_TTA1
+	//xENCFMT_TTA2
+	//xENCFMT_MKA_TTA1
+	//xENCFMT_MKA_TTA2
 };
 
 enum DecFormat {
@@ -64,7 +64,7 @@ struct SeekTable {
 	off_t	off;
 	size_t	nmemb;
 	size_t	limit;
-	/*@only@*/
+	/*@owned@*/
 	u32	*table;
 };
 

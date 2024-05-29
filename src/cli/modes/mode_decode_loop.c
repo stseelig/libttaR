@@ -176,7 +176,7 @@ decst_loop(
 	memset(&dstat, 0x00, sizeof dstat);
 	goto loop_entr;
 	do {
-		// ENCFMT_TTA1
+		// xENCFMT_TTA1
 		// get size of tta-frame from seektable
 		framesize_tta = (size_t) letoh32(
 			seektable->table[nframes_read]
@@ -231,7 +231,7 @@ loop0_truncated:
 		++nframes_read;
 
 		// decode frame
-		dec_retval = dec_frame_decode(
+		dec_retval = (ichar) dec_frame_decode(
 			&decbuf, priv, &user, samplebytes, nchan,
 			ni32_perframe, nbytes_tta_perframe,
 			&nsamples_flat_2pad
@@ -579,7 +579,7 @@ decmt_io(struct MTArg_DecIO *const restrict arg)
 
 	goto loop0_entr;
 	do {
-		// ENCFMT_TTA1
+		// xENCFMT_TTA1
 		// get size of tta-frame from seektable
 		framesize_tta = (size_t) letoh32(
 			seektable->table[nframes_read]

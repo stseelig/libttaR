@@ -5,7 +5,7 @@
 #                                                                            #
 ##############################################################################
 #                                                                            #
-# Copyright (C) 2023, Shane Seelig                                           #
+# Copyright (C) 2023-2024, Shane Seelig                                      #
 # SPDX-License-Identifier: GPL-3.0-or-later                                  #
 #                                                                            #
 ##############################################################################
@@ -47,6 +47,7 @@ MODES="$MODES -strictops";
 MODES="$MODES -sysdirerrors";	# too much garbage in the system headers
 MODES="$MODES -typeuse";	# bugged
 
+MODES="$MODES +charint";
 MODES="$MODES +enumint";
 
 readonly MODES;

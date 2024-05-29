@@ -166,10 +166,10 @@ errprint_spinner(void)
 @*/
 {
 	const char spinner[] = {'|','\r','/','\r','-','\r','\\','\r'};
-	static u8 i = 0;
+	static uchar i = 0;
 
 	(void) fwrite(&spinner[i], (size_t) 2u, (size_t) 1u, stderr);
-	i = ((u8) (i + 2u) != (u8) (sizeof spinner) ? (u8) (i + 2u) : 0);
+	i = (i + 2u != (uchar) (sizeof spinner) ? i + 2u : 0);
 	return;
 }
 
@@ -357,7 +357,7 @@ encfmt_name(enum EncFormat fmt)
 	const char *r;
 
 	switch( fmt ){
-	case ENCFMT_TTA1:
+	case xENCFMT_TTA1:
 		r = "tta1";
 		break;
 	}

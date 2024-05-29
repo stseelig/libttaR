@@ -170,7 +170,7 @@ mode_encode(uint optind)
 		}
 
 		// the rest of fstat
-		ofm->fstat.encfmt      = ENCFMT_TTA1;
+		ofm->fstat.encfmt      = xENCFMT_TTA1;
 		ofm->fstat.framelen    = libttaR_nsamples_perframe_tta1(
 			ofm->fstat.samplerate
 		);
@@ -280,7 +280,7 @@ enc_loop(const struct OpenedFilesMember *const restrict ofm)
 
 	// setup seektable
 	switch ( fstat->encfmt ){
-	case ENCFMT_TTA1:
+	case xENCFMT_TTA1:
 		// seektable at start of file, size calculated in advance
 		t.z  = (fstat->decpcm_size + fstat->buflen) / fstat->buflen;
 		t.z -= (size_t) 1u;
@@ -306,7 +306,7 @@ enc_loop(const struct OpenedFilesMember *const restrict ofm)
 	// save some space for the outfile header and seektable
 	// TODO handle file of unknown size
 	switch ( fstat->encfmt ){
-	case ENCFMT_TTA1:
+	case xENCFMT_TTA1:
 		prewrite_tta1_header_seektable(
 			outfile, &seektable, outfile_name
 		);
@@ -342,7 +342,7 @@ encode_multi:
 
 	// write header and seektable
 	switch ( fstat->encfmt ){
-	case ENCFMT_TTA1:
+	case xENCFMT_TTA1:
 		rewind(outfile);
 		seektable.off = write_tta1_header(
 			outfile, estat.nsamples_perchan, fstat, outfile_name

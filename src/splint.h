@@ -26,10 +26,20 @@
 typedef enum clockid_t	clockid_t;
 /*@=redef@*/
 
+/*@-redef@*/ /*@-matchfields@*/
 struct timespec {
 	time_t  tv_sec;
 	long    tv_nsec;
 };
+/*@=redef@*/ /*@=matchfields@*/
+
+// these are bogus
+/*@-redef@*/
+typedef int	pthread_t;
+typedef int	pthread_attr_t;
+typedef int	pthread_spinlock_t;
+typedef int	sem_t;
+/*@=redef@*/
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -86,7 +96,7 @@ extern void *calloc(size_t, size_t)
 #undef res
 /*@external@*/ /*@unused@*/
 extern int clock_gettime(clockid_t, /*@out@*/ struct timespec *res)
-/*@modifies	res@*/
+/*@modifies	*res@*/
 ;
 
 /*@external@*/ /*@unused@*/
@@ -145,6 +155,7 @@ extern int setrlimit(int, /*@in@*/ struct rlimit *)
 
 //==========================================================================//
 
+/*@-protoparammatch@*/
 #undef thread
 /*@external@*/ /*@unused@*/
 extern int pthread_create(
@@ -156,13 +167,17 @@ extern int pthread_create(
 		*thread
 @*/
 ;
+/*@=protoparammatch@*/
 
+/*@-protoparammatch@*/
 /*@external@*/ /*@unused@*/
 extern int pthread_join(pthread_t, /*@null@*/ void **)
 /*@globals	internalState@*/
 /*@modifies	internalState@*/
 ;
+/*@=protoparammatch@*/
 
+/*@-protoparammatch@*/
 #undef lock
 /*@external@*/ /*@unused@*/
 extern int pthread_spin_destroy(pthread_spinlock_t *lock)
@@ -171,7 +186,9 @@ extern int pthread_spin_destroy(pthread_spinlock_t *lock)
 		*lock
 @*/
 ;
+/*@=protoparammatch@*/
 
+/*@-protoparammatch@*/
 #undef lock
 /*@external@*/ /*@unused@*/
 extern int pthread_spin_init(pthread_spinlock_t *lock, int)
@@ -180,7 +197,9 @@ extern int pthread_spin_init(pthread_spinlock_t *lock, int)
 		*lock
 @*/
 ;
+/*@=protoparammatch@*/
 
+/*@-protoparammatch@*/
 #undef lock
 /*@external@*/ /*@unused@*/
 extern int pthread_spin_lock(pthread_spinlock_t *lock)
@@ -189,7 +208,9 @@ extern int pthread_spin_lock(pthread_spinlock_t *lock)
 		*lock
 @*/
 ;
+/*@=protoparammatch@*/
 
+/*@-protoparammatch@*/
 #undef lock
 /*@external@*/ /*@unused@*/
 extern int pthread_spin_unlock(pthread_spinlock_t *lock)
@@ -198,7 +219,9 @@ extern int pthread_spin_unlock(pthread_spinlock_t *lock)
 		*lock
 @*/
 ;
+/*@=protoparammatch@*/
 
+/*@-protoparammatch@*/
 #undef sem
 /*@external@*/ /*@unused@*/
 extern int sem_destroy(sem_t *sem)
@@ -207,16 +230,20 @@ extern int sem_destroy(sem_t *sem)
 		*sem
 @*/
 ;
+/*@=protoparammatch@*/
 
+/*@-protoparammatch@*/
 #undef sem
 /*@external@*/ /*@unused@*/
-extern int sem_init(sem_t *sem, int, uint)
+extern int sem_init(sem_t *sem, int, unsigned int)
 /*@globals	internalState@*/
 /*@modifies	internalState,
 		*sem
 @*/
 ;
+/*@=protoparammatch@*/
 
+/*@-protoparammatch@*/
 #undef sem
 /*@external@*/ /*@unused@*/
 extern int sem_post(sem_t *sem)
@@ -225,7 +252,9 @@ extern int sem_post(sem_t *sem)
 		*sem
 @*/
 ;
+/*@=protoparammatch@*/
 
+/*@-protoparammatch@*/
 #undef sem
 /*@external@*/ /*@unused@*/
 extern int sem_wait(sem_t *sem)
@@ -234,6 +263,7 @@ extern int sem_wait(sem_t *sem)
 		*sem
 @*/
 ;
+/*@=protoparammatch@*/
 
 // EOF ///////////////////////////////////////////////////////////////////////
 #endif

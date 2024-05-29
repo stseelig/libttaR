@@ -107,7 +107,9 @@ libttaR_tta_encode(
 	const  u8 predict_k    = tta_predict_k(samplebytes);
 	const i32 filter_round = tta_filter_round(samplebytes);
 	const  u8 filter_k     = tta_filter_k(samplebytes);
-	const size_t safety_margin = TTABUF_SAFETY_MARGIN_FAST * nchan;
+	const size_t safety_margin = (size_t) (
+		TTABUF_SAFETY_MARGIN_FAST * nchan
+	);
 	const size_t safety_target = dest_len - safety_margin;
 
 	// initial state setup

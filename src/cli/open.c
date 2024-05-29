@@ -206,7 +206,7 @@ get_encfmt_sfx(enum EncFormat format)
 	const char *r;
 
 	switch ( format ){
-	case ENCFMT_TTA1:
+	case xENCFMT_TTA1:
 		r = ".tta";
 		break;
 	}

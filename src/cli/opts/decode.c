@@ -76,6 +76,7 @@ opt_decode_format(uint optind, char *opt, enum OptMode mode)
 @*/
 {
 	int r;
+	/*@observer@*/
 	const char *decfmt_name[] = {"raw", "wav", "w64"};
 	#define NUM_DECFMT ((uint) ((sizeof decfmt_name) / sizeof( char *)))
 	char *subopt;
@@ -96,9 +97,7 @@ opt_decode_format(uint optind, char *opt, enum OptMode mode)
 		(void) strtok(opt, "=");
 		subopt = strtok(NULL, "");
 		if UNLIKELY ( subopt == NULL ){
-			error_tta("%s: missing %s field",
-				"--format", "format"
-			);
+			error_tta("%s: missing argument", "--format");
 		}
 		r = 0;
 		break;
@@ -110,9 +109,9 @@ opt_decode_format(uint optind, char *opt, enum OptMode mode)
 			break;
 		}
 		else if UNLIKELY ( i == NUM_DECFMT - 1u ){
-			error_tta("%s: bad %s: %s",
+			error_tta("%s: bad argument: %s",
 				mode == OPTMODE_SHORT ? "-f" : "--format",
-				"format", subopt
+				subopt
 			);
 		} else{;}
 	}
