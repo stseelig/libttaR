@@ -125,24 +125,21 @@ mode_decode(uint optind)
 
 	// additional error check(s)
 	if UNLIKELY (
-	     (g_flag.outfile != NULL)
-	    &&
 	     (openedfiles.nmemb > (size_t) 1u)
 	    &&
-	     (! g_flag.outfile_is_dir)
+	     (g_flag.outfile != NULL) && (! g_flag.outfile_is_dir)
 	){
-		// MAYBE just warn
 		error_tta_nf("multiple infiles, but outfile not a directory");
 		++nerrors_file;
 	}
+	else if UNLIKELY ( openedfiles.nmemb == 0 ){
+		warning_tta("nothing to do");
+		++nerrors_file;
+	} else{;}
 
 	// exit if any errors
 	if UNLIKELY ( nerrors_file != 0 ){
 		exit((int) nerrors_file);
-	}
-	//
-	if UNLIKELY ( openedfiles.nmemb == 0 ){
-		warning_tta("nothing to do");
 	}
 
 	// decode each file

@@ -43,9 +43,9 @@ struct BitCache {
 //////////////////////////////////////////////////////////////////////////////
 
 /*@unchecked@*/ /*@unused@*/
-extern const u32 shift32p4_bit_table[];
+extern HIDDEN const u32 shift32p4_bit_table[];
 /*@unchecked@*/ /*@unused@*/
-extern const u32 lsmask32_table[];
+extern HIDDEN const u32 lsmask32_table[];
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -285,7 +285,9 @@ lsmask32(register u8 k, const enum ShiftMaskMode mode)
 
 //==========================================================================//
 
-// this procedure got macro'd because the compiler wasn't ALWAYS_INLINE'ing it
+// this procedure got macro'd because the compiler wasn't ALWAYS_INLINE'ing
+//   it, and it is faster than a functional version, because *k often does not
+//   change (lots of unnecessary writes)
 #define rice_cmpsum(sum, k, value) \
 { \
 	*(sum) += (value) - (*(sum) >> 4u); \
