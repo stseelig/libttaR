@@ -299,27 +299,19 @@ filecheck_codecfmt(
 	case MODE_ENCODE:
 		// wav
 		t.fc = filecheck_wav(fstat, file);
-		if ( t.fc == FILECHECK_OK ){ goto end_check; }
-		if ( t.fc != FILECHECK_MISMATCH ){
-			error_filecheck(t.fc, fstat, filename, errno);
-			return t.fc;
-		}
+		if ( t.fc == FILECHECK_OK ){ break; }
+		if ( t.fc != FILECHECK_MISMATCH ){ goto end_error; }
 		// w64
 		t.fc = filecheck_w64(fstat, file);
-		if ( t.fc == FILECHECK_OK ){ goto end_check; }
-		error_filecheck(t.fc, fstat, filename, errno);
-		return t.fc;
-		break;
+		if ( t.fc == FILECHECK_OK ){ break; }
+		goto end_error;
 	case MODE_DECODE:
 		// tta1
 		t.fc = filecheck_tta1(fstat, file);
-		if ( t.fc == FILECHECK_OK ){ goto end_check; }
-		error_filecheck(t.fc, fstat, filename, errno);
-		return t.fc;
-		break;
+		if ( t.fc == FILECHECK_OK ){ break; }
+		goto end_error;
 	}
 
-end_check:
 	// check that file stats are within bounds / reasonable
 	if UNLIKELY (
 	     (fstat->nchan == 0)
@@ -330,13 +322,11 @@ end_check:
 	    ||
 	     (fstat->samplebits > (u16) TTA_SAMPLEBITS_MAX)
 	){
-		error_filecheck(
-			FILECHECK_UNSUPPORTED_RESOLUTION, fstat, filename,
-			errno
-		);
-		return FILECHECK_UNSUPPORTED_RESOLUTION;
+		t.fc = FILECHECK_UNSUPPORTED_RESOLUTION;
+end_error:
+		error_filecheck(t.fc, fstat, filename, errno);
 	}
-	return FILECHECK_OK;
+	return t.fc;
 }
 
 //==========================================================================//
