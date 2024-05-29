@@ -290,10 +290,7 @@ filecheck_codecfmt(
 
 	// seek past any metadata on the input file
 	t.fc = metatags_skip(file);
-	if ( t.fc != FILECHECK_MISMATCH ){
-		error_filecheck(t.fc, fstat, filename, errno);
-		return t.fc;
-	}
+	if ( t.fc != FILECHECK_MISMATCH ){ goto end_error; }
 
 	switch ( mode ){
 	case MODE_ENCODE:
