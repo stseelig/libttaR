@@ -35,6 +35,8 @@ enum DecFormat {
 	DECFMT_WAV
 	//DECFMT_MKA_PCM
 };
+#define NUM_DECFMT		((size_t) 3u)
+#define DECFMT_NAME_ARRAY	{"raw", "w64", "wav"}
 
 enum IntType {
 	INT_SIGNED,
