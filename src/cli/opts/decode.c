@@ -77,7 +77,7 @@ opt_decode_format(uint optind, char *opt, enum OptMode mode)
 {
 	int r;
 	/*@observer@*/
-	const char *decfmt_name[] = {"raw", "wav", "w64"};
+	const char *decfmt_name[] = {"raw", "w64", "wav"};
 	#define NUM_DECFMT ((uint) ((sizeof decfmt_name) / sizeof( char *)))
 	char *subopt;
 	uint i;
