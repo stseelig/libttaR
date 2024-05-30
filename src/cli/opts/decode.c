@@ -102,6 +102,7 @@ opt_decode_format(uint optind, char *opt, enum OptMode mode)
 		r = 0;
 		break;
 	}
+	assert(subopt != NULL);
 
 	for ( i = 0; i < NUM_DECFMT; ++i ){
 		if ( strcmp(subopt, decfmt_name[i]) == 0 ){

@@ -9,6 +9,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
+#include <assert.h>
 #include <ctype.h>	// isdigit
 #include <stdlib.h>	// atoi
 #include <string.h>	// strtok
@@ -77,9 +78,12 @@ opt_common_delete_src(
 int
 opt_common_threads(uint optind, char *opt, enum OptMode mode)
 /*@globals	fileSystem,
-		g_flag
+		internalState,
+		g_flag,
+		g_nthreads
 @*/
 /*@modifies	fileSystem,
+		internalState,
 		g_flag.threadmode,
 		g_nthreads,
 		*opt
@@ -103,7 +107,9 @@ opt_common_threads(uint optind, char *opt, enum OptMode mode)
 			t.z = strlen(subopt);
 			r = 0;
 			for ( i = 0; i < t.z; ++i ){
-				if ( ! ((bool) isdigit(subopt[i])) ){ break; }
+				if ( ! ((bool) isdigit(subopt[i])) ){
+					/*@loopbreak@*/ break;
+				}
 				++r;
 			}
 		}
@@ -117,13 +123,14 @@ opt_common_threads(uint optind, char *opt, enum OptMode mode)
 		r = 0;
 		break;
 	}
+	assert(subopt != NULL);
 
 	t.d = atoi(subopt);
 	if UNLIKELY ( t.d <= 0 ){
 		error_tta("%s: argument out of range: %d", "--threads", t.d);
 	}
 
-	g_nthreads = t.d;
+	g_nthreads = (uint) t.d;
 	g_flag.threadmode = THREADMODE_MULTI;
 
 	return r;
@@ -165,6 +172,7 @@ opt_common_outfile(uint optind, char *opt, enum OptMode mode)
 		r = 0;
 		break;
 	}
+	assert(subopt != NULL);
 
 	// check if directory
 	if ( subopt[strlen(subopt) - 1u] == PATH_DELIM ){

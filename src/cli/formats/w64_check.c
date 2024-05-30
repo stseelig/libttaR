@@ -24,7 +24,10 @@
 static enum FileCheck filecheck_w64_find_subchunk(
 	FILE *const restrict file, const struct Guid128 *const restrict
 )
-/*@modifies	file@*/
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem,
+		file
+@*/
 ;
 
 //////////////////////////////////////////////////////////////////////////////
@@ -35,7 +38,9 @@ enum FileCheck
 filecheck_w64(
 	struct FileStats *const restrict fstat, FILE *const restrict file
 )
-/*@modifies	*fstat,
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem,
+		*fstat,
 		file
 @*/
 {
@@ -119,7 +124,10 @@ static enum FileCheck
 filecheck_w64_find_subchunk(
 	FILE *const restrict file, const struct Guid128 *const restrict target
 )
-/*@modifies	file@*/
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem,
+		file
+@*/
 {
 	struct Riff64Header rh;
 	union {	size_t	z;

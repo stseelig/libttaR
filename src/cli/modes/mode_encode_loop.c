@@ -529,8 +529,8 @@ encmt_io(struct MTArg_EncIO *const restrict arg)
 @*/
 {
 	struct MTArg_EncIO_Frames *const restrict  frames  = &arg->frames;
-	struct MTArg_IO_Outfile   *const restrict  outfile = &arg->outfile;
-	struct MTArg_IO_Infile    *const restrict  infile  = &arg->infile;
+	struct MTArg_IO_File      *const restrict  outfile = &arg->outfile;
+	struct MTArg_IO_File      *const restrict  infile  = &arg->infile;
 	const struct FileStats_EncMT *const restrict fstat =  arg->fstat;
 	struct SeekTable *const restrict         seektable =  arg->seektable;
 	//

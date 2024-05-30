@@ -151,12 +151,12 @@ mode_encode(uint optind)
 		if ( (i != 0) && (! g_flag.quiet) ){
 			(void) fputc('\n', stderr);
 		}
-		//
+
 		enc_loop(openedfiles.file[i]);
-		//
+
 		(void) fclose(openedfiles.file[i]->infile);
 		openedfiles.file[i]->infile = NULL;
-		//
+
 		if ( g_flag.delete_src ){
 			t.d = remove(openedfiles.file[i]->infile_name);
 			if UNLIKELY ( t.d != 0 ){
@@ -278,7 +278,7 @@ enc_loop(const struct OpenedFilesMember *const restrict ofm)
 encode_multi:
 		encmt_loop(
 			&seektable, &estat, fstat, outfile, outfile_name,
-			infile, infile_name, (uint) nthreads
+			infile, infile_name, nthreads
 		);
 		break;
 	}
@@ -294,14 +294,17 @@ encode_multi:
 		break;
 	}
 
-	// close outfile
 	if ( ! g_flag.quiet ){
 		(void) fputs("C\r", stderr);
 	}
+
+	// close outfile
 	t.d = fclose(outfile);
 	if UNLIKELY ( t.d != 0 ){
 		error_sys_nf(errno, "fclose", outfile_name);
 	}
+	//
+	g_rm_on_sigint = NULL;
 
 	if ( ! g_flag.quiet ){
 		(void) clock_gettime(CLOCK_MONOTONIC, &ts_stop);
@@ -314,7 +317,6 @@ encode_multi:
 	}
 
 	// cleanup
-	g_rm_on_sigint = NULL;
 	free(outfile_name);
 	seektable_free(&seektable);
 

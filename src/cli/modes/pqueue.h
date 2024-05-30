@@ -44,7 +44,7 @@ pqueue_init(
 	return;
 }
 
-INLINE uint
+ALWAYS_INLINE uint
 pdequeue(register struct PQueue *const restrict q)
 /*@modifies	q->next@*/
 {

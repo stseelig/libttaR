@@ -29,7 +29,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-static COLD int inc_nwarnings(void)
+static int inc_nwarnings(void)
 /*@globals	g_nwarnings@*/
 /*@modifies	g_nwarnings@*/
 {

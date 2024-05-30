@@ -20,7 +20,7 @@
 // MAYBE changes field names
 
 struct OpenedFilesMember {
-	/*@dependent@*/
+	/*@dependent@*/ /*@relnull@*/
 	FILE			*infile;
 	/*@dependent@*/
 	char			*infile_name;	// from argv, not allocated
@@ -45,7 +45,6 @@ extern FILE *fopen_check(const char *, const char *, enum Fatality)
 		internalState
 @*/
 ;
-
 
 #undef of
 extern int openedfiles_add(
@@ -85,7 +84,6 @@ extern uint filestats_get(
 
 /*@observer@*/
 extern CONST const char *get_encfmt_sfx(enum EncFormat) /*@*/;
-
 /*@observer@*/
 extern CONST const char *get_decfmt_sfx(enum DecFormat) /*@*/;
 

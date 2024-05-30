@@ -202,8 +202,7 @@ tta_prefilter_dec(register i32 x)
 /*@*/
 {
 	return ((((u32) x) & 0x1u) != 0
-		? asr32(++x, (u8) 1u)
-		: asr32( -x, (u8) 1u)
+		? asr32(++x, (u8) 1u) : asr32(-x, (u8) 1u)
 	);
 }
 
@@ -211,9 +210,8 @@ tta_prefilter_dec(register i32 x)
 
 ALWAYS_INLINE i32
 tta_filter(
-	register struct Filter *const restrict filter,
-	register i32 round, register u8 k, register i32 value,
-	const enum TTAMode mode
+	register struct Filter *const restrict filter, register i32 round,
+	register u8 k, register i32 value, const enum TTAMode mode
 )
 /*@modifies	*filter@*/
 {
@@ -253,14 +251,14 @@ tta_filter(
 
 	switch ( mode ){
 	case TTA_ENC:
-		b[8u]		 = value;
-		value		-= asr32(sum, k);
-		filter->error	 = value;
+		b[8u]         = value;
+		value        -= asr32(sum, k);
+		filter->error = value;
 		break;
 	case TTA_DEC:
-		filter->error	 = value;
-		value		+= asr32(sum, k);
-		b[8u]		 = value;
+		filter->error = value;
+		value        += asr32(sum, k);
+		b[8u]         = value;
 		break;
 	}
 

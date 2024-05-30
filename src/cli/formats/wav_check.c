@@ -24,7 +24,10 @@
 static enum FileCheck filecheck_wav_find_subchunk(
 	FILE *const restrict file, const char *const restrict
 )
-/*@modifies	file@*/
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem,
+		file
+@*/
 ;
 
 //////////////////////////////////////////////////////////////////////////////
@@ -35,7 +38,9 @@ enum FileCheck
 filecheck_wav(
 	struct FileStats *const restrict fstat, FILE *const restrict file
 )
-/*@modifies	*fstat,
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem,
+		*fstat,
 		file
 @*/
 {
@@ -111,7 +116,9 @@ enum FileCheck
 filecheck_wav_read_subchunk_fmt(
 	struct FileStats *const restrict fstat, FILE *const restrict file
 )
-/*@modifies	*fstat,
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem,
+		*fstat,
 		file
 @*/
 {
@@ -192,7 +199,10 @@ static enum FileCheck
 filecheck_wav_find_subchunk(
 	FILE *const restrict file, const char *const restrict target
 )
-/*@modifies	file@*/
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem,
+		file
+@*/
 {
 	struct RiffHeader rh;
 	union {	size_t	z;

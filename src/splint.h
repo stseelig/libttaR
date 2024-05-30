@@ -47,6 +47,10 @@ typedef int	sem_t;
 #define UINT8_MAX	((uint8_t) 0xFFu)
 #endif
 
+#ifndef UINT16_MAX
+#define UINT16_MAX	((uint16_t) 0xFFFFu)
+#endif
+
 #ifndef UINT32_MAX
 #define UINT32_MAX	((uint32_t) 0xFFFFFFFFu)
 #endif
@@ -85,6 +89,9 @@ typedef int	sem_t;
 
 //////////////////////////////////////////////////////////////////////////////
 
+/*@external@*/ /*@unused@*/
+extern long long atoll(const char *) /*@*/;
+
 /*@-incondefs@*/
 /*@external@*/ /*@unused@*/
 extern void *calloc(size_t, size_t)
@@ -97,6 +104,15 @@ extern void *calloc(size_t, size_t)
 /*@external@*/ /*@unused@*/
 extern int clock_gettime(clockid_t, /*@out@*/ struct timespec *res)
 /*@modifies	*res@*/
+;
+
+#undef filehandle
+/*@external@*/ /*@unused@*/
+extern void flockfile(FILE *filehandle)
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem,
+		filehandle
+@*/
 ;
 
 /*@external@*/ /*@unused@*/
@@ -117,6 +133,15 @@ extern int ftruncate(int, off_t)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 /*@=type@*/
+;
+
+#undef filehandle
+/*@external@*/ /*@unused@*/
+extern void funlockfile(FILE *filehandle)
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem,
+		filehandle
+@*/
 ;
 
 /*@-protoparammatch@*/
@@ -153,6 +178,12 @@ extern int setrlimit(int, /*@in@*/ struct rlimit *)
 /*@modifies	internalState@*/
 ;
 
+#undef buf
+/*@temp@*/ /*@external@*/ /*@unused@*/
+extern char *strerror_r(int, /*@out@*/ char *buf, size_t)
+/*@modifies	*buf@*/
+;
+
 //==========================================================================//
 
 /*@-protoparammatch@*/
@@ -170,10 +201,13 @@ extern int pthread_create(
 /*@=protoparammatch@*/
 
 /*@-protoparammatch@*/
+#undef retval
 /*@external@*/ /*@unused@*/
-extern int pthread_join(pthread_t, /*@null@*/ void **)
+extern int pthread_join(pthread_t, /*@null@*/ void **retval)
 /*@globals	internalState@*/
-/*@modifies	internalState@*/
+/*@modifies	internalState,
+		retval
+@*/
 ;
 /*@=protoparammatch@*/
 

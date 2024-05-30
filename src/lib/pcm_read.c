@@ -23,21 +23,21 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #undef dest
-ALWAYS_INLINE size_t pcm_read_u8(
+static size_t pcm_read_u8(
 	register i32 *const dest, register const u8 *const, register size_t
 )
 /*@modifies	*dest@*/
 ;
 
 #undef dest
-ALWAYS_INLINE size_t pcm_read_i16le(
+static size_t pcm_read_i16le(
 	register i32 *const dest, register const u8 *const, register size_t
 )
 /*@modifies	*dest@*/
 ;
 
 #undef dest
-ALWAYS_INLINE size_t pcm_read_i24le(
+static size_t pcm_read_i24le(
 	register i32 *const dest, register const u8 *const, register size_t
 )
 /*@modifies	*dest@*/
@@ -45,7 +45,7 @@ ALWAYS_INLINE size_t pcm_read_i24le(
 
 //--------------------------------------------------------------------------//
 
-ALWAYS_INLINE i32 u8_to_i32h(register u8) /*@*/;
+ALWAYS_INLINE CONST i32 u8_to_i32h(register u8) /*@*/;
 
 #undef dest
 ALWAYS_INLINE void read_i16le_to_i32h(
@@ -90,7 +90,7 @@ libttaR_pcm_read(
 //--------------------------------------------------------------------------//
 
 // returns nsamples
-ALWAYS_INLINE size_t
+static size_t
 pcm_read_u8(
 	register i32 *const dest, register const u8 *const src,
 	register size_t nsamples
@@ -105,7 +105,7 @@ pcm_read_u8(
 }
 
 // returns nsamples
-ALWAYS_INLINE size_t
+static size_t
 pcm_read_i16le(
 	register i32 *const dest, register const u8 *const src,
 	register size_t nsamples
@@ -120,7 +120,7 @@ pcm_read_i16le(
 }
 
 // returns nsamples
-ALWAYS_INLINE size_t
+static size_t
 pcm_read_i24le(
 	register i32 *const dest, register const u8 *const src,
 	register size_t nsamples
@@ -136,7 +136,7 @@ pcm_read_i24le(
 
 //--------------------------------------------------------------------------//
 
-ALWAYS_INLINE i32
+ALWAYS_INLINE CONST i32
 u8_to_i32h(register u8 x)
 /*@*/
 {

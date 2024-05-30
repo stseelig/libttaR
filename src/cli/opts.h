@@ -52,10 +52,12 @@ extern int opt_common_delete_src(uint, char *, enum OptMode)
 
 #undef opt
 extern int opt_common_outfile(uint, char *opt, enum OptMode)
-/*@globals	internalState,
+/*@globals	fileSystem,
+		internalState,
 		g_flag
 @*/
-/*@modifies	internalState,
+/*@modifies	fileSystem,
+		internalState,
 		g_flag.outfile,
 		g_flag.outfile_is_dir,
 		*opt
@@ -70,9 +72,12 @@ extern int opt_common_quiet(uint, char *, enum OptMode)
 #undef opt
 extern int opt_common_threads(uint, char *opt, enum OptMode)
 /*@globals	fileSystem,
-		g_flag
+		internalState,
+		g_flag,
+		g_nthreads
 @*/
 /*@modifies	fileSystem,
+		internalState,
 		g_flag.threadmode,
 		g_nthreads,
 		*opt
@@ -85,7 +90,7 @@ extern int opt_common_threads(uint, char *opt, enum OptMode)
 
 #undef fstat
 extern void rawpcm_statcopy(struct FileStats *const restrict fstat)
-/*@modifies	fstat@*/
+/*@modifies	*fstat@*/
 ;
 
 // EOF ///////////////////////////////////////////////////////////////////////

@@ -63,14 +63,10 @@ static void errprint_stats_codectime(double, double, size_t)
 ;
 
 /*@observer@*/
-static CONST const char *decfmt_name(enum DecFormat)
-/*@*/
-;
+static CONST const char *decfmt_name(enum DecFormat) /*@*/;
 
 /*@observer@*/
-static CONST const char *encfmt_name(enum EncFormat)
-/*@*/
-;
+static CONST const char *encfmt_name(enum EncFormat) /*@*/;
 
 static CONST double calc_time_pcm(
 	size_t, const struct FileStats *const restrict

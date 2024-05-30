@@ -9,6 +9,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
+#include <assert.h>
 #include <stdbool.h>	// true
 #include <stdlib.h>	// atoll, exit
 #include <string.h>	// strtok
@@ -29,7 +30,7 @@ static int opt_encode_rawpcm(uint, char *opt, enum OptMode)
 /*@globals	fileSystem,
 		internalState
 @*/
-/*@modifies	fileSystem
+/*@modifies	fileSystem,
 		internalState,
 		*opt
 @*/
@@ -74,7 +75,7 @@ static struct {
 
 void
 rawpcm_statcopy(struct FileStats *const restrict fstat)
-/*@modifies	fstat@*/
+/*@modifies	*fstat@*/
 {
 	fstat->decfmt		= f_rpstat.decfmt;
 	fstat->inttype		= f_rpstat.inttype;
@@ -96,7 +97,7 @@ opt_encode_rawpcm(
 /*@globals	fileSystem,
 		internalState
 @*/
-/*@modifies	fileSystem
+/*@modifies	fileSystem,
 		internalState,
 		*opt
 @*/
@@ -118,19 +119,20 @@ opt_encode_rawpcm(
 	if UNLIKELY ( subopt == NULL ){
 		error_tta("%s: missing %s field", "--rawpcm", "format");
 	}
+	assert(subopt != NULL);
 
 	if ( strcmp(subopt, "u8") == 0 ){
 		f_rpstat.inttype    = INT_UNSIGNED;
-		f_rpstat.samplebits =  8u;
+		f_rpstat.samplebits = (u16) 8u;
 	}
 	else if ( strcmp(subopt, "i16le") == 0 ){
 		f_rpstat.inttype    = INT_SIGNED;
-		f_rpstat.samplebits = 16u;
+		f_rpstat.samplebits = (u16) 16u;
 		f_rpstat.endian     = xENDIAN_LITTLE;
 	}
 	else if ( strcmp(subopt, "i24le") == 0 ){
 		f_rpstat.inttype    = INT_SIGNED;
-		f_rpstat.samplebits = 24u;
+		f_rpstat.samplebits = (u16) 24u;
 		f_rpstat.endian     = xENDIAN_LITTLE;
 	}
 	else if UNLIKELY ( true ) {
@@ -142,9 +144,10 @@ opt_encode_rawpcm(
 	if UNLIKELY ( subopt == NULL ){
 		error_tta("%s: missing %s field", "--rawpcm", "samplerate");
 	}
+	assert(subopt != NULL);
 
 	t.ll = atoll(subopt);
-	if UNLIKELY ( (t.ll <= 0) || (t.ll > UINT32_MAX) ){
+	if UNLIKELY ( (t.ll <= 0) || (t.ll > (longlong) UINT32_MAX) ){
 		error_tta("%s: %s out of range: %lld",
 			"--rawpcm", "samplerate", t.ll
 		);
@@ -156,9 +159,10 @@ opt_encode_rawpcm(
 	if UNLIKELY ( subopt == NULL ){
 		error_tta("%s: missing %s field", "--rawpcm", "nchan");
 	}
+	assert(subopt != NULL);
 
 	t.ll = atoll(subopt);
-	if UNLIKELY ( (t.ll <= 0) || (t.ll > UINT16_MAX) ){
+	if UNLIKELY ( (t.ll <= 0) || (t.ll > (longlong) UINT16_MAX) ){
 		error_tta("%s: %s out of range: %lld",
 			"--rawpcm", "nchan", t.ll
 		);

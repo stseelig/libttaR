@@ -60,17 +60,13 @@ rice_init(
 
 //--------------------------------------------------------------------------//
 
-ALWAYS_INLINE CONST u32 shift32_bit(register u8)
-/*@*/
-;
+ALWAYS_INLINE CONST u32 shift32_bit(register u8) /*@*/;
 
 ALWAYS_INLINE CONST u32 shift32p4_bit(register u8, const enum ShiftMaskMode)
 /*@*/
 ;
 
-ALWAYS_INLINE CONST u32 lsmask32(register u8, const enum ShiftMaskMode)
-/*@*/
-;
+ALWAYS_INLINE CONST u32 lsmask32(register u8, const enum ShiftMaskMode) /*@*/;
 
 //--------------------------------------------------------------------------//
 
@@ -241,13 +237,12 @@ shift32_bit(register u8 k)
 	return (u32) (0x1u << k);
 }
 
-// keeps rice.kN in check
+// keeps rice.k[] in check
 ALWAYS_INLINE CONST u32
 shift32p4_bit(register u8 k, const enum ShiftMaskMode mode)
 /*@*/
 {
 	register u32 r;
-
 	switch ( mode ){
 	case SMM_CONST:
 	case SMM_SHIFT:
@@ -268,7 +263,6 @@ lsmask32(register u8 k, const enum ShiftMaskMode mode)
 /*@*/
 {
 	register u32 r;
-
 	switch ( mode ){
 	case SMM_CONST:
 	case SMM_SHIFT:
@@ -502,13 +496,13 @@ rice_unary_get(
 	register union { u8 u_8; } t;
 
 	// switched initial value from 0, because in rice_decode, depth1 is
-	//  much more likely than not; moved a '--unary' in the depth1 branch
-	//  to a 'unary = 0' in !depth1 branch
+	//   much more likely than not; moved a '--unary' in the depth1 branch
+	//   to a 'unary = 0' in !depth1 branch
 	*unary = UINT32_MAX;
 
 #ifndef LIBTTAr_NO_INSTRUCTION_TZCNT
 	// this loop is slightly better than the lookup-table one, as long as
-	//  tbcnt32 maps to an instruction (tzcnt/ctz). otherwise a bit slower
+	//   tbcnt32 is an instruction (tzcnt/ctz). otherwise a bit slower
 	goto loop_entr;
 	do {	*cache  = rice_crc32(src[r++], crc);
 		*count  = (u8) 8u;

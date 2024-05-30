@@ -135,14 +135,7 @@ struct MTArg_Decoder_Frames {
 
 //--------------------------------------------------------------------------//
 
-struct MTArg_IO_Outfile {
-	/*@temp@*/
-	FILE		*fh;
-	/*@temp@*/
-	const char	*name;
-};
-
-struct MTArg_IO_Infile {
+struct MTArg_IO_File {
 	/*@temp@*/
 	FILE		*fh;
 	/*@temp@*/
@@ -153,8 +146,8 @@ struct MTArg_IO_Infile {
 
 struct MTArg_EncIO {
 	struct MTArg_EncIO_Frames	frames;
-	struct MTArg_IO_Outfile		outfile;
-	struct MTArg_IO_Infile 		infile;
+	struct MTArg_IO_File		outfile;
+	struct MTArg_IO_File 		infile;
 	/*@temp@*/
 	const struct FileStats_EncMT	*fstat;
 	/*@temp@*/
@@ -173,8 +166,8 @@ struct MTArg_Encoder {
 
 struct MTArg_DecIO {
 	struct MTArg_DecIO_Frames	frames;
-	struct MTArg_IO_Outfile		outfile;
-	struct MTArg_IO_Infile 		infile;
+	struct MTArg_IO_File		outfile;
+	struct MTArg_IO_File 		infile;
 	/*@temp@*/
 	const struct FileStats_DecMT	*fstat;
 	/*@temp@*/

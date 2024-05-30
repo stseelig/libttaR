@@ -537,8 +537,8 @@ decmt_io(struct MTArg_DecIO *const restrict arg)
 @*/
 {
 	struct MTArg_DecIO_Frames *const restrict  frames  = &arg->frames;
-	struct MTArg_IO_Outfile   *const restrict  outfile = &arg->outfile;
-	struct MTArg_IO_Infile    *const restrict  infile  = &arg->infile;
+	struct MTArg_IO_File      *const restrict  outfile = &arg->outfile;
+	struct MTArg_IO_File      *const restrict  infile  = &arg->infile;
 	const struct FileStats_DecMT *const restrict fstat =  arg->fstat;
 	const struct SeekTable *const restrict seektable   =  arg->seektable;
 	//

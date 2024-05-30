@@ -39,14 +39,6 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-#ifdef __has_builtin
-#define HAS_BUILTIN(x)	__has_builtin(x)
-#else
-#define HAS_BUILTIN(x)	0
-#endif
-
-//==========================================================================//
-
 #define INLINE		/*@unused@*/ static inline
 #define ALWAYS_INLINE	INLINE __attribute__((always_inline))
 
@@ -63,6 +55,14 @@
 #define PACKED		__attribute__((packed))
 #define HIDDEN		__attribute__((visibility("hidden")))
 
+//==========================================================================//
+
+#ifdef __has_builtin
+#define HAS_BUILTIN(x)	__has_builtin(x)
+#else
+#define HAS_BUILTIN(x)	0
+#endif
+
 //--------------------------------------------------------------------------//
 
 // these should always be A/B tested; not always beneficial
@@ -77,10 +77,10 @@
 
 #if HAS_BUILTIN(__builtin_expect_with_probability)
 #define LIKELY_P(cond, prob)	( \
-	__builtin_expect_with_probability(!!(cond), true, prob) \
+	__builtin_expect_with_probability(!!(cond), true, (prob)) \
 )
 #define UNLIKELY_P(cond, prob)	( \
-	__builtin_expect_with_probability(!!(cond), false, prob) \
+	__builtin_expect_with_probability(!!(cond), false, (prob)) \
 )
 #else
 #define LIKELY_P(cond, prob)	(cond)

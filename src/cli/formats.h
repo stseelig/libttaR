@@ -251,7 +251,9 @@ extern void write_tta_seektable(
 extern enum FileCheck filecheck_w64(
 	struct FileStats *const restrict fstat, FILE *const restrict file
 )
-/*@modifies	*fstat,
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem,
+		*fstat,
 		file
 @*/
 ;
@@ -288,7 +290,9 @@ extern void write_w64_header(
 extern enum FileCheck filecheck_wav(
 	struct FileStats *const restrict fstat, FILE *const restrict file
 )
-/*@modifies	*fstat,
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem,
+		*fstat,
 		file
 @*/
 ;
@@ -298,7 +302,9 @@ extern enum FileCheck filecheck_wav(
 extern enum FileCheck filecheck_wav_read_subchunk_fmt(
 	struct FileStats *const restrict fstat, FILE *const restrict file
 )
-/*@modifies	*fstat,
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem,
+		*fstat,
 		file
 @*/
 ;
