@@ -252,9 +252,7 @@ shift32p4_bit(register u8 k, const enum ShiftMaskMode mode)
 	case SMM_CONST:
 	case SMM_SHIFT:
 		r = (u32) (k != 0
-			? 0x1u << ((u8) (k + 4u) <= (u8) 31u
-				? (u8) (k + 4u) : (u8) 31u
-			)
+			? (k < (u8) 28u ? 0x1u << (u8) (k + 4u) : 0xFFFFFFFFu)
 			: 0
 		);
 		break;
@@ -286,8 +284,8 @@ lsmask32(register u8 k, const enum ShiftMaskMode mode)
 //==========================================================================//
 
 // this procedure got macro'd because the compiler wasn't ALWAYS_INLINE'ing
-//   it, and it is faster than a functional version, because *k often does not
-//   change (lots of unnecessary writes)
+//   it. it is faster than a functional version (ie, returning k, not using
+//   pointers), because *k often does not change (lots of unnecessary writes)
 #define rice_cmpsum(sum, k, value) \
 { \
 	*(sum) += (value) - (*(sum) >> 4u); \
