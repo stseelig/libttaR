@@ -184,7 +184,10 @@ error_filecheck(
 		}
 		else {	error_tta_nf("%s: unsupported datatype: %s",
 				filename,
-				guid128_format(guidbuf, &fstat->wavsubformat)
+				guid128_format(
+					guidbuf, sizeof guidbuf,
+					&fstat->wavsubformat
+				)
 			);
 		}
 		break;

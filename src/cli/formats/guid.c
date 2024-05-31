@@ -20,49 +20,33 @@
 
 // formats buf to:
 //	00000000-1111-2222-3333-444444444444
-// buf should have size of GUID128_BUFSIZE
+// buf_len should be GUID128_BUFSIZE
 // returns buf
 char *
 guid128_format(
-	/*@returned@*/ /*@out@*/ char *const restrict buf,
+	/*@returned@*/ /*@out@*/ char *const restrict buf, size_t buflen,
 	const struct Guid128 *const restrict guid
 )
 /*@modifies	*buf@*/
 {
-	uint i, j;
-
 	// first 3 are little-endian, last 2 are big-endian
-	j = 0;
-	for ( i = (uint) (sizeof guid->d0); i-- > 0; j += 2u ){
-		(void) snprintf(
-			&buf[j], (size_t) 3u, "%02"PRIX8"", guid->d0[i]
-		);
-	}
-	buf[j++] = '-';
-	for ( i = (uint) (sizeof guid->d1); i-- > 0; j += 2u ){
-		(void) snprintf(
-			&buf[j], (size_t) 3u, "%02"PRIX8"", guid->d1[i]
-		);
-	}
-	buf[j++] = '-';
-	for ( i = (uint) (sizeof guid->d2); i-- > 0; j += 2u ){
-		(void) snprintf(
-			&buf[j], (size_t) 3u, "%02"PRIX8"", guid->d2[i]
-		);
-	}
-	buf[j++] = '-';
-	for ( i = 0; i < (uint) (sizeof guid->d3); ++i, j += 2u ){
-		(void) snprintf(
-			&buf[j], (size_t) 3u, "%02"PRIX8"", guid->d3[i]
-		);
-	}
-	buf[j++] = '-';
-	for ( i = 0; i < (uint) (sizeof guid->d4); ++i, j += 2u){
-		(void) snprintf(
-			&buf[j], (size_t) 3u, "%02"PRIX8"", guid->d4[i]
-		);
-	}
-
+	(void) snprintf(buf, buflen,
+		"%02"PRIX8"%02"PRIX8"%02"PRIX8"%02"PRIX8
+		"-"
+		"%02"PRIX8"%02"PRIX8
+		"-"
+		"%02"PRIX8"%02"PRIX8
+		"-"
+		"%02"PRIX8"%02"PRIX8
+		"-"
+		"%02"PRIX8"%02"PRIX8"%02"PRIX8"%02"PRIX8"%02"PRIX8"%02"PRIX8,
+		guid->d0[3u], guid->d0[2u], guid->d0[1u], guid->d0[0u],
+		guid->d1[1u], guid->d1[0u],
+		guid->d2[1u], guid->d2[0u],
+		guid->d3[0u], guid->d3[1u],
+		guid->d4[0u], guid->d4[1u], guid->d4[2u], guid->d4[3u],
+		guid->d4[4u], guid->d4[5u]
+	);
 	return buf;
 }
 
