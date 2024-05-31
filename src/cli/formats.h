@@ -28,6 +28,9 @@ enum EncFormat {
 	//xENCFMT_MKA_TTA1
 	//xENCFMT_MKA_TTA2
 };
+#define NUM_ENCFMT		((uint) 1u)
+#define xENCFMT_NAME_ARRAY	{ "tta1"}
+#define xENCFMT_EXT_ARRAY	{".tta"}
 
 enum DecFormat {
 	DECFMT_RAWPCM,
@@ -36,7 +39,8 @@ enum DecFormat {
 	//DECFMT_MKA_PCM
 };
 #define NUM_DECFMT		((uint) 3u)
-#define DECFMT_NAME_ARRAY	{"raw", "w64", "wav"}
+#define DECFMT_NAME_ARRAY	{ "raw",  "w64",  "wav"}
+#define DECFMT_EXT_ARRAY	{".raw", ".w64", ".wav"}
 
 enum IntType {
 	INT_SIGNED,

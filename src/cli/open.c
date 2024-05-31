@@ -330,38 +330,22 @@ end_error:
 
 /*@observer@*/
 CONST const char *
-get_encfmt_sfx(enum EncFormat format)
+get_encfmt_sfx(enum EncFormat fmt)
 /*@*/
 {
-	const char *r;
-
-	switch ( format ){
-	case xENCFMT_TTA1:
-		r = ".tta";
-		break;
-	}
-	return r;
+	/*@observer@*/
+	const char *const ext[] = xENCFMT_EXT_ARRAY;
+	return ext[fmt];
 }
 
 /*@observer@*/
 CONST const char *
-get_decfmt_sfx(enum DecFormat format)
+get_decfmt_sfx(enum DecFormat fmt)
 /*@*/
 {
-	const char *r;
-
-	switch ( format ){
-	case DECFMT_RAWPCM:
-		r = ".raw";
-		break;
-	case DECFMT_W64:
-		r = ".w64";
-		break;
-	case DECFMT_WAV:
-		r = ".wav";
-		break;
-	}
-	return r;
+	/*@observer@*/
+	const char *const ext[] = DECFMT_EXT_ARRAY;
+	return ext[fmt];
 }
 
 /*@only@*/

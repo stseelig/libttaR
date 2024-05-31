@@ -209,13 +209,13 @@ errprint_stats_format(
 		break;
 	}
 
-	(void) fprintf(stderr, " format\t: ");
+	(void) fputs(" format\t: ", stderr);
 	//
 	(void) fputs(inname, stderr);
-	(void) fprintf(stderr, " => ");
+	(void) fputs(" => ", stderr);
 	(void) fputs(outname, stderr);
 	//
-	(void) fprintf(stderr, "\t; ");
+	(void) fputs("\t; ", stderr);
 	(void) fprintf(stderr, "%c",
 		stats->inttype == INT_SIGNED ? 'i' : 'u'
 	);
@@ -226,12 +226,12 @@ errprint_stats_format(
 		);
 	}
 	//
-	(void) fprintf(stderr, " | ");
+	(void) fputs(" | ", stderr);
 	(void) fprintf(stderr, "%"PRIu32" Hz", stats->samplerate);
 	//
-	(void) fprintf(stderr, " | ");
+	(void) fputs(" | ", stderr);
 	(void) fprintf(stderr, "%"PRIu16"-ch", stats->nchan);
-	(void) fprintf(stderr, " (");
+	(void) fputs(" (", stderr);
 	(void) errprint_chanmask_wav(
 		(uint) stats->nchan, stats->chanmask_wav
 	);
@@ -246,16 +246,16 @@ errprint_stats_frame(const struct FileStats *const restrict stats)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 {
-	(void) fprintf(stderr, " frame\t: ");
+	(void) fputs(" frame\t: ", stderr);
 	(void) fprintf(stderr, "%zu sample%s",
 		stats->framelen, stats->framelen == (size_t) 1u ? "" : "s"
 	);
 	//
-	(void) fprintf(stderr, "\t; ");
+	(void) fputs("\t; ", stderr);
 	errprint_size((size_t) (stats->buflen * stats->samplebytes));
 	(void) fputc('B', stderr);
 	//
-	(void) fprintf(stderr, "\t, ");
+	(void) fputs("\t, ", stderr);
 	errprint_time(calc_time_pcm(stats->buflen, stats));
 	//
 	(void) fputc('\n', stderr);
@@ -267,16 +267,16 @@ errprint_stats_pcm(double pcmtime, size_t nframes, size_t nbytes_pcm)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 {
-	(void) fprintf(stderr, " pcm\t: ");
+	(void) fputs(" pcm\t: ", stderr);
 	errprint_size(nbytes_pcm);
 	(void) fputc('B', stderr);
 	//
-	(void) fprintf(stderr, "\t; ");
+	(void) fputs("\t; ", stderr);
 	(void) fprintf(stderr, "%zu frame%s",
 		nframes, nframes == (size_t) 1u ? "" : "s"
 	);
 	//
-	(void) fprintf(stderr, "\t, ");
+	(void) fputs("\t, ", stderr);
 	errprint_time(pcmtime);
 	//
 	(void) fputc('\n', stderr);
@@ -288,15 +288,15 @@ errprint_stats_tta(double pcmtime, size_t nbytes_pcm, size_t nbytes_tta)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 {
-	(void) fprintf(stderr, " tta\t: ");
+	(void) fputs(" tta\t: ", stderr);
 	errprint_size(nbytes_tta);
 	(void) fputc('B', stderr);
 	//
-	(void) fprintf(stderr, "\t; ");
+	(void) fputs("\t; ", stderr);
 	errprint_size((size_t) ((8u * nbytes_tta) / pcmtime));
-	(void) fprintf(stderr, "b/s");
+	(void) fputs("b/s", stderr);
 	//
-	(void) fprintf(stderr, "\t, ");
+	(void) fputs("\t, ", stderr);
 	(void) fprintf(stderr, "%.3f", ((double) nbytes_tta) / nbytes_pcm);
 	//
 	(void) fputc('\n', stderr);
@@ -308,14 +308,14 @@ errprint_stats_codectime(double pcmtime, double encodetime, size_t nbytes_pcm)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 {
-	(void) fprintf(stderr, " time   : ");
+	(void) fputs(" time   : ", stderr);
 	errprint_time(encodetime);
 	//
-	(void) fprintf(stderr, "\t; ");
+	(void) fputs("\t; ", stderr);
 	errprint_size((size_t) ((double) (8u * nbytes_pcm)) / encodetime);
-	(void) fprintf(stderr, "b/s");
+	(void) fputs("b/s", stderr);
 	//
-	(void) fprintf(stderr, "\t, ");
+	(void) fputs("\t, ", stderr);
 	(void) fprintf(stderr, "%.1f", pcmtime / encodetime);
 	(void) fputc('\n', stderr);
 	//
@@ -329,20 +329,9 @@ static CONST const char *
 decfmt_name(enum DecFormat fmt)
 /*@*/
 {
-	const char *r;
-
-	switch( fmt ){
-	case DECFMT_RAWPCM:
-		r = "raw";
-		break;
-	case DECFMT_W64:
-		r = "w64";
-		break;
-	case DECFMT_WAV:
-		r = "wav";
-		break;
-	}
-	return r;
+	/*@observer@*/
+	const char *const name[] = DECFMT_NAME_ARRAY;
+	return name[fmt];
 }
 
 /*@observer@*/
@@ -350,14 +339,9 @@ static CONST const char *
 encfmt_name(enum EncFormat fmt)
 /*@*/
 {
-	const char *r;
-
-	switch( fmt ){
-	case xENCFMT_TTA1:
-		r = "tta1";
-		break;
-	}
-	return r;
+	/*@observer@*/
+	const char *const name[] = xENCFMT_NAME_ARRAY;
+	return name[fmt];
 }
 
 static CONST double
@@ -428,148 +412,48 @@ errprint_chanmask_wav(uint nchan, u32 mask)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 {
-	uint i = 0;
+	/*@observer@*/
+	const char *const chan_name[] = WAVE_CHAN_NAMED_ARRAY;
+	uint nchan_named;
+	u32 curr_chan_bit;
+	uint i;
 
-	if ( nchan == 1u ){
-		switch ( mask ){
-		default:
-			break;
-		case 0:
-		case WAVE_CHAN_FC:
-			(void) fprintf(stderr, "mono");
-			if ( mask == 0 ){
-				(void) fprintf(stderr, ", assumed");
+	if ( (nchan == 1u) && ((mask == 0) || (mask == WAVE_CHAN_FC)) ){
+		(void) fputs("mono", stderr);
+		if ( mask == 0 ){
+			(void) fputs(", assumed", stderr);
+		}
+	}
+	else if ( (nchan == 2u)
+	         &&
+	          ((mask == 0) || (mask == (WAVE_CHAN_FL | WAVE_CHAN_FR)))
+	){
+		(void) fputs("stereo", stderr);
+		if ( mask == 0 ){
+			(void) fputs(", assumed", stderr);
+		}
+	}
+	else {	nchan_named   = 0;
+		curr_chan_bit = (u32) 0x1u;
+		for ( i = 0; i < NUM_WAVE_CHAN_NAMED; ++i ){
+			if ( (mask & curr_chan_bit) != 0 ){
+				if ( nchan_named++ != 0 ){
+					(void) fputc(',', stderr);
+				}
+				(void) fputs( chan_name[i], stderr);
 			}
-			return;
+			curr_chan_bit <<= 1u;
 		}
-	}
-	if ( nchan == 2u ){
-		switch ( mask ){
-		default:
-			break;
-		case 0:
-		case (WAVE_CHAN_FL | WAVE_CHAN_FR):
-			(void) fprintf(stderr, "stereo");
-			if ( mask == 0 ){
-				(void) fprintf(stderr, ", assumed");
+		if ( nchan_named != nchan ){
+			if ( nchan_named == 0 ){
+				(void) fputs("all", stderr);
 			}
-			return;
+			else {	(void) fprintf(stderr, " + %u",
+					nchan - nchan_named
+				);
+			}
+			(void) fputs(" unassigned", stderr);
 		}
-	}
-
-	if ( (mask & WAVE_CHAN_FL)  != 0 ){
-		(void) fprintf(stderr, "FL");
-		++i;
-	}
-	if ( (mask & WAVE_CHAN_FR)  != 0 ){
-		if ( i++ != 0 ){
-			(void) fputc(',', stderr);
-		}
-		(void) fprintf(stderr, "FR");
-	}
-	if ( (mask & WAVE_CHAN_FC)  != 0 ){
-		if ( i++ != 0 ){
-			(void) fputc(',', stderr);
-		}
-		(void) fprintf(stderr, "FC");
-	}
-	if ( (mask & WAVE_CHAN_LFE) != 0 ){
-		if ( i++ != 0 ){
-			(void) fputc(',', stderr);
-		}
-		(void) fprintf(stderr, "LFE");
-	}
-	if ( (mask & WAVE_CHAN_BL)  != 0 ){
-		if ( i++ != 0 ){
-			(void) fputc(',', stderr);
-		}
-		(void) fprintf(stderr, "BL");
-	}
-	if ( (mask & WAVE_CHAN_BR)  != 0 ){
-		if ( i++ != 0 ){
-			(void) fputc(',', stderr);
-		}
-		(void) fprintf(stderr, "BR");
-	}
-	if ( (mask & WAVE_CHAN_FLC) != 0 ){
-		if ( i++ != 0 ){
-			(void) fputc(',', stderr);
-		}
-		(void) fprintf(stderr, "FLC");
-	}
-	if ( (mask & WAVE_CHAN_FRC) != 0 ){
-		if ( i++ != 0 ){
-			(void) fputc(',', stderr);
-		}
-		(void) fprintf(stderr, "FRC");
-	}
-	if ( (mask & WAVE_CHAN_BC)  != 0 ){
-		if ( i++ != 0 ){
-			(void) fputc(',', stderr);
-		}
-		(void) fprintf(stderr, "BC");
-	}
-	if ( (mask & WAVE_CHAN_SL)  != 0 ){
-		if ( i++ != 0 ){
-			(void) fputc(',', stderr);
-		}
-		(void) fprintf(stderr, "SL");
-	}
-	if ( (mask & WAVE_CHAN_SR)  != 0 ){
-		if ( i++ != 0 ){
-			(void) fputc(',', stderr);
-		}
-		(void) fprintf(stderr, "SR");
-	}
-	if ( (mask & WAVE_CHAN_TC)  != 0 ){
-		if ( i++ != 0 ){
-			(void) fputc(',', stderr);
-		}
-		(void) fprintf(stderr, "TC");
-	}
-	if ( (mask & WAVE_CHAN_TFL) != 0 ){
-		if ( i++ != 0 ){
-			(void) fputc(',', stderr);
-		}
-		(void) fprintf(stderr, "TFL");
-	}
-	if ( (mask & WAVE_CHAN_TFC) != 0 ){
-		if ( i++ != 0 ){
-			(void) fputc(',', stderr);
-		}
-		(void) fprintf(stderr, "TFC");
-	}
-	if ( (mask & WAVE_CHAN_TFR) != 0 ){
-		if ( i++ != 0 ){
-			(void) fputc(',', stderr);
-		}
-		(void) fprintf(stderr, "TFR");
-	}
-	if ( (mask & WAVE_CHAN_TBL) != 0 ){
-		if ( i++ != 0 ){
-			(void) fputc(',', stderr);
-		}
-		(void) fprintf(stderr, "TBL");
-	}
-	if ( (mask & WAVE_CHAN_TBC) != 0 ){
-		if ( i++ != 0 ){
-			(void) fputc(',', stderr);
-		}
-		(void) fprintf(stderr, "TBC");
-	}
-	if ( (mask & WAVE_CHAN_TBR) != 0 ){
-		if ( i++ != 0 ){
-			(void) fputc(',', stderr);
-		}
-		(void) fprintf(stderr, "TBR");
-	}
-
-	if ( i != nchan ){
-		if ( i == 0 ){
-			(void) fprintf(stderr, "all");
-		}
-		else {	(void) fprintf(stderr, " + %u", nchan - i); }
-		(void) fprintf(stderr, " unassigned");
 	}
 
 	return;

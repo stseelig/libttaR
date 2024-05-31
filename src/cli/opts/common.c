@@ -107,7 +107,7 @@ opt_common_threads(uint optind, char *opt, enum OptMode mode)
 			t.z = strlen(subopt);
 			r = 0;
 			for ( i = 0; i < t.z; ++i ){
-				if ( ! ((bool) isdigit(subopt[i])) ){
+				if ( isdigit(subopt[i]) == 0 ){
 					/*@loopbreak@*/ break;
 				}
 				++r;

@@ -72,14 +72,13 @@ timediff(
 )
 /*@*/
 {
-	register double diffsec;
-	register const double diffnsec = (
+	register const double diff_sec  = (double) (
+		finish->tv_sec - start->tv_sec
+	);
+	register const double diff_nsec = (
 		((double) (finish->tv_nsec - start->tv_nsec)) / 1000000000.0
 	);
-
-	diffsec  = (double) finish->tv_sec - start->tv_sec;
-	diffsec += diffnsec;
-	return diffsec;
+	return diff_sec + diff_nsec;
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////

@@ -78,7 +78,7 @@ opt_decode_format(uint optind, char *opt, enum OptMode mode)
 {
 	int r;
 	/*@observer@*/
-	const char *decfmt_name[] = DECFMT_NAME_ARRAY;
+	const char *const decfmt_name[] = DECFMT_NAME_ARRAY;
 	char *subopt;
 	uint i;
 
