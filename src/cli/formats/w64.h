@@ -58,7 +58,7 @@
 
 struct Riff64Header {
 	struct Guid128	guid;
-	u64		size;	// inclusive unlike .wav
+	u64		size;	// inclusive unlike 32-bit WAVE
 } PACKED;
 
 struct Riff64ChunkHeader_Wave {

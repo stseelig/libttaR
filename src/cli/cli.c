@@ -440,7 +440,7 @@ errprint_chanmask_wav(uint nchan, u32 mask)
 				if ( nchan_named++ != 0 ){
 					(void) fputc(',', stderr);
 				}
-				(void) fputs( chan_name[i], stderr);
+				(void) fputs(chan_name[i], stderr);
 			}
 			curr_chan_bit <<= 1u;
 		}

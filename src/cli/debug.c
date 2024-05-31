@@ -61,13 +61,13 @@ print_error_sys(
 	flockfile(stderr);
 	//
 	(void) fprintf(stderr, T_B_DEFAULT "%s: ", g_argv[0]);
-	(void) fprintf(stderr, T_B_RED "error:" T_B_DEFAULT " ");
+	(void) fputs(T_B_RED "error:" T_B_DEFAULT " ", stderr);
 	(void) fprintf(stderr, "%s: (%d) ", name, errnum);
 	(void) fputs(strerror_r(errnum, buf, BUFLEN), stderr);
 	if ( extra != NULL ){
 		(void) fprintf(stderr, ": %s", extra);
 	}
-	(void) fprintf(stderr, " " T_B_RED "!" T_RESET "\n");
+	(void) fputs(" " T_B_RED "!" T_RESET "\n", stderr);
 	//
 	funlockfile(stdout);
 	funlockfile(stderr);
@@ -97,9 +97,9 @@ print_error_tta(enum Fatality fatality, const char *const format, ...)
 	flockfile(stderr);
 	//
 	(void) fprintf(stderr, T_B_DEFAULT "%s: ", g_argv[0]);
-	(void) fprintf(stderr, T_B_RED "error:" T_B_DEFAULT " ");
+	(void) fputs(T_B_RED "error:" T_B_DEFAULT " ", stderr);
 	(void) vfprintf(stderr, format, args);
-	(void) fprintf(stderr, " " T_B_RED "!" T_RESET "\n");
+	(void) fputs(" " T_B_RED "!" T_RESET "\n", stderr);
 	//
 	funlockfile(stdout);
 	funlockfile(stderr);
@@ -128,9 +128,9 @@ warning_tta(const char *const format, ...)
 	flockfile(stderr);
 	//
 	(void) fprintf(stderr, T_B_DEFAULT "%s: ", g_argv[0]);
-	(void) fprintf(stderr, T_B_YELLOW "warning:" T_B_DEFAULT " ");
+	(void) fputs(T_B_YELLOW "warning:" T_B_DEFAULT " ", stderr);
 	(void) vfprintf(stderr, format, args);
-	(void) fprintf(stderr, " " T_B_YELLOW "!" T_RESET "\n");
+	(void) fputs(" " T_B_YELLOW "!" T_RESET "\n", stderr);
 	//
 	funlockfile(stdout);
 	funlockfile(stderr);
@@ -155,7 +155,7 @@ error_filecheck(
 		g_nwarnings
 @*/
 {
-	char guidbuf[GUID128_BUFSIZE];
+	char guidbuf[GUID128_BUFLEN];
 
 	switch ( fc ){
 	case FILECHECK_OK:

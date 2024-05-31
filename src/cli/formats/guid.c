@@ -20,7 +20,7 @@
 
 // formats buf to:
 //	00000000-1111-2222-3333-444444444444
-// buf_len should be GUID128_BUFSIZE
+// buflen should be GUID128_BUFLEN
 // returns buf
 char *
 guid128_format(
