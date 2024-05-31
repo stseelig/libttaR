@@ -52,16 +52,7 @@ MODES="$MODES +enumint";
 
 readonly MODES;
 
-#----------------------------------------------------------------------------#
-
-readonly ROOT="$(realpath "$(dirname "$0")")";
-#FILES='./src/*/*.c';
-#FILES="$FILES ./src/*/*/*.c";
-#readonly FILES;
-
 ##############################################################################
-
-cd "$ROOT" || exit 1;
 
 printf -- "splint %s %s %s %s\n" "$OPTS" "$FLAGS" "$FILES" "$@";
 
