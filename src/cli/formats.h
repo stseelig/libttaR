@@ -11,6 +11,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
+#include <stddef.h>	// size_t
 #include <stdio.h>	// off_t
 
 #include "../bits.h"
@@ -23,18 +24,24 @@
 //////////////////////////////////////////////////////////////////////////////
 
 enum EncFormat {
-	FORMAT_TTA1,
-	//FORMAT_TTA2,
-	//FORMAT_MKA_TTA1,
-	//FORMAT_MKA_TTA2
+	xENCFMT_TTA1
+	//xENCFMT_TTA2
+	//xENCFMT_MKA_TTA1
+	//xENCFMT_MKA_TTA2
 };
+#define NUM_ENCFMT		((uint) 1u)
+#define xENCFMT_NAME_ARRAY	{ "tta1"}
+#define xENCFMT_EXT_ARRAY	{".tta"}
 
 enum DecFormat {
-	FORMAT_RAWPCM,
-	FORMAT_WAV,		// Microsoft RIFF/WAVE
-	FORMAT_W64,		// Sony Wave64
-	//FORMAT_MKA_PCM
+	DECFMT_RAWPCM,
+	DECFMT_W64,
+	DECFMT_WAV
+	//DECFMT_MKA_PCM
 };
+#define NUM_DECFMT		((uint) 3u)
+#define DECFMT_NAME_ARRAY	{ "raw",  "w64",  "wav"}
+#define DECFMT_EXT_ARRAY	{".raw", ".w64", ".wav"}
 
 enum IntType {
 	INT_SIGNED,
@@ -59,14 +66,14 @@ enum FileCheck {
 
 //////////////////////////////////////////////////////////////////////////////
 
-#define SEEKTABLE_INIT_DEFAULT	((size_t) (60*60))	/* about one hour */
 struct SeekTable {
 	off_t	off;
 	size_t	nmemb;
 	size_t	limit;
-	/*@only@*/ /*@relnull@*/
-	u32	*table;
+	/*@only@*/
+	u32	*table;	// little-endian
 };
+#define SEEKTABLE_INIT_DEFAULT	((size_t) (512u))	/* ~ 8m54s */
 
 // MAYBE have a Dec/Enc FileStats and a CommonFileStats
 struct FileStats {
@@ -76,37 +83,37 @@ struct FileStats {
 	off_t			enctta_off;	// end of tta header
 	size_t			enctta_size;
 	//
-	size_t			framelen;
+	size_t			framelen;	// nsamples_peridealframe
 	size_t			buflen;		// framelen * nchan
-	enum EncFormat		encfmt:8;
-	enum DecFormat		decfmt:8;
-	enum IntType		inttype:8;
-	u16			samplebits:8;
-	enum TTASampleBytes	samplebytes:8;
-	enum Endian		endian:8;
+	size_t			nsamples_enc;	// for decode
+	enum EncFormat		encfmt:8u;
+	enum DecFormat		decfmt:8u;
+	enum IntType		inttype:8u;
+	enum Endian		endian:8u;
+	enum TTASampleBytes	samplebytes;
+	u16			samplebits;
 	u16			nchan;
 	u32			samplerate;
 	u32			chanmask_wav;
 	//u32			chanmask_tta;
-	size_t			nsamples;	// for decode
 	u16			wavformat;
 	struct Guid128		wavsubformat;	// Extensible only
 };
 
 struct EncStats {
-	double	encodetime;
 	size_t	nframes;
-	size_t	nsamples;
-	size_t	nsamples_perchan;	// for overflow protection
+	size_t	nsamples_flat;
+	size_t	nsamples_perchan;	// for tta1 header
 	size_t	nbytes_encoded;
+	double	encodetime;
 };
 
 struct DecStats {
-	double	decodetime;
 	size_t	nframes;
-	size_t	nsamples;
-	size_t	nsamples_perchan;	// for overflow protection
+	size_t	nsamples_flat;
+	size_t	nsamples_perchan;
 	size_t	nbytes_decoded;
+	double	decodetime;
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -115,7 +122,7 @@ struct DecStats {
 
 #undef buf
 extern char *guid128_format(
-	/*@returned@*/ /*@out@*/ char *const restrict buf,
+	/*@returned@*/ /*@out@*/ char *const restrict buf, size_t,
 	const struct Guid128 *const restrict
 )
 /*@modifies	*buf@*/
@@ -144,7 +151,7 @@ extern enum FileCheck filecheck_tta1(
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
-		fstat,
+		*fstat,
 		file
 @*/
 ;
@@ -168,7 +175,7 @@ extern void seektable_init(
 ;
 
 #undef st
-extern void seektable_add(
+extern HOT void seektable_add(
 	struct SeekTable *const restrict st, size_t, size_t, const char *
 )
 /*@globals	fileSystem,
@@ -182,12 +189,11 @@ extern void seektable_add(
 
 #undef st
 extern void seektable_free(struct SeekTable *const restrict st)
-/*@globals		internalState@*/
-/*@modifies		internalState,
-			*st
+/*@globals	internalState@*/
+/*@modifies	internalState,
+		*st
 @*/
-/*@releases		st->table@*/
-/*@ensures isnull	st->table@*/
+/*@releases	st->table@*/
 ;
 
 //--------------------------------------------------------------------------//
@@ -200,8 +206,8 @@ extern enum FileCheck filecheck_tta_seektable(
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
-		st,
-		fstat,
+		*st,
+		*fstat,
 		file
 @*/
 ;
@@ -252,7 +258,9 @@ extern void write_tta_seektable(
 extern enum FileCheck filecheck_w64(
 	struct FileStats *const restrict fstat, FILE *const restrict file
 )
-/*@modifies	fstat,
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem,
+		*fstat,
 		file
 @*/
 ;
@@ -289,7 +297,9 @@ extern void write_w64_header(
 extern enum FileCheck filecheck_wav(
 	struct FileStats *const restrict fstat, FILE *const restrict file
 )
-/*@modifies	fstat,
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem,
+		*fstat,
 		file
 @*/
 ;
@@ -299,7 +309,9 @@ extern enum FileCheck filecheck_wav(
 extern enum FileCheck filecheck_wav_read_subchunk_fmt(
 	struct FileStats *const restrict fstat, FILE *const restrict file
 )
-/*@modifies	fstat,
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem,
+		*fstat,
 		file
 @*/
 ;

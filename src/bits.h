@@ -12,7 +12,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include <limits.h>
-#include <stdbool.h>
+#include <stdbool.h>	// true, false
 #include <stdint.h>
 #include <string.h>	// memmove, memset
 
@@ -39,23 +39,33 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
+#define INLINE		/*@unused@*/ static inline
+#define ALWAYS_INLINE	INLINE __attribute__((always_inline))
+
+#define HOT		__attribute__((hot))
+#define COLD		__attribute__((cold))
+
+#define PURE		__attribute__((pure))
+#define CONST		__attribute__((const))
+
+#define NORETURN	__attribute__((noreturn))
+
+//--------------------------------------------------------------------------//
+
+#define PACKED		__attribute__((packed))
+#define HIDDEN		__attribute__((visibility("hidden")))
+
+//==========================================================================//
+
 #ifdef __has_builtin
 #define HAS_BUILTIN(x)	__has_builtin(x)
 #else
 #define HAS_BUILTIN(x)	0
 #endif
 
-//==========================================================================//
-
-#define INLINE		/*@unused@*/ static inline
-#define ALWAYS_INLINE	INLINE __attribute__((always_inline))
-
-#define PACKED		__attribute__((packed))
-#define HIDDEN		__attribute__((visibility("hidden")))
-
 //--------------------------------------------------------------------------//
 
-// these should always be tested; not always beneficial
+// these should always be A/B tested; not always beneficial
 
 #if HAS_BUILTIN(__builtin_expect)
 #define LIKELY(cond)		(__builtin_expect(!!(cond), true))
@@ -67,14 +77,24 @@
 
 #if HAS_BUILTIN(__builtin_expect_with_probability)
 #define LIKELY_P(cond, prob)	( \
-	__builtin_expect_with_probability(!!(cond), true, prob) \
+	__builtin_expect_with_probability(!!(cond), true, (prob)) \
 )
 #define UNLIKELY_P(cond, prob)	( \
-	__builtin_expect_with_probability(!!(cond), false, prob) \
+	__builtin_expect_with_probability(!!(cond), false, (prob)) \
 )
 #else
 #define LIKELY_P(cond, prob)	(cond)
 #define UNLIKELY_P(cond, prob)	(cond)
+#endif
+
+//--------------------------------------------------------------------------//
+
+// mainly for byte-shaving errors
+
+#if HAS_BUILTIN(__builtin_unreachable)
+#define UNREACHABLE		__builtin_unreachable();
+#else
+#define UNREACHABLE		;
 #endif
 
 //--------------------------------------------------------------------------//
@@ -88,15 +108,17 @@
 #endif
 
 #if HAS_BUILTIN(__builtin_memset)
-#define MEMSET(s, c, n)	(__builtin_memset((s), (c), (n)))
+#define MEMSET(s, c, n)		(__builtin_memset((s), (c), (n)))
 #else
-#define MEMSET(s, c, n)	(memset((s), (c), (n)))
+#define MEMSET(s, c, n)		(memset((s), (c), (n)))
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
 
+typedef unsigned char	uchar;
 typedef unsigned int	uint;
 
+typedef signed char	ichar;
 typedef long long	longlong;
 
 typedef  uint8_t	 u8;
@@ -108,25 +130,24 @@ typedef   int8_t	 i8;
 typedef  int16_t	i16;
 typedef  int32_t	i32;
 
-typedef uint_fast32_t	u32fast;
 typedef uint_fast64_t	u64fast;
 
 //////////////////////////////////////////////////////////////////////////////
 
-ALWAYS_INLINE u16 bswap16(register u16) /*@*/;
-ALWAYS_INLINE u32 bswap32(register u32) /*@*/;
-ALWAYS_INLINE u64 bswap64(register u64) /*@*/;
+ALWAYS_INLINE CONST u16 bswap16(register u16) /*@*/;
+ALWAYS_INLINE CONST u32 bswap32(register u32) /*@*/;
+ALWAYS_INLINE CONST u64 bswap64(register u64) /*@*/;
 
-ALWAYS_INLINE u16 htole16(register u16) /*@*/;
-ALWAYS_INLINE u16 letoh16(register u16) /*@*/;
-ALWAYS_INLINE u32 htole32(register u32) /*@*/;
-ALWAYS_INLINE u32 letoh32(register u32) /*@*/;
+ALWAYS_INLINE CONST u16 htole16(register u16) /*@*/;
+ALWAYS_INLINE CONST u16 letoh16(register u16) /*@*/;
+ALWAYS_INLINE CONST u32 htole32(register u32) /*@*/;
+ALWAYS_INLINE CONST u32 letoh32(register u32) /*@*/;
 
-ALWAYS_INLINE i32 asl32(register i32, register u8) /*@*/;
-ALWAYS_INLINE i32 asr32(register i32, register u8) /*@*/;
+ALWAYS_INLINE CONST i32 asl32(register i32, register u8) /*@*/;
+ALWAYS_INLINE CONST i32 asr32(register i32, register u8) /*@*/;
 
-ALWAYS_INLINE uint tzcnt32(register u32) /*@*/;
-ALWAYS_INLINE uint tbcnt32(register u32) /*@*/;
+ALWAYS_INLINE CONST uint tzcnt32(register u32) /*@*/;
+ALWAYS_INLINE CONST uint tbcnt32(register u32) /*@*/;
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -164,7 +185,7 @@ ALWAYS_INLINE uint tbcnt32(register u32) /*@*/;
 
 //////////////////////////////////////////////////////////////////////////////
 
-ALWAYS_INLINE u16
+ALWAYS_INLINE CONST u16
 bswap16(register u16 x)
 /*@*/
 {
@@ -182,7 +203,7 @@ bswap16(register u16 x)
 #endif
 }
 
-ALWAYS_INLINE u32
+ALWAYS_INLINE CONST u32
 bswap32(register u32 x)
 /*@*/
 {
@@ -200,7 +221,7 @@ bswap32(register u32 x)
 #endif
 }
 
-ALWAYS_INLINE u64
+ALWAYS_INLINE CONST u64
 bswap64(register u64 x)
 /*@*/
 {
@@ -223,20 +244,20 @@ bswap64(register u64 x)
 //==========================================================================//
 
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-ALWAYS_INLINE u16 htole16(register u16 x) /*@*/ { return bswap16(x); }
-ALWAYS_INLINE u16 letoh16(register u16 x) /*@*/ { return bswap16(x); }
-ALWAYS_INLINE u32 htole32(register u32 x) /*@*/ { return bswap32(x); }
-ALWAYS_INLINE u32 letoh32(register u32 x) /*@*/ { return bswap32(x); }
-ALWAYS_INLINE u64 htole64(register u64 x) /*@*/ { return bswap64(x); }
-ALWAYS_INLINE u64 letoh64(register u64 x) /*@*/ { return bswap64(x); }
+ALWAYS_INLINE CONST u16 htole16(register u16 x) /*@*/ { return bswap16(x); }
+ALWAYS_INLINE CONST u16 letoh16(register u16 x) /*@*/ { return bswap16(x); }
+ALWAYS_INLINE CONST u32 htole32(register u32 x) /*@*/ { return bswap32(x); }
+ALWAYS_INLINE CONST u32 letoh32(register u32 x) /*@*/ { return bswap32(x); }
+ALWAYS_INLINE CONST u64 htole64(register u64 x) /*@*/ { return bswap64(x); }
+ALWAYS_INLINE CONST u64 letoh64(register u64 x) /*@*/ { return bswap64(x); }
 
 #elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-ALWAYS_INLINE u16 htole16(register u16 x) /*@*/ { return x; }
-ALWAYS_INLINE u16 letoh16(register u16 x) /*@*/ { return x; }
-ALWAYS_INLINE u32 htole32(register u32 x) /*@*/ { return x; }
-ALWAYS_INLINE u32 letoh32(register u32 x) /*@*/ { return x; }
-ALWAYS_INLINE u64 htole64(register u64 x) /*@*/ { return x; }
-ALWAYS_INLINE u64 letoh64(register u64 x) /*@*/ { return x; }
+ALWAYS_INLINE CONST u16 htole16(register u16 x) /*@*/ { return x; }
+ALWAYS_INLINE CONST u16 letoh16(register u16 x) /*@*/ { return x; }
+ALWAYS_INLINE CONST u32 htole32(register u32 x) /*@*/ { return x; }
+ALWAYS_INLINE CONST u32 letoh32(register u32 x) /*@*/ { return x; }
+ALWAYS_INLINE CONST u64 htole64(register u64 x) /*@*/ { return x; }
+ALWAYS_INLINE CONST u64 letoh64(register u64 x) /*@*/ { return x; }
 
 #else
 #error "weird endianness"
@@ -246,21 +267,19 @@ ALWAYS_INLINE u64 letoh64(register u64 x) /*@*/ { return x; }
 
 // shifting signed integers is naughty
 
-ALWAYS_INLINE i32
+ALWAYS_INLINE CONST i32
 asl32(register i32 x, register u8 k)
 /*@*/
 {
 	return (i32) (((u32) x) << k);
 }
 
-//--------------------------------------------------------------------------//
-
-ALWAYS_INLINE i32
+ALWAYS_INLINE CONST i32
 asr32(register i32 x, register u8 k)
 /*@*/
 {
 	if ( (! HAS_ASR(i32)) && (x < 0) ){
-		return (i32) ~(((u32) ~x) >> k);
+		return (i32) ~((~((u32) x)) >> k);
 	}
 	else {	/*@-shiftimplementation@*/
 		return (i32) (x >> k);
@@ -271,7 +290,7 @@ asr32(register i32 x, register u8 k)
 //==========================================================================//
 
 // undefined for 0
-ALWAYS_INLINE uint
+ALWAYS_INLINE CONST uint
 tzcnt32(register u32 x)
 /*@*/
 {
@@ -280,22 +299,22 @@ tzcnt32(register u32 x)
 #elif HAS_BUILTIN(BUILTIN_TZCNT64)
 	return (uint) BUILTIN_TZCNT64((u64) x);
 #else
+	// https://graphics.stanford.edu/~seander/bithacks.html
 	register uint r = 0;
-	register u32fast y = x;
-	if ( (y & 0x01u) == 0 ){
+	if ( (x & 0x1u) == 0 ){
 		r = 1u;
-		if ( (y & 0xFFFFu) == 0 ){ r |= 16u, y >>= 16u; }
-		if ( (y & 0x00FFu) == 0 ){ r |=  8u, y >>=  8u; }
-		if ( (y & 0x000Fu) == 0 ){ r |=  4u, y >>=  4u; }
-		if ( (y & 0x0003u) == 0 ){ r |=  2u, y >>=  2u; }
-		r -=  y & 0x0001u;
+		if ( (x & 0xFFFFu) == 0 ){ r |= 16u, x >>= 16u; }
+		if ( (x & 0x00FFu) == 0 ){ r |=  8u, x >>=  8u; }
+		if ( (x & 0x000Fu) == 0 ){ r |=  4u, x >>=  4u; }
+		if ( (x & 0x0003u) == 0 ){ r |=  2u, x >>=  2u; }
+		r -=  x & 0x0001u;
 	}
 	return r;
 #endif
 }
 
 // undefined for UINT32_MAX
-ALWAYS_INLINE uint tbcnt32(register u32 x) /*@*/ { return tzcnt32(~x); }
+ALWAYS_INLINE CONST uint tbcnt32(register u32 x) /*@*/ { return tzcnt32(~x); }
 
 // EOF ///////////////////////////////////////////////////////////////////////
 #endif

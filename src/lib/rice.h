@@ -31,8 +31,8 @@ enum ShiftMaskMode {
 //////////////////////////////////////////////////////////////////////////////
 
 struct Rice {
-	u32	sum[2];
-	u8	k[2];
+	u32	sum[2u];
+	u8	k[2u];
 };
 
 struct BitCache {
@@ -43,25 +43,30 @@ struct BitCache {
 //////////////////////////////////////////////////////////////////////////////
 
 /*@unchecked@*/ /*@unused@*/
-extern const u32 shift32p4_bit_table[];
+extern HIDDEN const u32 shift32p4_bit_table[];
 /*@unchecked@*/ /*@unused@*/
-extern const u32 lsmask32_table[];
+extern HIDDEN const u32 lsmask32_table[];
 
 //////////////////////////////////////////////////////////////////////////////
 
 #undef rice
 INLINE void
 rice_init(
-	register struct Rice *const restrict rice, register u8, register u8
+	/*@out@*/ register struct Rice *const restrict rice, register u8,
+	register u8
 )
 /*@modifies	*rice@*/
 ;
 
 //--------------------------------------------------------------------------//
 
-ALWAYS_INLINE u32 shift32_bit(register u8) /*@*/;
-ALWAYS_INLINE u32 shift32p4_bit(register u8, const enum ShiftMaskMode) /*@*/;
-ALWAYS_INLINE u32 lsmask32(register u8, const enum ShiftMaskMode) /*@*/;
+ALWAYS_INLINE CONST u32 shift32_bit(register u8) /*@*/;
+
+ALWAYS_INLINE CONST u32 shift32p4_bit(register u8, const enum ShiftMaskMode)
+/*@*/
+;
+
+ALWAYS_INLINE CONST u32 lsmask32(register u8, const enum ShiftMaskMode) /*@*/;
 
 //--------------------------------------------------------------------------//
 
@@ -106,7 +111,7 @@ rice_encode(
 #undef cache
 #undef count
 #undef crc
-ALWAYS_INLINE size_t
+INLINE size_t
 rice_encode_cacheflush(
 	register u8 *const restrict dest, register size_t,
 	register u32 *const restrict cache, register u8 *const restrict count,
@@ -211,43 +216,38 @@ ALWAYS_INLINE size_t rice_binary_get(
 
 INLINE void
 rice_init(
-	register struct Rice *const restrict rice, register u8 k0,
+	/*@out@*/ register struct Rice *const restrict rice, register u8 k0,
 	register u8 k1
 )
 /*@modifies	*rice@*/
 {
-	rice->sum[0] = shift32p4_bit(k0, SMM_CONST);
-	rice->sum[1] = shift32p4_bit(k1, SMM_CONST);
-	rice->k[0]   = k0;
-	rice->k[1]   = k1;
+	rice->sum[0u] = shift32p4_bit(k0, SMM_CONST);
+	rice->sum[1u] = shift32p4_bit(k1, SMM_CONST);
+	rice->k[0u]   = k0;
+	rice->k[1u]   = k1;
 	return;
 }
 
 //==========================================================================//
 
-// returns x
-ALWAYS_INLINE u32
+ALWAYS_INLINE CONST u32
 shift32_bit(register u8 k)
 /*@*/
 {
 	return (u32) (0x1u << k);
 }
 
-// keeps rice.kN in check
-ALWAYS_INLINE u32
+// keeps rice.k[] in check
+ALWAYS_INLINE CONST u32
 shift32p4_bit(register u8 k, const enum ShiftMaskMode mode)
 /*@*/
 {
 	register u32 r;
-
 	switch ( mode ){
 	case SMM_CONST:
 	case SMM_SHIFT:
 		r = (u32) (k != 0
-			? 0x1u << ((u8) (k + 4u) <= (u8) 31u
-				? (u8) (k + 4u)
-				: (u8) 31u
-			)
+			? (k < (u8) 28u ? 0x1u << (u8) (k + 4u) : 0xFFFFFFFFu)
 			: 0
 		);
 		break;
@@ -258,16 +258,15 @@ shift32p4_bit(register u8 k, const enum ShiftMaskMode mode)
 	return r;
 }
 
-ALWAYS_INLINE u32
+ALWAYS_INLINE CONST u32
 lsmask32(register u8 k, const enum ShiftMaskMode mode)
 /*@*/
 {
 	register u32 r;
-
 	switch ( mode ){
 	case SMM_CONST:
 	case SMM_SHIFT:
-		r = (u32) (k != 0 ? 0xFFFFFFFFu >> (32u - k) : 0 );
+		r = (u32) (k != 0 ? 0xFFFFFFFFu >> ((u8) 32u - k) : 0);
 		break;
 	case SMM_TABLE:
 		r = lsmask32_table[k];
@@ -278,14 +277,16 @@ lsmask32(register u8 k, const enum ShiftMaskMode mode)
 
 //==========================================================================//
 
-// this procedure got macro'd because the compiler wasn't ALWAYS_INLINE'ing it
+// this procedure got macro'd because the compiler wasn't ALWAYS_INLINE'ing
+//   it. it is faster than a functional version (ie, returning k, not using
+//   pointers), because *k often does not change (lots of unnecessary writes)
 #define rice_cmpsum(sum, k, value) \
 { \
 	*(sum) += (value) - (*(sum) >> 4u); \
-	if ( *(sum) < shift32p4_bit(*(k), SMM_TABLE) ){ \
+	if UNLIKELY ( *(sum) < shift32p4_bit(*(k), SMM_TABLE) ){ \
 		--(*(k)); \
 	} \
-	else if ( *(sum) > shift32p4_bit(*(k) + 1u, SMM_TABLE) ){ \
+	else if UNLIKELY ( *(sum) > shift32p4_bit(*(k) + 1u, SMM_TABLE) ){ \
 		++(*(k)); \
 	} else{;} \
 }
@@ -315,17 +316,16 @@ rice_encode(
 		*crc
 @*/
 {
-	register u32 *const restrict sum0  = &rice->sum[0];
-	register u32 *const restrict sum1  = &rice->sum[1];
-	register  u8 *const restrict k0    = &rice->k[0];
-	register  u8 *const restrict k1    = &rice->k[1];
+	register u32 *const restrict sum0  = &rice->sum[0u];
+	register u32 *const restrict sum1  = &rice->sum[1u];
+	register  u8 *const restrict k0    = &rice->k[0u];
+	register  u8 *const restrict k1    = &rice->k[1u];
 	register u32 *const restrict cache = &bitcache->cache;
 	register  u8 *const restrict count = &bitcache->count;
+
 	register u32 unary = 0, binary;
 	register  u8 kx;
-	register union {
-		u32 u_32;
-	} t;
+	register union { u32 u_32; } t;
 
 	kx = *k0;
 	rice_cmpsum(sum0, k0, value);
@@ -348,7 +348,7 @@ rice_encode(
 }
 
 // returns nbytes written to dest + r
-ALWAYS_INLINE size_t
+INLINE size_t
 rice_encode_cacheflush(
 	register u8 *const restrict dest, register size_t r,
 	register u32 *const restrict cache, register u8 *const restrict count,
@@ -361,7 +361,7 @@ rice_encode_cacheflush(
 @*/
 {
 	while ( *count != 0 ){
-		dest[r++] = rice_crc32((u8) (*cache & 0xFFu), crc);
+		dest[r++] = rice_crc32((u8) *cache, crc);
 		*cache  >>= 8u;
 		*count    = (*count > (u8) 8u ? *count - 8u : 0);
 	}
@@ -389,7 +389,7 @@ rice_unary_put(
 		*count += 23u;
 loop_entr:
 		while ( *count >= (u8) 8u ){
-			dest[r++] = rice_crc32((u8) (*cache & 0xFFu), crc);
+			dest[r++] = rice_crc32((u8) *cache, crc);
 			*cache  >>= 8u;
 			*count   -= 8u;
 		}
@@ -415,7 +415,7 @@ rice_binary_put(
 @*/
 {
 	while ( *count >= (u8) 8u ){
-		dest[r++] = rice_crc32((u8) (*cache & 0xFFu), crc);
+		dest[r++] = rice_crc32((u8) *cache, crc);
 		*cache  >>= 8u;
 		*count   -= 8u;
 	}
@@ -441,12 +441,13 @@ rice_decode(
 		*crc
 @*/
 {
-	register u32 *const restrict sum0  = &rice->sum[0];
-	register u32 *const restrict sum1  = &rice->sum[1];
-	register  u8 *const restrict k0    = &rice->k[0];
-	register  u8 *const restrict k1    = &rice->k[1];
+	register u32 *const restrict sum0  = &rice->sum[0u];
+	register u32 *const restrict sum1  = &rice->sum[1u];
+	register  u8 *const restrict k0    = &rice->k[0u];
+	register  u8 *const restrict k1    = &rice->k[1u];
 	register u32 *const restrict cache = &bitcache->cache;
 	register  u8 *const restrict count = &bitcache->count;
+
 	u32 unary, binary;
 	register  u8 kx;
 	register bool depth1;
@@ -492,18 +493,16 @@ rice_unary_get(
 		*crc
 @*/
 {
-	register union {
-		u8 u_8;
-	} t;
+	register union { u8 u_8; } t;
 
 	// switched initial value from 0, because in rice_decode, depth1 is
-	//  much more likely than not; moved a '--unary' in the depth1 branch
-	//  to a 'unary = 0' in !depth1 branch
+	//   much more likely than not; moved a '--unary' in the depth1 branch
+	//   to a 'unary = 0' in !depth1 branch
 	*unary = UINT32_MAX;
 
 #ifndef LIBTTAr_NO_INSTRUCTION_TZCNT
 	// this loop is slightly better than the lookup-table one, as long as
-	//  tbcnt32 maps to an instruction (tzcnt/ctz). otherwise a bit slower
+	//   tbcnt32 is an instruction (tzcnt/ctz). otherwise a bit slower
 	goto loop_entr;
 	do {	*cache  = rice_crc32(src[r++], crc);
 		*count  = (u8) 8u;
@@ -522,7 +521,7 @@ loop_entr:
 	t.u_8 = (u8) tbcnt32(*cache);	// *cache is always < UINT8_MAX
 	*unary  += t.u_8;
 #endif
-	*cache >>= t.u_8 + 1u;		// t.u_8 is always < 8
+	*cache >>= t.u_8 + 1u;		// t.u_8 is always < 8u
 	*count  -= t.u_8 + 1u;
 	return r;
 }

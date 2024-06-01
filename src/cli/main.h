@@ -12,15 +12,26 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include "../bits.h"
+#include "../libttaR.h"
 
 //////////////////////////////////////////////////////////////////////////////
 
 #define PATH_DELIM	'/'
 
+//--------------------------------------------------------------------------//
+
 enum ProgramMode {
 	MODE_ENCODE,
 	MODE_DECODE
 };
+
+enum ThreadMode {
+	THREADMODE_UNSET,
+	THREADMODE_SINGLE,
+	THREADMODE_MULTI
+};
+
+//==========================================================================//
 
 struct GlobalFlags {
 	/*@dependent@*/ /*@null@*/
@@ -29,37 +40,23 @@ struct GlobalFlags {
 	bool		quiet;
 	bool		delete_src;
 	bool		rawpcm;
-	enum DecFormat	decfmt:8;
+	enum ThreadMode	threadmode:8u;
+	enum DecFormat	decfmt:8u;
 };
 
 //////////////////////////////////////////////////////////////////////////////
 
-#ifndef TTA_MAIN_C
 /*@unchecked@*/
-extern const uint ttaR_num_version;
-/*@unchecked@*/
-extern const uint ttaR_num_version_major;
-/*@unchecked@*/
-extern const uint ttaR_num_version_minor;
-/*@unchecked@*/
-extern const uint ttaR_num_version_revis;
-
-/*@unchecked@*/
-extern const char ttaR_str_version[];
-
-/*@unchecked@*/
-extern const char ttaR_str_copyright[];
-
-/*@unchecked@*/
-extern const char ttaR_str_license[];
-
+extern const struct LibTTAr_VersionInfo ttaR_info;
 
 //--------------------------------------------------------------------------//
 
+#ifndef TTA_MAIN_C
 /*@checkmod@*/
 extern const uint g_argc;
+#endif
 
-/*@checkmod@*/ /*@dependent@*/
+/*@checkmod@*/ /*@temp@*/
 extern char **g_argv;
 
 /*@checkmod@*/
@@ -69,11 +66,10 @@ extern u8 g_nwarnings;
 extern struct GlobalFlags g_flag;
 
 /*@checkmod@*/
-extern size_t  g_samplebuf_len;
+extern uint g_nthreads;
 
 /*@checkmod@*/ /*@dependent@*/ /*@null@*/
 extern char *g_rm_on_sigint;
-#endif
 
 // EOF ///////////////////////////////////////////////////////////////////////
 #endif

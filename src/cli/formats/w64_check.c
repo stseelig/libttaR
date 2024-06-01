@@ -24,7 +24,10 @@
 static enum FileCheck filecheck_w64_find_subchunk(
 	FILE *const restrict file, const struct Guid128 *const restrict
 )
-/*@modifies	file@*/
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem,
+		file
+@*/
 ;
 
 //////////////////////////////////////////////////////////////////////////////
@@ -35,7 +38,9 @@ enum FileCheck
 filecheck_w64(
 	struct FileStats *const restrict fstat, FILE *const restrict file
 )
-/*@modifies	fstat,
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem,
+		*fstat,
 		file
 @*/
 {
@@ -43,15 +48,14 @@ filecheck_w64(
 		struct Riff64ChunkHeader_Wave	wave;
 	} chunk;
 	const off_t start = ftello(file);
-	union {
-		size_t		z;
+	union {	size_t		z;
 		int		d;
 		enum FileCheck	fc;
 	} t;
 
 	// Riff64 chunk
-	t.z = fread(&chunk.wave, sizeof chunk.wave, (size_t) 1, file);
-	if ( t.z != (size_t) 1 ){
+	t.z = fread(&chunk.wave, sizeof chunk.wave, (size_t) 1u, file);
+	if ( t.z != (size_t) 1u ){
 		if ( feof(file) != 0 ){
 			return FILECHECK_MALFORMED;
 		}
@@ -63,8 +67,7 @@ filecheck_w64(
 	     ) != 0)
 	    ||
 	     (memcmp(
-		&chunk.wave.guid, &RIFF64_GUID_WAVE,
-		sizeof chunk.wave.guid
+		&chunk.wave.guid, &RIFF64_GUID_WAVE, sizeof chunk.wave.guid
 	     ) != 0)
 	){
 		// reset file stream and return
@@ -94,18 +97,22 @@ filecheck_w64(
 	if ( t.fc != FILECHECK_OK ){
 		return t.fc;
 	}
-	t.z = fread(&chunk.rh, sizeof chunk.rh, (size_t) 1, file);
-	if ( t.z != (size_t) 1 ){
+	t.z = fread(&chunk.rh, sizeof chunk.rh, (size_t) 1u, file);
+	if ( t.z != (size_t) 1u ){
 		if ( feof(file) != 0 ){
 			return FILECHECK_MALFORMED;
 		}
 		return FILECHECK_READ_ERROR;
 	}
 
-	fstat->decfmt      = FORMAT_W64;
+	fstat->decfmt      = DECFMT_W64;
 	fstat->decpcm_off  = ftello(file);
-	fstat->decpcm_size = (size_t) letoh64(
-		chunk.rh.size - sizeof(struct Riff64Header)
+
+	if ( (size_t) letoh64(chunk.rh.size) <= sizeof chunk.rh ){
+		return FILECHECK_MALFORMED;
+	}
+	fstat->decpcm_size = (size_t) (
+		letoh64(chunk.rh.size) - (sizeof chunk.rh)
 	);
 
 	return FILECHECK_OK;
@@ -117,28 +124,37 @@ static enum FileCheck
 filecheck_w64_find_subchunk(
 	FILE *const restrict file, const struct Guid128 *const restrict target
 )
-/*@modifies	file@*/
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem,
+		file
+@*/
 {
 	struct Riff64Header rh;
-	union {
-		size_t	z;
+	union {	size_t	z;
 		int	d;
 	} t;
 
 	goto loop_entr;
 	do {
 		// seek to end of current subchunk
-		t.d = fseeko(file, (off_t) rh.size, SEEK_CUR);
+		t.d = fseeko(
+			file, (off_t) (letoh64(rh.size) - (sizeof rh)),
+			SEEK_CUR
+		);
 		if ( t.d != 0 ){
 			return FILECHECK_SEEK_ERROR;
 		}
 loop_entr:
-		t.z = fread(&rh, sizeof rh, (size_t) 1, file);
-		if ( t.z != (size_t) 1 ){
+		t.z = fread(&rh, sizeof rh, (size_t) 1u, file);
+		if ( t.z != (size_t) 1u ){
 			if ( feof(file) != 0 ){
 				return FILECHECK_MALFORMED;
 			}
 			return FILECHECK_READ_ERROR;
+		}
+
+		if ( letoh64(rh.size) <= sizeof rh ){
+			return FILECHECK_MALFORMED;
 		}
 	}
 	while ( memcmp(&rh.guid, target, sizeof rh.guid) != 0 );

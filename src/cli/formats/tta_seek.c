@@ -40,14 +40,14 @@ seektable_init(/*@out@*/ struct SeekTable *const restrict st, size_t nframes)
 	st->nmemb = 0;
 	st->limit = (nframes != 0 ? nframes : SEEKTABLE_INIT_DEFAULT);
 	st->table = calloc(st->limit, sizeof *(st->table));
-	if ( st->table == NULL ){
-		error_sys(errno, "calloc", strerror(errno), NULL);
+	if UNLIKELY ( st->table == NULL ){
+		error_sys(errno, "calloc", NULL);
 	}
 	return;
 }
 
 // in encode loop
-void
+HOT void
 seektable_add(
 	struct SeekTable *const restrict st, size_t value, size_t framenum,
 	const char *outfile_name
@@ -66,15 +66,13 @@ seektable_add(
 			st->table, st->limit, (sizeof *(st->table))
 		);
 		if UNLIKELY ( st->table == NULL ){
-			error_sys(
-				errno, "reallocarray", strerror(errno), NULL
-			);
+			error_sys(errno, "reallocarray", NULL);
 		}
 	}
 	assert(st->table != NULL);
 
-	if UNLIKELY ( value > UINT32_MAX ){
-		warning_tta("%s: frame %zu: seektable overflow",
+	if UNLIKELY ( value > (size_t) UINT32_MAX ){
+		warning_tta("%s: frame %zu: seektable entry overflow",
 			outfile_name, framenum
 		);
 	}
@@ -85,17 +83,13 @@ seektable_add(
 
 void
 seektable_free(struct SeekTable *const restrict st)
-/*@globals		internalState@*/
-/*@modifies		internalState,
-			*st
+/*@globals	internalState@*/
+/*@modifies	internalState,
+		*st
 @*/
-/*@releases		st->table@*/
-/*@ensures isnull	st->table@*/
+/*@releases	st->table@*/
 {
-	if ( st->table != NULL ){
-		free(st->table);
-		st->table = NULL;
-	}
+	free(st->table);
 	return;
 }
 

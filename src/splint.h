@@ -22,17 +22,33 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
+/*@-redef@*/
 typedef enum clockid_t	clockid_t;
+/*@=redef@*/
 
+/*@-redef@*/ /*@-matchfields@*/
 struct timespec {
 	time_t  tv_sec;
 	long    tv_nsec;
 };
+/*@=redef@*/ /*@=matchfields@*/
+
+// these are bogus
+/*@-redef@*/
+typedef int	pthread_t;
+typedef int	pthread_attr_t;
+typedef int	pthread_spinlock_t;
+typedef int	sem_t;
+/*@=redef@*/
 
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef UINT8_MAX
 #define UINT8_MAX	((uint8_t) 0xFFu)
+#endif
+
+#ifndef UINT16_MAX
+#define UINT16_MAX	((uint16_t) 0xFFFFu)
 #endif
 
 #ifndef UINT32_MAX
@@ -47,14 +63,20 @@ struct timespec {
 #define SIZE_MAX	((size_t) 0xFFFFFFFFFFFFFFFFu)
 #endif
 
+//--------------------------------------------------------------------------//
+
 #ifndef CLOCK_MONOTONIC
-#define CLOCK_MONOTONIC	((clockid_t) 1) /*bogus*/
+#define CLOCK_MONOTONIC	((clockid_t) 1)	/* bogus */
 #endif
 
 //--------------------------------------------------------------------------//
 
 #ifndef PRIX8
 #define PRIX8	"hhX"
+#endif
+
+#ifndef PRIX16
+#define PRIX16	"hX"
 #endif
 
 #ifndef PRIu16
@@ -65,16 +87,32 @@ struct timespec {
 #define PRIu32	"u"
 #endif
 
-#ifndef PRIX16
-#define PRIX16	"hX"
-#endif
-
 //////////////////////////////////////////////////////////////////////////////
+
+/*@external@*/ /*@unused@*/
+extern long long atoll(const char *) /*@*/;
+
+/*@-incondefs@*/
+/*@external@*/ /*@unused@*/
+extern void *calloc(size_t, size_t)
+/*@globals	internalState@*/
+/*@modifies	internalState@*/
+;
+/*@=incondefs@*/
 
 #undef res
 /*@external@*/ /*@unused@*/
 extern int clock_gettime(clockid_t, /*@out@*/ struct timespec *res)
-/*@modifies	res@*/
+/*@modifies	*res@*/
+;
+
+#undef filehandle
+/*@external@*/ /*@unused@*/
+extern void flockfile(FILE *filehandle)
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem,
+		filehandle
+@*/
 ;
 
 /*@external@*/ /*@unused@*/
@@ -97,6 +135,15 @@ extern int ftruncate(int, off_t)
 /*@=type@*/
 ;
 
+#undef filehandle
+/*@external@*/ /*@unused@*/
+extern void funlockfile(FILE *filehandle)
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem,
+		filehandle
+@*/
+;
+
 /*@-protoparammatch@*/
 #undef rlim
 /*@external@*/ /*@unused@*/
@@ -105,6 +152,14 @@ extern int getrlimit(int, /*@out@*/ struct rlimit *rlim)
 /*@modifies	*rlim@*/
 ;
 /*@=protoparammatch@*/
+
+/*@-incondefs@*/
+/*@external@*/ /*@unused@*/
+extern void *malloc(size_t)
+/*@globals	internalState@*/
+/*@modifies	internalState@*/
+;
+/*@=incondefs@*/
 
 /*@temp@*/ /*@null@*/ /*@external@*/ /*@unused@*/
 extern void *memrchr(const void *, int, size_t)
@@ -122,6 +177,127 @@ extern int setrlimit(int, /*@in@*/ struct rlimit *)
 /*@globals	internalState@*/
 /*@modifies	internalState@*/
 ;
+
+#undef buf
+/*@temp@*/ /*@external@*/ /*@unused@*/
+extern char *strerror_r(int, /*@out@*/ char *buf, size_t)
+/*@modifies	*buf@*/
+;
+
+//==========================================================================//
+
+/*@-protoparammatch@*/
+#undef thread
+/*@external@*/ /*@unused@*/
+extern int pthread_create(
+	pthread_t *thread, /*@null@*/ const pthread_attr_t *,
+	void *(*) (void *), /*@null@*/ void *
+)
+/*@globals	internalState@*/
+/*@modifies	internalState,
+		*thread
+@*/
+;
+/*@=protoparammatch@*/
+
+/*@-protoparammatch@*/
+#undef retval
+/*@external@*/ /*@unused@*/
+extern int pthread_join(pthread_t, /*@null@*/ void **retval)
+/*@globals	internalState@*/
+/*@modifies	internalState,
+		retval
+@*/
+;
+/*@=protoparammatch@*/
+
+/*@-protoparammatch@*/
+#undef lock
+/*@external@*/ /*@unused@*/
+extern int pthread_spin_destroy(pthread_spinlock_t *lock)
+/*@globals	internalState@*/
+/*@modifies	internalState,
+		*lock
+@*/
+;
+/*@=protoparammatch@*/
+
+/*@-protoparammatch@*/
+#undef lock
+/*@external@*/ /*@unused@*/
+extern int pthread_spin_init(pthread_spinlock_t *lock, int)
+/*@globals	internalState@*/
+/*@modifies	internalState,
+		*lock
+@*/
+;
+/*@=protoparammatch@*/
+
+/*@-protoparammatch@*/
+#undef lock
+/*@external@*/ /*@unused@*/
+extern int pthread_spin_lock(pthread_spinlock_t *lock)
+/*@globals	internalState@*/
+/*@modifies	internalState,
+		*lock
+@*/
+;
+/*@=protoparammatch@*/
+
+/*@-protoparammatch@*/
+#undef lock
+/*@external@*/ /*@unused@*/
+extern int pthread_spin_unlock(pthread_spinlock_t *lock)
+/*@globals	internalState@*/
+/*@modifies	internalState,
+		*lock
+@*/
+;
+/*@=protoparammatch@*/
+
+/*@-protoparammatch@*/
+#undef sem
+/*@external@*/ /*@unused@*/
+extern int sem_destroy(sem_t *sem)
+/*@globals	internalState@*/
+/*@modifies	internalState,
+		*sem
+@*/
+;
+/*@=protoparammatch@*/
+
+/*@-protoparammatch@*/
+#undef sem
+/*@external@*/ /*@unused@*/
+extern int sem_init(sem_t *sem, int, unsigned int)
+/*@globals	internalState@*/
+/*@modifies	internalState,
+		*sem
+@*/
+;
+/*@=protoparammatch@*/
+
+/*@-protoparammatch@*/
+#undef sem
+/*@external@*/ /*@unused@*/
+extern int sem_post(sem_t *sem)
+/*@globals	internalState@*/
+/*@modifies	internalState,
+		*sem
+@*/
+;
+/*@=protoparammatch@*/
+
+/*@-protoparammatch@*/
+#undef sem
+/*@external@*/ /*@unused@*/
+extern int sem_wait(sem_t *sem)
+/*@globals	internalState@*/
+/*@modifies	internalState,
+		*sem
+@*/
+;
+/*@=protoparammatch@*/
 
 // EOF ///////////////////////////////////////////////////////////////////////
 #endif

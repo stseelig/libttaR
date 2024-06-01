@@ -32,28 +32,24 @@ prewrite_wav_header(FILE *const restrict outfile, const char *outfile_name)
 		outfile
 @*/
 {
-	union {
-		int	d;
-	} t;
+	union {	int d; } t;
 
 	t.d = fflush(outfile);
-	if ( t.d != 0 ){
-		error_sys_nf(errno, "fflush", strerror(errno), outfile_name);
+	if UNLIKELY ( t.d != 0 ){
+		error_sys(errno, "fflush", outfile_name);
 	}
 
 	t.d = ftruncate(
 		fileno(outfile),
 		(off_t) sizeof(struct RiffHeader_WriteTemplate)
 	);
-	if ( t.d != 0 ){
-		error_sys_nf(
-			errno, "ftruncate", strerror(errno), outfile_name
-		);
+	if UNLIKELY ( (t.d != 0) && (errno != EINVAL) ){	// /dev/null
+		error_sys(errno, "ftruncate", outfile_name);
 	}
 
 	t.d = fseeko(outfile, 0, SEEK_END);
-	if ( t.d != 0 ){
-		error_sys_nf(errno, "fseeko", strerror(errno), outfile_name);
+	if UNLIKELY ( t.d != 0 ){
+		error_sys(errno, "fseeko", outfile_name);
 	}
 
 	return;
@@ -71,21 +67,33 @@ write_wav_header(
 @*/
 {
 	struct RiffHeader_WriteTemplate wt;
-	union {
-		u32	u_32;
+	union {	u32	u_32;
 		size_t	z;
 	} t;
 
-	if ( data_size > UINT32_MAX ){
-		data_size = UINT32_MAX;
-		warning_tta("%s: broken header field: size", outfile_name);
+	if UNLIKELY ( data_size > (size_t) UINT32_MAX ){
+		warning_tta("%s: broken header field: riff-size",
+			outfile_name
+		);
+	}
+	if UNLIKELY (
+		data_size
+	       >
+	        (size_t) (UINT32_MAX - (sizeof wt) + (sizeof wt.hdr))
+	){
+		warning_tta("%s: broken chunk field: data-size",
+			outfile_name
+		);
 	}
 
 	// riff/wave header
 	(void) memcpy(&wt.hdr.rh.id, RIFF_ID_RIFF, sizeof wt.hdr.rh.id);
-	t.u_32 = (data_size >= (UINT32_MAX - (sizeof wt) + (sizeof wt.hdr))
-		? UINT32_MAX
-		: data_size + (sizeof wt) - (sizeof wt.hdr.rh)
+	t.u_32 = (
+		data_size >= (size_t) (
+			UINT32_MAX - (sizeof wt) + (sizeof wt.hdr)
+		)
+			? UINT32_MAX
+			: (u32) (data_size + (sizeof wt) - (sizeof wt.hdr.rh))
 	);
 	wt.hdr.rh.size	= htole32(t.u_32);
 	(void) memcpy(&wt.hdr.format, RIFF_ID_WAVE, sizeof wt.hdr.format);
@@ -100,12 +108,14 @@ write_wav_header(
 
 	// data chunk header
 	(void) memcpy(&wt.data.id, RIFF_ID_DATA, sizeof wt.data.id);
-	t.u_32 = (data_size >= UINT32_MAX ? UINT32_MAX : data_size);
+	t.u_32 = (data_size >= (size_t) UINT32_MAX
+		? UINT32_MAX : (u32) data_size
+	);
 	wt.data.size	= htole32(t.u_32);
 
-	t.z = fwrite(&wt, sizeof wt, (size_t) 1, outfile);
-	if ( t.z != (size_t) 1 ){
-		error_sys_nf(errno, "fwrite", strerror(errno), outfile_name);
+	t.z = fwrite(&wt, sizeof wt, (size_t) 1u, outfile);
+	if UNLIKELY ( t.z != (size_t) 1u ){
+		error_sys(errno, "fwrite", outfile_name);
 	}
 
 	return;

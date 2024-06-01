@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// opts/tta2dec.c                                                           //
+// opts/decode.c                                                            //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
@@ -16,6 +16,7 @@
 #include "../../bits.h"
 
 #include "../debug.h"
+#include "../formats.h"
 #include "../help.h"
 #include "../main.h"
 #include "../opts.h"
@@ -24,7 +25,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #undef opt
-static int opt_tta2dec_format(uint, char *opt, enum OptMode)
+static int opt_decode_format(uint, char *opt, enum OptMode)
 /*@globals	fileSystem,
 		internalState,
 		g_flag
@@ -37,7 +38,7 @@ static int opt_tta2dec_format(uint, char *opt, enum OptMode)
 ;
 
 static int
-opt_tta2dec_help(uint, char *,enum OptMode)
+opt_decode_help(uint, char *,enum OptMode)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;
@@ -45,20 +46,26 @@ opt_tta2dec_help(uint, char *,enum OptMode)
 //////////////////////////////////////////////////////////////////////////////
 
 /*@unchecked@*/
-const struct OptDict tta2dec_optdict[] = {
-	{ "help"	, '?'	, opt_tta2dec_help	},
-	{ "delete-src"	, 'd'	, opt_common_delete_src	},
-	{ "format"	, 'f'	, opt_tta2dec_format	},
-	{ "outfile"	, 'o'	, opt_common_outfile	},
-	{ "quiet"	, 'q'	, opt_common_quiet	},
+const struct OptDict decode_optdict[] = {
+	{ "help"		, '?'	, opt_decode_help		},
 
-	{ NULL		,  0	, NULL			}
+	{ "single-threaded"	, 'S'	, opt_common_single_threaded	},
+	{ "multi-threaded"	, 'M'	, opt_common_multi_threaded	},
+
+	{ "delete-src"		, 'd'	, opt_common_delete_src		},
+	{ "format"		, 'f'	, opt_decode_format		},
+	{ "outfile"		, 'o'	, opt_common_outfile		},
+	{ "quiet"		, 'q'	, opt_common_quiet		},
+	{ "single-threaded"	, 'S'	, opt_common_single_threaded	},
+	{ "threads"		, 't'	, opt_common_threads		},
+
+	{ NULL , 0 , NULL }
 };
 
 //////////////////////////////////////////////////////////////////////////////
 
 static int
-opt_tta2dec_format(uint optind, char *opt, enum OptMode mode)
+opt_decode_format(uint optind, char *opt, enum OptMode mode)
 /*@globals	fileSystem,
 		internalState,
 		g_flag
@@ -70,43 +77,42 @@ opt_tta2dec_format(uint optind, char *opt, enum OptMode mode)
 @*/
 {
 	int r;
-	const char *decfmt_name[] = {"raw", "wav", "w64"};
-	#define NUM_DECFMT ((uint) ((sizeof decfmt_name) / sizeof( char *)))
+	/*@observer@*/
+	const char *const decfmt_name[] = DECFMT_NAME_ARRAY;
 	char *subopt;
 	uint i;
 
 	switch ( mode ){
 	case OPTMODE_SHORT:
-		if ( opt[1] == '\0' ){
+		if ( opt[1u] == '\0' ){
 			optsget_argcheck(optind, opt, 1u);
 			subopt = g_argv[optind + 1u];
 			r = -1;
 		}
-		else {	subopt = &opt[1];
+		else {	subopt = &opt[1u];
 			r = (int) strlen(subopt);
 		}
 		break;
 	case OPTMODE_LONG:
 		(void) strtok(opt, "=");
 		subopt = strtok(NULL, "");
-		if ( subopt == NULL ){
-			error_tta("%s: missing %s field",
-				"--format", "format"
-			);
+		if UNLIKELY ( subopt == NULL ){
+			error_tta("%s: missing argument", "--format");
 		}
 		r = 0;
 		break;
 	}
+	assert(subopt != NULL);
 
 	for ( i = 0; i < NUM_DECFMT; ++i ){
 		if ( strcmp(subopt, decfmt_name[i]) == 0 ){
 			g_flag.decfmt = (enum DecFormat) i;
 			break;
 		}
-		else if ( i == NUM_DECFMT - 1u ){
-			error_tta("%s: bad %s: %s",
+		else if UNLIKELY ( i == NUM_DECFMT - 1u ){
+			error_tta("%s: bad argument: %s",
 				mode == OPTMODE_SHORT ? "-f" : "--format",
-				"format", subopt
+				subopt
 			);
 		} else{;}
 	}
@@ -115,7 +121,7 @@ opt_tta2dec_format(uint optind, char *opt, enum OptMode mode)
 }
 
 static int
-opt_tta2dec_help(
+opt_decode_help(
 	/*@unused@*/ uint optind, /*@unused@*/ char *opt,
 	/*@unused@*/ enum OptMode mode
 )
@@ -127,8 +133,8 @@ opt_tta2dec_help(
 	(void) opt;
 	(void) mode;
 #endif
-	errprint_help_tta2dec();
-	exit(EXIT_SUCCESS);;
+	errprint_help_mode_decode();
+	exit(EXIT_SUCCESS);
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////

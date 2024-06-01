@@ -10,7 +10,7 @@
 #                                                                            #
 ##############################################################################
 
-NPROC=$(nproc) || NPROC=1;	# MAYBE add a '-j' opt
+NPROC=$(nproc) || NPROC=1;
 readonly NPROC;
 
 #----------------------------------------------------------------------------#
@@ -28,8 +28,8 @@ readonly PROGRAM='ttaR';
 #   main reasons that gcc is slower:
 #       - gcc doesn't have a builtin memmove (this is extra funny considering
 # the glibc memcpy backwards fiasco from last decade)
-#       - clang is better at auto-SIMDing
-#       - it can do dumb stuff if you don't use gcc-isms like the example in
+#       - clang is better at SIMDing and inlining
+#       - gcc can do dumb stuff if you don't use gcc-isms, like the example in
 # the previous paragraph
 #
 #	AMD Ryzen 7 1700
@@ -39,7 +39,7 @@ readonly PROGRAM='ttaR';
 readonly CC='clang';
 readonly LD="$CC";
 
-#=============================================================================
+#============================================================================#
 
 readonly ROOT="$(realpath "$(dirname "$0")")";
 # relative to ROOT
@@ -59,10 +59,11 @@ CFLAGS_COMMON="$CFLAGS_COMMON -mtune=native";
 #CFLAGS_COMMON="$CFLAGS_COMMON -gdwarf";
 CFLAGS_COMMON="$CFLAGS_COMMON -DNDEBUG";
 
+#CFLAGS_COMMON="$CFLAGS_COMMON -fno-inline";
+
 CFLAGS_COMMON="$CFLAGS_COMMON -Wall";
 CFLAGS_COMMON="$CFLAGS_COMMON -Wextra";
 CFLAGS_COMMON="$CFLAGS_COMMON -Wpedantic";
-#CFLAGS_COMMON="$CFLAGS_COMMON -Werror";
 
 if [ "$CC" = 'gcc' ]; then
 # gcc complaining about enum switches
@@ -79,10 +80,9 @@ CFLAGS_CLI=;
 CFLAGS_CLI="$CFLAGS_CLI -D_GNU_SOURCE";	# reallocarray, memrchr, strchr
 CFLAGS_CLI="$CFLAGS_CLI -D_FILE_OFFSET_BITS=64";
 
-CFLAGS_CLI="$CFLAGS_CLI -O3";
+# -O3 is safe, but it can be slower
+CFLAGS_CLI="$CFLAGS_CLI -Os";
 CFLAGS_CLI="$CFLAGS_CLI -ffast-math";
-
-#CFLAGS_CLI="$CFLAGS_CLI -fno-inline";
 
 readonly CFLAGS_CLI;
 
@@ -90,20 +90,19 @@ readonly CFLAGS_CLI;
 
 CFLAGS_LIB=;
 
-CFLAGS_LIB="$CFLAGS_LIB -O3";
-
-#CFLAGS_LIB="$CFLAGS_LIB -fno-inline";
+# -O3 is safe, but it can be slower
+CFLAGS_LIB="$CFLAGS_LIB -O2";
 
 CFLAGS_LIB="$CFLAGS_LIB -fPIC";
 
-# disable the unrolled mono/stereo codec loop. bit faster, but larger binary
+# disables the unrolled mono/stereo codec loops; bit faster, but larger binary
 #CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_DISABLE_UNROLLED_1CH";
 #CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_DISABLE_UNROLLED_2CH";
 
-# disable the multichannel/general decoder
+# disables the multichannel/general decoder
 #CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_DISABLE_MCH";
 
-# disable tzcnt builtin if no native tzcnt instruction
+# uncomment if no native tzcnt/ctz instruction
 #CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_NO_INSTRUCTION_TZCNT";
 
 readonly CFLAGS_LIB;
@@ -122,13 +121,14 @@ readonly LDFLAGS_CLI;
 LDFLAGS_CLI_END=;
 LDFLAGS_CLI_END="$LDFLAGS_CLI_END -L$BUILD/";
 LDFLAGS_CLI_END="$LDFLAGS_CLI_END -l$LIB_BASE";
+LDFLAGS_CLI_END="$LDFLAGS_CLI_END -lpthread";
 readonly LD_FLAGS_CLI_END;
 
 #----------------------------------------------------------------------------#
 
 LDFLAGS_LIB=;
 LDFLAGS_LIB="$LDFLAGS_LIB -shared";
-# library only uses memmove & memset from libc, but that should be a builtin
+# library only uses memmove & memset from libc, but those should be builtin
 LDFLAGS_LIB="$LDFLAGS_LIB -nolibc";
 readonly LDFLAGS_LIB;
 
@@ -149,8 +149,9 @@ readonly DIR0="$BUILD";
 readonly DIR1="$OBJ";
 readonly DIR2="$OBJ/cli";
 readonly DIR3="$OBJ/cli/formats";
-readonly DIR4="$OBJ/cli/opts";
-readonly DIR5="$OBJ/lib";
+readonly DIR4="$OBJ/cli/modes";
+readonly DIR5="$OBJ/cli/opts";
+readonly DIR6="$OBJ/lib";
 
 readonly HEADER="$SRC/libttaR.h";
 
@@ -162,30 +163,31 @@ readonly L_C04='lib/rice';
 readonly L_C05='lib/tta_dec';
 readonly L_C06='lib/tta_enc';
 
-readonly P_C00='cli/bufs';
-readonly P_C01='cli/cli';
-readonly P_C02='cli/debug';
-readonly P_C03='cli/formats/guid';
-readonly P_C04='cli/formats/metatags_skip';
-readonly P_C05='cli/formats/tta1_check';
-readonly P_C06='cli/formats/tta_seek';
-readonly P_C07='cli/formats/tta_seek_check';
-readonly P_C08='cli/formats/tta_write';
-readonly P_C09='cli/formats/w64_check';
-readonly P_C10='cli/formats/w64_write';
-readonly P_C11='cli/formats/wav_check';
-readonly P_C12='cli/formats/wav_write';
-readonly P_C13='cli/help';
-readonly P_C14='cli/main';
-readonly P_C15='cli/open';
-readonly P_C16='cli/opts/common';
-readonly P_C17='cli/opts/tta2dec';
-readonly P_C18='cli/opts/tta2enc';
-readonly P_C19='cli/optsget';
-readonly P_C20='cli/tta2dec';
-readonly P_C21='cli/tta2dec_st';
-readonly P_C22='cli/tta2enc';
-readonly P_C23='cli/tta2enc_st';
+readonly P_C00='cli/cli';
+readonly P_C01='cli/debug';
+readonly P_C02='cli/formats/guid';
+readonly P_C03='cli/formats/metatags_skip';
+readonly P_C04='cli/formats/tta1_check';
+readonly P_C05='cli/formats/tta_seek';
+readonly P_C06='cli/formats/tta_seek_check';
+readonly P_C07='cli/formats/tta_write';
+readonly P_C08='cli/formats/w64_check';
+readonly P_C09='cli/formats/w64_write';
+readonly P_C10='cli/formats/wav_check';
+readonly P_C11='cli/formats/wav_write';
+readonly P_C12='cli/help';
+readonly P_C13='cli/main';
+readonly P_C14='cli/open';
+readonly P_C15='cli/opts/common';
+readonly P_C16='cli/opts/decode';
+readonly P_C17='cli/opts/encode';
+readonly P_C18='cli/optsget';
+readonly P_C19='cli/modes/bufs';
+readonly P_C20='cli/modes/mode_decode';
+readonly P_C21='cli/modes/mode_decode_loop';
+readonly P_C22='cli/modes/mode_encode';
+readonly P_C23='cli/modes/mode_encode_loop';
+readonly P_C24='cli/modes/mt-struct';
 
 #----------------------------------------------------------------------------#
 
@@ -221,6 +223,7 @@ readonly P_O20="$OBJ/$P_C20.o";
 readonly P_O21="$OBJ/$P_C21.o";
 readonly P_O22="$OBJ/$P_C22.o";
 readonly P_O23="$OBJ/$P_C23.o";
+readonly P_O24="$OBJ/$P_C24.o";
 
 ##############################################################################
 
@@ -255,7 +258,7 @@ _timefmt(){
 
 _size(){
 # $1: file
-	du -h "$1" | cut -f 1;
+	du -h --apparent-size "$1" | cut -f 1;
 }
 
 _ret_ok(){
@@ -291,8 +294,6 @@ _exit(){
 		printf -- "${PRINT})\n";
 	else
 		printf -- "${PRINT}(${T_B_RED}${1}: failed${T_RESET})\n";
-		exec 1<&- && exec 2<&-;	# close stdout and stderr
-		sleep 0.05;		# let anything that got through print
 	fi
 	exit $1
 }
@@ -434,7 +435,7 @@ fi
 
 _cd "$ROOT";
 
-_mkdir "$DIR0" "$DIR1" "$DIR2" "$DIR3" "$DIR4" "$DIR5";
+_mkdir "$DIR0" "$DIR1" "$DIR2" "$DIR3" "$DIR4" "$DIR5" "$DIR6";
 
 _cc_mp	"$CFLAGS_COMMON $CFLAGS_LIB" \
 	"$L_C00" "$L_C01" "$L_C02" "$L_C03" "$L_C04" "$L_C05" "$L_C06";
@@ -442,7 +443,7 @@ _cc_mp	"$CFLAGS_COMMON $CFLAGS_CLI" \
 	"$P_C00" "$P_C01" "$P_C02" "$P_C03" "$P_C04" "$P_C05" "$P_C06" \
 	"$P_C07" "$P_C08" "$P_C09" "$P_C10" "$P_C11" "$P_C12" "$P_C13" \
 	"$P_C14" "$P_C15" "$P_C16" "$P_C17" "$P_C18" "$P_C19" "$P_C20" \
-	"$P_C21" "$P_C22" "$P_C23";
+	"$P_C21" "$P_C22" "$P_C23" "$P_C24";
 wait;
 
 _ld "$LDFLAGS_LIB" "$LDFLAGS_LIB_END" "$BUILD/$LIBRARY" \
@@ -451,7 +452,7 @@ _ld "$LDFLAGS_CLI" "$LDFLAGS_CLI_END" "$BUILD/$PROGRAM" \
 	"$P_O00" "$P_O01" "$P_O02" "$P_O03" "$P_O04" "$P_O05" "$P_O06" \
 	"$P_O07" "$P_O08" "$P_O09" "$P_O10" "$P_O11" "$P_O12" "$P_O13" \
 	"$P_O14" "$P_O15" "$P_O16" "$P_O17" "$P_O18" "$P_O19" "$P_O20" \
-	"$P_O21" "$P_O22" "$P_O23";
+	"$P_O21" "$P_O22" "$P_O23" "$P_O24";
 
 if [ -n "$STRIP" ] && [ $STRIP -ne 0 ]; then
 	_strip "$BUILD/$PROGRAM";

@@ -11,12 +11,21 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
-extern void errprint_help_tta2enc(void)
+#include "../bits.h"
+
+//////////////////////////////////////////////////////////////////////////////
+
+extern COLD void errprint_help_main(void)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;
 
-extern void errprint_help_tta2dec(void)
+extern COLD void errprint_help_mode_encode(void)
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem@*/
+;
+
+extern COLD void errprint_help_mode_decode(void)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;

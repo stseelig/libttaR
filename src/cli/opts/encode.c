@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// opts/tta2enc.c                                                           //
+// opts/encode.c                                                            //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
@@ -9,6 +9,8 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
+#include <assert.h>
+#include <stdbool.h>	// true
 #include <stdlib.h>	// atoll, exit
 #include <string.h>	// strtok
 
@@ -24,17 +26,17 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #undef opt
-static int opt_tta2enc_rawpcm(uint, char *opt, enum OptMode)
+static int opt_encode_rawpcm(uint, char *opt, enum OptMode)
 /*@globals	fileSystem,
 		internalState
 @*/
-/*@modifies	fileSystem
+/*@modifies	fileSystem,
 		internalState,
-		opt
+		*opt
 @*/
 ;
 
-static int opt_tta2enc_help(uint, char *, enum OptMode)
+static int opt_encode_help(uint, char *, enum OptMode)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;
@@ -42,23 +44,29 @@ static int opt_tta2enc_help(uint, char *, enum OptMode)
 //////////////////////////////////////////////////////////////////////////////
 
 /*@unchecked@*/
-const struct OptDict tta2enc_optdict[] = {
-	{ "help"	, '?'	, opt_tta2enc_help	},
-	{ "delete-src"	, 'd'	, opt_common_delete_src	},
-	{ "outfile"	, 'o'	, opt_common_outfile	},
-	{ "quiet"	, 'q'	, opt_common_quiet	},
-	{ "rawpcm"	, -1	, opt_tta2enc_rawpcm	},
+const struct OptDict encode_optdict[] = {
+	{ "help"		, '?'	, opt_encode_help		},
 
-	{ NULL		,  0	, NULL			}
+	{ "single-threaded"	, 'S'	, opt_common_single_threaded	},
+	{ "multi-threaded"	, 'M'	, opt_common_multi_threaded	},
+
+	{ "delete-src"		, 'd'	, opt_common_delete_src		},
+	{ "outfile"		, 'o'	, opt_common_outfile		},
+	{ "quiet"		, 'q'	, opt_common_quiet		},
+	{ "rawpcm"		, -1	, opt_encode_rawpcm		},
+	{ "single-threaded"	, 'S'	, opt_common_single_threaded	},
+	{ "threads"		, 't'	, opt_common_threads		},
+
+	{ NULL , 0 , NULL }
 };
 
 //==========================================================================//
 
 static struct {
-	enum DecFormat		decfmt:8;
-	enum IntType		inttype:8;
-	u16			samplebits:8;
-	enum Endian		endian:8;
+	enum DecFormat		decfmt:8u;
+	enum IntType		inttype:8u;
+	u16			samplebits:8u;
+	enum Endian		endian:8u;
 	u16			nchan;
 	u32			samplerate;
 } f_rpstat;
@@ -67,7 +75,7 @@ static struct {
 
 void
 rawpcm_statcopy(struct FileStats *const restrict fstat)
-/*@modifies	fstat@*/
+/*@modifies	*fstat@*/
 {
 	fstat->decfmt		= f_rpstat.decfmt;
 	fstat->inttype		= f_rpstat.inttype;
@@ -83,15 +91,15 @@ rawpcm_statcopy(struct FileStats *const restrict fstat)
 // MAYBE add a g_rawpcm_stat thing instead; struct PcmStat
 // --rawpcm=format,samplerate,nchan
 static int
-opt_tta2enc_rawpcm(
+opt_encode_rawpcm(
 	/*@unused@*/ uint optind, char *opt, /*@unused@*/ enum OptMode mode
 )
 /*@globals	fileSystem,
 		internalState
 @*/
-/*@modifies	fileSystem
+/*@modifies	fileSystem,
 		internalState,
-		opt
+		*opt
 @*/
 {
 #ifndef S_SPLINT_S
@@ -100,9 +108,7 @@ opt_tta2enc_rawpcm(
 #endif
 
 	char *subopt;
-	union {
-		longlong ll;
-	} t;
+	union {	longlong ll; } t;
 
 	memset(&f_rpstat, 0x00, sizeof f_rpstat);
 
@@ -110,34 +116,38 @@ opt_tta2enc_rawpcm(
 
 	// format
 	subopt = strtok(NULL, ",");
-	if ( subopt == NULL ){
+	if UNLIKELY ( subopt == NULL ){
 		error_tta("%s: missing %s field", "--rawpcm", "format");
 	}
+	assert(subopt != NULL);
 
 	if ( strcmp(subopt, "u8") == 0 ){
 		f_rpstat.inttype    = INT_UNSIGNED;
-		f_rpstat.samplebits =  8u;
+		f_rpstat.samplebits = (u16) 8u;
 	}
 	else if ( strcmp(subopt, "i16le") == 0 ){
 		f_rpstat.inttype    = INT_SIGNED;
-		f_rpstat.samplebits = 16u;
+		f_rpstat.samplebits = (u16) 16u;
 		f_rpstat.endian     = xENDIAN_LITTLE;
 	}
 	else if ( strcmp(subopt, "i24le") == 0 ){
 		f_rpstat.inttype    = INT_SIGNED;
-		f_rpstat.samplebits = 24u;
+		f_rpstat.samplebits = (u16) 24u;
 		f_rpstat.endian     = xENDIAN_LITTLE;
 	}
-	else {	error_tta("%s: unsupported format: %s", "--rawpcm", subopt); }
+	else if UNLIKELY ( true ) {
+		error_tta("%s: unsupported format: %s", "--rawpcm", subopt);
+	}else{;}
 
 	// samplerate
 	subopt = strtok(NULL, ",");
-	if ( subopt == NULL ){
+	if UNLIKELY ( subopt == NULL ){
 		error_tta("%s: missing %s field", "--rawpcm", "samplerate");
 	}
+	assert(subopt != NULL);
 
 	t.ll = atoll(subopt);
-	if ( (t.ll <= 0) || (t.ll > UINT32_MAX) ){
+	if UNLIKELY ( (t.ll <= 0) || (t.ll > (longlong) UINT32_MAX) ){
 		error_tta("%s: %s out of range: %lld",
 			"--rawpcm", "samplerate", t.ll
 		);
@@ -146,12 +156,13 @@ opt_tta2enc_rawpcm(
 
 	// nchan
 	subopt = strtok(NULL, ",");
-	if ( subopt == NULL ){
+	if UNLIKELY ( subopt == NULL ){
 		error_tta("%s: missing %s field", "--rawpcm", "nchan");
 	}
+	assert(subopt != NULL);
 
 	t.ll = atoll(subopt);
-	if ( (t.ll <= 0) || (t.ll > UINT16_MAX) ){
+	if UNLIKELY ( (t.ll <= 0) || (t.ll > (longlong) UINT16_MAX) ){
 		error_tta("%s: %s out of range: %lld",
 			"--rawpcm", "nchan", t.ll
 		);
@@ -159,14 +170,14 @@ opt_tta2enc_rawpcm(
 	f_rpstat.nchan = (u16) t.ll;
 
 	// decfmt
-	f_rpstat.decfmt = FORMAT_RAWPCM;
+	f_rpstat.decfmt = DECFMT_RAWPCM;
 
 	g_flag.rawpcm = true;
 	return 0;
 }
 
 static int
-opt_tta2enc_help(
+opt_encode_help(
 	/*@unused@*/ uint optind, /*@unused@*/ char *opt,
 	/*@unused@*/ enum OptMode mode
 )
@@ -178,8 +189,8 @@ opt_tta2enc_help(
 	(void) opt;
 	(void) mode;
 #endif
-	errprint_help_tta2enc();
-	exit(EXIT_SUCCESS);;
+	errprint_help_mode_encode();
+	exit(EXIT_SUCCESS);
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////

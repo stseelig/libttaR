@@ -6,7 +6,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -16,22 +16,20 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include "../../bits.h"
+#include "../../libttaR.h"	// to stop header conflicts
 
-#include "wav.h"	// WAV_FORMAT_PCM
+#include "wav.h"		// WAV_FORMAT_PCM
 
 //////////////////////////////////////////////////////////////////////////////
 
-#ifndef LibTTAr_H
-#ifndef xENUM_TTASAMPLEBYTES
-#define xENUM_TTASAMPLEBYTES
+#ifndef LIBTTAr_H
 enum TTASampleBytes {
 	TTASAMPLEBYTES_1 = 1u,
 	TTASAMPLEBYTES_2 = 2u,
 	TTASAMPLEBYTES_3 = 3u
 };
-#define TTA_SAMPLEBYTES_MAX	TTASAMPLEBYTES_3
-#define TTA_SAMPLEBITS_MAX	((unsigned int) 8*TTA_SAMPLEBYTES_MAX)
-#endif
+#define TTA_SAMPLEBYTES_MAX	((unsigned int) TTASAMPLEBYTES_3)
+#define TTA_SAMPLEBITS_MAX	((unsigned int) (8u*TTA_SAMPLEBYTES_MAX))
 
 #define TTA_FRAME_TIME		((double) 1.04489795918367346939)
 #endif
@@ -39,10 +37,10 @@ enum TTASampleBytes {
 #define TTA1_PREAMBLE		((char[]) {'T','T','A','1'})
 #define TTA2_PREAMBLE		((char[]) {'T','T','A','2'})
 #define TTA2_SEEKTABLE_SIG ( \
-	(u8[3]) {(u8) 0xFFu, (u8) 0xFFu, (u8) 0xFFu} \
+	(u8[3u]) {(u8) 0xFFu, (u8) 0xFFu, (u8) 0xFFu} \
 )
 #define TTA2_FRAMEFOOTER_SIG ( \
-	(u8[3]) {(u8) 0xFEu, (u8) 0xFFu, (u8) 0xFFu} \
+	(u8[3u]) {(u8) 0xFEu, (u8) 0xFFu, (u8) 0xFFu} \
 )
 
 // 13.2 Surround; differs from WAVE channel layout
@@ -69,7 +67,7 @@ enum TTASampleBytes {
 // all int's are little-endian
 
 struct TTA1Header {
-	char	preamble[4];	// .ascii "TTA1"
+	char	preamble[4u];	// .ascii "TTA1"
 	u16	format;		// WAVE_FMT_PCM (0x0001u)
 	u16	nchan;		// number of channels
 	u16	samplebits;	// bits per sample
@@ -79,7 +77,7 @@ struct TTA1Header {
 } PACKED;
 
 struct TTA2Header {
-	char	preamble[4];	// .ascii "TTA2"
+	char	preamble[4u];	// .ascii "TTA2"
 	u16	nchan;		// number of channels
 	u16	samplebits;	// bits per sample
 	u32	samplerate;	// samples per second

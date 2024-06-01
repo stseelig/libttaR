@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -35,22 +35,21 @@ filecheck_tta_seektable(
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
-		st,
-		fstat,
+		*st,
+		*fstat,
 		file
 @*/
 {
-	u32 crc;
-	union {
-		size_t	z;
+	u32 crc;	// little-endian
+	union {	size_t	z;
 		int	d;
-		u32	u32;
+		u32	u_32;
 	} t;
 
 	st->nmemb = nframes;
 	st->table = calloc(st->nmemb, sizeof *st->table);
-	if ( st->table == NULL ){
-		error_sys(errno, "calloc", strerror(errno), NULL);
+	if UNLIKELY ( st->table == NULL ){
+		error_sys(errno, "calloc", NULL);
 	}
 	assert(st->table != NULL);
 
@@ -62,18 +61,18 @@ filecheck_tta_seektable(
 		return FILECHECK_READ_ERROR;
 	}
 
-	t.z = fread(&crc, sizeof crc, (size_t) 1, file);
-	if ( t.z != (size_t) 1 ){
+	t.z = fread(&crc, sizeof crc, (size_t) 1u, file);
+	if ( t.z != (size_t) 1u ){
 		if ( feof(file) != 0 ){
 			return FILECHECK_MALFORMED;
 		}
 		return FILECHECK_READ_ERROR;
 	}
 
-	t.u32 = libttaR_crc32(
+	t.u_32 = libttaR_crc32(
 		(u8 *) st->table, st->nmemb * (sizeof *st->table)
 	);
-	if ( t.u32 != letoh32(crc) ){
+	if ( t.u_32 != letoh32(crc) ){
 		return FILECHECK_CORRUPTED;
 	}
 

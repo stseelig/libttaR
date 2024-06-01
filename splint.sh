@@ -5,7 +5,7 @@
 #                                                                            #
 ##############################################################################
 #                                                                            #
-# Copyright (C) 2023, Shane Seelig                                           #
+# Copyright (C) 2023-2024, Shane Seelig                                      #
 # SPDX-License-Identifier: GPL-3.0-or-later                                  #
 #                                                                            #
 ##############################################################################
@@ -47,20 +47,12 @@ MODES="$MODES -strictops";
 MODES="$MODES -sysdirerrors";	# too much garbage in the system headers
 MODES="$MODES -typeuse";	# bugged
 
+MODES="$MODES +charint";
 MODES="$MODES +enumint";
 
 readonly MODES;
 
-#----------------------------------------------------------------------------#
-
-readonly ROOT="$(realpath "$(dirname "$0")")";
-#FILES='./src/*/*.c';
-#FILES="$FILES ./src/*/*/*.c";
-#readonly FILES;
-
 ##############################################################################
-
-cd "$ROOT" || exit 1;
 
 printf -- "splint %s %s %s %s\n" "$OPTS" "$FLAGS" "$FILES" "$@";
 

@@ -11,8 +11,6 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
-#include <stdbool.h>
-
 #include "../bits.h"
 
 #include "formats.h"
@@ -21,14 +19,29 @@
 //////////////////////////////////////////////////////////////////////////////
 
 /*@unchecked@*/
-extern const struct OptDict tta2enc_optdict[];
+extern const struct OptDict encode_optdict[];
 
 /*@unchecked@*/
-extern const struct OptDict tta2dec_optdict[];
+extern const struct OptDict decode_optdict[];
 
 //////////////////////////////////////////////////////////////////////////////
 
 // common
+
+extern int opt_common_single_threaded(uint, char *, enum OptMode)
+/*@globals	g_flag@*/
+/*@modifies	g_flag.threadmode@*/
+;
+
+extern int opt_common_multi_threaded(uint, char *, enum OptMode)
+/*@globals	g_flag@*/
+/*@modifies	g_flag.threadmode@*/
+;
+
+extern int opt_common_low_memory(uint, char *, enum OptMode)
+/*@globals	g_flag@*/
+/*@modifies	g_flag.threadmode@*/
+;
 
 extern int opt_common_delete_src(uint, char *, enum OptMode)
 /*@globals	g_flag@*/
@@ -37,10 +50,12 @@ extern int opt_common_delete_src(uint, char *, enum OptMode)
 
 #undef opt
 extern int opt_common_outfile(uint, char *opt, enum OptMode)
-/*@globals	internalState,
+/*@globals	fileSystem,
+		internalState,
 		g_flag
 @*/
-/*@modifies	internalState,
+/*@modifies	fileSystem,
+		internalState,
 		g_flag.outfile,
 		g_flag.outfile_is_dir,
 		*opt
@@ -52,13 +67,28 @@ extern int opt_common_quiet(uint, char *, enum OptMode)
 /*@modifies	g_flag.quiet@*/
 ;
 
+#undef opt
+extern int opt_common_threads(uint, char *opt, enum OptMode)
+/*@globals	fileSystem,
+		internalState,
+		g_flag,
+		g_nthreads
+@*/
+/*@modifies	fileSystem,
+		internalState,
+		g_flag.threadmode,
+		g_nthreads,
+		*opt
+@*/
+;
+
 //==========================================================================//
 
 // tta2enc
 
 #undef fstat
 extern void rawpcm_statcopy(struct FileStats *const restrict fstat)
-/*@modifies	fstat@*/
+/*@modifies	*fstat@*/
 ;
 
 // EOF ///////////////////////////////////////////////////////////////////////

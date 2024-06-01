@@ -20,10 +20,18 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-extern void errprint_program_intro(void)
-/*@globals	fileSystem@*/
-/*@modifies	fileSystem@*/
+#define	SPINNER_FRQ	((size_t) 64u)
+
+//////////////////////////////////////////////////////////////////////////////
+
+INLINE CONST double timediff(
+	register const struct timespec *const restrict,
+	register const struct timespec *const restrict
+)
+/*@*/
 ;
+
+//==========================================================================//
 
 extern void errprint_stats_precodec(
 	const struct FileStats *const restrict, const char *const restrict,
@@ -46,7 +54,7 @@ extern void errprint_runtime(double, size_t, enum ProgramMode)
 /*@modifies	fileSystem@*/
 ;
 
-extern void errprint_spinner(void)
+extern HOT void errprint_spinner(void)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -55,32 +63,22 @@ extern void errprint_spinner(void)
 @*/
 ;
 
-//--------------------------------------------------------------------------//
-
-INLINE double timediff(
-	register const struct timespec *const restrict,
-	register const struct timespec *const restrict
-)
-/*@*/
-;
-
 //////////////////////////////////////////////////////////////////////////////
 
-INLINE double
+INLINE CONST double
 timediff(
 	register const struct timespec *const restrict start,
 	register const struct timespec *const restrict finish
 )
 /*@*/
 {
-	register double diffsec;
-	register const double diffnsec = (
+	register const double diff_sec  = (double) (
+		finish->tv_sec - start->tv_sec
+	);
+	register const double diff_nsec = (
 		((double) (finish->tv_nsec - start->tv_nsec)) / 1000000000.0
 	);
-
-	diffsec  = (double) finish->tv_sec - start->tv_sec;
-	diffsec += diffnsec;
-	return diffsec;
+	return diff_sec + diff_nsec;
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////

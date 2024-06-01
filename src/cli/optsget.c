@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -15,7 +15,7 @@
 //  Shortopts can be concatenated like :                                    //
 //      '-a', '-ab', '-avalue0bvalue1',  '-a value0 -b value1'              //
 //                                                                          //
-//  Opt processing continues until the first non-opt or "--".               //
+//  '--' ends opt processing (filenames only from then on)                  //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
@@ -84,9 +84,7 @@ optargs_process(
 {
 	uint r = 0;
 	bool endopts = false;
-	union {
-		int d;
-	} t;
+	union {	int d; } t;
 
 	while ( optind < g_argc ){
 		if ( (! endopts) && (g_argv[optind][0] == '-') ){
@@ -120,8 +118,7 @@ optsget(uint optind, const struct OptDict *const restrict optdict)
 {
 	char *arg;
 	int i;
-	union {
-		char	*s;
+	union {	char	*s;
 		int	d;
 	} t;
 
@@ -130,20 +127,20 @@ optsget(uint optind, const struct OptDict *const restrict optdict)
 		if ( arg[0] != '-' ){	// return at first non-opt
 			break;
 		}
-		else if ( (arg[0] == '-') && (arg[1] != '-') ){
+		else if ( (arg[0] == '-') && (arg[1u] != '-') ){
 			t.d = shortoptsget(optind + i, optdict);
-			if ( t.d < 0 ){
+			if UNLIKELY ( t.d < 0 ){
 				error_tta("bad shortopt: -%c", (char) -t.d);
 			}
 			i += t.d;
 		}
-		else if ( (arg[0] == '-') && (arg[1] == '-') ){
-			if ( arg[2] == '\0' ){	// "--" stops opt processing
+		else if ( (arg[0] == '-') && (arg[1u] == '-') ){
+			if ( arg[2u] == '\0' ){	// "--" stops opt processing
 				++i;
 				return -i;
 			}
 			t.d = longoptget(optind + i, optdict);
-			if ( t.d < 0 ){
+			if UNLIKELY ( t.d < 0 ){
 				t.s = strtok(arg, "=");
 				assert(t.s != NULL);
 				error_tta("bad longopt: %s", t.s);
@@ -169,11 +166,9 @@ shortoptsget(uint optind, const struct OptDict *const restrict optdict)
 		internalState
 @*/
 {
-	const char *const restrict opt = &g_argv[optind][1];
+	const char *const restrict opt = &g_argv[optind][1u];
 	uint i, j;
-	union {
-		int	d;
-	} t;
+	union {	int d; } t;
 
 	for ( i = 0; opt[i] != '\0'; ++i ){
 		for ( j = 0; optdict[j].shortopt != 0; ++j ){
@@ -189,8 +184,7 @@ shortoptsget(uint optind, const struct OptDict *const restrict optdict)
 		}
 		return (int) -opt[i];	// shortopt not found
 cont_outer_loop:
-		continue;
-
+		;
 	}
 	return 0;
 }
@@ -207,7 +201,7 @@ longoptget(uint optind, const struct OptDict *const restrict optdict)
 @*/
 {
 	int r = -1;
-	const char *const opt = &g_argv[optind][2];
+	const char *const opt = &g_argv[optind][2u];
 	const char *subopt;
 	size_t size = SIZE_MAX;
 	uint i;
@@ -236,7 +230,7 @@ optsget_argcheck(uint optind, char *opt, uint nargs)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 {
-	if ( optind + nargs >= g_argc ){
+	if UNLIKELY ( optind + nargs >= g_argc ){
 		error_tta("opt '%s' missing %u arg%s",
 			opt, nargs, nargs > 1u ? "s" : ""
 		);

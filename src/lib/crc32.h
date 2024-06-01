@@ -7,12 +7,10 @@
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // Copyright (C) 2007, Aleksander Djuric                                    //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
-
-#include <stddef.h>	// size_t
 
 #include "../bits.h"
 
@@ -23,29 +21,19 @@
 //////////////////////////////////////////////////////////////////////////////
 
 /*@unchecked@*/ /*@unused@*/
-extern const u32 crc32_table[];
+extern HIDDEN const u32 crc32_table[];
 
 //////////////////////////////////////////////////////////////////////////////
 
-ALWAYS_INLINE u32 crc32_cont(register u8, register u32) /*@*/;
-ALWAYS_INLINE u32 crc32_end(register u32 crc) /*@*/;
-
-//////////////////////////////////////////////////////////////////////////////
-
-ALWAYS_INLINE u32
+ALWAYS_INLINE CONST u32
 crc32_cont(register u8 x, register u32 crc)
 /*@*/
 {
-	register const u32 lookup = crc32_table[(crc ^ x) & 0xFFu];
+	register const u32 lookup = crc32_table[((u8) crc) ^ x];
 	return (u32) ((crc >> 8u) ^ lookup);
 }
 
-ALWAYS_INLINE u32
-crc32_end(register u32 crc)
-/*@*/
-{
-	return ~crc;
-}
+ALWAYS_INLINE CONST u32 crc32_end(register u32 crc) /*@*/ { return ~crc; }
 
 // EOF ///////////////////////////////////////////////////////////////////////
 #endif

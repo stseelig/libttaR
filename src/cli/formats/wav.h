@@ -6,7 +6,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -40,24 +40,30 @@
 })
 
 // differs from TTA layout
-#define WAVE_CHAN_FL	((u32) 0x00000001u)
-#define WAVE_CHAN_FR	((u32) 0x00000002u)
-#define WAVE_CHAN_FC	((u32) 0x00000004u)
-#define WAVE_CHAN_LFE	((u32) 0x00000008u)
-#define WAVE_CHAN_BL	((u32) 0x00000010u)
-#define WAVE_CHAN_BR	((u32) 0x00000020u)
-#define WAVE_CHAN_FLC	((u32) 0x00000040u)
-#define WAVE_CHAN_FRC	((u32) 0x00000080u)
-#define WAVE_CHAN_BC	((u32) 0x00000100u)
-#define WAVE_CHAN_SL	((u32) 0x00000200u)
-#define WAVE_CHAN_SR	((u32) 0x00000400u)
-#define WAVE_CHAN_TC	((u32) 0x00000800u)
-#define WAVE_CHAN_TFL	((u32) 0x00001000u)
-#define WAVE_CHAN_TFC	((u32) 0x00002000u)
-#define WAVE_CHAN_TFR	((u32) 0x00004000u)
-#define WAVE_CHAN_TBL	((u32) 0x00008000u)
-#define WAVE_CHAN_TBC	((u32) 0x00010000u)
-#define WAVE_CHAN_TBR	((u32) 0x00020000u)
+#define WAVE_CHAN_FL		((u32) 0x00000001u)
+#define WAVE_CHAN_FR		((u32) 0x00000002u)
+#define WAVE_CHAN_FC		((u32) 0x00000004u)
+#define WAVE_CHAN_LFE		((u32) 0x00000008u)
+#define WAVE_CHAN_BL		((u32) 0x00000010u)
+#define WAVE_CHAN_BR		((u32) 0x00000020u)
+#define WAVE_CHAN_FLC		((u32) 0x00000040u)
+#define WAVE_CHAN_FRC		((u32) 0x00000080u)
+#define WAVE_CHAN_BC		((u32) 0x00000100u)
+#define WAVE_CHAN_SL		((u32) 0x00000200u)
+#define WAVE_CHAN_SR		((u32) 0x00000400u)
+#define WAVE_CHAN_TC		((u32) 0x00000800u)
+#define WAVE_CHAN_TFL		((u32) 0x00001000u)
+#define WAVE_CHAN_TFC		((u32) 0x00002000u)
+#define WAVE_CHAN_TFR		((u32) 0x00004000u)
+#define WAVE_CHAN_TBL		((u32) 0x00008000u)
+#define WAVE_CHAN_TBC		((u32) 0x00010000u)
+#define WAVE_CHAN_TBR		((u32) 0x00020000u)
+
+#define NUM_WAVE_CHAN_NAMED	((uint) 18u)
+#define WAVE_CHAN_NAMED_ARRAY	{ \
+	"FL","FR","FC","LFE","BL","BR","FLC","FRC","BC","SL","SR","TC", \
+	"TFL","TFC","TFR","TBL","TBC","TBR" \
+}
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -66,13 +72,13 @@
 // all ints are little-endian
 
 struct RiffHeader {
-	char	id[4];
+	char	id[4u];
 	u32	size;	// size of the chunk, not including the header(8)
 } PACKED;
 
 struct RiffChunkHeader_Wave {
 	struct RiffHeader	rh;		// .id = .ascii "RIFF"
-	char			format[4];	// .ascii "WAVE"
+	char			format[4u];	// .ascii "WAVE"
 } PACKED;
 
 struct RiffSubChunk_WaveFormatEX_Body {

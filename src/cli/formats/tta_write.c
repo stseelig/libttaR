@@ -45,25 +45,21 @@ prewrite_tta1_header_seektable(
 		  sizeof(struct TTA1Header)
 		+ (st->limit * (sizeof *st->table)) + sizeof(u32)
 	);
-	union {
-		int d;
-	} t;
+	union {	int d; } t;
 
 	t.d = fflush(outfile);
-	if ( t.d != 0 ){
-		error_sys_nf(errno, "fflush", strerror(errno), outfile_name);
+	if UNLIKELY ( t.d != 0 ){
+		error_sys(errno, "fflush", outfile_name);
 	}
 
 	t.d = ftruncate(fileno(outfile), offset);
-	if ( t.d != 0 ){
-		error_sys_nf(
-			errno, "ftruncate", strerror(errno), outfile_name
-		);
+	if UNLIKELY ( (t.d != 0) && (errno != EINVAL) ){	// /dev/null
+		error_sys(errno, "ftruncate", outfile_name);
 	}
 
 	t.d = fseeko(outfile, 0, SEEK_END);
-	if ( t.d != 0 ){
-		error_sys_nf(errno, "fseeko", strerror(errno), outfile_name);
+	if UNLIKELY ( t.d != 0 ){
+		error_sys(errno, "fseeko", outfile_name);
 	}
 
 	return;
@@ -82,29 +78,31 @@ write_tta1_header(
 @*/
 {
 	struct TTA1Header h;
-	union {
-		size_t z;
-	} t;
+	union {	size_t z; } t;
+
+	if UNLIKELY ( nsamples_perchan_total > (size_t) UINT32_MAX ){
+		warning_tta("%s: broken header field: nsamples",
+			outfile_name
+		);
+	}
 
 	(void) memcpy(&h.preamble, TTA1_PREAMBLE, sizeof h.preamble);
 	h.format	= htole16(WAVE_FMT_PCM);
 	h.nchan		= htole16(stats->nchan);
 	h.samplebits	= htole16(stats->samplebits);
 	h.samplerate	= htole32(stats->samplerate);
-	if ( nsamples_perchan_total > UINT32_MAX ){
-		warning_tta("%s: broken header field: nsamples",
-			outfile_name
-		);
-	}
-	h.nsamples	= htole32((u32) nsamples_perchan_total);
+	h.nsamples	= htole32(
+		nsamples_perchan_total > (size_t) UINT32_MAX
+			? UINT32_MAX : (u32) nsamples_perchan_total
+	);
 	h.crc		= htole32(libttaR_crc32(
 		(u8 *) &h, (sizeof h) - (sizeof h.crc)
 	));
 
 	// write
-	t.z = fwrite(&h, sizeof h, (size_t) 1, outfile);
-	if ( t.z != (size_t) 1 ){
-		error_sys_nf(errno, "fwrite", strerror(errno), outfile_name);
+	t.z = fwrite(&h, sizeof h, (size_t) 1u, outfile);
+	if UNLIKELY ( t.z != (size_t) 1u ){
+		error_sys(errno, "fwrite", outfile_name);
 	}
 
 	return ftello(outfile);
@@ -122,29 +120,28 @@ write_tta_seektable(
 @*/
 {
 	u32 crc;
-	union {
-		int	d;
+	union {	int	d;
 		size_t	z;
 	} t;
 
 	t.d = fseeko(outfile, st->off, SEEK_SET);
-	if ( t.d != 0 ){
-		error_sys_nf(errno, "fseeko", strerror(errno), outfile_name);
+	if UNLIKELY ( t.d != 0 ){
+		error_sys(errno, "fseeko", outfile_name);
 	}
 
 	// write seektable
 	t.z = fwrite(st->table, sizeof *st->table, st->nmemb, outfile);
-	if ( t.z != st->nmemb ){
-		error_sys_nf(errno, "fwrite", strerror(errno), outfile_name);
+	if UNLIKELY ( t.z != st->nmemb ){
+		error_sys(errno, "fwrite", outfile_name);
 	}
 
 	// calc then write seektable crc
-	crc = libttaR_crc32(
+	crc = htole32(libttaR_crc32(
 		(u8 *) st->table, st->nmemb * (sizeof *st->table)
-	);
-	t.z = fwrite(&crc, sizeof crc, (size_t) 1, outfile);
-	if ( t.z != (size_t) 1 ){
-		error_sys_nf(errno, "fwrite", strerror(errno), outfile_name);
+	));
+	t.z = fwrite(&crc, sizeof crc, (size_t) 1u, outfile);
+	if UNLIKELY ( t.z != (size_t) 1u ){
+		error_sys(errno, "fwrite", outfile_name);
 	}
 
 	return;

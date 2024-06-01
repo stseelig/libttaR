@@ -20,29 +20,38 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-/*@unchecked@*/ /*@unused@*/
-const uint libttaR_num_version= LIBTTAr_NUM_VERSION;
-/*@unchecked@*/ /*@unused@*/
-const uint libttaR_num_version_major = LIBTTAr_NUM_VERSION_MAJOR;
-/*@unchecked@*/ /*@unused@*/
-const uint libttaR_num_version_minor = LIBTTAr_NUM_VERSION_MINOR;
-/*@unchecked@*/ /*@unused@*/
-const uint libttaR_num_version_revis = LIBTTAr_NUM_VERSION_REVIS;
+struct LibTTAr_VersionInfo {
+	unsigned int	 version;
+	unsigned int	 version_major;
+	unsigned int 	 version_minor;
+	unsigned int	 version_revis;
+	/*@observer@*/
+	const char	*version_extra;
+	/*@observer@*/
+	const char	*version_date;
+	/*@observer@*/
+	const char	*copyright;
+	/*@observer@*/
+	const char	*license;
+};
 
-/*@observer@*/ /*@unchecked@*/ /*@unused@*/
-const char *libttaR_str_version = LIBTTAr_STR_VERSION;
-
-/*@observer@*/ /*@unchecked@*/ /*@unused@*/
-const char *libttaR_str_copyright = LIBTTAr_STR_COPYRIGHT;
-
-/*@observer@*/ /*@unchecked@*/ /*@unused@*/
-const char *libttaR_str_license = LIBTTAr_STR_LICENSE;
+/*@unchecked@*/ /*@unused@*/
+const struct LibTTAr_VersionInfo libttaR_info = {
+	LIBTTAr_VERSION_NUM,
+	LIBTTAr_VERSION_NUM_MAJOR,
+	LIBTTAr_VERSION_NUM_MINOR,
+	LIBTTAr_VERSION_NUM_REVIS,
+	LIBTTAr_VERSION_STR_EXTRA,
+	LIBTTAr_VERSION_STR_DATE,
+	LIBTTAr_COPYRIGHT_STR,
+	LIBTTAr_LICENSE_STR
+};
 
 //////////////////////////////////////////////////////////////////////////////
 
 // calculates the size of the private state struct
 // returns 0 on error
-size_t
+CONST size_t
 libttaR_codecstate_priv_size(uint nchan)
 /*@*/
 {
@@ -53,33 +62,12 @@ libttaR_codecstate_priv_size(uint nchan)
 	}
 
 	r  = sizeof(struct LibTTAr_CodecState_Priv);
-	r += nchan * sizeof(struct Codec);
-	return r;
-}
-
-// returns a TTA buffer size that is safe
-// returns 0 on error
-size_t
-libttaR_ttabuf_size(
-	size_t nsamples, uint nchan, enum TTASampleBytes samplebytes
-)
-/*@*/
-{	size_t r = 0;
-
-	if ( (nsamples == 0) || (nchan == 0)
-	    ||
-	     (samplebytes == 0) || ((uint) samplebytes > TTA_SAMPLEBYTES_MAX)
-	){
-		return r;
-	}
-
-	r  = nsamples + TTABUF_SAFETY_MARGIN_FAST;
-	r *= nchan * samplebytes;
+	r += (size_t) (nchan * sizeof(struct Codec));
 	return r;
 }
 
 // returns whether libttaR was configured to support nchan audio channels
-bool
+CONST bool
 libttaR_test_nchan(uint nchan)
 /*@*/
 {
