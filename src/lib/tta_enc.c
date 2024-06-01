@@ -120,7 +120,7 @@ libttaR_tta_encode(
 
 	// check for bad parameters
 	// having these checks makes it faster, and the order and different
-	//  return values matter. not completely sure why
+	//   return values matter. not completely sure why
 	if ( (src_len == 0) || (dest_len == 0)
 	    ||
 	     (ni32_target == 0) || (ni32_perframe == 0)
@@ -258,8 +258,8 @@ tta_encode_mch(
 
 			// encode
 			r = rice_encode(
-				dest, r, (u32) curr, &codec[j].rice,
-				bitcache, &crc
+				dest, r, (u32) curr, &codec[j].rice, bitcache,
+				&crc
 			);
 		}
 	}

@@ -80,17 +80,21 @@ write_tta1_header(
 	struct TTA1Header h;
 	union {	size_t z; } t;
 
-	(void) memcpy(&h.preamble, TTA1_PREAMBLE, sizeof h.preamble);
-	h.format	= htole16(WAVE_FMT_PCM);
-	h.nchan		= htole16(stats->nchan);
-	h.samplebits	= htole16(stats->samplebits);
-	h.samplerate	= htole32(stats->samplerate);
 	if UNLIKELY ( nsamples_perchan_total > (size_t) UINT32_MAX ){
 		warning_tta("%s: broken header field: nsamples",
 			outfile_name
 		);
 	}
-	h.nsamples	= htole32((u32) nsamples_perchan_total);
+
+	(void) memcpy(&h.preamble, TTA1_PREAMBLE, sizeof h.preamble);
+	h.format	= htole16(WAVE_FMT_PCM);
+	h.nchan		= htole16(stats->nchan);
+	h.samplebits	= htole16(stats->samplebits);
+	h.samplerate	= htole32(stats->samplerate);
+	h.nsamples	= htole32(
+		nsamples_perchan_total > (size_t) UINT32_MAX
+			? UINT32_MAX : (u32) nsamples_perchan_total
+	);
 	h.crc		= htole32(libttaR_crc32(
 		(u8 *) &h, (sizeof h) - (sizeof h.crc)
 	));

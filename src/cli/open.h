@@ -17,8 +17,6 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-// MAYBE changes field names
-
 struct OpenedFilesMember {
 	/*@dependent@*/ /*@relnull@*/
 	FILE			*infile;

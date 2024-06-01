@@ -9,12 +9,8 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
-#include <assert.h>
-#include <errno.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <inttypes.h>
 
 #include "../bits.h"
@@ -312,7 +308,7 @@ errprint_stats_codectime(double pcmtime, double encodetime, size_t nbytes_pcm)
 	errprint_time(encodetime);
 	//
 	(void) fputs("\t; ", stderr);
-	errprint_size((size_t) ((double) (8u * nbytes_pcm)) / encodetime);
+	errprint_size((size_t) (((double) (8u * nbytes_pcm)) / encodetime));
 	(void) fputs("b/s", stderr);
 	//
 	(void) fputs("\t, ", stderr);

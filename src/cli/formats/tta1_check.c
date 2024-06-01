@@ -9,7 +9,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
-#include <string.h>	// memcmp
+#include <string.h>		// memcmp
 
 #include "../../bits.h"
 #include "../../libttaR.h"	// crc32

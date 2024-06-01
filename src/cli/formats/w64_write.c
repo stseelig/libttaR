@@ -70,11 +70,13 @@ write_w64_header(
 	struct Riff64Header_WriteTemplate wt;
 	union {	int z; } t;
 
+	// assuming that 64-bit values will not overflow
+
 	// riff/wave header
 	(void) memcpy(
 		&wt.hdr.rh.guid, &RIFF64_GUID_RIFF, sizeof wt.hdr.rh.guid
 	);
-	wt.hdr.rh.size	= htole64(data_size + (sizeof wt));
+	wt.hdr.rh.size	= htole64((u64) (data_size + (sizeof wt)));
 	(void) memcpy(
 		&wt.hdr.guid, &RIFF64_GUID_WAVE, sizeof wt.hdr.guid
 	);
@@ -83,13 +85,13 @@ write_w64_header(
 	(void) memcpy(
 		&wt.fmt.rh.guid, &RIFF64_GUID_FMT, sizeof wt.fmt.rh.guid
 	);
-	wt.fmt.rh.size	= htole64((sizeof wt.fmt) + (sizeof wt.wfx));
+	wt.fmt.rh.size	= htole64((u64) ((sizeof wt.fmt) + (sizeof wt.wfx)));
 	fill_waveformatex_body(&wt.fmt.body, WAVE_FMT_EXTENSIBLE, fstat);
 	fill_waveformatextensible(&wt.wfx, fstat);
 
 	// data chunk header
 	(void) memcpy(&wt.data.guid, &RIFF64_GUID_DATA, sizeof wt.data.guid);
-	wt.data.size	= htole64(data_size + (sizeof wt.data));
+	wt.data.size	= htole64((u64) (data_size + (sizeof wt.data)));
 
 	t.z = fwrite(&wt, sizeof wt, (size_t) 1u, outfile);
 	if UNLIKELY ( t.z != (size_t) 1u ){

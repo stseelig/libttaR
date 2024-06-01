@@ -126,7 +126,7 @@ libttaR_tta_decode(
 
 	// check for bad parameters
 	// having these checks makes it faster, and the order and different
-	//  return values matter. not completely sure why
+	//   return values matter. not completely sure why
 	if ( (src_len == 0) || (dest_len == 0)
 	    ||
 	     (ni32_target == 0) || (nbytes_tta_target == 0)

@@ -11,6 +11,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
+#include <stddef.h>	// size_t
 #include <stdio.h>	// off_t
 
 #include "../bits.h"
@@ -65,14 +66,14 @@ enum FileCheck {
 
 //////////////////////////////////////////////////////////////////////////////
 
-#define SEEKTABLE_INIT_DEFAULT	((size_t) (512u))	/* ~ 8m54s */
 struct SeekTable {
 	off_t	off;
 	size_t	nmemb;
 	size_t	limit;
 	/*@only@*/
-	u32	*table;
+	u32	*table;	// little-endian
 };
+#define SEEKTABLE_INIT_DEFAULT	((size_t) (512u))	/* ~ 8m54s */
 
 // MAYBE have a Dec/Enc FileStats and a CommonFileStats
 struct FileStats {
@@ -102,7 +103,7 @@ struct FileStats {
 struct EncStats {
 	size_t	nframes;
 	size_t	nsamples_flat;
-	size_t	nsamples_perchan;	// for overflow protection
+	size_t	nsamples_perchan;	// for tta1 header
 	size_t	nbytes_encoded;
 	double	encodetime;
 };
@@ -110,7 +111,7 @@ struct EncStats {
 struct DecStats {
 	size_t	nframes;
 	size_t	nsamples_flat;
-	size_t	nsamples_perchan;	// for overflow protection
+	size_t	nsamples_perchan;
 	size_t	nbytes_decoded;
 	double	decodetime;
 };

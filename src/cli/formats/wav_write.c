@@ -72,15 +72,28 @@ write_wav_header(
 	} t;
 
 	if UNLIKELY ( data_size > (size_t) UINT32_MAX ){
-		data_size = UINT32_MAX;
-		warning_tta("%s: broken header field: size", outfile_name);
+		warning_tta("%s: broken header field: riff-size",
+			outfile_name
+		);
+	}
+	if UNLIKELY (
+		data_size
+	       >
+	        (size_t) (UINT32_MAX - (sizeof wt) + (sizeof wt.hdr))
+	){
+		warning_tta("%s: broken chunk field: data-size",
+			outfile_name
+		);
 	}
 
 	// riff/wave header
 	(void) memcpy(&wt.hdr.rh.id, RIFF_ID_RIFF, sizeof wt.hdr.rh.id);
-	t.u_32 = (data_size >= (UINT32_MAX - (sizeof wt) + (sizeof wt.hdr))
-		? UINT32_MAX
-		: data_size + (sizeof wt) - (sizeof wt.hdr.rh)
+	t.u_32 = (
+		data_size >= (size_t) (
+			UINT32_MAX - (sizeof wt) + (sizeof wt.hdr)
+		)
+			? UINT32_MAX
+			: (u32) (data_size + (sizeof wt) - (sizeof wt.hdr.rh))
 	);
 	wt.hdr.rh.size	= htole32(t.u_32);
 	(void) memcpy(&wt.hdr.format, RIFF_ID_WAVE, sizeof wt.hdr.format);
@@ -95,7 +108,9 @@ write_wav_header(
 
 	// data chunk header
 	(void) memcpy(&wt.data.id, RIFF_ID_DATA, sizeof wt.data.id);
-	t.u_32 = (data_size >= UINT32_MAX ? UINT32_MAX : data_size);
+	t.u_32 = (data_size >= (size_t) UINT32_MAX
+		? UINT32_MAX : (u32) data_size
+	);
 	wt.data.size	= htole32(t.u_32);
 
 	t.z = fwrite(&wt, sizeof wt, (size_t) 1u, outfile);

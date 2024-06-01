@@ -11,6 +11,7 @@
 
 #include <stddef.h>	// ptrdiff_t
 #include <stdio.h>
+#include <string.h>	// strchr
 
 #include "../libttaR.h"
 
@@ -197,7 +198,7 @@ errprint_program_intro(
 	errprint_ttaR_version("libttaR", lib);
 	errprint_libstr_copyright(lib->copyright);
 	(void) fputc('\n', stderr);
-	(void) fprintf(stderr, intro_licence_blurb);
+	(void) fputs(intro_licence_blurb, stderr);
 	(void) fputc('\n', stderr);
 	return;
 }
