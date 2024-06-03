@@ -1,0 +1,98 @@
+'\# t
+.\#     Title: libttaR_crc32
+.\#    Author: Shane Seelig
+.\#      Date: 2024-06-03
+.\#    Source: libttaR 1.1
+.\#  Language: English
+.\#
+.\############################################################################
+
+.TH "LIBTTAr_CRC32" "3" "2024\-06\-01" "libttaR 1.1" \
+"LibTTAr Programmer's Manual"
+
+.\############################################################################
+
+.SH "NAME"
+
+libttaR_crc32 \- calculate the CRC used by TTA
+
+.\############################################################################
+
+.SH "SYNOPSIS"
+
+.nf
+.B #include <libttaR.h>
+
+.BI "uint32_t libttaR_crc32(const uint8_t *" buf ", size_t " size ");
+.fi
+
+.\############################################################################
+
+.SH "DESCRIPTION"
+
+.BR libttaR_crc32 ()
+calculates the CRC
+of the data in \fIbuf\fR
+with a size of \fIsize\fR.
+
+
+.\#--------------------------------------------------------------------------#
+
+.SS Arguments
+
+*\fIbuf\fR
+.RS 8
+The source buffer.
+.RE
+
+\fIsize\fR
+.RS 8
+The size of the buffer.
+.RE
+
+.\############################################################################
+
+.SH "RETURN VALUE"
+
+the CRC
+
+.\############################################################################
+
+.SH "ATTRIBUTES"
+
+MT-Safe.
+
+.\############################################################################
+
+.SH "NOTES"
+
+The CRC has the following properties:
+
+.nf
+    width   : 32
+    endian  : little
+    poly    : 0xEDB88320u
+    xor-in  : 0xFFFFFFFFu
+    xor-out : 0xFFFFFFFFu
+.fi
+
+.\############################################################################
+
+.SH "SEE ALSO"
+
+.BR libttaR_tta_encode (3),
+.BR libttaR_tta_decode (3),
+.BR libttaR_pcm_read (3),
+.BR libttaR_pcm_write (3),
+.BR libttaR_misc (3)
+
+.\############################################################################
+
+.SH "AUTHOR"
+
+.B "Shane Seelig"
+.RS 4
+Developer
+.RE
+
+.\# EOF ######################################################################

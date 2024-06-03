@@ -1,0 +1,153 @@
+'\# t
+.\#     Title: libttaR_misc
+.\#    Author: Shane Seelig
+.\#      Date: 2024-06-03
+.\#    Source: libttaR 1.1
+.\#  Language: English
+.\#
+.\############################################################################
+
+.TH "LIBTTAr_MISC" "3" "2024\-06\-01" "libttaR 1.1" \
+"LibTTAr Programmer's Manual"
+
+.\############################################################################
+
+.SH "NAME"
+
+libttaR miscellaneous functions and objects
+
+.\############################################################################
+
+.SH "SYNOPSIS"
+
+.nf
+.B #include <libttaR.h>
+
+.BI "size_t libttaR_codecstate_priv_size(unsigned int " nchan ");
+.BI "size_t libttaR_ttabuf_safety_margin(unsigned int " nchan ");
+.BI "size_t libttaR_nsamples_perframe_tta1(size_t " samplerate ");
+.BI "bool libttaR_test_nchan(unsigned int " nchan ");
+
+.BI "const struct LibTTAr_VersionInfo libttaR_info;"
+.fi
+
+.\############################################################################
+
+.SH "DESCRIPTION"
+
+.BR libttaR_codecstate_priv_size ()
+calculates the size of a private state struct with \fInchan\fR audio channels
+(for passing to an allocator).
+
+.BR libttaR_ttabuf_safety_margin ()
+calculates a safety-margin size for the dest/src buffer for
+\fBlibttaR_tta_encode\fR()/\fBlibttaR_tta_decode\fR().
+When decoding the whole frame at once,
+the return value is how much to pad the TTA buffer by to ensure that
+a second function call will not be needed.
+Not using this function may result in a >=\fBLIBTTAr_RET_INVAL\fR
+return from a codec function if the dest/src length is too small.
+
+.BR libttaR_nsamples_perframe_tta1 ()
+returns the number of samples in a TTA1 frame for a given \fIsamplerate\fR.
+
+.BR libttaR_test_nchan ()
+tests whether the library was built to support \fInchan\fR audio channels.
+
+.BR libttaR_info
+is a read-only object containing the library's version information.
+
+.RS 4
+.nf
+struct LibTTAr_VersionInfo {
+    unsigned int       version;
+    unsigned int       version_major;
+    unsigned int       version_minor;
+    unsigned int       version_revis;
+    const char        *version_extra;
+    const char        *version_date;
+    const char        *copyright;
+    const char        *license;
+};
+.fi
+.RE
+
+.\#--------------------------------------------------------------------------#
+
+.SS Arguments
+
+\fInchan\fR
+.RS 8
+The number of audio channels in the PCM.
+.RE
+
+\fIsamplerate\fR
+.RS 8
+The audio sampling frequency in samples-per-second.
+.RE
+
+.\############################################################################
+
+.SH "RETURN VALUE"
+
+.BR libttaR_codecstate_priv_size ()
+.RS 8
+The size of a private state struct.
+.RE
+
+.BR libttaR_ttabuf_safety_margin ()
+.RS 8
+How much to pad the TTA buffer by.
+.RE
+
+.BR libttaR_nsamples_perframe_tta1 ()
+.RS 8
+The number of samples in a TTA1 frame.
+.RE
+
+.BR libttaR_test_nchan ()
+.RS 8
+true or false
+.RE
+
+.\############################################################################
+
+.SH "ERRORS"
+
+0 if (\fIargument\fR == 0)
+
+.\############################################################################
+
+.SH "ATTRIBUTES"
+
+All are MT-Safe.
+
+.\############################################################################
+
+.SH "NOTES"
+
+.BR libttaR_ttabuf_safety_margin ()
+and
+.BR libttaR_nsamples_perframe_tta1 ()
+are macros.
+
+.\############################################################################
+
+.SH "SEE ALSO"
+
+.BR libttaR_tta_encode (3),
+.BR libttaR_tta_decode (3),
+.BR libttaR_pcm_read (3),
+.BR libttaR_pcm_write (3),
+.BR libttaR_crc32 (3)
+
+.\############################################################################
+
+.SH "AUTHOR"
+
+.B "Shane Seelig"
+.RS 4
+Developer
+.RE
+
+.\# EOF ######################################################################

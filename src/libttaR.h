@@ -10,6 +10,10 @@
 // Copyright (C) 2023-2024, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
+//////////////////////////////////////////////////////////////////////////////
+//                                                                          //
+//      For library usage information, read the manpages.                   //
+//                                                                          //
 /////////////////////////////////////////////////////////////////////////// */
 
 #include <stdbool.h>
@@ -94,41 +98,6 @@ extern const struct LibTTAr_VersionInfo libttaR_info;
 /* private state for the codec functions; see libttaR_codecstate_priv_size */
 struct LibTTAr_CodecState_Priv;
 
-/* ///////////////////////////////////////////////////////////////////////////
-//                                                                          //
-// struct LibTTAr_CodecState_User                                           //
-//                                                                          //
-//////////////////////////////////////////////////////////////////////////////
-//                                                                          //
-// description:                                                             //
-//                                                                          //
-//              user readable state for the codec functions. _must_ be      //
-//          initialized before the first call for every new frame           //
-//                                                                          //
-// fields:                                                                  //
-//                                                                          //
-//      ncalls_codec:                                                       //
-//              number of times the codec function has been called for the  //
-//          current frame                                                   //
-//                                                                          //
-//      crc:                                                                //
-//              frame CRC                                                   //
-//                                                                          //
-//      ni32:                                                               //
-//              number of I32 read/written in call                          //
-//                                                                          //
-//      ni32_total:                                                         //
-//              total number of I32 read/written across all calls for the   //
-//          current frame                                                   //
-//                                                                          //
-//      nbytes_tta:                                                         //
-//              number of TTA bytes written/read in call                    //
-//                                                                          //
-//      nbytes_tta_total:                                                   //
-//              total number of TTA bytes written/read across all calls for //
-//          the current frame                                               //
-//                                                                          //
-/////////////////////////////////////////////////////////////////////////// */
 struct LibTTAr_CodecState_User {
 	uint32_t	ncalls_codec;
 	uint32_t	crc;
@@ -144,55 +113,6 @@ struct LibTTAr_CodecState_User {
 
 /* ######################################################################## */
 
-/* ///////////////////////////////////////////////////////////////////////////
-//                                                                          //
-// libttaR_tta_encode                                                       //
-//                                                                          //
-//////////////////////////////////////////////////////////////////////////////
-//                                                                          //
-// description:                                                             //
-//                                                                          //
-//              a re-entrant TTA encoder that can work on an arbitrary      //
-//          number of samples at a time                                     //
-//                                                                          //
-// return:                                                                  //
-//                                                                          //
-//      LIBTTAr_RET_(DONE | AGAIN | >=INVAL | MISCONFIG)                    //
-//                                                                          //
-// parameters:                                                              //
-//                                                                          //
-//      *dest:                                                              //
-//              TTA buffer                                                  //
-//                                                                          //
-//      *src:                                                               //
-//              I32 buffer                                                  //
-//                                                                          //
-//      dest_len:                                                           //
-//              size of the TTA buffer                                      //
-//                                                                          //
-//      src_len:                                                            //
-//              nmemb of I32 buffer                                         //
-//                                                                          //
-//      ni32_target:                                                        //
-//              target number of I32 to encode, _must_ be evenly divisible  //
-//          by nchan                                                        //
-//                                                                          //
-//      *priv:                                                              //
-//              private state struct                                        //
-//                                                                          //
-//      *user:                                                              //
-//              user state struct                                           //
-//                                                                          //
-//      samplebytes:                                                        //
-//              bytes-per-sample (1u, 2u, 3u)                               //
-//                                                                          //
-//      nchan:                                                              //
-//              number of audio channels                                    //
-//                                                                          //
-//      ni32_perframe:                                                      //
-//              number of I32 in the frame to encode                        //
-//                                                                          //
-/////////////////////////////////////////////////////////////////////////// */
 #undef dest
 #undef src
 #undef dest_len
@@ -224,61 +144,6 @@ extern int libttaR_tta_encode(
 @*/
 ;
 
-/* ///////////////////////////////////////////////////////////////////////////
-//                                                                          //
-// libttaR_tta_decode                                                       //
-//                                                                          //
-//////////////////////////////////////////////////////////////////////////////
-//                                                                          //
-// description:                                                             //
-//                                                                          //
-//              a re-entrant TTA decoder that can work on an arbitrary      //
-//          number of samples at a time                                     //
-//                                                                          //
-// return:                                                                  //
-//                                                                          //
-//      LIBTTAr_RET_(DONE | AGAIN | DECFAIL | >=INVAL | MISCONFIG)          //
-//                                                                          //
-// parameters:                                                              //
-//                                                                          //
-//      *dest:                                                              //
-//              I32 buffer                                                  //
-//                                                                          //
-//      *src:                                                               //
-//              TTA buffer                                                  //
-//                                                                          //
-//      dest_len:                                                           //
-//              nmemb of the I32 buffer                                     //
-//                                                                          //
-//      src_len:                                                            //
-//              size of the TTA buffer                                      //
-//                                                                          //
-//      ni32_target:                                                        //
-//              target number of I32 to write, _must_ be evenly divisible   //
-//          by nchan                                                        //
-//                                                                          //
-//      nbytes_tta_target:                                                  //
-//              target number of TTA bytes to decode                        //
-//                                                                          //
-//      *priv:                                                              //
-//              private state struct                                        //
-//                                                                          //
-//      *user:                                                              //
-//              user state struct                                           //
-//                                                                          //
-//      samplebytes:                                                        //
-//              bytes-per-sample (1u, 2u, 3u)                               //
-//                                                                          //
-//      nchan:                                                              //
-//              number of audio channels                                    //
-//                                                                          //
-//      ni32_perframe:                                                      //
-//              number of I32 in the frame to decode                        //
-//                                                                          //
-//      nbytes_tta_perframe:                                                //
-//              number of TTA bytes in the frame to decode                  //
-//                                                                          //
-/////////////////////////////////////////////////////////////////////////// */
 #undef dest
 #undef src
 #undef dest_len
@@ -316,60 +181,12 @@ extern int libttaR_tta_decode(
 
 /* ######################################################################## */
 
-/* ///////////////////////////////////////////////////////////////////////////
-//                                                                          //
-// libttaR_codecstate_priv_size                                             //
-//                                                                          //
-//////////////////////////////////////////////////////////////////////////////
-//                                                                          //
-// description:                                                             //
-//                                                                          //
-//              calculates the size of the private state struct (for        //
-//          passing to an allocator)                                        //
-//                                                                          //
-// return:                                                                  //
-//                                                                          //
-//              the size of the struct, or 0 on failure (bad parameter)     //
-//                                                                          //
-// parameters:                                                              //
-//                                                                          //
-//      nchan:                                                              //
-//              number of audio channels                                    //
-//                                                                          //
-/////////////////////////////////////////////////////////////////////////// */
 #undef nchan
 /*@external@*/ /*@unused@*/
 extern LIBTTAr_CONST size_t libttaR_codecstate_priv_size(unsigned int nchan)
 /*@*/
 ;
 
-/* ///////////////////////////////////////////////////////////////////////////
-//                                                                          //
-// libttaR_ttabuf_safety_margin                                             //
-//                                                                          //
-//////////////////////////////////////////////////////////////////////////////
-//                                                                          //
-// description:                                                             //
-//                                                                          //
-//              calculates a safety-margin size for the dest/src buffer for //
-//          libttaR_tta_encode/libttaR_tta_decode, respectively. when       //
-//          decoding the whole frame at once, the return value is how much  //
-//          to pad the src TTA buffer by to ensure that a second function   //
-//          call will not be needed.                                        //
-//                                                                          //
-//              not using this function may result in a >=LIBTTAr_RET_INVAL //
-//          return from a codec function if the dest/src _len is too small. //                                                          //
-//                                                                          //
-// return:                                                                  //
-//                                                                          //
-//              safety margin for the TTA buffer                            //
-//                                                                          //
-// parameters:                                                              //
-//                                                                          //
-//      nchan:                                                              //
-//              number of audio channels                                    //
-//                                                                          //
-/////////////////////////////////////////////////////////////////////////// */
 #undef nchan
 /*@external@*/ /*@unused@*/
 extern LIBTTAr_CONST size_t libttaR_ttabuf_safety_margin(unsigned int nchan)
@@ -380,26 +197,6 @@ extern LIBTTAr_CONST size_t libttaR_ttabuf_safety_margin(unsigned int nchan)
 	(size_t) (TTABUF_SAFETY_MARGIN * (nchan)) \
 )
 
-/* ///////////////////////////////////////////////////////////////////////////
-//                                                                          //
-// libttaR_nsamples_perframe_tta1                                           //
-//                                                                          //
-//////////////////////////////////////////////////////////////////////////////
-//                                                                          //
-// description:                                                             //
-//                                                                          //
-//              calculates the number of samples per TTA1 frame             //
-//                                                                          //
-// return:                                                                  //
-//                                                                          //
-//              the number of samples per TTA1 frame                        //
-//                                                                          //
-// parameters:                                                              //
-//                                                                          //
-//      samplerate:                                                         //
-//              audio sampling frequency in samples-per-second              //
-//                                                                          //
-/////////////////////////////////////////////////////////////////////////// */
 #undef samplerate
 /*@external@*/ /*@unused@*/
 extern LIBTTAr_CONST size_t libttaR_nsamples_perframe_tta1(size_t samplerate)
@@ -410,27 +207,6 @@ extern LIBTTAr_CONST size_t libttaR_nsamples_perframe_tta1(size_t samplerate)
 	(size_t) (TTA1_FRAME_TIME * (samplerate)) \
 )
 
-/* ///////////////////////////////////////////////////////////////////////////
-//                                                                          //
-// libttaR_test_nchan                                                       //
-//                                                                          //
-//////////////////////////////////////////////////////////////////////////////
-//                                                                          //
-// description:                                                             //
-//                                                                          //
-//              tests whether libttaR was configured to support nchan audio //
-//          channels                                                        //
-//                                                                          //
-// return:                                                                  //
-//                                                                          //
-//              true or false                                               //
-//                                                                          //
-// parameters:                                                              //
-//                                                                          //
-//      nchan:                                                              //
-//              number of audio channels                                    //
-//                                                                          //
-/////////////////////////////////////////////////////////////////////////// */
 #undef nchan
 /*@external@*/ /*@unused@*/
 extern LIBTTAr_CONST bool libttaR_test_nchan(unsigned int nchan)
@@ -439,35 +215,6 @@ extern LIBTTAr_CONST bool libttaR_test_nchan(unsigned int nchan)
 
 /* ######################################################################## */
 
-/* ///////////////////////////////////////////////////////////////////////////
-//                                                                          //
-// libttaR_pcm_read                                                         //
-//                                                                          //
-//////////////////////////////////////////////////////////////////////////////
-//                                                                          //
-// description:                                                             //
-//                                                                          //
-//              converts u8, i16le, or i24le to I32                         //
-//                                                                          //
-// return:                                                                  //
-//                                                                          //
-//              nsamples                                                    //
-//                                                                          //
-// parameters:                                                              //
-//                                                                          //
-//      *dest:                                                              //
-//              I32 buffer                                                  //
-//                                                                          //
-//      *src:                                                               //
-//              PCM buffer                                                  //
-//                                                                          //
-//      nsamples:                                                           //
-//              number of PCM samples                                       //
-//                                                                          //
-//      samplebytes:                                                        //
-//              bytes-per-sample (1u, 2u, 3u)                               //
-//                                                                          //
-/////////////////////////////////////////////////////////////////////////// */
 #undef dest
 #undef src
 #undef nsamples
@@ -482,35 +229,6 @@ extern size_t libttaR_pcm_read(
 /*@modifies	*dest@*/
 ;
 
-/* ///////////////////////////////////////////////////////////////////////////
-//                                                                          //
-// libttaR_pcm_write                                                        //
-//                                                                          //
-//////////////////////////////////////////////////////////////////////////////
-//                                                                          //
-// description:                                                             //
-//                                                                          //
-//              converts I32 to u8, i16le, or i24le                         //
-//                                                                          //
-// return:                                                                  //
-//                                                                          //
-//              nsamples                                                    //
-//                                                                          //
-// parameters:                                                              //
-//                                                                          //
-//      *dest:                                                              //
-//              PCM buffer                                                  //
-//                                                                          //
-//      *src:                                                               //
-//              I32 buffer                                                  //
-//                                                                          //
-//      nsamples:                                                           //
-//              number of I32 samples                                       //
-//                                                                          //
-//      samplebytes:                                                        //
-//              bytes-per-sample (1u, 2u, 3u)                               //
-//                                                                          //
-/////////////////////////////////////////////////////////////////////////// */
 #undef dest
 #undef src
 #undef nsamples
@@ -525,34 +243,6 @@ extern size_t libttaR_pcm_write(
 /*@modifies	*dest@*/
 ;
 
-/* ///////////////////////////////////////////////////////////////////////////
-//                                                                          //
-// libttaR_crc32                                                            //
-//                                                                          //
-//////////////////////////////////////////////////////////////////////////////
-//                                                                          //
-// description:                                                             //
-//                                                                          //
-//              calculates a CRC with the following properties:             //
-//                      width   : 32                                        //
-//                      endian  : little                                    //
-//                      poly    : 0xEDB88320u                               //
-//                      xor-in  : 0xFFFFFFFFu                               //
-//                      xor-out : 0xFFFFFFFFu                               //
-//                                                                          //
-// return:                                                                  //
-//                                                                          //
-//              the CRC                                                     //
-//                                                                          //
-// parameters:                                                              //
-//                                                                          //
-//      *buf:                                                               //
-//              the data to read                                            //
-//                                                                          //
-//      size:                                                               //
-//              size of the data                                            //
-//                                                                          //
-/////////////////////////////////////////////////////////////////////////// */
 #undef buf
 #undef size
 /*@external@*/ /*@unused@*/

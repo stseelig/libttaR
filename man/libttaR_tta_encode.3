@@ -7,14 +7,14 @@
 .\#
 .\############################################################################
 
-.TH "LIBTTAr_TTA_ENCODE" "3" "2024\-06\-01" "libttaR 1.1"
+.TH "LIBTTAr_TTA_ENCODE" "3" "2024\-06\-01" "libttaR 1.1" \
+"LibTTAr Programmer's Manual"
 
 .\############################################################################
 
 .SH "NAME"
 
-libttaR_tta_encode, libttaR_decode
-\- encode and decode TTA
+libttaR_tta_encode, libttaR_tta_decode \- a reentrant TTA codec
 
 .\############################################################################
 
@@ -23,7 +23,6 @@ libttaR_tta_encode, libttaR_decode
 .nf
 .B #include <libttaR.h>
 
-.nf
 .BI "int libttaR_tta_encode("
 .RS 8
 .BI "uint8_t *" dest ", const int32_t *" src ", size_t " dest_len ",
@@ -35,7 +34,6 @@ libttaR_tta_encode, libttaR_decode
 .RE
 .BI ");"
 
-.nf
 .BI "int libttaR_tta_decode("
 .RS 8
 .BI "int32_t *" dest ", const uint8_t *" src ", size_t " dest_len ",
@@ -46,6 +44,7 @@ libttaR_tta_encode, libttaR_decode
 .BI "size_t " ni32_perframe ", size_t " nbytes_tta_perframe
 .RE
 .BI ");"
+.fi
 
 .\############################################################################
 
@@ -66,9 +65,8 @@ while reading and writing the encoder's state from/to
 .BR libttaR_tta_decode ()
 decodes at most \fInbytes_tta_target\fR bytes of TTA
 with \fIni32_perframe\fR total signed 32-bit PCM samples per TTA frame
-and an encoded size of \fInbytes_tta_perframe\fR
-into at most \fIni32_target\fR total samples
-of signed 32-bit PCM
+and an encoded frame size of \fInbytes_tta_perframe\fR
+into at most \fIni32_target\fR total samples of signed 32-bit PCM
 of originally \fIsamplebytes\fR\-sized PCM
 with \fInchan\fR channels
 from buffer \fIsrc\fR
@@ -104,12 +102,12 @@ The length of the source buffer.
 
 \fIni32_target\fR
 .RS 8
-The target number of int32_t from the src/dest buffer to encode/decode.
+The target number of int32_t PCM from the src/dest buffer to encode/decode.
 .RE
 
 \fInbytes_tta_target\fR
 .RS 8
-The target number of bytes from the dest/src buffer to encode/decode.
+The target number of TTA bytes from the dest/src buffer to encode/decode.
 .RE
 
 *\fIpriv\fR
@@ -142,11 +140,11 @@ ncalls_codec     - number of successful calls to the codec
 
 crc              - frame CRC
 
-ni32             - number of int32_t read/written for the last
-                   call
+ni32             - number of int32_t PCM read/written for the
+                   last call
 
-ni32_total       - total number of int32_t read/written across
-                   all calls for the current frame
+ni32_total       - total number of int32_t PCM read/written
+                   across all calls for the current frame
 
 nbytes_tta       - number of TTA bytes written/read for the
                    last call
@@ -221,7 +219,7 @@ the frame did not finish decoding, but
 (\fIuser\fR->nbytes_tta_total > \fInbytes_tta_perframe\fR).
 .RE
 
-.B >=LIBTTAr_RET_INVAL
+>\=\fBLIBTTAr_RET_INVAL\fR
 .RS 8
 (\fIni32_target\fR % \fInchan\fR !\= 0) or other bad parameter,
 such as a size_t argument that would cause a bounds error.
@@ -239,6 +237,7 @@ The library was misconfigured when built; see \fBlibttaR_test_nchan\fR().
 .\############################################################################
 
 .SH "ATTRIBUTES"
+
 Both are MT-Safe.
 
 .\############################################################################
@@ -385,7 +384,11 @@ loop_entr:
 .\############################################################################
 
 .SH "SEE ALSO"
-TODO
+
+.BR libttaR_pcm_read (3),
+.BR libttaR_pcm_write (3),
+.BR libttaR_crc32 (3),
+.BR libttaR_misc (3)
 
 .\############################################################################
 

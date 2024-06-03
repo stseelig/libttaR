@@ -1,0 +1,125 @@
+'\# t
+.\#     Title: libttaR_pcm_read
+.\#    Author: Shane Seelig
+.\#      Date: 2024-06-03
+.\#    Source: libttaR 1.1
+.\#  Language: English
+.\#
+.\############################################################################
+
+.TH "LIBTTAr_PCM_READ" "3" "2024\-06\-01" "libttaR 1.1" \
+"LibTTAr Programmer's Manual"
+
+.\############################################################################
+
+.SH "NAME"
+
+libttaR_pcm_read, libttaR_pcm_write \- convert PCM to int32_t or vice versa
+
+.\############################################################################
+
+.SH "SYNOPSIS"
+
+.nf
+.B #include <libttaR.h>
+
+.BI "size_t libttaR_pcm_read("
+.RS 8
+.BI "int32_t *" dest ", const uint8_t *" src ", size_t " nsamples ",
+.BI "enum TTASampleBytes " samplebytes
+.RE
+.BI ");"
+
+.BI "size_t libttaR_pcm_write("
+.RS 8
+.BI "uint8_t *" dest ", const int32_t *" src ", size_t " nsamples ",
+.BI "enum TTASampleBytes " samplebytes
+.RE
+.BI ");"
+.fi
+
+.\############################################################################
+
+.SH "DESCRIPTION"
+
+.BR libttaR_pcm_read ()
+converts \fInsamples\fR
+of \fIsamplebytes\fR\-sized PCM to signed 32-bit PCM
+from the buffer \fIsrc\fR
+to the buffer \fIdest\fR.
+
+.BR libttaR_pcm_write ()
+converts \fInsamples\fR
+of signed 32-bit PCM to \fIsamplebytes\fR\-sized PCM
+from the buffer \fIsrc\fR
+to the buffer \fIdest\fR.
+
+.\#--------------------------------------------------------------------------#
+
+.SS Arguments
+
+*\fIdest\fR
+.RS 8
+The destination buffer.
+.RE
+
+*\fIsrc\fR
+.RS 8
+The source buffer.
+.RE
+
+\fInsamples\fR
+.RS 8
+The number of PCM samples.
+.RE
+
+\fIsamplebytes\fR
+.RS 8
+The number of bytes per samples in the originally sized PCM.
+
+.nf
+enum TTASampleBytes {
+    TTASAMPLEBYTES_1 = 1u,
+    TTASAMPLEBYTES_2 = 2u,
+    TTASAMPLEBYTES_3 = 3u
+};
+.fi
+.RE
+
+.\############################################################################
+
+.SH "RETURN VALUE"
+
+\fInsamples\fR
+
+.\############################################################################
+
+.SH "ATTRIBUTES"
+
+Both are MT-Safe.
+
+.\############################################################################
+
+.SH "NOTES"
+
+Only u8, i16le, and i24le PCM byte formats are supported.
+
+.\############################################################################
+
+.SH "SEE ALSO"
+
+.BR libttaR_tta_encode (3),
+.BR libttaR_tta_decode (3),
+.BR libttaR_crc32 (3),
+.BR libttaR_misc (3)
+
+.\############################################################################
+
+.SH "AUTHOR"
+
+.B "Shane Seelig"
+.RS 4
+Developer
+.RE
+
+.\# EOF ######################################################################
