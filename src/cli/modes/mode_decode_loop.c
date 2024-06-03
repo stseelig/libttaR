@@ -162,7 +162,7 @@ decst_loop(
 	} t;
 
 	// setup buffers
-	t.z = decbuf_init(&decbuf, buflen, SAMPLEBUF_LEN_DEFAULT, nchan);
+	t.z = decbuf_init(&decbuf, buflen, TTABUF_LEN_DEFAULT, nchan);
 	assert(t.z == (size_t) (buflen * nchan));
 	//
 	t.z = libttaR_codecstate_priv_size(nchan);

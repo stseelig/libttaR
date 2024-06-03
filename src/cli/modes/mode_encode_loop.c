@@ -168,7 +168,7 @@ encst_loop(
 
 	// setup buffers
 	t.z = encbuf_init(
-		&encbuf, buflen, SAMPLEBUF_LEN_DEFAULT, nchan, samplebytes
+		&encbuf, buflen, TTABUF_LEN_DEFAULT, nchan, samplebytes
 	);
 	assert(t.z == (size_t) (buflen * nchan));
 	//
@@ -389,7 +389,7 @@ enc_frame_encode(
 	// encode i32 to tta
 	goto loop_entr;
 	do {
-		encbuf_adjust(encbuf, SAMPLEBUF_LEN_DEFAULT);
+		encbuf_adjust(encbuf, TTABUF_LEN_DEFAULT);
 		ni32_target = ni32_perframe - user.ni32_total;
 loop_entr:
 		t.d = libttaR_tta_encode(

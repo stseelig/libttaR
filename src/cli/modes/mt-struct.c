@@ -113,8 +113,7 @@ encmt_state_init(
 	for ( i = 0; i < framequeue_len; ++i ){
 		t.z = encbuf_init(
 			&io->frames.encbuf[i], samplebuf_len,
-			SAMPLEBUF_LEN_DEFAULT, fstat->nchan,
-			fstat->samplebytes
+			TTABUF_LEN_DEFAULT, fstat->nchan, fstat->samplebytes
 		);
 		assert(t.z == samplebuf_len * fstat->nchan);
 	}
@@ -318,7 +317,7 @@ decmt_state_init(
 	for ( i = 0; i < framequeue_len; ++i ){
 		t.z = decbuf_init(
 			&io->frames.decbuf[i], samplebuf_len,
-			SAMPLEBUF_LEN_DEFAULT, fstat->nchan
+			TTABUF_LEN_DEFAULT, fstat->nchan
 		);
 		assert(t.z == samplebuf_len * fstat->nchan);
 	}
