@@ -52,8 +52,7 @@ print_error_sys(
 		g_nwarnings
 @*/
 {
-	#define BUFLEN	((size_t) 128u)
-	char buf[BUFLEN];
+	char buf[128u];
 	union {	int d; } t;
 
 	flockfile(stdout);
@@ -62,7 +61,7 @@ print_error_sys(
 	(void) fprintf(stderr, T_B_DEFAULT "%s: ", g_argv[0]);
 	(void) fputs(T_B_RED "error:" T_B_DEFAULT " ", stderr);
 	(void) fprintf(stderr, "%s: (%d) ", name, errnum);
-	(void) fputs(strerror_r(errnum, buf, BUFLEN), stderr);
+	(void) fputs(strerror_r(errnum, buf, sizeof buf), stderr);
 	if ( extra != NULL ){
 		(void) fprintf(stderr, ": %s", extra);
 	}

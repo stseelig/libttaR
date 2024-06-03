@@ -290,7 +290,7 @@ extern int libttaR_tta_encode(
 #undef samplebytes
 #undef nchan
 #undef ni32_perframe
-#undef nbytes_tta_total
+#undef nbytes_tta_perframe
 /*@external@*/ /*@unused@*/
 extern int libttaR_tta_decode(
 	int32_t *dest,
@@ -306,7 +306,7 @@ extern int libttaR_tta_decode(
 	enum TTASampleBytes samplebytes,
 	unsigned int nchan,
 	size_t ni32_perframe,
-	size_t nbytes_tta_total
+	size_t nbytes_tta_perframe
 )
 /*@modifies	*dest,
 		*priv,
