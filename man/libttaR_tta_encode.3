@@ -1,0 +1,399 @@
+'\# t
+.\#     Title: libttaR_tta_encode
+.\#    Author: Shane Seelig
+.\#      Date: 2024-06-03
+.\#    Source: libttaR 1.1
+.\#  Language: English
+.\#
+.\############################################################################
+
+.TH "LIBTTAr_TTA_ENCODE" "3" "2024\-06\-01" "libttaR 1.1"
+
+.\############################################################################
+
+.SH "NAME"
+
+libttaR_tta_encode, libttaR_decode
+\- encode and decode TTA
+
+.\############################################################################
+
+.SH "SYNOPSIS"
+
+.nf
+.B #include <libttaR.h>
+
+.nf
+.BI "int libttaR_tta_encode("
+.RS 8
+.BI "uint8_t *" dest ", const int32_t *" src ", size_t " dest_len ",
+.BI "size_t " src_len ", size_t " ni32_target ",
+.BI "struct LibTTAr_CodecState_Priv *" priv ",
+.BI "struct LibTTAr_CodecState_User *" user ",
+.BI "enum TTASampleBytes " samplebytes ", unsigned int " nchan ",
+.BI "size_t " ni32_perframe
+.RE
+.BI ");"
+
+.nf
+.BI "int libttaR_tta_decode("
+.RS 8
+.BI "int32_t *" dest ", const uint8_t *" src ", size_t " dest_len ",
+.BI "size_t " src_len ", size_t " ni32_target ", size_t " nbytes_tta_target ",
+.BI "struct LibTTAr_CodecState_Priv *" priv ",
+.BI "struct LibTTAr_CodecState_User *" user ",
+.BI "enum TTASampleBytes " samplebytes ", unsigned int " nchan ",
+.BI "size_t " ni32_perframe ", size_t " nbytes_tta_perframe
+.RE
+.BI ");"
+
+.\############################################################################
+
+.SH "DESCRIPTION"
+
+.BR libttaR_tta_encode ()
+encodes at most \fIni32_target\fR signed 32-bit PCM samples
+of originally \fIsamplebytes\fR\-sized PCM
+with \fInchan\fR channels
+into TTA with \fIni32_perframe\fR total PCM samples per TTA frame
+from buffer \fIsrc\fR
+of length \fIsrc_len\fR
+into buffer \fIdest\fR
+of size \fIdest_len\fR
+while reading and writing the encoder's state from/to
+\fIpriv\fR and \fIuser\fR.
+
+.BR libttaR_tta_decode ()
+decodes at most \fInbytes_tta_target\fR bytes of TTA
+with \fIni32_perframe\fR total signed 32-bit PCM samples per TTA frame
+and an encoded size of \fInbytes_tta_perframe\fR
+into at most \fIni32_target\fR total samples
+of signed 32-bit PCM
+of originally \fIsamplebytes\fR\-sized PCM
+with \fInchan\fR channels
+from buffer \fIsrc\fR
+of size \fIsrc_len\fR
+into buffer \fIdest\fR
+of length \fIdest_len\fR
+while reading and writing the decoder's state from/to
+\fIpriv\fR and \fIuser\fR.
+
+.\#--------------------------------------------------------------------------#
+
+.SS Arguments
+
+*\fIdest\fR
+.RS 8
+The destination buffer.
+.RE
+
+*\fIsrc\fR
+.RS 8
+The source buffer.
+.RE
+
+\fIdest_len\fR
+.RS 8
+The length of the destination buffer.
+.RE
+
+\fIsrc_len\fR
+.RS 8
+The length of the source buffer.
+.RE
+
+\fIni32_target\fR
+.RS 8
+The target number of int32_t from the src/dest buffer to encode/decode.
+.RE
+
+\fInbytes_tta_target\fR
+.RS 8
+The target number of bytes from the dest/src buffer to encode/decode.
+.RE
+
+*\fIpriv\fR
+.RS 8
+The codec's private state. The struct fields are hidden from the user.
+Needs to be allocated with the size from
+.BR libttaR_codecstate_priv_size ().
+.RE
+
+*\fIuser\fR
+.RS 8
+The codec's user readable state.
+Must be initialized with
+.B LIBTTAr_CODECSTATE_USER_INIT
+before the first call for a new frame.
+
+.nf
+struct LibTTAr_CodecState_User {
+    uint32_t    ncalls_codec;
+    uint32_t    crc;
+    size_t      ni32;
+    size_t      ni32_total;
+    size_t      nbytes_tta;
+    size_t      nbytes_tta_total;
+};
+.fi
+
+ncalls_codec     - number of successful calls to the codec
+                   function
+
+crc              - frame CRC
+
+ni32             - number of int32_t read/written for the last
+                   call
+
+ni32_total       - total number of int32_t read/written across
+                   all calls for the current frame
+
+nbytes_tta       - number of TTA bytes written/read for the
+                   last call
+
+nbytes_tta_total - total number of TTA bytes written/read
+                   across all calls for the current frame
+.RE
+
+\fIsamplebytes\fR
+.RS 8
+The number of bytes per samples in the originally sized PCM.
+
+.nf
+enum TTASampleBytes {
+    TTASAMPLEBYTES_1 = 1u,
+    TTASAMPLEBYTES_2 = 2u,
+    TTASAMPLEBYTES_3 = 3u
+};
+.fi
+.RE
+
+\fInchan\fR
+.RS 8
+The number of audio channels in the PCM.
+.RE
+
+\fIni32_perframe\fR
+.RS 8
+The number of int32_t per TTA frame.
+.RE
+
+\fInbytes_tta_perframe\fR
+.RS 8
+The number of bytes in the current TTA frame.
+.RE
+
+.\############################################################################
+
+.SH "RETURN VALUE"
+
+On success,
+.BR libttaR_tta_encode ()
+and
+.BR libttaR_tta_decode ()
+return:
+
+.RS 4
+
+.B LIBTTAr_RET_DONE
+.RS 8
+The frame finished coding.
+.RE
+
+.B LIBTTAr_RET_AGAIN
+.RS 8
+The frame did not finish coding.
+.RE
+
+.RE
+
+.\############################################################################
+
+.SH "ERRORS"
+
+.RS 4
+
+.B LIBTTAr_RET_DECFAIL
+.RS 8
+The frame finished decoding, but
+(\fIuser\fR->nbytes_tta_total !\= \fInbytes_tta_perframe\fR), or
+the frame did not finish decoding, but
+(\fIuser\fR->nbytes_tta_total > \fInbytes_tta_perframe\fR).
+.RE
+
+.B >=LIBTTAr_RET_INVAL
+.RS 8
+(\fIni32_target\fR % \fInchan\fR !\= 0) or other bad parameter,
+such as a size_t argument that would cause a bounds error.
+.B LIBTTAr_RET_INVAL
+is used as the base value; the functions can return greater values.
+.RE
+
+.B LIBTTAr_RET_MISCONFIG
+.RS 8
+The library was misconfigured when built; see \fBlibttaR_test_nchan\fR().
+.RE
+
+.RE
+
+.\############################################################################
+
+.SH "ATTRIBUTES"
+Both are MT-Safe.
+
+.\############################################################################
+
+.SH "EXAMPLES"
+
+.\#--------------------------------------------------------------------------#
+
+.SS libttaR/src/cli/modes/mode_encode_loop.c
+.EX
+// may be older code
+static void
+enc_frame_encode(
+    struct EncBuf *const restrict encbuf,
+    /*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
+    /*@out@*/ struct LibTTAr_CodecState_User *const restrict user_out,
+    enum TTASampleBytes samplebytes, uint nchan, size_t ni32_perframe
+)
+/*@globals      fileSystem,
+                internalState
+@*/
+/*@modifies     fileSystem,
+                internalState,
+                encbuf->ttabuf_len,
+                *encbuf->i32buf,
+                encbuf->ttabuf,
+                *encbuf->ttabuf,
+                *priv,
+                *user_out
+@*/
+{
+    struct LibTTAr_CodecState_User user = LIBTTAr_CODECSTATE_USER_INIT;
+    size_t ni32_target = ni32_perframe;
+    union { size_t  z;
+            int     d;
+    } t;
+#ifdef NDEBUG
+    (void) t.d;     // gcc
+#endif
+    // convert pcm to i32
+    t.z = libttaR_pcm_read(
+            encbuf->i32buf, encbuf->pcmbuf, ni32_target, samplebytes
+    );
+    assert(t.z == ni32_target);
+
+    // encode i32 to tta
+    goto loop_entr;
+    do {
+           encbuf_adjust(encbuf, SAMPLEBUF_LEN_DEFAULT);
+           ni32_target = ni32_perframe - user.ni32_total;
+loop_entr:
+           t.d = libttaR_tta_encode(
+                   &encbuf->ttabuf[user.nbytes_tta_total],
+                   &encbuf->i32buf[user.ni32_total],
+                   encbuf->ttabuf_len - user.nbytes_tta_total,
+                   encbuf->i32buf_len - user.ni32_total,
+                   ni32_target, priv, &user, samplebytes, nchan,
+                   ni32_perframe
+           );
+           assert((t.d == LIBTTAr_RET_DONE)
+                 ||
+                  (t.d == LIBTTAr_RET_AGAIN)
+           );
+    }
+    while ( t.d == LIBTTAr_RET_AGAIN );
+
+    *user_out = user;
+    return;
+}
+.EE
+
+.\#--------------------------------------------------------------------------#
+
+.SS libttaR/src/cli/modes/mode_decode_loop.c
+.EX
+// may be older code
+static int
+dec_frame_decode(
+    struct DecBuf *const restrict decbuf,
+    /*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
+    /*@out@*/ struct LibTTAr_CodecState_User *const restrict user_out,
+    enum TTASampleBytes samplebytes, uint nchan, size_t ni32_perframe,
+    size_t nbytes_tta_perframe,
+    /*@out@*/ size_t *const restrict nsamples_flat_2pad
+)
+/*@modifies     *decbuf->i32buf,
+                *decbuf->pcmbuf,
+                *priv,
+                *user_out,
+                *nsamples_flat_2pad
+@*/
+{
+    int r;
+    struct LibTTAr_CodecState_User user = LIBTTAr_CODECSTATE_USER_INIT;
+    size_t pad_target = 0;
+    union { size_t z; } t;
+#ifdef NDEBUG
+    (void) t.z;     // gcc
+#endif
+
+    goto loop_entr;
+    do {
+           // frame has a truncated last sample; needs zero-padding later
+           pad_target     = (size_t) (nchan - (ni32_perframe % nchan));
+           ni32_perframe += pad_target;
+loop_entr:
+           // decode tta to i32
+           r = libttaR_tta_decode(
+                   decbuf->i32buf, decbuf->ttabuf, decbuf->i32buf_len,
+                   decbuf->ttabuf_len, ni32_perframe,
+                   nbytes_tta_perframe, priv, &user, samplebytes, nchan,
+                   ni32_perframe, nbytes_tta_perframe
+           );
+
+           // with the way the decoding is setup, RET_AGAIN shouldn't
+           //   happen
+           // >=RET_INVAL may happen if the last sample is truncated
+           assert((r == LIBTTAr_RET_DONE)
+                 ||
+                  (r == LIBTTAr_RET_DECFAIL)
+                 ||
+                  (r >= LIBTTAr_RET_INVAL)
+           );
+    }
+    while UNLIKELY ( r >= LIBTTAr_RET_INVAL );
+
+    if UNLIKELY ( r == LIBTTAr_RET_DECFAIL ){
+           pad_target     += ni32_perframe - user.ni32_total;
+           user.ni32_total = ni32_perframe;
+    }
+
+    // convert i32 to pcm
+    t.z = libttaR_pcm_write(
+           decbuf->pcmbuf, decbuf->i32buf, user.ni32_total, samplebytes
+    );
+    assert(t.z == user.ni32);
+
+    *user_out           = user;
+    *nsamples_flat_2pad = pad_target;
+    return r;
+}
+.EE
+
+.\############################################################################
+
+.SH "SEE ALSO"
+TODO
+
+.\############################################################################
+
+.SH "AUTHOR"
+
+.B "Shane Seelig"
+.RS 4
+Developer
+.RE
+
+.\# EOF ######################################################################

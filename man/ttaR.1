@@ -1,7 +1,7 @@
 '\# t
 .\#     Title: ttaR
 .\#    Author: Shane Seelig
-.\#      Date: 2024-06-01
+.\#      Date: 2024-06-02
 .\#    Source: ttaR 1.1
 .\#  Language: English
 .\#
@@ -13,14 +13,12 @@
 
 .SH "NAME"
 ttaR \- Tau's True Audio returns rewritten and reentrant
-.BR
 
 .\############################################################################
 
 .SH "SYNOPSIS"
 \fBttaR\fR \fB\fIMODE\fR [\fB\fI\-options\fR\fR] \fB\fIINFILE\fR\fR...
 [\fB\-o\ \fR\fB\fIOUTFILE\fR|\fB\fIOUTDIR\fR\fR]
-.BR
 
 .\############################################################################
 
@@ -31,7 +29,6 @@ ttaR \- Tau's True Audio returns rewritten and reentrant
 TTA is a lossless audio codec designed around realtime hardware coding.
 The codec does not have any tunable settings.
 Each input produces a unique output.
-.BR
 
 .\############################################################################
 
@@ -60,7 +57,6 @@ Raw PCM (u8, i16le, i24le)
 \h'-04'\(bu\h'+03'\c
 TTA1
 .RE
-.BR
 
 .\############################################################################
 
@@ -108,7 +104,6 @@ Only warnings and errors will be printed.
 Multi-threaded mode with N coder threads.
 .RE
 .RE
-.BR
 
 .\#--------------------------------------------------------------------------#
 
@@ -118,7 +113,7 @@ Multi-threaded mode with N coder threads.
 \fB\-\-rawpcm\fR\=\fB\fIFMT\fR\fR,\fB\fISRATE\fR\fR,\fB\fINCHAN\fR\fR
 .RS 4
 Raw PCM file stats.
-.BR
+.PP
 .RS 4
 FMT   : byte format (u8, i16le, i24le)
 
@@ -129,7 +124,6 @@ NCHAN : number of channels
 .RE
 
 .RE
-.BR
 
 .\#--------------------------------------------------------------------------#
 
@@ -139,24 +133,23 @@ NCHAN : number of channels
 \fB\-f, \-\-format\fR\=\fB\fIFMT\fR\fR
 .RS 4
 Outfile format.
-.BR
+.PP
 .RS 4
 FMT   : raw, w64, wav
 .RE
 .RE
 
 .RE
-.BR
 
 .\############################################################################
 
 .SH "BUGS"
-https://github.com/stseelig/libttaR/issues
-.BR
-
+.UR https://github.com/stseelig/libttaR/issues
+.UE
 .\############################################################################
 
 .SH "AUTHOR"
+
 \fBShane Seelig\fR
 .RS 4
 Developer
