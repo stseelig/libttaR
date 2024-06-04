@@ -83,11 +83,17 @@ while reading and writing the decoder's state from/to
 *\fIdest\fR
 .RS 8
 The destination buffer.
+Needs to be padded with at least
+\fBlibttaR_ttabuf_safety_margin\fR()
+bytes when encoding.
 .RE
 
 *\fIsrc\fR
 .RS 8
 The source buffer.
+Needs to be padded with at least
+\fBlibttaR_ttabuf_safety_margin\fR()
+bytes when decoding.
 .RE
 
 \fIdest_len\fR
@@ -136,22 +142,37 @@ struct LibTTAr_CodecState_User {
 };
 .fi
 
-ncalls_codec     - number of successful calls to the codec
-                   function
+ncalls_codec:
+.RS 8
+number of successful calls to the codec function
+.RE
 
-crc              - frame CRC
+crc:
+.RS 8
+frame CRC
+.RE
 
-ni32             - number of int32_t PCM read/written for the
-                   last call
+ni32:
+.RS 8
+number of int32_t PCM read/written for the last call
+.RE
 
-ni32_total       - total number of int32_t PCM read/written
-                   across all calls for the current frame
+ni32_total:
+.RS 8
+total number of int32_t PCM read/written across all calls for the current
+frame
+.RE
 
-nbytes_tta       - number of TTA bytes written/read for the
-                   last call
+nbytes_tta:
+.RS 8
+number of TTA bytes written/read for the last call
+.RE
 
-nbytes_tta_total - total number of TTA bytes written/read
-                   across all calls for the current frame
+nbytes_tta_total:
+.RS 8
+total number of TTA bytes written/read across all calls for the current frame
+.RE
+
 .RE
 
 \fIsamplebytes\fR
@@ -179,18 +200,14 @@ The number of uncoded int32_t per TTA frame.
 
 \fInbytes_tta_perframe\fR
 .RS 8
-The number of encoded TTA bytes in the current TTA frame.
+The number of encoded bytes in the current TTA frame.
 .RE
 
 .\############################################################################
 
 .SH "RETURN VALUE"
 
-On success,
-.BR libttaR_tta_encode ()
-and
-.BR libttaR_tta_decode ()
-return:
+On success:
 
 .RS 4
 
@@ -204,6 +221,15 @@ The frame finished coding.
 The frame did not finish coding.
 .RE
 
+.B LIBTTAr_RET_DECFAIL
+.RS 8
+The frame finished decoding, but
+(\fIuser\fR->nbytes_tta_total !\= \fInbytes_tta_perframe\fR), or
+the frame did not finish decoding, but
+(\fIuser\fR->nbytes_tta_total > \fInbytes_tta_perframe\fR).
+This would be caused by either corrupted or malformed TTA data.
+.RE
+
 .RE
 
 .\############################################################################
@@ -212,18 +238,10 @@ The frame did not finish coding.
 
 .RS 4
 
-.B LIBTTAr_RET_DECFAIL
-.RS 8
-The frame finished decoding, but
-(\fIuser\fR->nbytes_tta_total !\= \fInbytes_tta_perframe\fR), or
-the frame did not finish decoding, but
-(\fIuser\fR->nbytes_tta_total > \fInbytes_tta_perframe\fR).
-.RE
-
 >\=\fBLIBTTAr_RET_INVAL\fR
 .RS 8
 (\fIni32_target\fR % \fInchan\fR !\= 0) or other bad parameter,
-such as a size_t argument that would cause a bounds error.
+such as a size_t argument that could cause a bounds error.
 .B LIBTTAr_RET_INVAL
 is used as the base value; the functions can return greater values.
 .RE

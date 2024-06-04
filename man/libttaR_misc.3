@@ -40,13 +40,14 @@ calculates the size of a private state struct with \fInchan\fR audio channels
 (for passing to an allocator).
 
 .BR libttaR_ttabuf_safety_margin ()
-calculates a safety-margin size for the dest/src buffer for
-\fBlibttaR_tta_encode\fR()/\fBlibttaR_tta_decode\fR().
-When decoding the whole frame at once,
-the return value is how much to pad the TTA buffer by to ensure that
-a second function call will not be needed.
+calculates a safety-margin size for the TTA buffer in order to prevent a
+possible buffer overrun.
+When encoding, the padding is needed in case the input is noisy and
+uncompressable.
+When decoding, the padding is needed in case the TTA data is corrupted or
+malformed.
 Not using this function may result in a >=\fBLIBTTAr_RET_INVAL\fR
-return from a codec function if the dest/src length is too small.
+return from a codec function if the TTA buffer length is too small.
 
 .BR libttaR_nsamples_perframe_tta1 ()
 returns the number of samples in a TTA1 frame for a given \fIsamplerate\fR.
