@@ -42,8 +42,8 @@ calculates the size of a private state struct with \fInchan\fR audio channels
 .BR libttaR_ttabuf_safety_margin ()
 calculates a safety-margin size for the TTA buffer in order to prevent a
 possible buffer overrun.
-When encoding, the padding is needed in case the input is noisy and
-uncompressable.
+The calculated size is greater than the maximum number of TTA bytes that could
+be encoded for one PCM sample with \fInchan\fR channels.
 When decoding, the padding is needed in case the TTA data is corrupted or
 malformed.
 Not using this function may result in a >=\fBLIBTTAr_RET_INVAL\fR
