@@ -71,9 +71,9 @@ encmt_state_init(
 		error_sys(errno, "malloc", NULL);
 	}
 	assert(io->frames.navailable != NULL);
-	t.d = sem_init(io->frames.navailable, 0, (uint) 0);
+	t.d = sem_init(io->frames.navailable, 0, 0);
 	if UNLIKELY ( t.d != 0 ){
-		error_sys(t.d, "sem_init", NULL);
+		error_sys(errno, "sem_init", NULL);
 	}
 	//
 	io->frames.post_encoder		= calloc(
@@ -107,7 +107,7 @@ encmt_state_init(
 	for ( i = 0; i < framequeue_len; ++i ){
 		t.d = sem_init(&io->frames.post_encoder[i], 0, 0);
 		if UNLIKELY ( t.d != 0 ){
-			error_sys(t.d, "sem_init", NULL);
+			error_sys(errno, "sem_init", NULL);
 		}
 	}
 	for ( i = 0; i < framequeue_len; ++i ){
@@ -250,9 +250,9 @@ decmt_state_init(
 		error_sys(errno, "malloc", NULL);
 	}
 	assert(io->frames.navailable != NULL);
-	t.d = sem_init(io->frames.navailable, 0, (uint) 0);
+	t.d = sem_init(io->frames.navailable, 0, 0);
 	if UNLIKELY ( t.d != 0 ){
-		error_sys(t.d, "sem_init", NULL);
+		error_sys(errno, "sem_init", NULL);
 	}
 	//
 	io->frames.post_decoder		= calloc(
@@ -311,7 +311,7 @@ decmt_state_init(
 	for ( i = 0; i < framequeue_len; ++i ){
 		t.d = sem_init(&io->frames.post_decoder[i], 0, 0);
 		if UNLIKELY ( t.d != 0 ){
-			error_sys(t.d, "sem_init", NULL);
+			error_sys(errno, "sem_init", NULL);
 		}
 	}
 	for ( i = 0; i < framequeue_len; ++i ){
