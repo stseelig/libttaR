@@ -142,6 +142,8 @@ ALWAYS_INLINE CONST u16 htole16(register u16) /*@*/;
 ALWAYS_INLINE CONST u16 letoh16(register u16) /*@*/;
 ALWAYS_INLINE CONST u32 htole32(register u32) /*@*/;
 ALWAYS_INLINE CONST u32 letoh32(register u32) /*@*/;
+ALWAYS_INLINE CONST u64 htole64(register u64) /*@*/;
+ALWAYS_INLINE CONST u64 letoh64(register u64) /*@*/;
 
 ALWAYS_INLINE CONST i32 asl32(register i32, register u8) /*@*/;
 ALWAYS_INLINE CONST i32 asr32(register i32, register u8) /*@*/;
