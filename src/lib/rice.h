@@ -333,9 +333,9 @@ rice_encode(
 	t.u_32 = shift32_bit(kx);
 	if LIKELY_P ( value >= t.u_32, 0.575 ){
 		value -= t.u_32;
-		kx = *k1;
+		kx     = *k1;
 		rice_cmpsum(sum1, k1, value);
-		unary = (value >> kx) + 1u;
+		unary  = (value >> kx) + 1u;
 	}
 
 	r = rice_unary_put(dest, r, unary, cache, count, crc);
@@ -419,7 +419,7 @@ rice_binary_put(
 		*cache  >>= 8u;
 		*count   -= 8u;
 	}
-	*cache |= (binary & lsmask32(k, SMM_SHIFT)) << *count;
+	*cache |= binary << *count;
 	*count += k;
 	return r;
 }
@@ -454,19 +454,19 @@ rice_decode(
 
 	r = rice_unary_get(&unary, src, r, cache, count, crc);
 	if LIKELY_P ( unary + 1u != 0, 0.575 ){
-		kx = *k1;
+		kx     = *k1;
 		depth1 = true;
 	}
-	else {	unary = 0;
-		kx = *k0;
+	else {	unary  = 0;
+		kx     = *k0;
 		depth1 = false;
 	}
 
-	*value = unary;
 	if LIKELY ( kx != 0 ){
 		r = rice_binary_get(&binary, src, r, kx, cache, count, crc);
-		*value = (*value << kx) + binary;
+		*value = (unary << kx) + binary;
 	}
+	else {	*value = unary; }
 
 	if LIKELY_P ( depth1, 0.575 ){
 		rice_cmpsum(sum1, k1, *value);
