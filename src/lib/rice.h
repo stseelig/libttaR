@@ -513,7 +513,7 @@ loop_entr:
 	} while UNLIKELY_P ( t.u_8 == *count, 0.25 );
 #else
 	while UNLIKELY_P (
-		// 0 <= *count <= 8u
+		// 0 <= *count <= 7u
 		(*cache ^ lsmask32(*count, SMM_TABLE)) == 0, 0.25
 	){
 		*unary += *count;
