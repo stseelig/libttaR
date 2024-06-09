@@ -230,7 +230,7 @@ encst_loop(
 
 		++nframes_read;
 loop_entr:
-		if ( (! g_flag.quiet) && (nframes_read % SPINNER_FRQ == 0) ){
+		if ( (! g_flag.quiet) && (nframes_read % SPINNER_FREQ == 0) ){
 			errprint_spinner();
 		}
 
@@ -255,11 +255,11 @@ loop_entr:
 //	- the io thread is created first, so it can get a head start on
 //  filling up the framequeue
 //
-//      - then (nthreads - 1u) coder threads are created
+//	- then (nthreads - 1u) coder threads are created
 //
-//      - the main thread then becomes the last coder thread
+// 	- the main thread then becomes the last coder thread
 //
-//      - after the main thread finishes coding, the other coder threads are
+//	- after the main thread finishes coding, the other coder threads are
 //  joined, and then finally, the io thread is joined
 void
 encmt_loop(
@@ -600,11 +600,10 @@ encmt_io(struct MTArg_EncIO *const restrict arg)
 
 		++nframes_read;
 		i = (i + 1u < framequeue_len ? i + 1u : 0);
+		// all frame pcmbuf's are filled before writing out any TTA
 		if ( ! start_writing ){
-			if ( i == 0 ){
-				start_writing = true;
-			}
-			else {	goto loop0_read; }
+			if ( i != 0 ){	goto loop0_read; }
+			start_writing = true;
 		}
 
 		// wait for frame to finish encoding
@@ -616,7 +615,7 @@ encmt_io(struct MTArg_EncIO *const restrict arg)
 			outfile_name, nchan
 		);
 loop0_entr:
-		if ( (! g_flag.quiet) && (nframes_read % SPINNER_FRQ == 0) ){
+		if ( (! g_flag.quiet) && (nframes_read % SPINNER_FREQ == 0) ){
 			errprint_spinner();
 		}
 loop0_read:

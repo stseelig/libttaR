@@ -121,7 +121,7 @@ struct DecStats {
 // guid.c
 
 #undef buf
-extern char *guid128_format(
+extern COLD char *guid128_format(
 	/*@returned@*/ /*@out@*/ char *const restrict buf, size_t,
 	const struct Guid128 *const restrict
 )

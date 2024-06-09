@@ -29,6 +29,9 @@ ALWAYS_INLINE CONST u32
 crc32_cont(register u8 x, register u32 crc)
 /*@*/
 {
+	// having the variable instead of just having a one line return is
+	//   important. otherwise (on x86) it does a xor against memory, which
+	//   is much slower.
 	register const u32 lookup = crc32_table[((u8) crc) ^ x];
 	return (u32) ((crc >> 8u) ^ lookup);
 }

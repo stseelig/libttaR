@@ -244,7 +244,7 @@ loop0_truncated:
 			dec_retval, nsamples_flat_2pad, nbytes_tta_perframe
 		);
 loop_entr:
-		if ( (! g_flag.quiet) && (nframes_read % SPINNER_FRQ == 0) ){
+		if ( (! g_flag.quiet) && (nframes_read % SPINNER_FREQ == 0) ){
 			errprint_spinner();
 		}
 	}
@@ -635,17 +635,16 @@ loop0_truncated:
 			crc_read[i]    = 0;
 			nframes_target = 0;
 		}
-		++nframes_read;
 
 		// make frame available
 		(void) sem_post(nframes_avail);
 
+		++nframes_read;
 		i = (i + 1u < framequeue_len ? i + 1u : 0);
+		// all frame ttabuf's are filled before writing out any PCM
 		if ( ! start_writing ){
-			if ( i == 0 ){
-				start_writing = true;
-			}
-			else {	goto loop0_read; }
+			if ( i != 0 ){	goto loop0_read; }
+			start_writing = true;
 		}
 
 		// wait for frame to finish decoding
@@ -659,7 +658,7 @@ loop0_truncated:
 			nbytes_tta_perframe[i]
 		);
 loop0_entr:
-		if ( (! g_flag.quiet) && (nframes_read % SPINNER_FRQ == 0) ){
+		if ( (! g_flag.quiet) && (nframes_read % SPINNER_FREQ == 0) ){
 			errprint_spinner();
 		}
 loop0_read:

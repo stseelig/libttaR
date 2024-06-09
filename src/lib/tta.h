@@ -69,8 +69,8 @@ enum TTAMode {
 struct Filter {
 	i32	error;
 	i32	qm[8u];
-	i32	dl[9u];
 	i32	dx[9u];
+	i32	dl[9u];
 };
 
 struct Codec {
@@ -266,8 +266,8 @@ tta_filter(
 	b[6u] = b[7u] - b[6u];
 	b[5u] = b[6u] - b[5u];
 
-	MEMMOVE(b, &b[1u], (size_t) (8u*(sizeof *b)));
 	MEMMOVE(m, &m[1u], (size_t) (8u*(sizeof *m)));
+	MEMMOVE(b, &b[1u], (size_t) (8u*(sizeof *b)));
 
 	return value;
 }

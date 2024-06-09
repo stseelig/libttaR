@@ -20,9 +20,10 @@
 
 // formats buf to:
 //	00000000-1111-2222-3333-444444444444
+// only used for an error message
 // buflen should be GUID128_BUFLEN
 // returns buf
-char *
+COLD char *
 guid128_format(
 	/*@returned@*/ /*@out@*/ char *const restrict buf, size_t buflen,
 	const struct Guid128 *const restrict guid

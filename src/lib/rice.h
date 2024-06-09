@@ -93,8 +93,7 @@ ALWAYS_INLINE u8 rice_crc32(register u8, register u32 *const restrict crc)
 #undef rice
 #undef bitcache
 #undef crc
-ALWAYS_INLINE size_t
-rice_encode(
+ALWAYS_INLINE size_t rice_encode(
 	register u8 *const restrict dest, register size_t, register u32,
 	register struct Rice *const restrict rice,
 	register struct BitCache *const restrict bitcache,
@@ -111,8 +110,7 @@ rice_encode(
 #undef cache
 #undef count
 #undef crc
-INLINE size_t
-rice_encode_cacheflush(
+INLINE size_t rice_encode_cacheflush(
 	register u8 *const restrict dest, register size_t,
 	register u32 *const restrict cache, register u8 *const restrict count,
 	register u32 *const restrict crc
@@ -128,8 +126,7 @@ rice_encode_cacheflush(
 #undef cache
 #undef count
 #undef crc
-ALWAYS_INLINE size_t
-rice_unary_put(
+ALWAYS_INLINE size_t rice_unary_put(
 	register u8 *const restrict dest, register size_t, register u32,
 	register u32 *const restrict cache, register u8 *const restrict count,
 	register u32 *const restrict crc
@@ -145,8 +142,7 @@ rice_unary_put(
 #undef cache
 #undef count
 #undef crc
-ALWAYS_INLINE size_t
-rice_binary_put(
+ALWAYS_INLINE size_t rice_binary_put(
 	register u8 *const restrict dest, register size_t, register u32,
 	register u8, register u32 *const restrict cache,
 	register u8 *const restrict count, register u32 *const restrict crc

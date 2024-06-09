@@ -1,7 +1,7 @@
 '\# t
 .\#     Title: libttaR_crc32
 .\#    Author: Shane Seelig
-.\#      Date: 2024-06-03
+.\#      Date: 2024-06-08
 .\#    Source: libttaR 1.1
 .\#  Language: English
 .\#
@@ -67,7 +67,6 @@ MT-Safe.
 .SH "NOTES"
 
 The CRC has the following properties:
-
 .nf
     width   : 32
     endian  : little
@@ -75,6 +74,10 @@ The CRC has the following properties:
     xor-in  : 0xFFFFFFFFu
     xor-out : 0xFFFFFFFFu
 .fi
+
+This function is optimized for size instead of speed.
+It is just meant for use on the file format's header and seektable.
+A frame's CRC calculation is inlined into the codec functions.
 
 .\############################################################################
 
