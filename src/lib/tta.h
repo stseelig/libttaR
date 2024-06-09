@@ -216,8 +216,8 @@ tta_filter(
 /*@modifies	*filter@*/
 {
 	register i32 *const restrict a = filter->qm;
-	register i32 *const restrict b = filter->dl;
 	register i32 *const restrict m = filter->dx;
+	register i32 *const restrict b = filter->dl;
 
 	register i32 sum = round;
 	register uint i;
