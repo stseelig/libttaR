@@ -265,6 +265,7 @@ lsmask32(register u8 k, const enum ShiftMaskMode mode)
 #ifndef LIBTTAr_CMOV_SHIFTER
 		r = (u32) (0x1u << k) - 1u;
 #else
+		// can be faster on older x86
 		r = (u32) (k != 0 ? 0xFFFFFFFFu >> ((u8) 32u - k) : 0);
 #endif
 		break;
