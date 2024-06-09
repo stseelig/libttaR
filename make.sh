@@ -95,15 +95,20 @@ CFLAGS_LIB="$CFLAGS_LIB -O2";
 
 CFLAGS_LIB="$CFLAGS_LIB -fPIC";
 
-# disables the unrolled mono/stereo codec loops; bit faster, but larger binary
+# uncomment to disable the unrolled mono codec
 #CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_DISABLE_UNROLLED_1CH";
+
+# uncomment to disable the unrolled stereo codec
 #CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_DISABLE_UNROLLED_2CH";
 
-# disables the multichannel/general decoder
+# uncomment to disable the multichannel/general codec
 #CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_DISABLE_MCH";
 
-# uncomment if no native tzcnt/ctz instruction
-#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_NO_INSTRUCTION_TZCNT";
+# uncomment if your cpu has no native tzcnt/ctz instruction
+#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_NO_TZCNT";
+
+# try uncommenting if your cpu is an old piece of shit
+#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_CMOV_SHIFTER";
 
 readonly CFLAGS_LIB;
 

@@ -233,7 +233,7 @@ shift32_bit(register u8 k)
 	return (u32) (0x1u << k);
 }
 
-// keeps rice.k[] in check
+// 0 <= k <= 28u
 ALWAYS_INLINE CONST u32
 shift32p4_bit(register u8 k, const enum ShiftMaskMode mode)
 /*@*/
@@ -243,8 +243,7 @@ shift32p4_bit(register u8 k, const enum ShiftMaskMode mode)
 	case SMM_CONST:
 	case SMM_SHIFT:
 		r = (u32) (k != 0
-			? (k < (u8) 28u ? 0x1u << (u8) (k + 4u) : 0xFFFFFFFFu)
-			: 0
+			? (k < (u8) 28u ? 0x10u << (u8) k : 0xFFFFFFFFu) : 0
 		);
 		break;
 	case SMM_TABLE:
@@ -254,6 +253,7 @@ shift32p4_bit(register u8 k, const enum ShiftMaskMode mode)
 	return r;
 }
 
+// 0 <= k <= 27u
 ALWAYS_INLINE CONST u32
 lsmask32(register u8 k, const enum ShiftMaskMode mode)
 /*@*/
@@ -262,7 +262,11 @@ lsmask32(register u8 k, const enum ShiftMaskMode mode)
 	switch ( mode ){
 	case SMM_CONST:
 	case SMM_SHIFT:
+#ifndef LIBTTAr_CMOV_SHIFTER
+		r = (u32) (0x1u << k) - 1u;
+#else
 		r = (u32) (k != 0 ? 0xFFFFFFFFu >> ((u8) 32u - k) : 0);
+#endif
 		break;
 	case SMM_TABLE:
 		r = lsmask32_table[k];
@@ -276,6 +280,7 @@ lsmask32(register u8 k, const enum ShiftMaskMode mode)
 // this procedure got macro'd because the compiler wasn't ALWAYS_INLINE'ing
 //   it. it is faster than a functional version (ie, returning k, not using
 //   pointers), because *k often does not change (lots of unnecessary writes)
+// ensures: 0 <= rice.k[] <= 27u
 #define rice_cmpsum(sum, k, value) \
 { \
 	*(sum) += (value) - (*(sum) >> 4u); \
@@ -496,7 +501,7 @@ rice_unary_get(
 	//   to a 'unary = 0' in !depth1 branch
 	*unary = UINT32_MAX;
 
-#ifndef LIBTTAr_NO_INSTRUCTION_TZCNT
+#ifndef LIBTTAr_NO_TZCNT
 	// this loop is slightly better than the lookup-table one, as long as
 	//   tbcnt32 is an instruction (tzcnt/ctz). otherwise a bit slower
 	goto loop_entr;
@@ -508,6 +513,7 @@ loop_entr:
 	} while UNLIKELY_P ( t.u_8 == *count, 0.25 );
 #else
 	while UNLIKELY_P (
+		// 0 <= *count <= 8u
 		(*cache ^ lsmask32(*count, SMM_TABLE)) == 0, 0.25
 	){
 		*unary += *count;
