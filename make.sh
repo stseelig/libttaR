@@ -103,9 +103,9 @@ CFLAGS_LIB="$CFLAGS_LIB -fPIC";
 #CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_DISABLE_MCH";
 
 # try uncommenting some of these if your cpu is an old piece of shit
-#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_NO_TZCNT";
-#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_CMOV_SHIFTER";
-#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_MEM_XOR";
+#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_NO_TZCNT";     # rice.h:rice_unary_get
+#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_CMOV_SHIFTER"; # rice.h:lsmask32
+#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_MEM_XOR";      # crc32.h:crc32_cont
 
 readonly CFLAGS_LIB;
 

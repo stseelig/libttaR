@@ -38,10 +38,12 @@ static void errprint_stats_format(
 /*@modifies	fileSystem@*/
 ;
 
+#if 0
 static void errprint_stats_frame(const struct FileStats *const restrict)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;
+#endif
 
 static void errprint_stats_pcm(double, size_t, size_t)
 /*@globals	fileSystem@*/
@@ -80,10 +82,12 @@ static void errprint_time(double)
 /*@modifies	fileSystem@*/
 ;
 
+#if 0
 static void errprint_chanmask_wav(uint, u32)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -99,7 +103,7 @@ errprint_stats_precodec(
 	errprint_stats_infile(infile_name);
 	errprint_stats_outfile(outfile_name);
 	errprint_stats_format(fstat, mode);
-	errprint_stats_frame(fstat);
+	//errprint_stats_frame(fstat);
 	return;
 }
 
@@ -227,16 +231,21 @@ errprint_stats_format(
 	//
 	(void) fputs(" | ", stderr);
 	(void) fprintf(stderr, "%"PRIu16"-ch", stats->nchan);
+/*
 	(void) fputs(" (", stderr);
 	(void) errprint_chanmask_wav(
 		(uint) stats->nchan, stats->chanmask_wav
 	);
 	(void) fputc(')', stderr);
 	//
+*/
 	(void) fputc('\n', stderr);
 	return;
+
 }
 
+// this could be useful if TTA2 ever gets supported
+#if 0
 static void
 errprint_stats_frame(const struct FileStats *const restrict stats)
 /*@globals	fileSystem@*/
@@ -257,6 +266,7 @@ errprint_stats_frame(const struct FileStats *const restrict stats)
 	(void) fputc('\n', stderr);
 	return;
 }
+#endif
 
 static void
 errprint_stats_pcm(double pcmtime, size_t nframes, size_t nbytes_pcm)
@@ -403,6 +413,8 @@ errprint_time(double sec)
 	return;
 }
 
+// this could be useful if TTA2 ever gets supported
+#if 0
 static void
 errprint_chanmask_wav(uint nchan, u32 mask)
 /*@globals	fileSystem@*/
@@ -454,5 +466,6 @@ errprint_chanmask_wav(uint nchan, u32 mask)
 
 	return;
 }
+#endif
 
 // EOF ///////////////////////////////////////////////////////////////////////
