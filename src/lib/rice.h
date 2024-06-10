@@ -50,8 +50,7 @@ extern HIDDEN const u32 lsmask32_table[];
 //////////////////////////////////////////////////////////////////////////////
 
 #undef rice
-INLINE void
-rice_init(
+INLINE void rice_init(
 	/*@out@*/ register struct Rice *const restrict rice, register u8,
 	register u8
 )
