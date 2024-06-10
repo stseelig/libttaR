@@ -119,8 +119,8 @@ The target number of TTA bytes from the dest/src buffer to encode/decode.
 
 *\fIpriv\fR
 .RS 8
-The codec's private state. The struct fields are hidden from the user.
-Needs to be allocated with the size from
+The codec's private state.
+The struct is opaque and needs to be allocated with the size from
 .BR libttaR_codecstate_priv_size ().
 .RE
 
