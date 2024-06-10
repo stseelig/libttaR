@@ -112,12 +112,11 @@ ALWAYS_INLINE size_t rice_encode(
 #undef crc
 INLINE size_t rice_encode_cacheflush(
 	register u8 *const restrict dest, register size_t,
-	register u32 *const restrict cache, register u8 *const restrict count,
+	register struct BitCache *const restrict bitcache,
 	register u32 *const restrict crc
 )
 /*@modifies	*dest,
-		*cache,
-		*count,
+		*bitcache,
 		*crc
 @*/
 ;
@@ -353,15 +352,17 @@ rice_encode(
 INLINE size_t
 rice_encode_cacheflush(
 	register u8 *const restrict dest, register size_t r,
-	register u32 *const restrict cache, register u8 *const restrict count,
+	register struct BitCache *const restrict bitcache,
 	register u32 *const restrict crc
 )
 /*@modifies	*dest,
-		*cache,
-		*count,
+		*bitcache,
 		*crc
 @*/
 {
+	register u32 *const restrict cache = &bitcache->cache;
+	register  u8 *const restrict count = &bitcache->count;
+
 	while ( *count != 0 ){
 		dest[r++] = rice_crc32((u8) *cache, crc);
 		*cache  >>= 8u;

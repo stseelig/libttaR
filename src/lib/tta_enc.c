@@ -129,11 +129,11 @@ libttaR_tta_encode(
 	){
 		return LIBTTAr_RET_INVAL + 0;
 	}
-	if ( (ni32_target > src_len)
+	if ( (ni32_target % nchan != 0)
+	    ||
+	     (ni32_target > src_len)
 	    ||
 	     (ni32_target + user->ni32_total > ni32_perframe)
-	    ||
-	     (ni32_target % nchan != 0)
 	    ||
 	     (dest_len < safety_margin)
 	){
@@ -189,8 +189,7 @@ libttaR_tta_encode(
 	user->ni32_total       += user->ni32;
 	if ( user->ni32_total == ni32_perframe ){
 		nbytes_tta_enc  = rice_encode_cacheflush(
-			dest, nbytes_tta_enc, &priv->bitcache.cache,
-			&priv->bitcache.count, &user->crc
+			dest, nbytes_tta_enc, &priv->bitcache, &user->crc
 		);
 		user->crc       = crc32_end(user->crc);
 		r = LIBTTAr_RET_DONE;

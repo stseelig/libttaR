@@ -143,9 +143,9 @@ libttaR_tta_decode(
 	    ||
 	     (ni32_target % nchan != 0)
 	    ||
-	     (nbytes_tta_target > src_len)
-	    ||
 	     (src_len < safety_margin)
+	    ||
+	     (src_len < nbytes_tta_target)
 	    ||
 	     (	nbytes_tta_target + user->nbytes_tta_total
 	       >
