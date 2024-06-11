@@ -91,7 +91,7 @@ tta_encode_2ch(
 // returns on success:
 //	LIBTTAr_RET_DONE or LIBTTAr_RET_AGAIN
 // on failure:
-//	LIBTTAr_RET_INVAL or LIBTTAr_RET_MISCONFIG
+//	>=LIBTTAr_RET_INVAL or LIBTTAr_RET_MISCONFIG
 int
 libttaR_tta_encode(
 	u8 *const dest, const i32 *const src,
