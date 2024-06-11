@@ -212,7 +212,7 @@ decst_loop(
 					infile_name, nframes_read
 				);
 			}
-			goto loop0_truncated;
+			goto loop_truncated;
 		}
 		// read frame footer (crc); kept as little-endian
 		t.z = fread(&crc_read, sizeof crc_read, (size_t) 1u, infile);
@@ -224,7 +224,7 @@ decst_loop(
 					infile_name, nframes_read
 				);
 			}
-loop0_truncated:
+loop_truncated:
 			crc_read       = 0;
 			nframes_target = 0;
 		}
