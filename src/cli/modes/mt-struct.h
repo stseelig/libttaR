@@ -231,11 +231,8 @@ extern void encmt_state_free(
 	struct MTArg_EncIO *const restrict io,
 	struct MTArg_Encoder *const restrict encoder, uint
 )
-/*@globals	fileSystem,
-		internalState
-@*/
-/*@modifies	fileSystem,
-		internalState,
+/*@globals	internalState@*/
+/*@modifies	internalState,
 		*io,
 		*io->frames.navailable,
 		io->frames.post_encoder[],
@@ -305,11 +302,8 @@ extern void decmt_state_free(
 	struct MTArg_Decoder *const restrict decoder, uint
 )
 
-/*@globals	fileSystem,
-		internalState
-@*/
-/*@modifies	fileSystem,
-		internalState,
+/*@globals	internalState@*/
+/*@modifies	internalState,
 		*io,
 		*io->frames.navailable,
 		io->frames.post_decoder[],
