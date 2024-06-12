@@ -27,8 +27,7 @@
 #undef ni32_out
 #undef bitcache
 #undef codec
-static size_t
-tta_decode_mch(
+static size_t tta_decode_mch(
 	i32 *const dest, const u8 *const, u32 *const restrict crc_out,
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
@@ -49,8 +48,7 @@ tta_decode_mch(
 #undef ni32_out
 #undef bitcache
 #undef codec
-static size_t
-tta_decode_1ch(
+static size_t tta_decode_1ch(
 	i32 *const dest, const u8 *const, u32 *const restrict crc_out,
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
@@ -71,8 +69,7 @@ tta_decode_1ch(
 #undef ni32_out
 #undef bitcache
 #undef codec
-static size_t
-tta_decode_2ch(
+static size_t tta_decode_2ch(
 	i32 *const dest, const u8 *const, u32 *const restrict crc_out,
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
