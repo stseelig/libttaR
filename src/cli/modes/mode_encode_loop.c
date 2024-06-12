@@ -85,7 +85,7 @@ static CONST size_t enc_readlen(
 ;
 
 #undef pcmbuf
-static COLD uint enc_frame_zeropad(
+NOINLINE COLD uint enc_frame_zeropad(
 	u8 *const restrict pcmbuf, size_t, uint, enum TTASampleBytes, uint
 )
 /*@modifies	*pcmbuf@*/
@@ -495,7 +495,7 @@ enc_readlen(
 }
 
 // returns nmemb of buf zero-padded
-static COLD uint
+NOINLINE COLD uint
 enc_frame_zeropad(
 	u8 *const restrict pcmbuf, size_t nmemb_read, uint diff,
 	enum TTASampleBytes samplebytes, uint nchan

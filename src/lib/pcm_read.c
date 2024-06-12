@@ -23,21 +23,21 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #undef dest
-static size_t pcm_read_u8(
+NOINLINE size_t pcm_read_u8(
 	register i32 *const dest, register const u8 *const, register size_t
 )
 /*@modifies	*dest@*/
 ;
 
 #undef dest
-static size_t pcm_read_i16le(
+NOINLINE size_t pcm_read_i16le(
 	register i32 *const dest, register const u8 *const, register size_t
 )
 /*@modifies	*dest@*/
 ;
 
 #undef dest
-static size_t pcm_read_i24le(
+NOINLINE size_t pcm_read_i24le(
 	register i32 *const dest, register const u8 *const, register size_t
 )
 /*@modifies	*dest@*/
@@ -71,26 +71,21 @@ libttaR_pcm_read(
 )
 /*@modifies	*dest@*/
 {
-	size_t r = 0;
-
 	switch ( samplebytes ){
 	case TTASAMPLEBYTES_1:
-		r = pcm_read_u8(dest, src, nsamples);
-		break;
+		return pcm_read_u8(dest, src, nsamples);
 	case TTASAMPLEBYTES_2:
-		r = pcm_read_i16le(dest, src, nsamples);
-		break;
+		return pcm_read_i16le(dest, src, nsamples);
 	case TTASAMPLEBYTES_3:
-		r = pcm_read_i24le(dest, src, nsamples);
-		break;
+		return pcm_read_i24le(dest, src, nsamples);
 	}
-	return r;
+	return 0;
 }
 
 //--------------------------------------------------------------------------//
 
 // returns nsamples
-static size_t
+NOINLINE size_t
 pcm_read_u8(
 	register i32 *const dest, register const u8 *const src,
 	register size_t nsamples
@@ -105,7 +100,7 @@ pcm_read_u8(
 }
 
 // returns nsamples
-static size_t
+NOINLINE size_t
 pcm_read_i16le(
 	register i32 *const dest, register const u8 *const src,
 	register size_t nsamples
@@ -120,7 +115,7 @@ pcm_read_i16le(
 }
 
 // returns nsamples
-static size_t
+NOINLINE size_t
 pcm_read_i24le(
 	register i32 *const dest, register const u8 *const src,
 	register size_t nsamples

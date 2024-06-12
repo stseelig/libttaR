@@ -75,7 +75,7 @@ static void dec_frame_write(
 static CONST size_t dec_ni32_perframe(size_t, size_t, size_t, uint) /*@*/;
 
 #undef pcmbuf
-static COLD void dec_frame_zeropad(
+NOINLINE COLD void dec_frame_zeropad(
 	u8 *const restrict pcmbuf, size_t, size_t, enum TTASampleBytes
 )
 /*@modifies	*pcmbuf@*/
@@ -500,7 +500,7 @@ dec_ni32_perframe(
 	else {	return (size_t) (nsamples_perframe * nchan); }
 }
 
-static COLD void
+NOINLINE COLD void
 dec_frame_zeropad(
 	u8 *const restrict pcmbuf, size_t pcmbuf_nsamples_flat,
 	size_t nsamples_flat_2pad, enum TTASampleBytes samplebytes

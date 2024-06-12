@@ -93,7 +93,7 @@ tta_decode_2ch(
 // returns on success:
 //	LIBTTAr_RET_DONE, LIBTTAr_RET_AGAIN, or LIBTTAr_RET_DECFAIL
 // on failure:
-//	>=LIBTTAr_RET_INVAL, LIBTTAr_RET_MISCONFIG
+//	>=LIBTTAr_RET_INVAL or LIBTTAr_RET_MISCONFIG
 int
 libttaR_tta_decode(
 	i32 *const dest, const u8 *const src,

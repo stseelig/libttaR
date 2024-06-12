@@ -23,21 +23,21 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #undef dest
-static size_t pcm_write_u8(
+NOINLINE size_t pcm_write_u8(
 	register u8 *const dest, register const i32 *const, register size_t
 )
 /*@modifies	*dest@*/
 ;
 
 #undef dest
-static size_t pcm_write_i16le(
+NOINLINE size_t pcm_write_i16le(
 	register u8 *const dest, register const i32 *const, register size_t
 )
 /*@modifies	*dest@*/
 ;
 
 #undef dest
-static size_t pcm_write_i24le(
+NOINLINE size_t pcm_write_i24le(
 	register u8 *const dest, register const i32 *const, register size_t
 )
 /*@modifies	*dest@*/
@@ -67,26 +67,21 @@ libttaR_pcm_write(
 )
 /*@modifies	*dest@*/
 {
-	size_t r = 0;
-
 	switch ( samplebytes ){
 	case TTASAMPLEBYTES_1:
-		r = pcm_write_u8(dest, src, nsamples);
-		break;
+		return pcm_write_u8(dest, src, nsamples);
 	case TTASAMPLEBYTES_2:
-		r = pcm_write_i16le(dest, src, nsamples);
-		break;
+		return pcm_write_i16le(dest, src, nsamples);
 	case TTASAMPLEBYTES_3:
-		r = pcm_write_i24le(dest, src, nsamples);
-		break;
+		return pcm_write_i24le(dest, src, nsamples);
 	}
-	return r;
+	return 0;
 }
 
 //--------------------------------------------------------------------------//
 
 // returns nsamples
-static size_t
+NOINLINE size_t
 pcm_write_u8(
 	register u8 *const dest, register const i32 *const src,
 	register size_t nsamples
@@ -101,7 +96,7 @@ pcm_write_u8(
 }
 
 // returns nsamples
-static size_t
+NOINLINE size_t
 pcm_write_i16le(
 	register u8 *const dest, register const i32 *const src,
 	register size_t nsamples
@@ -116,7 +111,7 @@ pcm_write_i16le(
 }
 
 // returns nsamples
-static size_t
+NOINLINE size_t
 pcm_write_i24le(
 	register u8 *const dest, register const i32 *const src,
 	register size_t nsamples

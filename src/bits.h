@@ -41,6 +41,7 @@
 
 #define INLINE		/*@unused@*/ static inline
 #define ALWAYS_INLINE	INLINE __attribute__((always_inline))
+#define NOINLINE	static __attribute__((noinline))
 
 #define HOT		__attribute__((hot))
 #define COLD		__attribute__((cold))
