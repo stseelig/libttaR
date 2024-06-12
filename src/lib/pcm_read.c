@@ -23,23 +23,17 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #undef dest
-NOINLINE size_t pcm_read_u8(
-	register i32 *const dest, register const u8 *const, register size_t
-)
+NOINLINE size_t pcm_read_u8(i32 *const dest, const u8 *const, size_t)
 /*@modifies	*dest@*/
 ;
 
 #undef dest
-NOINLINE size_t pcm_read_i16le(
-	register i32 *const dest, register const u8 *const, register size_t
-)
+NOINLINE size_t pcm_read_i16le(i32 *const dest, const u8 *const, size_t)
 /*@modifies	*dest@*/
 ;
 
 #undef dest
-NOINLINE size_t pcm_read_i24le(
-	register i32 *const dest, register const u8 *const, register size_t
-)
+NOINLINE size_t pcm_read_i24le(i32 *const dest, const u8 *const, size_t)
 /*@modifies	*dest@*/
 ;
 
@@ -86,13 +80,10 @@ libttaR_pcm_read(
 
 // returns nsamples
 NOINLINE size_t
-pcm_read_u8(
-	register i32 *const dest, register const u8 *const src,
-	register size_t nsamples
-)
+pcm_read_u8(i32 *const dest, const u8 *const src, size_t nsamples)
 /*@modifies	*dest@*/
 {
-	register size_t i;
+	size_t i;
 	for ( i = 0; i < nsamples; ++i ){
 		dest[i] = u8_to_i32h(src[i]);
 	}
@@ -101,13 +92,10 @@ pcm_read_u8(
 
 // returns nsamples
 NOINLINE size_t
-pcm_read_i16le(
-	register i32 *const dest, register const u8 *const src,
-	register size_t nsamples
-)
+pcm_read_i16le(i32 *const dest, const u8 *const src, size_t nsamples)
 /*@modifies	*dest@*/
 {
-	register size_t i, j;
+	size_t i, j;
 	for ( i = 0, j = 0; i < nsamples; ++i, j += (size_t) 2u ){
 		read_i16le_to_i32h(&dest[i], &src[j]);
 	}
@@ -116,13 +104,10 @@ pcm_read_i16le(
 
 // returns nsamples
 NOINLINE size_t
-pcm_read_i24le(
-	register i32 *const dest, register const u8 *const src,
-	register size_t nsamples
-)
+pcm_read_i24le(i32 *const dest, const u8 *const src, size_t nsamples)
 /*@modifies	*dest@*/
 {
-	register size_t i, j;
+	size_t i, j;
 	for ( i = 0, j = 0; i < nsamples; ++i, j += (size_t) 3u ){
 		read_i24le_to_i32h(&dest[i], &src[j]);
 	}
@@ -142,9 +127,8 @@ ALWAYS_INLINE void
 read_i16le_to_i32h(register i32 *const dest, register const u8 *const src)
 /*@modifies	*dest@*/
 {
-	register u32 *const t = (u32 *) dest;
-	*t  =  (u32)       src[0u];
-	*t |= ((u32) ((i8) src[1u])) << 8u;
+	*((u32 *) dest)  =  (u32)       src[0u];
+	*((u32 *) dest) |= ((u32) ((i8) src[1u])) << 8u;
 	return;
 }
 
@@ -152,10 +136,9 @@ ALWAYS_INLINE void
 read_i24le_to_i32h(register i32 *const dest, register const u8 *const src)
 /*@modifies	*dest@*/
 {
-	register u32 *const t = (u32 *) dest;
-	*t  =  (u32)       src[0u];
-	*t |= ((u32)       src[1u])  <<  8u;
-	*t |= ((u32) ((i8) src[2u])) << 16u;
+	*((u32 *) dest)  =  (u32)       src[0u];
+	*((u32 *) dest) |= ((u32)       src[1u])  <<  8u;
+	*((u32 *) dest) |= ((u32) ((i8) src[2u])) << 16u;
 	return;
 }
 

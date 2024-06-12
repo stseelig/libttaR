@@ -23,23 +23,17 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #undef dest
-NOINLINE size_t pcm_write_u8(
-	register u8 *const dest, register const i32 *const, register size_t
-)
+NOINLINE size_t pcm_write_u8(u8 *const dest, const i32 *const, size_t)
 /*@modifies	*dest@*/
 ;
 
 #undef dest
-NOINLINE size_t pcm_write_i16le(
-	register u8 *const dest, register const i32 *const, register size_t
-)
+NOINLINE size_t pcm_write_i16le(u8 *const dest, const i32 *const, size_t)
 /*@modifies	*dest@*/
 ;
 
 #undef dest
-NOINLINE size_t pcm_write_i24le(
-	register u8 *const dest, register const i32 *const, register size_t
-)
+NOINLINE size_t pcm_write_i24le(u8 *const dest, const i32 *const, size_t)
 /*@modifies	*dest@*/
 ;
 
@@ -82,13 +76,10 @@ libttaR_pcm_write(
 
 // returns nsamples
 NOINLINE size_t
-pcm_write_u8(
-	register u8 *const dest, register const i32 *const src,
-	register size_t nsamples
-)
+pcm_write_u8(u8 *const dest, const i32 *const src, size_t nsamples)
 /*@modifies	*dest@*/
 {
-	register size_t i;
+	size_t i;
 	for ( i = 0; i < nsamples; ++i ){
 		dest[i] = i32h_to_u8(src[i]);
 	}
@@ -97,13 +88,10 @@ pcm_write_u8(
 
 // returns nsamples
 NOINLINE size_t
-pcm_write_i16le(
-	register u8 *const dest, register const i32 *const src,
-	register size_t nsamples
-)
+pcm_write_i16le(u8 *const dest, const i32 *const src, size_t nsamples)
 /*@modifies	*dest@*/
 {
-	register size_t i, j;
+	size_t i, j;
 	for ( i = 0, j = 0; i < nsamples; ++i, j += (size_t) 2u ){
 		write_i32h_to_i16le(&dest[j], src[i]);
 	}
@@ -112,13 +100,10 @@ pcm_write_i16le(
 
 // returns nsamples
 NOINLINE size_t
-pcm_write_i24le(
-	register u8 *const dest, register const i32 *const src,
-	register size_t nsamples
-)
+pcm_write_i24le(u8 *const dest, const i32 *const src, size_t nsamples)
 /*@modifies	*dest@*/
 {
-	register size_t i, j;
+	size_t i, j;
 	for ( i = 0, j = 0; i < nsamples; ++i, j += (size_t) 3u ){
 		write_i32h_to_i24le(&dest[j], src[i]);
 	}
@@ -138,9 +123,8 @@ ALWAYS_INLINE void
 write_i32h_to_i16le(register u8 *const dest, register i32 x)
 /*@modifies	*dest@*/
 {
-	register const u32 y = (u32) x;
-	dest[0u] = (u8)  y;
-	dest[1u] = (u8) (y >> 8u);
+	dest[0u] = (u8)  ((u32) x);
+	dest[1u] = (u8) (((u32) x) >> 8u);
 	return;
 }
 
@@ -148,10 +132,9 @@ ALWAYS_INLINE void
 write_i32h_to_i24le(register u8 *const dest, register i32 x)
 /*@modifies	*dest@*/
 {
-	register const u32 y = (u32) x;
-	dest[0u] = (u8)  y;
-	dest[1u] = (u8) (y >>  8u);
-	dest[2u] = (u8) (y >> 16u);
+	dest[0u] = (u8)  ((u32) x);
+	dest[1u] = (u8) (((u32) x) >>  8u);
+	dest[2u] = (u8) (((u32) x) >> 16u);
 	return;
 }
 
