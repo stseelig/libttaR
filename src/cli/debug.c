@@ -28,6 +28,20 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
+NOINLINE COLD void print_error_tta(
+	const enum Fatality fatality, const char *const, va_list args
+)
+/*@globals	fileSystem,
+		g_nwarnings
+@*/
+/*@modifies	fileSystem,
+		g_nwarnings,
+		args
+@*/
+;
+
+//////////////////////////////////////////////////////////////////////////////
+
 static int inc_nwarnings(void)
 /*@globals	g_nwarnings@*/
 /*@modifies	g_nwarnings@*/
@@ -40,10 +54,41 @@ static int inc_nwarnings(void)
 
 //==========================================================================//
 
+COLD NORETURN void
+error_sys(
+	int errnum, const char *const name,
+	/*@null@*/ const char *const extra
+)
+/*@globals	fileSystem,
+		g_nwarnings
+@*/
+/*@modifies	fileSystem,
+		g_nwarnings
+@*/
+{
+	print_error_sys(errnum, name, extra, FATAL);
+	UNREACHABLE;
+}
+
+COLD void
+error_sys_nf(
+	int errnum, const char *const name,
+	/*@null@*/ const char *const extra
+)
+/*@globals	fileSystem,
+		g_nwarnings
+@*/
+/*@modifies	fileSystem,
+		g_nwarnings
+@*/
+{
+	print_error_sys(errnum, name, extra, NONFATAL);
+}
+
 COLD void
 print_error_sys(
-	enum Fatality fatality, int errnum, const char *const name,
-	/*@null@*/ const char *const extra
+	int errnum, const char *const name,
+	/*@null@*/ const char *const extra, const enum Fatality fatality
 )
 /*@globals	fileSystem,
 		g_nwarnings
@@ -77,8 +122,9 @@ print_error_sys(
 	else {	return; }
 }
 
-COLD void
-print_error_tta(enum Fatality fatality, const char *const format, ...)
+//--------------------------------------------------------------------------//
+
+COLD NORETURN void error_tta(const char *const format, ...)
 /*@globals	fileSystem,
 		g_nwarnings
 @*/
@@ -87,9 +133,39 @@ print_error_tta(enum Fatality fatality, const char *const format, ...)
 @*/
 {
 	va_list args;
-	union {	int d; } t;
-
 	va_start(args, format);
+	print_error_tta(FATAL, format, args);
+	UNREACHABLE;
+}
+
+COLD void error_tta_nf(const char *const format, ...)
+/*@globals	fileSystem,
+		g_nwarnings
+@*/
+/*@modifies	fileSystem,
+		g_nwarnings
+@*/
+{
+	va_list args;
+	va_start(args, format);
+	print_error_tta(NONFATAL, format, args);
+	va_end(args);
+	return;
+}
+
+NOINLINE COLD void
+print_error_tta(
+	const enum Fatality fatality, const char *const format, va_list args
+)
+/*@globals	fileSystem,
+		g_nwarnings
+@*/
+/*@modifies	fileSystem,
+		g_nwarnings,
+		args
+@*/
+{
+	union {	int d; } t;
 
 	flockfile(stdout);
 	flockfile(stderr);
@@ -106,7 +182,7 @@ print_error_tta(enum Fatality fatality, const char *const format, ...)
 	if ( fatality == FATAL ){
 		exit(t.d);
 	}
-	else {	return; }
+	else {	return;	}
 }
 
 COLD void

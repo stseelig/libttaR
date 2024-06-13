@@ -94,7 +94,7 @@ try_again:
 	r = fopen(pathname, mode);
 	if UNLIKELY ( r == NULL ){
 		if ( try_fdlimit() ){ goto try_again; }
-		else {	print_error_sys(fatality, errno, "fopen", pathname); }
+		else {	print_error_sys(errno, "fopen", pathname, fatality); }
 	}
 	return r;
 }

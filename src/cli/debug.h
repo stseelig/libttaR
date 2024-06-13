@@ -29,17 +29,6 @@ enum Fatality {
 
 //////////////////////////////////////////////////////////////////////////////
 
-extern COLD void print_error_sys(
-	enum Fatality, int, const char *const, /*@null@*/ const char *const
-)
-/*@globals	fileSystem,
-		g_nwarnings
-@*/
-/*@modifies	fileSystem,
-		g_nwarnings
-@*/
-;
-
 extern COLD NORETURN void error_sys(
 	int, const char *const, /*@null@*/ const char *const
 )
@@ -62,8 +51,9 @@ extern COLD void error_sys_nf(
 @*/
 ;
 
-extern COLD void print_error_tta(
-	enum Fatality fatality, const char *const, ...
+extern COLD void print_error_sys(
+	int, const char *const, /*@null@*/ const char *const,
+	const enum Fatality
 )
 /*@globals	fileSystem,
 		g_nwarnings
@@ -72,6 +62,7 @@ extern COLD void print_error_tta(
 		g_nwarnings
 @*/
 ;
+
 
 extern COLD NORETURN void error_tta(const char *const, ...)
 /*@globals	fileSystem,
@@ -111,22 +102,6 @@ extern COLD void error_filecheck(
 		g_nwarnings
 @*/
 ;
-
-#define error_sys(errnum, name, extra) { \
-	print_error_sys(FATAL, errnum, name, extra); \
-	UNREACHABLE \
-}
-
-#define error_sys_nf(errnum, name, extra) \
-	print_error_sys(NONFATAL, errnum, name, extra)
-
-#define error_tta(...) { \
-	print_error_tta(FATAL, __VA_ARGS__); \
-	UNREACHABLE \
-}
-
-#define error_tta_nf(...) \
-	print_error_tta(NONFATAL, __VA_ARGS__)
 
 // EOF ///////////////////////////////////////////////////////////////////////
 #endif
