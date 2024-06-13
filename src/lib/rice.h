@@ -93,8 +93,8 @@ ALWAYS_INLINE u8 rice_crc32(register u8, register u32 *const restrict crc)
 #undef bitcache
 #undef crc
 ALWAYS_INLINE size_t rice_encode(
-	register u8 *const restrict dest, register size_t, register u32,
-	register struct Rice *const restrict rice,
+	/*@out@*/ register u8 *const restrict dest, register size_t,
+	register u32, register struct Rice *const restrict rice,
 	register struct BitCache *const restrict bitcache,
 	register u32 *const restrict crc
 )
@@ -110,7 +110,7 @@ ALWAYS_INLINE size_t rice_encode(
 #undef count
 #undef crc
 INLINE size_t rice_encode_cacheflush(
-	register u8 *const restrict dest, register size_t,
+	/*@out@*/ register u8 *const restrict dest, register size_t,
 	register struct BitCache *const restrict bitcache,
 	register u32 *const restrict crc
 )
@@ -125,9 +125,9 @@ INLINE size_t rice_encode_cacheflush(
 #undef count
 #undef crc
 ALWAYS_INLINE size_t rice_unary_put(
-	register u8 *const restrict dest, register size_t, register u32,
-	register u32 *const restrict cache, register u8 *const restrict count,
-	register u32 *const restrict crc
+	/*@out@*/ register u8 *const restrict dest, register size_t,
+	register u32, register u32 *const restrict cache,
+	register u8 *const restrict count, register u32 *const restrict crc
 )
 /*@modifies	*dest,
 		*cache,
@@ -141,8 +141,8 @@ ALWAYS_INLINE size_t rice_unary_put(
 #undef count
 #undef crc
 ALWAYS_INLINE size_t rice_binary_put(
-	register u8 *const restrict dest, register size_t, register u32,
-	register u8, register u32 *const restrict cache,
+	/*@out@*/ register u8 *const restrict dest, register size_t,
+	register u32, register u8, register u32 *const restrict cache,
 	register u8 *const restrict count, register u32 *const restrict crc
 )
 /*@modifies	*dest,
@@ -208,6 +208,13 @@ ALWAYS_INLINE size_t rice_binary_get(
 
 //////////////////////////////////////////////////////////////////////////////
 
+/**@fn rice_init
+ * @brief initializes a 'struct Rice'
+ *
+ * @param rice[out] struct to initialize
+ * @param k0 initial value for rice->k[0u]
+ * @param k1 initial value for rice->k[1u]
+**/
 INLINE void
 rice_init(
 	/*@out@*/ register struct Rice *const restrict rice, register u8 k0,
@@ -224,6 +231,15 @@ rice_init(
 
 //==========================================================================//
 
+/**@fn shift32_bit
+ * @brief shift the 0th bit 32-bit 'k' places left
+ *
+ * @param k bit number
+ *
+ * @return a 32-bit mask with only the 'k'th bit set
+ *
+ * @pre 0 <= 'k' <= 31u
+**/
 ALWAYS_INLINE CONST u32
 shift32_bit(register u8 k)
 /*@*/
@@ -231,7 +247,16 @@ shift32_bit(register u8 k)
 	return (u32) (0x1u << k);
 }
 
-// 0 <= k <= 28u
+/**@fn shift32p4_bit
+ * @brief shift the 0th bit 32-bit 'k' + 4u places left
+ *
+ * @param k bit number - 4u
+ * @param mode constant, shift, or lookup table
+ *
+ * @return a mask with only the ('k' + 4u)th bit set, 0, or 0xFFFFFFFFu
+ *
+ * @pre 0 <= 'k' <= 28u
+**/
 ALWAYS_INLINE CONST u32
 shift32p4_bit(register u8 k, const enum ShiftMaskMode mode)
 /*@*/
@@ -251,7 +276,18 @@ shift32p4_bit(register u8 k, const enum ShiftMaskMode mode)
 	return r;
 }
 
-// 0 <= k <= 27u
+/**@fn lsmask32
+ * @brief least significant mask 32-bit
+ *
+ * @param k number of bits in the mask
+ * @param mode constant, shift, or lookup table
+ *
+ * @return a mask with 'k' low bits set
+ *
+ * @pre 0 <= 'k' <= 27u
+ *
+ * @note affected by LIBTTAr_CMOV_SHIFTER
+**/
 ALWAYS_INLINE CONST u32
 lsmask32(register u8 k, const enum ShiftMaskMode mode)
 /*@*/
@@ -276,10 +312,21 @@ lsmask32(register u8 k, const enum ShiftMaskMode mode)
 
 //==========================================================================//
 
-// this procedure got macro'd because the compiler wasn't ALWAYS_INLINE'ing
-//   it. it is faster than a functional version (ie, returning k, not using
-//   pointers), because *k often does not change (lots of unnecessary writes)
-// ensures: 0 <= rice.k[] <= 27u
+/**@fn rice_cmpsum
+ * @brief update the rice struct data
+ *
+ * @param sum[in out] rice->sum[]
+ * @param k[in out] rice->k[]
+ * @param value input value to code
+ *
+ * @post 0 <= 'k' <= 27u
+ *
+ * @note
+ *     This procedure got macro'd because the compiler wasn't ALWAYS_INLINE-
+ *   ing it. It is faster than a functional version (ie, returning 'k', not
+ *   using pointers), because *'k' often does not change (lots of unnecessary
+ *   moves/writes).
+**/
 #define rice_cmpsum(sum, k, value) \
 { \
 	*(sum) += (value) - (*(sum) >> 4u); \
@@ -291,7 +338,14 @@ lsmask32(register u8 k, const enum ShiftMaskMode mode)
 	} else{;} \
 }
 
-// returns x
+/**@fn rice_crc32
+ * @brief add a byte to a CRC
+ *
+ * @param x input byte
+ * @param crc[in out] current CRC
+ *
+ * @return 'x'
+**/
 ALWAYS_INLINE u8
 rice_crc32(register u8 x, register u32 *const restrict crc)
 /*@modifies	*crc@*/
@@ -302,10 +356,21 @@ rice_crc32(register u8 x, register u32 *const restrict crc)
 
 //==========================================================================//
 
-// returns nbytes written to dest + r
+/**@fn rice_encode
+ * @brief encode a filtered i32 value into rice codes
+ *
+ * @param dest[out] destination buffer
+ * @param r index of 'dest'
+ * @param value value to encode
+ * @param rice[in out] the rice code data for the current channel
+ * @param bitcache[in out] the bitcache data
+ * @param crc[in out] the current CRC
+ *
+ * @return number of bytes written to 'dest' + 'r'
+**/
 ALWAYS_INLINE size_t
 rice_encode(
-	register u8 *const restrict dest, register size_t r,
+	/*@out@*/ register u8 *const restrict dest, register size_t r,
 	register u32 value, register struct Rice *const restrict rice,
 	register struct BitCache *const restrict bitcache,
 	register u32 *const restrict crc
@@ -347,10 +412,19 @@ rice_encode(
 	return r;
 }
 
-// returns nbytes written to dest + r
+/**@fn rice_encode_cacheflush
+ * @brief flush any data left in the 'bitcache'
+ *
+ * @param dest[out] destination buffer
+ * @param r index of 'dest'
+ * @param bitcache[in out] the bitcache data
+ * @param crc[in out] the current CRC
+ *
+ * @return number of bytes written to 'dest' + 'r'
+**/
 INLINE size_t
 rice_encode_cacheflush(
-	register u8 *const restrict dest, register size_t r,
+	/*@out@*/ register u8 *const restrict dest, register size_t r,
 	register struct BitCache *const restrict bitcache,
 	register u32 *const restrict crc
 )
@@ -372,10 +446,21 @@ rice_encode_cacheflush(
 
 //--------------------------------------------------------------------------//
 
-// returns nbytes written to dest + r
+/**@fn rice_unary_put
+ * @brief write a unary code to 'dest'
+ *
+ * @param dest[out] destination buffer
+ * @param r index of 'dest'
+ * @param unary the unary code
+ * @param cache[in out] the bitcache
+ * @param count[in out] number of active bits in the 'cache'
+ * @param crc[in out] the current CRC
+ *
+ * @return number of bytes written to 'dest' + 'r'
+**/
 ALWAYS_INLINE size_t
 rice_unary_put(
-	register u8 *const restrict dest, register size_t r,
+	/*@out@*/ register u8 *const restrict dest, register size_t r,
 	register u32 unary, register u32 *const restrict cache,
 	register u8 *const restrict count, register u32 *const restrict crc
 )
@@ -402,10 +487,22 @@ loop_entr:
 	return r;
 }
 
-// returns nbytes written to dest + r
+/**@fn rice_binary_put
+ * @brief write a binary code to 'dest'
+ *
+ * @param dest[out] destination buffer
+ * @param r index of 'dest'
+ * @param binary the binary code
+ * @param k from rice->k[], kx
+ * @param cache[in out] the bitcache
+ * @param count[in out] number of active bits in the 'cache'
+ * @param crc[in out] the current CRC
+ *
+ * @return number of bytes written to 'dest' + 'r'
+**/
 ALWAYS_INLINE size_t
 rice_binary_put(
-	register u8 *const restrict dest, register size_t r,
+	/*@out@*/ register u8 *const restrict dest, register size_t r,
 	register u32 binary, register u8 k,
 	register u32 *const restrict cache, register u8 *const restrict count,
 	register u32 *const restrict crc
@@ -428,7 +525,18 @@ rice_binary_put(
 
 //==========================================================================//
 
-// returns nbytes read from src + r
+/**@fn rice_decode
+ * @brief decode rice codes into a filtered i32 value
+ *
+ * @param value[in out] value to decode
+ * @param src[in] source buffer
+ * @param r index of 'src'
+ * @param rice[in out] the rice code data for the current channel
+ * @param bitcache[in out] the bitcache data
+ * @param crc[in out] the current CRC
+ *
+ * @return number of bytes read from 'src' + 'r'
+**/
 ALWAYS_INLINE size_t
 rice_decode(
 	/*@out@*/ register u32 *const restrict value,
@@ -481,7 +589,20 @@ rice_decode(
 
 //--------------------------------------------------------------------------//
 
-// returns nbytes read from src + r
+/**@fn rice_unary_get
+ * @brief read a unary code from 'src'
+ *
+ * @param unary[out] the unary code
+ * @param src[in] source buffer
+ * @param r index of 'src'
+ * @param cache[in out] the bitcache
+ * @param count[in out] number of active bits in the 'cache'
+ * @param crc[in out] the current CRC
+ *
+ * @return number of bytes read from 'src' + 'r'
+ *
+ * @note affected by LIBTTAr_NO_TZCNT
+**/
 ALWAYS_INLINE size_t
 rice_unary_get(
 	/*@out@*/ register u32 *const restrict unary,
@@ -529,7 +650,19 @@ loop_entr:
 	return r;
 }
 
-// returns nbytes read from src + r
+/**@fn rice_binary_get
+ * @brief read a binary code from 'src'
+ *
+ * @param binary[out] the binary code
+ * @param src[in] source buffer
+ * @param r index of 'src'
+ * @param k from rice->k[], kx
+ * @param cache[in out] the bitcache
+ * @param count[in out] number of active bits in the 'cache'
+ * @param crc[in out] the current CRC
+ *
+ * @return number of bytes read from 'src' + 'r'
+**/
 ALWAYS_INLINE size_t
 rice_binary_get(
 	/*@out@*/ register u32 *const restrict binary,

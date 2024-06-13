@@ -53,7 +53,19 @@ ALWAYS_INLINE void write_i32h_to_i24le(register u8 *const dest, register i32)
 
 //////////////////////////////////////////////////////////////////////////////
 
-// returns nsamples on success
+/**@fn libttaR_pcm_write
+ * @brief reads a buffer of i32 into a buffer of PCM
+ *
+ * @param dest[out] destination buffer
+ * @param src[in] source buffer
+ * @param nsamples total number of PCM samples
+ * @param samplebytes number of bytes per PCM sample
+ *
+ * @return 'nsamples' on success
+ * @retval 0 error
+ *
+ * @note read the manpage for more info
+**/
 size_t
 libttaR_pcm_write(
 	u8 *const dest, const i32 *const src, size_t nsamples,
@@ -74,7 +86,15 @@ libttaR_pcm_write(
 
 //--------------------------------------------------------------------------//
 
-// returns nsamples
+/**@fn pcm_write_u8
+ * @brief writes a buffer of i32 into a buffer of u8 PCM
+ *
+ * @param dest[out] destination buffer
+ * @param src[in] source buffer
+ * @param nsamples total number of PCM samples
+ *
+ * @return 'nsamples'
+**/
 NOINLINE size_t
 pcm_write_u8(u8 *const dest, const i32 *const src, size_t nsamples)
 /*@modifies	*dest@*/
@@ -86,7 +106,15 @@ pcm_write_u8(u8 *const dest, const i32 *const src, size_t nsamples)
 	return i;
 }
 
-// returns nsamples
+/**@fn pcm_write_i16le
+ * @brief writes a buffer of i32 into a buffer of i16le PCM
+ *
+ * @param dest[out] destination buffer
+ * @param src[in] source buffer
+ * @param nsamples total number of PCM samples
+ *
+ * @return 'nsamples'
+**/
 NOINLINE size_t
 pcm_write_i16le(u8 *const dest, const i32 *const src, size_t nsamples)
 /*@modifies	*dest@*/
@@ -98,7 +126,15 @@ pcm_write_i16le(u8 *const dest, const i32 *const src, size_t nsamples)
 	return i;
 }
 
-// returns nsamples
+/**@fn pcm_write_i24le
+ * @brief writes a buffer of i32 into a buffer of i24le PCM
+ *
+ * @param dest[out] destination buffer
+ * @param src[in] source buffer
+ * @param nsamples total number of PCM samples
+ *
+ * @return 'nsamples'
+**/
 NOINLINE size_t
 pcm_write_i24le(u8 *const dest, const i32 *const src, size_t nsamples)
 /*@modifies	*dest@*/
@@ -112,6 +148,13 @@ pcm_write_i24le(u8 *const dest, const i32 *const src, size_t nsamples)
 
 //--------------------------------------------------------------------------//
 
+/**@fn i32h_to_u8
+ * @brief converts an i32 sample into a u8 PCM sample
+ *
+ * @param x u8 sample
+ *
+ * @return i32 sample
+**/
 ALWAYS_INLINE CONST u8
 i32h_to_u8(register i32 x)
 /*@*/
@@ -119,6 +162,12 @@ i32h_to_u8(register i32 x)
 	return (u8) (x + 0x80u);
 }
 
+/**@fn write_i32h_to_i16le
+ * @brief writes a sample of i16le PCM into an i32 sample
+ *
+ * @param dest[out] destination sample
+ * @param src[in] source buffer
+**/
 ALWAYS_INLINE void
 write_i32h_to_i16le(register u8 *const dest, register i32 x)
 /*@modifies	*dest@*/
@@ -128,6 +177,12 @@ write_i32h_to_i16le(register u8 *const dest, register i32 x)
 	return;
 }
 
+/**@fn write_i32h_to_i24le
+ * @brief writes a sample of i24le PCM into an i32 sample
+ *
+ * @param dest[out] destination sample
+ * @param src[in] source buffer
+**/
 ALWAYS_INLINE void
 write_i32h_to_i24le(register u8 *const dest, register i32 x)
 /*@modifies	*dest@*/

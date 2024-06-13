@@ -188,6 +188,13 @@ ALWAYS_INLINE CONST uint tbcnt32(register u32) /*@*/;
 
 //////////////////////////////////////////////////////////////////////////////
 
+/**@fn bswap16
+ * @brief byteswap 16-bit
+ *
+ * @param value to byteswap
+ *
+ * @return byteswapped value
+ */
 ALWAYS_INLINE CONST u16
 bswap16(register u16 x)
 /*@*/
@@ -206,6 +213,13 @@ bswap16(register u16 x)
 #endif
 }
 
+/**@fn bswap32
+ * @brief byteswap 32-bit
+ *
+ * @param value to byteswap
+ *
+ * @return byteswapped value
+ */
 ALWAYS_INLINE CONST u32
 bswap32(register u32 x)
 /*@*/
@@ -224,6 +238,13 @@ bswap32(register u32 x)
 #endif
 }
 
+/**@fn bswap64
+ * @brief byteswap 64-bit
+ *
+ * @param value to byteswap
+ *
+ * @return byteswapped value
+ */
 ALWAYS_INLINE CONST u64
 bswap64(register u64 x)
 /*@*/
@@ -245,6 +266,54 @@ bswap64(register u64 x)
 }
 
 //==========================================================================//
+
+/**@fn htole16
+ * @brief host to little-endian 16-bit
+ *
+ * @param x value to conditionally byteswap
+ *
+ * @return little-endian value
+**/
+
+ /**@fn letoh16
+  * @brief little-endian to host 16-bit
+  *
+  * @param x value to conditionally byteswap
+  *
+  * @return host-endian value
+ **/
+
+ /**@fn htole32
+  * @brief host to little-endian 32-bit
+  *
+  * @param x value to conditionally byteswap
+  *
+  * @return little-endian value
+ **/
+
+ /**@fn letoh32
+  * @brief little-endian to host 32-bit
+  *
+  * @param x value to conditionally byteswap
+  *
+  * @return host-endian value
+ **/
+
+ /**@fn htole64
+  * @brief host to little-endian 64-bit
+  *
+  * @param x value to conditionally byteswap
+  *
+  * @return little-endian value
+ **/
+
+ /**@fn letoh64
+  * @brief little-endian to host 64-bit
+  *
+  * @param x value to conditionally byteswap
+  *
+  * @return host-endian value
+ **/
 
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
 ALWAYS_INLINE CONST u16 htole16(register u16 x) /*@*/ { return bswap16(x); }
@@ -270,6 +339,14 @@ ALWAYS_INLINE CONST u64 letoh64(register u64 x) /*@*/ { return x; }
 
 // shifting signed integers is naughty
 
+/**@fn asl32
+ * @brief arithmetic shift left 32-bit
+ *
+ * @param x value to shift
+ * @param k amount to shift
+ *
+ * @return shifted value
+**/
 ALWAYS_INLINE CONST i32
 asl32(register i32 x, register u8 k)
 /*@*/
@@ -277,6 +354,14 @@ asl32(register i32 x, register u8 k)
 	return (i32) (((u32) x) << k);
 }
 
+/**@fn asr32
+ * @brief arithmetic shift right 32-bit
+ *
+ * @param x value to shift
+ * @param k amount to shift
+ *
+ * @return shifted value
+**/
 ALWAYS_INLINE CONST i32
 asr32(register i32 x, register u8 k)
 /*@*/
@@ -292,7 +377,15 @@ asr32(register i32 x, register u8 k)
 
 //==========================================================================//
 
-// undefined for 0
+/**@fn tzcnt32
+ * @brief trailing zero count 32-bit
+ *
+ * @param x value to count
+ *
+ * @return number of trailing zeroes
+ *
+ * @note undefined for 0
+**/
 ALWAYS_INLINE CONST uint
 tzcnt32(register u32 x)
 /*@*/
@@ -316,7 +409,15 @@ tzcnt32(register u32 x)
 #endif
 }
 
-// undefined for UINT32_MAX
+/**@fn tbcnt32
+ * @brief trailing bit count 32-bit
+ *
+ * @param x value to count
+ *
+ * @return number of trailing bits
+ *
+ * @note undefined for UINT32_MAX
+**/
 ALWAYS_INLINE CONST uint tbcnt32(register u32 x) /*@*/ { return tzcnt32(~x); }
 
 // EOF ///////////////////////////////////////////////////////////////////////

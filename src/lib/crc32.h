@@ -25,6 +25,16 @@ extern HIDDEN const u32 crc32_table[];
 
 //////////////////////////////////////////////////////////////////////////////
 
+/**@fn crc32_cont
+ * @brief continue a CRC calculation
+ *
+ * @param x the byte to add to the CRC
+ * @param crc the current CRC
+ *
+ * @return the updated CRC
+ *
+ * @note affected by LIBTTAr_MEM_XOR
+**/
 ALWAYS_INLINE CONST u32
 crc32_cont(register u8 x, register u32 crc)
 /*@*/
@@ -40,6 +50,13 @@ crc32_cont(register u8 x, register u32 crc)
 #endif
 }
 
+/**@fn crc32_end
+ * @brief end a CRC calculation
+ *
+ * @param crc the current CRC
+ *
+ * @return the finished CRC
+**/
 ALWAYS_INLINE CONST u32 crc32_end(register u32 crc) /*@*/ { return ~crc; }
 
 // EOF ///////////////////////////////////////////////////////////////////////

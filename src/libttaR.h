@@ -125,6 +125,7 @@ struct LibTTAr_CodecState_User {
 #undef ni32_perframe
 /*@external@*/ /*@unused@*/
 extern int libttaR_tta_encode(
+	/*@out@*/
 	uint8_t *dest,
 	const int32_t *src,
 	size_t dest_len,
@@ -158,6 +159,7 @@ extern int libttaR_tta_encode(
 #undef nbytes_tta_perframe
 /*@external@*/ /*@unused@*/
 extern int libttaR_tta_decode(
+	/*@out@*/
 	int32_t *dest,
 	const uint8_t *src,
 	size_t dest_len,

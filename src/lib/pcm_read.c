@@ -57,7 +57,19 @@ ALWAYS_INLINE void read_i24le_to_i32h(
 
 //////////////////////////////////////////////////////////////////////////////
 
-// returns nsamples on success
+/**@fn libttaR_pcm_read
+ * @brief reads a buffer of PCM into a buffer of i32
+ *
+ * @param dest[out] destination buffer
+ * @param src[in] source buffer
+ * @param nsamples total number of PCM samples
+ * @param samplebytes number of bytes per PCM sample
+ *
+ * @return 'nsamples' on success
+ * @retval 0 error
+ *
+ * @note read the manpage for more info
+**/
 size_t
 libttaR_pcm_read(
 	i32 *const dest, const u8 *const src, size_t nsamples,
@@ -78,7 +90,15 @@ libttaR_pcm_read(
 
 //--------------------------------------------------------------------------//
 
-// returns nsamples
+/**@fn pcm_read_u8
+ * @brief reads a buffer of u8 PCM into a buffer of i32
+ *
+ * @param dest[out] destination buffer
+ * @param src[in] source buffer
+ * @param nsamples total number of PCM samples
+ *
+ * @return 'nsamples'
+**/
 NOINLINE size_t
 pcm_read_u8(i32 *const dest, const u8 *const src, size_t nsamples)
 /*@modifies	*dest@*/
@@ -90,7 +110,15 @@ pcm_read_u8(i32 *const dest, const u8 *const src, size_t nsamples)
 	return i;
 }
 
-// returns nsamples
+/**@fn pcm_read_i16le
+ * @brief reads a buffer of i16le PCM into a buffer of i32
+ *
+ * @param dest[out] destination buffer
+ * @param src[in] source buffer
+ * @param nsamples total number of PCM samples
+ *
+ * @return 'nsamples'
+**/
 NOINLINE size_t
 pcm_read_i16le(i32 *const dest, const u8 *const src, size_t nsamples)
 /*@modifies	*dest@*/
@@ -102,7 +130,15 @@ pcm_read_i16le(i32 *const dest, const u8 *const src, size_t nsamples)
 	return i;
 }
 
-// returns nsamples
+/**@fn pcm_read_i24le
+ * @brief reads a buffer of i24le PCM into a buffer of i32
+ *
+ * @param dest[out] destination buffer
+ * @param src[in] source buffer
+ * @param nsamples total number of PCM samples
+ *
+ * @return 'nsamples'
+**/
 NOINLINE size_t
 pcm_read_i24le(i32 *const dest, const u8 *const src, size_t nsamples)
 /*@modifies	*dest@*/
@@ -116,6 +152,13 @@ pcm_read_i24le(i32 *const dest, const u8 *const src, size_t nsamples)
 
 //--------------------------------------------------------------------------//
 
+/**@fn u8_to_i32h
+ * @brief converts a u8 PCM sample into an i32 sample
+ *
+ * @param x u8 sample
+ *
+ * @return i32 sample
+**/
 ALWAYS_INLINE CONST i32
 u8_to_i32h(register u8 x)
 /*@*/
@@ -123,6 +166,12 @@ u8_to_i32h(register u8 x)
 	return (i32) (x - 0x80u);
 }
 
+/**@fn pcm_read_i16le
+ * @brief reads a sample of i16le PCM into an i32 sample
+ *
+ * @param dest[out] destination sample
+ * @param src[in] source buffer
+**/
 ALWAYS_INLINE void
 read_i16le_to_i32h(register i32 *const dest, register const u8 *const src)
 /*@modifies	*dest@*/
@@ -132,6 +181,12 @@ read_i16le_to_i32h(register i32 *const dest, register const u8 *const src)
 	return;
 }
 
+/**@fn pcm_read_i24le
+ * @brief reads a sample of i24le PCM into an i32 sample
+ *
+ * @param dest[out] destination sample
+ * @param src[in] source buffer
+**/
 ALWAYS_INLINE void
 read_i24le_to_i32h(register i32 *const dest, register const u8 *const src)
 /*@modifies	*dest@*/

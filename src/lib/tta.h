@@ -112,6 +112,12 @@ ALWAYS_INLINE i32 tta_filter(
 
 //////////////////////////////////////////////////////////////////////////////
 
+/**@fn codec_init
+ * @brief initializes an array of 'struct Codec'
+ *
+ * @param codec[out] the struct array to initialize
+ * @param nchan number of audio channels
+**/
 INLINE void
 codec_init(
 	/*@out@*/ register struct Codec *const restrict codec,
@@ -130,6 +136,13 @@ codec_init(
 
 //--------------------------------------------------------------------------//
 
+/**@fn tta_predict_k
+ * @brief arg for tta_predict1
+ *
+ * @param samplebytes number of bytes per PCM sample
+ *
+ * @return arg 'k' for tta_predict1
+**/
 INLINE CONST u8
 tta_predict_k(register enum TTASampleBytes samplebytes)
 /*@*/
@@ -147,6 +160,13 @@ tta_predict_k(register enum TTASampleBytes samplebytes)
 	return r;
 }
 
+/**@fn tta_filter_round
+ * @brief arg for tta_filter
+ *
+ * @param samplebytes number of bytes per PCM sample
+ *
+ * @return arg 'round' for tta_filter
+**/
 INLINE CONST i32
 tta_filter_round(register enum TTASampleBytes samplebytes)
 /*@*/
@@ -164,6 +184,13 @@ tta_filter_round(register enum TTASampleBytes samplebytes)
 	return r;
 }
 
+/**@fn tta_filter_k
+ * @brief arg for tta_filter
+ *
+ * @param samplebytes number of bytes per PCM sample
+ *
+ * @return arg 'k' for tta_filter
+**/
 INLINE CONST u8
 tta_filter_k(register enum TTASampleBytes samplebytes)
 /*@*/
@@ -183,6 +210,14 @@ tta_filter_k(register enum TTASampleBytes samplebytes)
 
 //==========================================================================//
 
+/**@fn tta_predict1
+ * @brief fixed order 1 prediction
+ *
+ * @param x input value
+ * @param k how much to shift it by
+ *
+ * @return predicted value
+**/
 ALWAYS_INLINE CONST i32
 tta_predict1(register i32 x, register u8 k)
 /*@*/
@@ -190,6 +225,16 @@ tta_predict1(register i32 x, register u8 k)
 	return (i32) (((((u64fast) x) << k) - x) >> k);
 }
 
+/**@fn tta_postfilter_enc
+ * @brief interleave value for coding
+ *
+ * @param x input value
+ *
+ * @return interleaved value
+ *
+ * @note https://en.wikipedia.org/wiki/Golomb_coding#Overview#\
+ * Use%20with%20signed%20integers
+**/
 ALWAYS_INLINE CONST i32
 tta_postfilter_enc(register i32 x)
 /*@*/
@@ -197,6 +242,16 @@ tta_postfilter_enc(register i32 x)
 	return (x > 0 ? asl32(x, (u8) 1u) - 1 : asl32(-x, (u8) 1u));
 }
 
+/**@fn tta_prefilter_dec
+ * @brief deinterleave value for filtering
+ *
+ * @param x input value
+ *
+ * @return deinterleaved value
+ *
+ * @note https://en.wikipedia.org/wiki/Golomb_coding#Overview#\
+ * Use%20with%20signed%20integers
+**/
 ALWAYS_INLINE CONST i32
 tta_prefilter_dec(register i32 x)
 /*@*/
@@ -208,6 +263,17 @@ tta_prefilter_dec(register i32 x)
 
 //==========================================================================//
 
+/**@fn tta_filter
+ * @brief adaptive hybrid filter
+ *
+ * @param filter[in out] the filter data for the current channel
+ * @param round intial sum
+ * @param k amount to shift the 'sum' by before add/subtract-ing from 'value'
+ * @param value the input value to filter
+ * @param mode encode or decode
+ *
+ * @return
+**/
 ALWAYS_INLINE i32
 tta_filter(
 	register struct Filter *const restrict filter, register i32 round,

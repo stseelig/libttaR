@@ -38,6 +38,12 @@ struct LibTTAr_CodecState_User {
 
 //////////////////////////////////////////////////////////////////////////////
 
+/**@fn state_priv_init
+ * @brief initializes a private state struct
+ *
+ * @param priv[out] the private state struct
+ * @param nchan number of audio channels
+**/
 #undef priv
 INLINE void
 state_priv_init(
