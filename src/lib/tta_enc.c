@@ -237,7 +237,7 @@ libttaR_tta_encode(
  * @param bitcache[in out] the bitcache data
  * @param codec[in out] the codec struct array
  * @param ni32_target target number of src i32 to read
- * @param safe_target safe number of src i32 to read
+ * @param safe_target safe number of TTA bytes to write
  * @param predict_k arg 'k' for tta_predict1
  * @param filter_round arg 'round' for tta_filter
  * @param filter_k arg 'k' for tta_filter
@@ -321,7 +321,7 @@ tta_encode_mch(
  * @param bitcache[in out] the bitcache data
  * @param codec[in out] the codec struct
  * @param ni32_target target number of src i32 to read
- * @param safe_target safe number of src i32 to read
+ * @param safe_target safe number of TTA bytes to write
  * @param predict_k arg 'k' for tta_predict1
  * @param filter_round arg 'round' for tta_filter
  * @param filter_k arg 'k' for tta_filter
@@ -389,7 +389,7 @@ tta_encode_1ch(
  * @param bitcache[in out] the bitcache data
  * @param codec[in out] the codec struct array
  * @param ni32_target target number of src i32 to read
- * @param safe_target safe number of src i32 to read
+ * @param safe_target safe number of TTA bytes to write
  * @param predict_k arg 'k' for tta_predict1
  * @param filter_round arg 'round' for tta_filter
  * @param filter_k arg 'k' for tta_filter
