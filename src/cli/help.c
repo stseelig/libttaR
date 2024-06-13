@@ -147,6 +147,9 @@ OPT_COMMON_THREADS
 
 //////////////////////////////////////////////////////////////////////////////
 
+/**@fn errprint_help_main
+ * @brief print main's help to stderr
+**/
 void COLD
 errprint_help_main(void)
 /*@globals	fileSystem@*/
@@ -157,6 +160,9 @@ errprint_help_main(void)
 	return;
 }
 
+/**@fn errprint_help_mode_encode
+ * @brief print the mode encode's help to stderr
+**/
 void COLD
 errprint_help_mode_encode(void)
 /*@globals	fileSystem@*/
@@ -169,6 +175,9 @@ errprint_help_mode_encode(void)
 	return;
 }
 
+/**@fn errprint_help_mode_decode
+ * @brief print the mode decode's help to stderr
+**/
 void COLD
 errprint_help_mode_decode(void)
 /*@globals	fileSystem@*/
@@ -183,7 +192,12 @@ errprint_help_mode_decode(void)
 
 //--------------------------------------------------------------------------//
 
-
+/**@fn errprint_program_intro
+ * @brief print the version, copyright, and license info to stderr
+ *
+ * @param cli[in] the program's info struct
+ * @param lib[in] the library's info struct
+**/
 static void
 errprint_program_intro(
 	const struct LibTTAr_VersionInfo *cli,
@@ -203,6 +217,12 @@ errprint_program_intro(
 	return;
 }
 
+/**@fn errprint_ttaR_version
+ * @brief print the version info to stderr
+ *
+ * @param name[in] ttaR/libttaR
+ * @param info[in] version info struct
+**/
 static void
 errprint_ttaR_version(
 	const char *name, const struct LibTTAr_VersionInfo *info
@@ -224,6 +244,11 @@ errprint_ttaR_version(
 	(void) fputc('\n', stderr);
 }
 
+/**@fn errprint_libstr_copyrigth
+ * @brief print the copyright string(s) to stderr
+ *
+ * @param str[in] the copyright string
+**/
 static void
 errprint_libstr_copyright(const char *str)
 /*@globals	fileSystem@*/

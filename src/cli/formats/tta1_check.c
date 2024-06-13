@@ -20,11 +20,20 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-// returns FILECHECK_OK if file is a TTAv1
-// file should be at the appropriate offset before calling
+/**@fn filecheck_tta1
+ * @brief check if a file is TTA1
+ *
+ * @param fstat[out] the bloated file stats struct
+ * @param file[in] the input file
+ *
+ * @return FILECHECK_OK if file format is TTA1
+ *
+ * @pre 'file' should be at the appropriate offset before calling
+**/
 enum FileCheck
 filecheck_tta1(
-	struct FileStats *const restrict fstat,	FILE *const restrict file
+	/*@out@*/ struct FileStats *const restrict fstat,
+	FILE *const restrict file
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,

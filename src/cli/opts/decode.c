@@ -45,6 +45,9 @@ opt_decode_help(uint, char *,enum OptMode)
 
 //////////////////////////////////////////////////////////////////////////////
 
+/**@struct decode_optdict
+ * @brief the option dictionary for mode_decode
+**/
 /*@unchecked@*/
 const struct OptDict decode_optdict[] = {
 	{ "help"		, '?'	, opt_decode_help		},
@@ -64,6 +67,15 @@ const struct OptDict decode_optdict[] = {
 
 //////////////////////////////////////////////////////////////////////////////
 
+/**@fn opt_decode_format
+ * @brief sets the destination file format
+ *
+ * @param optind the index of g_argv
+ * @param opt[in] the name of the opt (for errors)
+ * @param mode short or long
+ *
+ * @return number of args used (long), or number of char's read (short)
+**/
 static int
 opt_decode_format(uint optind, char *opt, enum OptMode mode)
 /*@globals	fileSystem,
@@ -120,7 +132,16 @@ opt_decode_format(uint optind, char *opt, enum OptMode mode)
 	return r;
 }
 
-static int
+/**@fn opt_decode_help
+ * @brief print the mode_decode help to stderr and exit
+ *
+ * @param optind unused
+ * @param opt[in] unused
+ * @param mode unused
+ *
+ * @return does not return
+**/
+NORETURN int
 opt_decode_help(
 	/*@unused@*/ uint optind, /*@unused@*/ char *opt,
 	/*@unused@*/ enum OptMode mode

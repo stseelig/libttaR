@@ -32,11 +32,20 @@ static enum FileCheck filecheck_wav_find_subchunk(
 
 //////////////////////////////////////////////////////////////////////////////
 
-// returns FILECHECK_OK if file is a Microsoft RIFF/WAVE
-// file should be at the appropriate offset before calling
+/**@fn filecheck_wav
+ * @brief checks if a file is Microsoft RIFF/WAVE
+ *
+ * @param fstat[out] the bloated file stats struct
+ * @param file[in] the source file
+ *
+ * @return FILECHECK_OK if file format is Microsoft RIFF/WAVE
+ *
+ * @pre 'file' should be at the appropriate offset before calling
+**/
 enum FileCheck
 filecheck_wav(
-	struct FileStats *const restrict fstat, FILE *const restrict file
+	/*@out@*/ struct FileStats *const restrict fstat,
+	FILE *const restrict file
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -111,10 +120,20 @@ filecheck_wav(
 	return FILECHECK_OK;
 }
 
-// must have stream set past the subchunk header
+/**@fn filecheck_wav_read_subchunk_fmt
+ * @brief
+ *
+ * @param fstat[out] the bloated file stats struct
+ * @param file[in] the source file
+ *
+ * @return FILECHECK_OK if no errors
+ *
+ * @pre must have stream set past the subchunk header
+**/
 enum FileCheck
 filecheck_wav_read_subchunk_fmt(
-	struct FileStats *const restrict fstat, FILE *const restrict file
+	/*@out@*/ struct FileStats *const restrict fstat,
+	FILE *const restrict file
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -195,6 +214,16 @@ filecheck_wav_read_subchunk_fmt(
 
 //--------------------------------------------------------------------------//
 
+/**@fn filecheck_wav_find_subchunk
+ * @brief searches for a RIFF subchunk
+ *
+ * @param file[in] the source file
+ * @param target[in] ID of the subchunk we are searching for
+ *
+ * @return FILECHECK_OK if found
+ *
+ * @pre 'file' should be at the beginning of a subchunk before calling
+**/
 static enum FileCheck
 filecheck_wav_find_subchunk(
 	FILE *const restrict file, const char *const restrict target

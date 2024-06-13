@@ -129,6 +129,17 @@ static HOT void *encmt_encoder(struct MTArg_Encoder *const restrict arg)
 
 //////////////////////////////////////////////////////////////////////////////
 
+/**@fn encst_loop
+ * @brief the single-threaded encoder
+ *
+ * @param seektable[in] the seektable struct
+ * @param estat_out[out] the encode stats return struct
+ * @param fstat[in] the bloated file stats struct
+ * @param outfile[in] the destination file
+ * @param outfile_name[in] the name of the destination file (warnings/errors)
+ * @param infile[in] the source file
+ * @param infile_name[in] the name of the source file (warnings/errors)
+**/
 HOT void
 encst_loop(
 	struct SeekTable *const restrict seektable,
@@ -250,17 +261,26 @@ loop_entr:
 	return;
 }
 
-// threads layout:
-//
-//	- the io thread is created first, so it can get a head start on
-//  filling up the framequeue
-//
-//	- then (nthreads - 1u) coder threads are created
-//
-// 	- the main thread then becomes the last coder thread
-//
-//	- after the main thread finishes coding, the other coder threads are
-//  joined, and then finally, the io thread is joined
+/**@fn encmt_loop
+ * @brief the multi-threaded encodeer handler
+ *
+ * @param seektable[in] the seektable struct
+ * @param estat_out[out] the encode stats return struct
+ * @param fstat[in] the bloated file stats struct
+ * @param outfile[in] the destination file
+ * @param outfile_name[in] the name of the destination file (warnings/errors)
+ * @param infile[in] the source file
+ * @param infile_name[in] the name of the source file (warnings/errors)
+ * @param nthreads the number of encoder threads to use
+ *
+ * @note threads layout:
+ *     - the io thread is created first, so it can get a head start on filling
+ *   up the framequeue
+ *     - then (nthreads - 1u) coder threads are created
+ *     - the main thread then becomes the last coder thread
+ *     - after the main thread finishes coding, the other coder threads are
+ *   joined, and then finally, the io thread is joined
+**/
 void
 encmt_loop(
 	struct SeekTable *const restrict seektable,
@@ -352,6 +372,18 @@ encmt_loop(
 
 //==========================================================================//
 
+/**@fn dec_frame_encode
+ * @brief encode a TTA frame
+ *
+ * @param encbuf[in out] the encode buffers struct
+ * @param priv[out] the private state struct
+ * @param user_out[out] the user state return struct
+ * @param samplebytes number of bytes per PCM sample
+ * @param nchan number of audio channels
+ * @param ni32_perframe total number of i32 in a TTA frame
+ *
+ * @return what libttaR_tta_decode returned
+**/
 static void
 enc_frame_encode(
 	struct EncBuf *const restrict encbuf,
@@ -411,6 +443,18 @@ loop_entr:
 	return;
 }
 
+/**@fn enc_frame_write
+ * @brief write a TTA frame
+ *
+ * @param encbuf[in out] the encode buffers struct
+ * @param estat_out[out] the encode stats return struct
+ * @param user_in[in] the user state struct
+ * @param infile_name[in] the name of the source file (warnings/errors)
+ * @param outfile[in] the destination file
+ * @param outfile_name[in] the name of the destination file (warnings/errors)
+ * @param samplebytes number of bytes per PCM sample
+ * @param nchan number of audio channels
+**/
 static void
 enc_frame_write(
 	struct EncBuf *const restrict encbuf,
@@ -451,9 +495,7 @@ enc_frame_write(
 	user.nbytes_tta_total += sizeof user.crc;
 
 	// update seektable
-	seektable_add(
-		seektable, user.nbytes_tta_total, estat.nframes, outfile_name
-	);
+	seektable_add(seektable, user.nbytes_tta_total, outfile_name);
 
 	// update estat
 	estat.nframes          += (size_t) 1u;
@@ -465,7 +507,17 @@ enc_frame_write(
 	return;
 }
 
-// returns nmemb for fread
+/**@fn enc_readlen
+ * @brief calculates nmemb for fread for the next frame
+ *
+ * @param nsamples_perframe number of samples of 'nchan' channels per frame
+ * @param nsamples_flat_read total number of audio samples read
+ * @param decpcm_size total size of the decoded PCM in the source file
+ * @param samplebytes number of bytes per PCM sample
+ * @param nchan number of audio channels
+ *
+ * @return nmemb for fread
+**/
 static CONST size_t
 enc_readlen(
 	size_t nsamples_perframe, size_t nsamples_flat_read,
@@ -494,7 +546,17 @@ enc_readlen(
 	return r;
 }
 
-// returns nmemb of buf zero-padded
+/**@fn enc_frame_zeropad
+ * @brief zero-pads the PCM buffer (truncated last sample)
+ *
+ * @param pcmbuf[out] the PCM buffer
+ * @param nmemb_read total number of samples read into the PCM buffer
+ * @param diff number of channels in the last sample
+ * @param samplebytes number of bytes per PCM sample
+ * @param nchan number of audio channels
+ *
+ * @return the total number of samples in the PCM buffer zero-padded
+**/
 NOINLINE COLD uint
 enc_frame_zeropad(
 	u8 *const restrict pcmbuf, size_t nmemb_read, uint diff,
@@ -510,6 +572,13 @@ enc_frame_zeropad(
 
 //==========================================================================//
 
+/**@fn encmt_io
+ * @brief the I/O thread function for the multi-threaded encoder
+ *
+ * @param arg state for the thread
+ *
+ * @retval NULL
+**/
 /*@null@*/
 static HOT void *
 encmt_io(struct MTArg_EncIO *const restrict arg)
@@ -657,6 +726,13 @@ loop1_not_tiny:
 	return NULL;
 }
 
+/**@fn decmt_encoder
+ * @brief the encoder thread function for the multi-threaded encoder
+ *
+ * @param arg state for the thread
+ *
+ * @retval NULL
+**/
 /*@null@*/
 static HOT void *
 encmt_encoder(struct MTArg_Encoder *const restrict arg)

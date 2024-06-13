@@ -121,6 +121,17 @@ static HOT void *decmt_decoder(struct MTArg_Decoder *const restrict arg)
 
 //////////////////////////////////////////////////////////////////////////////
 
+/**@fn decst_loop
+ * @brief the single-threaded decoder
+ *
+ * @param seektable[in] the seektable struct
+ * @param dstat_out[out] the decode stats return struct
+ * @param fstat[in] the bloated file stats struct
+ * @param outfile[in] the destination file
+ * @param outfile_name[in] the name of the destination file (warnings/errors)
+ * @param infile[in] the source file
+ * @param infile_name[in] the name of the source file (warnings/errors)
+**/
 HOT void
 decst_loop(
 	const struct SeekTable *const restrict seektable,
@@ -258,7 +269,20 @@ loop_entr:
 	return;
 }
 
-// see encmt_loop in mode_encode_loop.c for a comment on the threads layout
+/**@fn decmt_loop
+ * @brief the multi-threaded decoder handler
+ *
+ * @param seektable[in] the seektable struct
+ * @param dstat_out[out] the decode stats return struct
+ * @param fstat[in] the bloated file stats struct
+ * @param outfile[in] the destination file
+ * @param outfile_name[in] the name of the destination file (warnings/errors)
+ * @param infile[in] the source file
+ * @param infile_name[in] the name of the source file (warnings/errors)
+ * @param nthreads the number of encoder threads to use
+ *
+ * @note see encmt_loop in mode_encode_loop.c for info on the threads layout
+**/
 void
 decmt_loop(
 	const struct SeekTable *const restrict seektable,
@@ -349,7 +373,20 @@ decmt_loop(
 
 //==========================================================================//
 
-// returns what libttaR_tta_decode returned
+/**@fn dec_frame_decode
+ * @brief decode a TTA frame
+ *
+ * @param decbuf[in out] the decode buffers struct
+ * @param priv[out] the private state struct
+ * @param user_out[out] the user state return struct
+ * @param samplebytes number of bytes per PCM sample
+ * @param nchan number of audio channels
+ * @param ni32_perframe total number of i32 in a TTA frame
+ * @param nbytes_tta_perframe number of TTA bytes in the current frame
+ * @param nsamples_flat_2pad[out] number of i32 samples to zero-pad
+ *
+ * @return what libttaR_tta_decode returned
+**/
 static int
 dec_frame_decode(
 	struct DecBuf *const restrict decbuf,
@@ -416,6 +453,22 @@ loop_entr:
 	return r;
 }
 
+/**@fn dec_frame_write
+ * @brief write a PCM frame
+ *
+ * @param decbuf[in out] the decode buffers struct
+ * @param dstat_out[out] the decode stats return struct
+ * @param user_in[in] the user state struct
+ * @param infile_name[in] the name of the source file (warnings/errors)
+ * @param outfile[in] the destination file
+ * @param outfile_name[in] the name of the destination file (warnings/errors)
+ * @param samplebytes number of bytes per PCM sample
+ * @param nchan number of audio channels
+ * @param crc_read CRC from source file (little-endian)
+ * @param dec_retval return value from dec_frame_decode
+ * @param nsamples_flat_2pad number of i32 samples to zero-pad
+ * @param nbytes_tta_perframe number of TTA bytes in the current frame
+**/
 static void
 dec_frame_write(
 	struct DecBuf *const restrict decbuf,
@@ -423,9 +476,9 @@ dec_frame_write(
 	struct LibTTAr_CodecState_User *const restrict user_in,
 	const char *const restrict infile_name,
 	FILE *const restrict outfile, const char *const restrict outfile_name,
-	enum TTASampleBytes samplebytes, uint nchan, u32 crc_read,
-	ichar dec_retval, size_t nsamples_flat_2pad,
-	size_t nbytes_tta_perframe
+	enum TTASampleBytes samplebytes, uint nchan,
+	u32 crc_read /*little-endian*/, ichar dec_retval,
+	size_t nsamples_flat_2pad, size_t nbytes_tta_perframe
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -486,7 +539,17 @@ dec_frame_write(
 	return;
 }
 
-// returns ni32_perframe
+/**@fn dec_ni32_perframe
+ * @brief calculates the total number of i32 in the current TTA frame
+ *
+ * @param nsamples_dec total number of samples of 'nchan' channels decodes so
+ *   far
+ * @param nsamples_enc total number of samples of 'nchan' channels encoded
+ * @param nsamples_perframe number of samples of 'nchan' channels per frame
+ * @param nchan number of audio channels
+ *
+ * @return the total number of i32 per TTA frame
+**/
 static CONST size_t
 dec_ni32_perframe(
 	size_t nsamples_dec, size_t nsamples_enc, size_t nsamples_perframe,
@@ -500,6 +563,14 @@ dec_ni32_perframe(
 	else {	return (size_t) (nsamples_perframe * nchan); }
 }
 
+/**@fn dec_frame_zeropad
+ * @brief zero-pads the PCM buffer (truncated last sample)
+ *
+ * @param pcmbuf[out] the PCM buffer
+ * @param pcmbuf_nsamples_flat to number of samples in the PCM buffer
+ * @param nsamples_flat_2pad total number of samples to pad
+ * @param samplebytes number of bytes per PCM sample
+**/
 NOINLINE COLD void
 dec_frame_zeropad(
 	u8 *const restrict pcmbuf, size_t pcmbuf_nsamples_flat,
@@ -517,6 +588,13 @@ dec_frame_zeropad(
 
 //==========================================================================//
 
+/**@fn decmt_io
+ * @brief the I/O thread function for the multi-threaded decoder
+ *
+ * @param arg state for the thread
+ *
+ * @retval NULL
+**/
 /*@null@*/
 static HOT void *
 decmt_io(struct MTArg_DecIO *const restrict arg)
@@ -697,6 +775,13 @@ loop1_not_tiny:
 	return NULL;
 }
 
+/**@fn decmt_decoder
+ * @brief the decoder thread function for the multi-threaded decoder
+ *
+ * @param arg state for the thread
+ *
+ * @retval NULL
+**/
 /*@null@*/
 static HOT void *
 decmt_decoder(struct MTArg_Decoder *const restrict arg)

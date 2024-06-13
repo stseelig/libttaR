@@ -32,11 +32,20 @@ static enum FileCheck filecheck_w64_find_subchunk(
 
 //////////////////////////////////////////////////////////////////////////////
 
-// returns FILECHECK_OK if file is a Sony Wave64
-// file should be at the appropriate offset before calling
+/**@fn filecheck_w64
+ * @brief checks if a file is a Sony Wave64
+ *
+ * @param fstat[out] the bloated file stats struct
+ * @param file[in] the source file
+ *
+ * @return FILECHECK_OK if file format is Sony Wave64
+ *
+ * @pre 'file' should be at the appropriate offset before calling
+**/
 enum FileCheck
 filecheck_w64(
-	struct FileStats *const restrict fstat, FILE *const restrict file
+	/*@out@*/ struct FileStats *const restrict fstat,
+	FILE *const restrict file
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -120,6 +129,16 @@ filecheck_w64(
 
 //--------------------------------------------------------------------------//
 
+/**@fn filecheck_w64_find_subchunk
+ * @brief searches for a RIFF64 subchunk
+ *
+ * @param file[in] the source file
+ * @param target[in] ID of the subchunk we are searching for
+ *
+ * @return FILECHECK_OK if found
+ *
+ * @pre 'file' should be at the beginning of a subchunk before calling
+**/
 static enum FileCheck
 filecheck_w64_find_subchunk(
 	FILE *const restrict file, const struct Guid128 *const restrict target

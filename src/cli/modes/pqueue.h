@@ -29,9 +29,16 @@ struct PQueue {
 
 //////////////////////////////////////////////////////////////////////////////
 
+/**@fn pqueue_init
+ * @brief initializes a pseudo-queue struct
+ *
+ * @param q[out] the queue
+ * @param limit the maximum queue length + 1u
+**/
 INLINE void
 pqueue_init(
-	register struct PQueue *const restrict q, register uint limit
+	/*@out@*/ register struct PQueue *const restrict q,
+	register uint limit
 )
 /*@modifies	q->limit,
 		q->next
@@ -44,6 +51,13 @@ pqueue_init(
 	return;
 }
 
+/**@fn pdequeue
+ * @brief pseudo-dequeue
+ *
+ * @param q[in out] the queue
+ *
+ * @return the next queue id
+**/
 ALWAYS_INLINE uint
 pdequeue(register struct PQueue *const restrict q)
 /*@modifies	q->next@*/

@@ -26,8 +26,17 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-// returns FILECHECK_OK if the seektable is good
-// file should be at the appropriate offset before calling
+/**@fn filecheck_tta_seektable
+ * @brief reads a seektable from a TTA file into a seektable struct
+ *
+ * @param st[out] the seektable struct
+ * @param nframes number of frames in the seektable
+ * @param file[in] the source file
+ *
+ * @return FILECHECK_OK if the seektable is good
+ *
+ * @pre 'file' should be at the appropriate offset before calling
+**/
 enum FileCheck
 filecheck_tta_seektable(
 	/*@out@*/ struct SeekTable *const restrict st, size_t nframes,

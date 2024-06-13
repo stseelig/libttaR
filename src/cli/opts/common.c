@@ -24,6 +24,15 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
+/**@fn opt_common_single_threaded
+ * @brief enables single-threaded coding
+ *
+ * @param optind unused
+ * @param opt[in] unused
+ * @param mode unused
+ *
+ * @return 0
+**/
 int
 opt_common_single_threaded(
 	/*@unused@*/ uint optind, /*@unused@*/ char *opt,
@@ -41,6 +50,15 @@ opt_common_single_threaded(
 	return 0;
 }
 
+/**@fn opt_common_multi_threaded
+ * @brief enables multi-threaded coding
+ *
+ * @param optind unused
+ * @param opt[in] unused
+ * @param mode unused
+ *
+ * @return 0
+**/
 int
 opt_common_multi_threaded(
 	/*@unused@*/ uint optind, /*@unused@*/ char *opt,
@@ -58,6 +76,15 @@ opt_common_multi_threaded(
 	return 0;
 }
 
+/**@fn opt_common_delete_src
+ * @brief enables the delete source files flag
+ *
+ * @param optind unused
+ * @param opt[in] unused
+ * @param mode unused
+ *
+ * @return 0
+**/
 int
 opt_common_delete_src(
 	/*@unused@*/ uint optind, /*@unused@*/ char *opt,
@@ -75,6 +102,15 @@ opt_common_delete_src(
 	return 0;
 }
 
+/**@fn opt_common_threads
+ * @brief sets the number of coder threads to use
+ *
+ * @param optind the index of g_argv
+ * @param opt[in] the name of the opt (for errors)
+ * @param mode short or long
+ *
+ * @return number of args used (long), or number of char's read (short)
+**/
 int
 opt_common_threads(uint optind, char *opt, enum OptMode mode)
 /*@globals	fileSystem,
@@ -136,6 +172,15 @@ opt_common_threads(uint optind, char *opt, enum OptMode mode)
 	return r;
 }
 
+/**@fn opt_common_outfile
+ * @brief sets the destination filename or directory
+ *
+ * @param optind the index of g_argv
+ * @param opt[in] the name of the opt (for errors)
+ * @param mode short or long
+ *
+ * @return number of args used (long), or number of char's read (short)
+**/
 int
 opt_common_outfile(uint optind, char *opt, enum OptMode mode)
 /*@globals	fileSystem,
@@ -184,6 +229,15 @@ opt_common_outfile(uint optind, char *opt, enum OptMode mode)
 	return r;
 }
 
+/**@fn opt_common_quiet
+ * @brief sets only warnings and errors will to be printed
+ *
+ * @param optind unused
+ * @param opt[in] unused
+ * @param mode unused
+ *
+ * @return 0
+**/
 int
 opt_common_quiet(
 	/*@unused@*/ uint optind, /*@unused@*/ char *opt,

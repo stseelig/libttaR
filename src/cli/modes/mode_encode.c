@@ -92,6 +92,13 @@ static void enc_loop(const struct OpenedFilesMember *const restrict)
 
 //////////////////////////////////////////////////////////////////////////////
 
+/**@fn mode_encode
+ * @brief mode for encoding TTA
+ *
+ * @param optind argv index
+ *
+ * @return the number of warnings/errors
+**/
 int
 mode_encode(uint optind)
 /*@globals	fileSystem,
@@ -181,6 +188,11 @@ mode_encode(uint optind)
 	return (int) g_nwarnings;
 }
 
+/**@fn enc_loop
+ * @brief prepares for and calls the encode loop function
+ *
+ * @param ofm[in] the source file struct
+**/
 static void
 enc_loop(const struct OpenedFilesMember *const restrict ofm)
 /*@globals	fileSystem,

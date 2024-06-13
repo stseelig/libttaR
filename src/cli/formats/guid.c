@@ -18,11 +18,17 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-// formats buf to:
-//	00000000-1111-2222-3333-444444444444
-// only used for an error message
-// buflen should be GUID128_BUFLEN
-// returns buf
+/**@fn guid128_format
+ * @brief prints a GUID to a buffer: 00000000-1111-2222-3333-444444444444
+ *
+ * @param buf[out] the destination buffer
+ * @param buflen the size of the destination buffer (GUID128_BUFLEN)
+ * @param guid[in] the GUID to format
+ *
+ * @return 'buf'
+ *
+ * @note only used for an error message
+**/
 COLD char *
 guid128_format(
 	/*@returned@*/ /*@out@*/ char *const restrict buf, size_t buflen,

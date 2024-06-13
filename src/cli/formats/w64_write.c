@@ -25,7 +25,14 @@
 
 /////////////////////////////////////////////////////////////////////////////
 
-// MAYBE write preliminary header instead
+/**@fn prewrite_w64_header
+ * @brief reserves space for the Sony Wave64 header
+ *
+ * @param outfile[in] the destination file
+ * @param outfile_name[in] the name of the destination file (errors)
+ *
+ * @note MAYBE write a preliminary header instead
+**/
 void
 prewrite_w64_header(FILE *const restrict outfile, const char *outfile_name)
 /*@globals	fileSystem@*/
@@ -56,7 +63,16 @@ prewrite_w64_header(FILE *const restrict outfile, const char *outfile_name)
 	return;
 }
 
-// out stream should be at correct position before calling
+/**@fn write_w64_header
+ * @brief write a Sony Wave64 header
+ *
+ * @param outfile[in] the destination file
+ * @param data_size size of the data chunk
+ * @param fstat[in] the bloated file stats struct
+ * @param outfile_name[in] the name of the destination file (errors)
+ *
+ * @pre outfile should be at correct offset before calling
+**/
 void
 write_w64_header(
 	FILE *const restrict outfile, size_t data_size,

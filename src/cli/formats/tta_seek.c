@@ -25,6 +25,12 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
+/**@fn seektable_init
+ * @brief initializes a seektable
+ *
+ * @param st[out] the seektable struct
+ * @param nframes number of frames in the seektable
+**/
 void
 seektable_init(/*@out@*/ struct SeekTable *const restrict st, size_t nframes)
 /*@globals	fileSystem,
@@ -46,10 +52,18 @@ seektable_init(/*@out@*/ struct SeekTable *const restrict st, size_t nframes)
 	return;
 }
 
-// in encode loop
+/**@fn seektable_init
+ * @brief add an entry to a seektable
+ *
+ * @param st[in out] the seektable struct
+ * @param value new table entry
+ * @param outfile_name[in] destination file name (warnings/errors)
+ *
+ * @note in encode loop
+**/
 HOT void
 seektable_add(
-	struct SeekTable *const restrict st, size_t value, size_t framenum,
+	struct SeekTable *const restrict st, size_t value,
 	const char *outfile_name
 )
 /*@globals	fileSystem,
@@ -73,7 +87,7 @@ seektable_add(
 
 	if UNLIKELY ( value > (size_t) UINT32_MAX ){
 		warning_tta("%s: frame %zu: seektable entry overflow",
-			outfile_name, framenum
+			outfile_name, st->nmemb
 		);
 	}
 	st->table[st->nmemb] = htole32((u32) value);
@@ -81,6 +95,11 @@ seektable_add(
 	return;
 }
 
+/**@fn seektable_init
+ * @brief frees any allocated pointers in a seektable
+ *
+ * @param st[in] the seektable struct
+**/
 void
 seektable_free(struct SeekTable *const restrict st)
 /*@globals	internalState@*/

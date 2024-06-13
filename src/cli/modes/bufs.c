@@ -33,10 +33,20 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-// returns (ni32_samplebuf_len * nchan) (for sanity check)
+/**@fn encbuf_init
+ * @brief initializes an encbuf
+ *
+ * @param eb[out] the encode buffers struct
+ * @param ni32_len length of the i32buf
+ * @param ttabuf_len size of the ttabuf
+ * @param nchan number of audio channels
+ * @param samplebytes number of bytes per PCM sample
+ *
+ * @return (ni32_len * nchan) for sanity check
+**/
 size_t
 encbuf_init(
-	/*@out@*/ struct EncBuf *const restrict eb, size_t ni32_samplebuf_len,
+	/*@out@*/ struct EncBuf *const restrict eb, size_t ni32_len,
 	size_t ttabuf_len, uint nchan, enum TTASampleBytes samplebytes
 )
 /*@globals	fileSystem,
@@ -50,7 +60,7 @@ encbuf_init(
 		eb->ttabuf
 @*/
 {
-	const size_t r = (size_t) (ni32_samplebuf_len * nchan);
+	const size_t r = (size_t) (ni32_len * nchan);
 	const size_t pcmbuf_size = (size_t) (r * samplebytes);
 	union {	uintptr_t p; } t;
 
@@ -78,9 +88,16 @@ encbuf_init(
 	return r;
 }
 
-// in encode loop
+/**@fn encbuf_adjust
+ * @brief adjust an encbuf
+ *
+ * @param eb[in out] the encode buffers struct
+ * @param add_len additional size for the ttabuf
+ *
+ * @note in encode loop
+**/
 HOT void
-encbuf_adjust(struct EncBuf *const restrict eb, size_t samplebuf_len)
+encbuf_adjust(struct EncBuf *const restrict eb, size_t add_len)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -91,7 +108,7 @@ encbuf_adjust(struct EncBuf *const restrict eb, size_t samplebuf_len)
 @*/
 {
 	// the safety-margin should have already been added by here
-	eb->ttabuf_len += samplebuf_len;
+	eb->ttabuf_len += add_len;
 	assert(eb->ttabuf_len != 0);
 
 	eb->ttabuf = realloc(eb->ttabuf, eb->ttabuf_len);
@@ -103,6 +120,11 @@ encbuf_adjust(struct EncBuf *const restrict eb, size_t samplebuf_len)
 	return;
 }
 
+/**@fn encbuf_free
+ * @brief free any allocated pointers in an encbuf
+ *
+ * @param eb[in] the encode buffers struct
+**/
 void
 encbuf_free(struct EncBuf *const restrict eb)
 /*@globals	internalState@*/
@@ -120,10 +142,19 @@ encbuf_free(struct EncBuf *const restrict eb)
 
 //==========================================================================//
 
-// returns (ni32_samplebuf_len * nchan) (for sanity check)
+/**@fn decbuf_init
+ * @brief initializes a decbuf
+ *
+ * @param db[out] the decode buffers struct
+ * @param ni32_len length of the i32buf
+ * @param ttabuf_len size of the ttabuf
+ * @param nchan number of audio channels
+ *
+ * @return (ni32_len * nchan) for sanity check
+**/
 size_t
 decbuf_init(
-	/*@out@*/ struct DecBuf *const restrict db, size_t ni32_samplebuf_len,
+	/*@out@*/ struct DecBuf *const restrict db, size_t ni32_len,
 	size_t ttabuf_len, uint nchan
 )
 /*@globals	fileSystem,
@@ -137,7 +168,7 @@ decbuf_init(
 		db->ttabuf
 @*/
 {
-	const size_t r = (size_t) (ni32_samplebuf_len * nchan);
+	const size_t r = (size_t) (ni32_len * nchan);
 
 	db->i32buf_len = r;
 	assert(db->i32buf_len != 0);
@@ -161,7 +192,15 @@ decbuf_init(
 	return r;
 }
 
-// in decode loop
+/**@fn decbuf_check_adjust
+ * @brief check and maybe adjust a decbuf
+ *
+ * @param db[in out] the decode buffers struct
+ * @param newsize new ttabuf size
+ * @param nchan number of audio channels
+ *
+ * @note in decode loop
+**/
 HOT void
 decbuf_check_adjust(
 	struct DecBuf *const restrict db, size_t newsize, uint nchan
@@ -191,6 +230,11 @@ decbuf_check_adjust(
 	return;
 }
 
+/**@fn decbuf_free
+ * @brief free any allocated pointers in a decbuf
+ *
+ * @param db[in] the decode buffers struct
+**/
 void
 decbuf_free(struct DecBuf *const restrict db)
 /*@globals	internalState@*/

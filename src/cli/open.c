@@ -78,6 +78,15 @@ outfile_name_fmt(
 
 //////////////////////////////////////////////////////////////////////////////
 
+/**@fn fopen_check
+ * @brief open a file with error checking
+ *
+ * @param pathname[in] the name of the file
+ * @param mode[in] the name of the mode
+ *
+ * @return the opened file
+ * @retval NULL error
+**/
 /*@dependent@*/ /*@null@*/
 FILE
 *fopen_check(const char *pathname, const char *mode, enum Fatality fatality)
@@ -101,8 +110,12 @@ try_again:
 
 //--------------------------------------------------------------------------//
 
-// true:  continue
-// false: fallthrough
+/**@fn try_fdlimit
+ * @brief try to increase the file desrciptor limit if we have not already
+ *
+ * @retval true try again
+ * @retval false fallthrough
+**/
 static bool
 try_fdlimit(void)
 /*@globals	fileSystem,
@@ -122,7 +135,9 @@ try_fdlimit(void)
 	return false;
 }
 
-// attempt to increase the open-file limit
+/**@fn fdlimit_check
+ * @brief attempt to increase the open-file limit with error checking
+**/
 static void
 fdlimit_check(void)
 /*@globals	fileSystem,
@@ -152,7 +167,14 @@ fdlimit_check(void)
 
 //==========================================================================//
 
-// returns errno, if any
+/**@fn openedfiles_add
+ * @brief add a file to the opened files struct array
+ *
+ * @param of[in out] the opened files struct array
+ * @param [in] the name of the opened file (from argv)
+ *
+ * @return 0 on success, else errno
+**/
 int
 openedfiles_add(
 	struct OpenedFiles *const restrict of,
@@ -196,6 +218,10 @@ openedfiles_add(
 	return r;
 }
 
+/**@fn openedfiles_close_free
+ * @brief closes any files and frees any allocated pointer in the opened files
+ *   array struct
+**/
 void
 openedfiles_close_free(struct OpenedFiles *const restrict of)
 /*@globals	fileSystem@*/
@@ -218,7 +244,14 @@ openedfiles_close_free(struct OpenedFiles *const restrict of)
 
 //==========================================================================//
 
-// returns 0 on success, or number of errors
+/**@fn filestats_get
+ * @brief gets/set the file stats of an opened file
+ *
+ * @param ofm[in out] the opened files struct array member
+ * @param mode encode or decode
+ *
+ * @return 0 on success, else number of errors
+**/
 uint
 filestats_get(
 	struct OpenedFilesMember *const restrict ofm,
@@ -277,10 +310,21 @@ filestats_get(
 
 //--------------------------------------------------------------------------//
 
+/**@fn filecheck_codecfmt
+ * @brief checks if the 'file' is a supported format
+ *
+ * @param fstat[out] the bloated file stats struct
+ * @param file[in] the source file
+ * @param filename[in] the name of the source file (errors)
+ * @param mode encode or decode
+ *
+ * @return FILECHECK_OK on success
+**/
 static enum FileCheck
 filecheck_codecfmt(
-	struct FileStats *const restrict fstat, FILE *const restrict file,
-	const char *const restrict filename, const enum ProgramMode mode
+	/*@out@*/ struct FileStats *const restrict fstat,
+	FILE *const restrict file, const char *const restrict filename,
+	const enum ProgramMode mode
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -323,13 +367,20 @@ filecheck_codecfmt(
 	){
 		t.fc = FILECHECK_UNSUPPORTED_RESOLUTION;
 end_error:
-		error_filecheck(t.fc, fstat, filename, errno);
+		error_filecheck(t.fc, errno, fstat, filename);
 	}
 	return t.fc;
 }
 
 //==========================================================================//
 
+/**@fn get_encfmt_sfx
+ * @brief gets the suffix string for an encoded format
+ *
+ * @param fmt the format
+ *
+ * @return pointer to the suffix string
+**/
 /*@observer@*/
 CONST const char *
 get_encfmt_sfx(enum EncFormat fmt)
@@ -340,6 +391,13 @@ get_encfmt_sfx(enum EncFormat fmt)
 	return ext[fmt];
 }
 
+/**@fn get_decfmt_sfx
+ * @brief gets the suffix string for an decoded format
+ *
+ * @param fmt the format
+ *
+ * @return pointer to the suffix string
+**/
 /*@observer@*/
 CONST const char *
 get_decfmt_sfx(enum DecFormat fmt)
@@ -350,6 +408,15 @@ get_decfmt_sfx(enum DecFormat fmt)
 	return ext[fmt];
 }
 
+/**@fn get_outfile_name
+ * @brief constructs the destination file name from the parameters and some
+ *   global flags
+ *
+ * @param infile_name[in] the name of the source file
+ * @param sfx[in] the suffix/file-extension string
+ *
+ * @return the destination file name/path string
+**/
 /*@only@*/
 char *
 get_outfile_name(const char *infile_name, const char *sfx)
@@ -385,6 +452,15 @@ get_outfile_name(const char *infile_name, const char *sfx)
 
 //--------------------------------------------------------------------------//
 
+/**@fn outfile_name_fmt
+ * @brief constructs the destination file name from the parameters
+ *
+ * @param outfile_dir[in] the name of the destination directory or NULL
+ * @param infile_name[in] the name of the source file
+ * @param sfx[in] the suffix/file-extension string or NULL
+ *
+ * @return the destination file name/path string
+**/
 /*@only@*/
 static char *
 outfile_name_fmt(

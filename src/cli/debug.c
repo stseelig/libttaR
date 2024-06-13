@@ -42,6 +42,13 @@ NOINLINE COLD void print_error_tta(
 
 //////////////////////////////////////////////////////////////////////////////
 
+/**@fn int_nwarnings
+ * @brief increment the number of error/warnings variable
+ *
+ * @return value of g_nwarnings
+ *
+ * @note g_nwarnings is the return value of the program
+**/
 static int inc_nwarnings(void)
 /*@globals	g_nwarnings@*/
 /*@modifies	g_nwarnings@*/
@@ -54,6 +61,13 @@ static int inc_nwarnings(void)
 
 //==========================================================================//
 
+/**@fn error_sys
+ * @brief print a fatal system error
+ *
+ * @param errnum error number
+ * @param name[in] function name
+ * @param extra[in] any extra info, probably a filename
+**/
 COLD NORETURN void
 error_sys(
 	int errnum, const char *const name,
@@ -70,6 +84,13 @@ error_sys(
 	UNREACHABLE;
 }
 
+/**@fn error_sys_nf
+ * @brief print a non-fatal system error
+ *
+ * @param errnum error number
+ * @param name[in] function name
+ * @param extra[in] any extra info, probably a filename
+**/
 COLD void
 error_sys_nf(
 	int errnum, const char *const name,
@@ -85,6 +106,14 @@ error_sys_nf(
 	print_error_sys(errnum, name, extra, NONFATAL);
 }
 
+/**@fn print_error_sys
+ * @brief print a system error
+ *
+ * @param errnum error number
+ * @param name[in] function name
+ * @param extra[in] any extra info, probably a filename
+ * @param fatality fatal or non-fatal
+**/
 COLD void
 print_error_sys(
 	int errnum, const char *const name,
@@ -124,6 +153,12 @@ print_error_sys(
 
 //--------------------------------------------------------------------------//
 
+/**@fn error_tta
+ * @brief print a fatal program error
+ *
+ * @param format[in] formatted error string
+ * @param ...[in] args for 'format'
+**/
 COLD NORETURN void error_tta(const char *const format, ...)
 /*@globals	fileSystem,
 		g_nwarnings
@@ -138,6 +173,12 @@ COLD NORETURN void error_tta(const char *const format, ...)
 	UNREACHABLE;
 }
 
+/**@fn error_tta_nf
+ * @brief print a non-fatal program error
+ *
+ * @param format[in] formatted error string
+ * @param ...[in] args for 'format'
+**/
 COLD void error_tta_nf(const char *const format, ...)
 /*@globals	fileSystem,
 		g_nwarnings
@@ -153,6 +194,13 @@ COLD void error_tta_nf(const char *const format, ...)
 	return;
 }
 
+/**@fn print_error_tta
+ * @brief print a non-fatal program error
+ *
+ * @param fatality fatal or non-fatal
+ * @param format[in] formatted error string
+ * @param args[in] args for 'format'
+**/
 NOINLINE COLD void
 print_error_tta(
 	const enum Fatality fatality, const char *const format, va_list args
@@ -185,6 +233,12 @@ print_error_tta(
 	else {	return;	}
 }
 
+/**@fn print_error_tta
+ * @brief print a non-fatal program warning
+ *
+ * @param format[in] formatted error string
+ * @param ...[in] args for 'format'
+**/
 COLD void
 warning_tta(const char *const format, ...)
 /*@globals	fileSystem,
@@ -217,10 +271,22 @@ warning_tta(const char *const format, ...)
 
 //--------------------------------------------------------------------------//
 
+/**@fn error_filecheck
+ * @brief print a non-fatal filecheck error
+ *
+ * @param fc the error type
+ * @param errnum error number
+ * @param fstat[in] the bloated file stats struct
+ * @param filename[in] the name of the source file
+ *
+ * @note These eventually lead to a fatal error. I just wanted to print them
+ *   all out before exiting.
+**/
 COLD void
 error_filecheck(
-	enum FileCheck fc, const struct FileStats *const restrict fstat,
-	const char *const restrict filename, int errnum
+	enum FileCheck fc, int errnum,
+	const struct FileStats *const restrict fstat,
+	const char *const restrict filename
 )
 /*@globals	fileSystem,
 		g_nwarnings

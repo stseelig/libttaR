@@ -59,7 +59,7 @@ extern int mode_decode(uint)
 
 //--------------------------------------------------------------------------//
 
-static COLD NORETURN void sighand(enum HandledSignals)
+NORETURN COLD void sighand(enum HandledSignals)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -70,6 +70,9 @@ static COLD NORETURN void sighand(enum HandledSignals)
 
 //////////////////////////////////////////////////////////////////////////////
 
+/**@struct ttaR_info
+ * @brief program version, copyright, and license info
+**/
 /*@unchecked@*/
 const struct LibTTAr_VersionInfo ttaR_info = {
 	TTAr_VERSION_NUM,
@@ -84,15 +87,27 @@ const struct LibTTAr_VersionInfo ttaR_info = {
 
 //--------------------------------------------------------------------------//
 
+/**@var g_argc
+ * @brief copy of argc from main
+**/
 /*@checkmod@*/
 uint g_argc;
 
+/**@var g_argv
+ * @brief copy of argv from main
+**/
 /*@checkmod@*/ /*@temp@*/
 char **g_argv;
 
+/**@var g_nwarnings
+ * @brief number of warnings and errors; exit status
+**/
 /*@checkmod@*/
 u8 g_nwarnings;
 
+/**@struct g_flag
+ * @brief global flags struct
+**/
 /*@-fullinitblock@*/
 /*@checkmod@*/
 struct GlobalFlags g_flag = {
@@ -101,14 +116,29 @@ struct GlobalFlags g_flag = {
 };
 /*@=fullinitblock@*/
 
+/**@var g_nthreads
+ * @brief number of coder threads to use
+**/
 /*@checkmod@*/
 uint g_nthreads = 0;
 
+/**@var g_rm_on_sigint
+ * @brief name of the currently opened destination file for removal on a
+ *   handled signal
+**/
 /*@checkmod@*/ /*@dependent@*/ /*@null@*/
 char *g_rm_on_sigint = NULL;
 
 //////////////////////////////////////////////////////////////////////////////
 
+/**@fn main
+ * @brief read a book
+ *
+ * @param argc argument count
+ * @param argv[in] argument vector
+ *
+ * @return program exit status; number of warnings and errors
+**/
 int
 main(int argc, /*@dependent@*/ char **argv)
 /*@globals	fileSystem,
@@ -166,8 +196,14 @@ print_main_help:
 
 //--------------------------------------------------------------------------//
 
-// only async-signal-safe functions should be used ($ man signal-safe)
-static COLD NORETURN void
+/**@fn sighand
+ * @brief signal handler
+ *
+ * @param signum signal number
+ *
+ * @note only async-signal-safe functions should be used ($ man signal-safe)
+**/
+NORETURN COLD void
 sighand(enum HandledSignals signum)
 /*@globals	fileSystem,
 		internalState

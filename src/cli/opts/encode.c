@@ -43,6 +43,9 @@ static int opt_encode_help(uint, char *, enum OptMode)
 
 //////////////////////////////////////////////////////////////////////////////
 
+/**@struct encode_optdict
+ * @brief the option dictionary for mode_encode
+**/
 /*@unchecked@*/
 const struct OptDict encode_optdict[] = {
 	{ "help"		, '?'	, opt_encode_help		},
@@ -62,6 +65,9 @@ const struct OptDict encode_optdict[] = {
 
 //==========================================================================//
 
+/**@struct f_rpstat
+ * @brief the compact file stat struct for encoding raw PCM
+**/
 static struct {
 	enum DecFormat		decfmt:8u;
 	enum IntType		inttype:8u;
@@ -73,8 +79,13 @@ static struct {
 
 //////////////////////////////////////////////////////////////////////////////
 
+/**@fn rawpcm_statcopy
+ * @brief copies f_rpstat to an fstat sruct
+ *
+ * @param fstat[out] the bloated file stats struct
+**/
 void
-rawpcm_statcopy(struct FileStats *const restrict fstat)
+rawpcm_statcopy(/*@out@*/ struct FileStats *const restrict fstat)
 /*@modifies	*fstat@*/
 {
 	fstat->decfmt		= f_rpstat.decfmt;
@@ -88,7 +99,17 @@ rawpcm_statcopy(struct FileStats *const restrict fstat)
 
 //==========================================================================//
 
-// MAYBE add a g_rawpcm_stat thing instead; struct PcmStat
+/**@fn opt_encode_rawpcm
+ * @brief set raw PCM encoding
+ *
+ * @param optind the index of g_argv
+ * @param opt[in] the name of the opt (for errors)
+ * @param mode unused
+ *
+ * @return 0
+ *
+ * @note rawpcm_statcopy() needs to be called from inside the mode
+**/
 // --rawpcm=format,samplerate,nchan
 static int
 opt_encode_rawpcm(
@@ -176,7 +197,16 @@ opt_encode_rawpcm(
 	return 0;
 }
 
-static int
+/**@fn opt_encode_help
+ * @brief print the mode_encode help to stderr and exit
+ *
+ * @param optind unused
+ * @param opt[in] unused
+ * @param mode unused
+ *
+ * @return does not return
+**/
+NORETURN int
 opt_encode_help(
 	/*@unused@*/ uint optind, /*@unused@*/ char *opt,
 	/*@unused@*/ enum OptMode mode

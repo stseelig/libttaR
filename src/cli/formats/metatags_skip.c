@@ -62,7 +62,13 @@ static CONST u32 id3syncsafeint(u8, u8, u8, u8) /*@*/;
 
 //////////////////////////////////////////////////////////////////////////////
 
-// advances the file stream past any number of ape/id3 tags
+/**@fn metatags_skip
+ * @brief advances the file stream past any number of ape/id3 tags
+ *
+ * @param file[in] the input file
+ *
+ * @return FILECHECK_MISMATCH on success
+**/
 enum FileCheck
 metatags_skip(FILE *const restrict file)
 /*@globals	fileSystem@*/
@@ -92,7 +98,13 @@ metatags_skip(FILE *const restrict file)
 
 //==========================================================================//
 
-// seeks past an apetag
+/**@fn apetag_skip
+ * @brief seek past an apetag
+ *
+ * @param file[in] the input file
+ *
+ * @return FILECHECK_OK on success
+**/
 static enum FileCheck
 apetag_skip(FILE *const restrict file)
 /*@globals	fileSystem@*/
@@ -137,8 +149,15 @@ apetag_skip(FILE *const restrict file)
 
 //--------------------------------------------------------------------------//
 
-// seeks past an id3tag
-// TODO haven't been able to properly test this yet; just assuming it works
+/**@fn id3tag_skip
+ * @brief seek past an id3tag
+ *
+ * @param file[in] the input file
+ *
+ * @return FILECHECK_OK on success
+ *
+ * @note haven't been able to properly test this yet; just assuming it works
+**/
 static enum FileCheck
 id3tag_skip(FILE *const restrict file)
 /*@globals	fileSystem@*/
@@ -182,6 +201,16 @@ id3tag_skip(FILE *const restrict file)
 	return FILECHECK_OK;
 }
 
+/**@fn id3syncsafeint
+ * @brief converts an id3 sync-safe int into something usable
+ *
+ * @param x0 first byte
+ * @param x1 second byte
+ * @param x2 third byte
+ * @param x3 fourth byte
+ *
+ * @note IMO, it is an over-engineered solution to a non-existent problem.
+**/
 static CONST u32
 id3syncsafeint(u8 x0, u8 x1, u8 x2, u8 x3)
 /*@*/

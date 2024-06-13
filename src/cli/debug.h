@@ -92,8 +92,8 @@ extern COLD void warning_tta(const char *const, ...)
 ;
 
 extern COLD void error_filecheck(
-	enum FileCheck, const struct FileStats *const restrict,
-	const char *const restrict, int
+	enum FileCheck, int, const struct FileStats *const restrict,
+	const char *const restrict
 )
 /*@globals	fileSystem,
 		g_nwarnings

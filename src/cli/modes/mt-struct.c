@@ -27,11 +27,26 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
+/**@fn encmt_state_init
+ * @brief initializes the multi-threaded encoder state structs
+ *
+ * @param io[out] state struct for the io thread
+ * @param encoder[out] state struct for the encoder threads
+ * @param framequeue_len length of the framequeue
+ * @param i32buf_len length of the encbuf->i32buf
+ * @param outfile the destination file
+ * @param outfile_name the name of the destination file (warnings/errors)
+ * @param infile the source file
+ * @param infile_name the name of the source file (warnings/errors)
+ * @param seektable the TTA seektable struct
+ * @param estat_out the encode stats return struct
+ * @param fstat the the compacted file stats struct
+**/
 void
 encmt_state_init(
 	/*@out@*/ struct MTArg_EncIO *const restrict io,
 	/*@out@*/ struct MTArg_Encoder *const restrict encoder,
-	uint framequeue_len, size_t samplebuf_len,
+	uint framequeue_len, size_t i32buf_len,
 	const FILE *const restrict outfile, const char *const outfile_name,
 	const FILE *const restrict infile, const char *const infile_name,
 	const struct SeekTable *const restrict seektable,
@@ -112,10 +127,10 @@ encmt_state_init(
 	}
 	for ( i = 0; i < framequeue_len; ++i ){
 		t.z = encbuf_init(
-			&io->frames.encbuf[i], samplebuf_len,
+			&io->frames.encbuf[i], i32buf_len,
 			TTABUF_LEN_DEFAULT, fstat->nchan, fstat->samplebytes
 		);
-		assert(t.z == samplebuf_len * fstat->nchan);
+		assert(t.z == i32buf_len * fstat->nchan);
 	}
 
 	// io->outfile
@@ -153,6 +168,14 @@ encmt_state_init(
 	return;
 }
 
+/**@fn encmt_state_free
+ * @brief frees any allocated pointers and destroys any pthread objects in the
+ *   multi-threaded encoder state structs
+ *
+ * @param io[in] state struct for the io thread
+ * @param encoder[in] state struct for the encoder threads
+ * @param framequeue_len length of the framequeue
+**/
 void
 encmt_state_free(
 	struct MTArg_EncIO *const restrict io,
@@ -199,11 +222,26 @@ encmt_state_free(
 
 //--------------------------------------------------------------------------//
 
+/**@fn decmt_state_init
+ * @brief initializes the multi-threaded decoder state structs
+ *
+ * @param io[out] state struct for the io thread
+ * @param decoder[out] state struct for the decoder threads
+ * @param framequeue_len length of the framequeue
+ * @param i32buf_len length of the encbuf->i32buf
+ * @param outfile the destination file
+ * @param outfile_name the name of the destination file (warnings/errors)
+ * @param infile the source file
+ * @param infile_name the name of the source file (warnings/errors)
+ * @param seektable the TTA seektable struct
+ * @param dstat_out the decode stats return struct
+ * @param fstat the the compacted file stats struct
+**/
 void
 decmt_state_init(
 	/*@out@*/ struct MTArg_DecIO *const restrict io,
 	/*@out@*/ struct MTArg_Decoder *const restrict decoder,
-	uint framequeue_len, size_t samplebuf_len,
+	uint framequeue_len, size_t i32buf_len,
 	const FILE *const restrict outfile, const char *const outfile_name,
 	const FILE *const restrict infile, const char *const infile_name,
 	const struct SeekTable *const restrict seektable,
@@ -313,10 +351,10 @@ decmt_state_init(
 	}
 	for ( i = 0; i < framequeue_len; ++i ){
 		t.z = decbuf_init(
-			&io->frames.decbuf[i], samplebuf_len,
+			&io->frames.decbuf[i], i32buf_len,
 			TTABUF_LEN_DEFAULT, fstat->nchan
 		);
-		assert(t.z == samplebuf_len * fstat->nchan);
+		assert(t.z == i32buf_len * fstat->nchan);
 	}
 
 	// io->outfile
@@ -357,6 +395,14 @@ decmt_state_init(
 	return;
 }
 
+/**@fn decmt_state_free
+ * @brief frees any allocated pointers and destroys any pthread objects in the
+ *   multi-threaded decoder state structs
+ *
+ * @param io[in] state struct for the io thread
+ * @param decoder[in] state struct for the decoder threads
+ * @param framequeue_len length of the framequeue
+**/
 void
 decmt_state_free(
 	struct MTArg_DecIO *const restrict io,

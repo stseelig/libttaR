@@ -88,6 +88,13 @@ static void dec_loop(struct OpenedFilesMember *const restrict)
 
 //////////////////////////////////////////////////////////////////////////////
 
+/**@fn mode_decode
+ * @brief mode for decoding TTA
+ *
+ * @param optind argv index
+ *
+ * @return the number of warnings/errors
+**/
 int
 mode_decode(uint optind)
 /*@globals	fileSystem,
@@ -177,6 +184,11 @@ mode_decode(uint optind)
 	return (int) g_nwarnings;
 }
 
+/**@fn dec_loop
+ * @brief prepares for and calls the decode loop function
+ *
+ * @param ofm[in] the source file struct
+**/
 static void
 dec_loop(struct OpenedFilesMember *const restrict ofm)
 /*@globals	fileSystem,
@@ -242,7 +254,7 @@ dec_loop(struct OpenedFilesMember *const restrict ofm)
 			ignore_seektable = true;
 			warning_tta("%s: corrupted seektable", infile_name);
 		}
-		else {	error_filecheck(t.fc, fstat, infile_name, errno);
+		else {	error_filecheck(t.fc, errno, fstat, infile_name);
 			exit(t.fc);
 		}
 	}

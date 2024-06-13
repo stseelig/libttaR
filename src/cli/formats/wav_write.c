@@ -24,7 +24,14 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-// MAYBE write preliminary header instead
+/**@fn prewrite_wav_header
+ * @brief reserves space for the Microsoft RIFF/WAVE header
+ *
+ * @param outfile[in] the destination file
+ * @param outfile_name[in] the name of the destination file (errors)
+ *
+ * @note MAYBE write a preliminary header instead
+**/
 void
 prewrite_wav_header(FILE *const restrict outfile, const char *outfile_name)
 /*@globals	fileSystem@*/
@@ -55,7 +62,16 @@ prewrite_wav_header(FILE *const restrict outfile, const char *outfile_name)
 	return;
 }
 
-// out stream should be at correct position before calling
+/**@fn write_wav_header
+ * @brief write a Microsoft RIFF/WAVE header
+ *
+ * @param outfile[in] the destination file
+ * @param data_size size of the data chunk
+ * @param fstat[in] the bloated file stats struct
+ * @param outfile_name[in] the name of the destination file (errors)
+ *
+ * @pre outfile should be at correct offset before calling
+**/
 void
 write_wav_header(
 	FILE *const restrict outfile, size_t data_size,
@@ -123,9 +139,16 @@ write_wav_header(
 
 //==========================================================================//
 
+/**@fn fill_waveformatex_body
+ * @brief fills a RiffSubChunk_WaveFormatEX_Body struct
+ *
+ * @param body[out] struct to fill
+ * @param format WAVE_FMT_PCM or WAVE_FMT_EXTENSIBLE
+ * @param fstat[in] the bloated file stats struct
+**/
 void
 fill_waveformatex_body(
-	struct RiffSubChunk_WaveFormatEX_Body *const restrict body,
+	/*@out@*/ struct RiffSubChunk_WaveFormatEX_Body *const restrict body,
 	u16 format, const struct FileStats *const restrict fstat
 )
 /*@modifies	*body@*/
@@ -143,8 +166,15 @@ fill_waveformatex_body(
 	return;
 }
 
+/**@fn fill_waveformatextensible
+ * @brief fills a RiffSubChunk_WaveFormatExtensible_Tail struct
+ *
+ * @param wfx[out] struct to fill
+ * @param fstat[in] the bloated file stats struct
+**/
 void
 fill_waveformatextensible(
+	/*@out@*/
 	struct RiffSubChunk_WaveFormatExtensible_Tail *const restrict wfx,
 	const struct FileStats *const restrict fstat
 )

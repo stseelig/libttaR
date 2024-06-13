@@ -30,7 +30,15 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-// MAYBE write preliminary header instead
+/**@fn prewrite_tta1_header
+ * @brief reserves space for the TTA1 header and seektable
+ *
+ * @param outfile[in] the destination file
+ * @param st[in] the seektable
+ * @param outfile_name[in] the name of the destination file (errors)
+ *
+ * @note MAYBE write a preliminary header instead
+**/
 void
 prewrite_tta1_header_seektable(
 	FILE *const restrict outfile,
@@ -65,12 +73,22 @@ prewrite_tta1_header_seektable(
 	return;
 }
 
-// returns the offset of the end of the header
-// out stream should be at correct position before calling
+/**@fn write_tta1_header
+ * @brief write a TTA1 header
+ *
+ * @param outfile[in] the destination file
+ * @param nsamples_perchan_total number of samples of 'nchan' channels
+ * @param fstat[in] the bloated file stats struct
+ * @param outfile_name[in] the name of the destination file (warnings/errors)
+ *
+ * @return the offset of the end of the header
+ *
+ * @pre outfile should be at correct offset before calling
+**/
 off_t
 write_tta1_header(
 	FILE *const restrict outfile, size_t nsamples_perchan_total,
-	const struct FileStats *const restrict stats, const char *outfile_name
+	const struct FileStats *const restrict fstat, const char *outfile_name
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -88,9 +106,9 @@ write_tta1_header(
 
 	(void) memcpy(&h.preamble, TTA1_PREAMBLE, sizeof h.preamble);
 	h.format	= htole16(WAVE_FMT_PCM);
-	h.nchan		= htole16(stats->nchan);
-	h.samplebits	= htole16(stats->samplebits);
-	h.samplerate	= htole32(stats->samplerate);
+	h.nchan		= htole16(fstat->nchan);
+	h.samplebits	= htole16(fstat->samplebits);
+	h.samplerate	= htole32(fstat->samplerate);
 	h.nsamples	= htole32(
 		nsamples_perchan_total > (size_t) UINT32_MAX
 			? UINT32_MAX : (u32) nsamples_perchan_total
@@ -108,7 +126,13 @@ write_tta1_header(
 	return ftello(outfile);
 }
 
-// TODO fmt mode param
+/**@fn write_tta_seektable
+ * @brief writes a TTA seektable
+ *
+ * @param outfile[in] the destination file
+ * @param st[in] the seektable struct
+ * @param outfile_name[in] the name of the destination file (errors)
+**/
 void
 write_tta_seektable(
 	FILE *const restrict outfile,

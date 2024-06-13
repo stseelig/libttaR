@@ -91,6 +91,14 @@ static void errprint_chanmask_wav(uint, u32)
 
 //////////////////////////////////////////////////////////////////////////////
 
+/**@fn errprint_stats_precodec
+ * @brief prints file stats to stderr before coding
+ *
+ * @param fstat[in] the bloated file stats struct
+ * @param infile_name[in] the name of the source file
+ * @param outfile_name[in] the name of the destination file
+ * @param mode encode or decode
+**/
 void
 errprint_stats_precodec(
 	const struct FileStats *const restrict fstat,
@@ -107,6 +115,12 @@ errprint_stats_precodec(
 	return;
 }
 
+/**@fn errprint_stat_postcodec
+ * @brief print codec stats to stderr after coding
+ *
+ * @param fstat[in] the bloated file stats struct
+ * @param estat[in] the encode stats struct
+**/
 void
 errprint_stats_postcodec(
 	const struct FileStats *const restrict fstat,
@@ -126,8 +140,15 @@ errprint_stats_postcodec(
 	return;
 }
 
+/**@fn errprint_runtime
+ * @brief print the total program runtime to stderr when coding multiple files
+ *
+ * @param runtime the total runtime
+ * @param nfiles the total number of files coded
+ * @param mode encode or decode
+**/
 void
-errprint_runtime(double runtime, size_t files, enum ProgramMode mode)
+errprint_runtime(double runtime, size_t nfiles, enum ProgramMode mode)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 {
@@ -144,7 +165,7 @@ errprint_runtime(double runtime, size_t files, enum ProgramMode mode)
 
 	(void) fputc('\n', stderr);
 	(void) fprintf(stderr, " %zu files %s (and written) in ",
-		files, mode_str
+		nfiles, mode_str
 	);
 	errprint_time(runtime);
 	// MAYBE print number of warnings
@@ -152,6 +173,9 @@ errprint_runtime(double runtime, size_t files, enum ProgramMode mode)
 	return;
 }
 
+/**@fn errprint_spinner
+ * @brief print the progress spinner to stderr
+**/
 HOT void
 errprint_spinner(void)
 /*@globals	fileSystem,
@@ -171,6 +195,11 @@ errprint_spinner(void)
 
 //==========================================================================//
 
+/**@fn errprint_stats_infile
+ * @brief print the source file name to stderr
+ *
+ * @param name[in] the name of the source file
+**/
 static void
 errprint_stats_infile(const char *const restrict name)
 /*@globals	fileSystem@*/
@@ -180,6 +209,11 @@ errprint_stats_infile(const char *const restrict name)
 	return;
 }
 
+/**@fn errprint_stats_outfile
+ * @brief print the destination file name to stderr
+ *
+ * @param name[in] the name of the destination file
+**/
 static void
 errprint_stats_outfile(const char *const restrict name)
 /*@globals	fileSystem@*/
@@ -189,9 +223,15 @@ errprint_stats_outfile(const char *const restrict name)
 	return;
 }
 
+/**@fn errprint_stats_format
+ * @brief print file format stats to stderr
+ *
+ * @param fstat[in] the bloated file stats struct
+ * @param mode encode or decode
+**/
 static void
 errprint_stats_format(
-	const struct FileStats *const restrict stats, enum ProgramMode mode
+	const struct FileStats *const restrict fstat, enum ProgramMode mode
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
@@ -200,12 +240,12 @@ errprint_stats_format(
 
 	switch ( mode ){
 	case MODE_ENCODE:
-		inname	= decfmt_name(stats->decfmt);
-		outname	= encfmt_name(stats->encfmt);
+		inname	= decfmt_name(fstat->decfmt);
+		outname	= encfmt_name(fstat->encfmt);
 		break;
 	case MODE_DECODE:
-		inname	= encfmt_name(stats->encfmt);
-		outname	= decfmt_name(stats->decfmt);
+		inname	= encfmt_name(fstat->encfmt);
+		outname	= decfmt_name(fstat->decfmt);
 		break;
 	}
 
@@ -217,24 +257,24 @@ errprint_stats_format(
 	//
 	(void) fputs("\t; ", stderr);
 	(void) fprintf(stderr, "%c",
-		stats->inttype == INT_SIGNED ? 'i' : 'u'
+		fstat->inttype == INT_SIGNED ? 'i' : 'u'
 	);
-	(void) fprintf(stderr, "%"PRIu16"", stats->samplebits);
-	if ( stats->samplebits > (u16) 8u ){
+	(void) fprintf(stderr, "%"PRIu16"", fstat->samplebits);
+	if ( fstat->samplebits > (u16) 8u ){
 		(void) fprintf(stderr, "%s",
-			stats->endian == xENDIAN_LITTLE ? "le" : "be"
+			fstat->endian == xENDIAN_LITTLE ? "le" : "be"
 		);
 	}
 	//
 	(void) fputs(" | ", stderr);
-	(void) fprintf(stderr, "%"PRIu32" Hz", stats->samplerate);
+	(void) fprintf(stderr, "%"PRIu32" Hz", fstat->samplerate);
 	//
 	(void) fputs(" | ", stderr);
-	(void) fprintf(stderr, "%"PRIu16"-ch", stats->nchan);
+	(void) fprintf(stderr, "%"PRIu16"-ch", fstat->nchan);
 /*
 	(void) fputs(" (", stderr);
 	(void) errprint_chanmask_wav(
-		(uint) stats->nchan, stats->chanmask_wav
+		(uint) fstat->nchan, fstat->chanmask_wav
 	);
 	(void) fputc(')', stderr);
 	//
@@ -246,28 +286,40 @@ errprint_stats_format(
 
 // this could be useful if TTA2 ever gets supported
 #if 0
+/**@fn errprint_stats_frame
+ * @brief print stats about the size of a TTA frame to stderr
+ *
+ * @param fstat[in] the bloated file stats struct
+**/
 static void
-errprint_stats_frame(const struct FileStats *const restrict stats)
+errprint_stats_frame(const struct FileStats *const restrict fstat)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 {
 	(void) fputs(" frame\t: ", stderr);
 	(void) fprintf(stderr, "%zu sample%s",
-		stats->framelen, stats->framelen == (size_t) 1u ? "" : "s"
+		fstat->framelen, fstat->framelen == (size_t) 1u ? "" : "s"
 	);
 	//
 	(void) fputs("\t; ", stderr);
-	errprint_size((size_t) (stats->buflen * stats->samplebytes));
+	errprint_size((size_t) (fstat->buflen * fstat->samplebytes));
 	(void) fputc('B', stderr);
 	//
 	(void) fputs("\t, ", stderr);
-	errprint_time(calc_time_pcm(stats->buflen, stats));
+	errprint_time(calc_time_pcm(fstat->buflen, fstat));
 	//
 	(void) fputc('\n', stderr);
 	return;
 }
 #endif
 
+/**@fn errprint_stats_pcm
+ * @brief print stats about the unencoded PCM to stderr
+ *
+ * @param pcmtime length of the PCM in seconds
+ * @param nframes number of TTA frames
+ * @param nbytes_pcm size of the PCM
+**/
 static void
 errprint_stats_pcm(double pcmtime, size_t nframes, size_t nbytes_pcm)
 /*@globals	fileSystem@*/
@@ -289,6 +341,13 @@ errprint_stats_pcm(double pcmtime, size_t nframes, size_t nbytes_pcm)
 	return;
 }
 
+/**@fn errprint_stats_tta
+ * @brief print stats about the encoded TTA to stderr
+ *
+ * @param pcmtime length of the PCM in seconds
+ * @param nbytes_pcm size of the PCM
+ * @param nbytes_tta size of the TTA
+**/
 static void
 errprint_stats_tta(double pcmtime, size_t nbytes_pcm, size_t nbytes_tta)
 /*@globals	fileSystem@*/
@@ -309,20 +368,27 @@ errprint_stats_tta(double pcmtime, size_t nbytes_pcm, size_t nbytes_tta)
 	return;
 }
 
+/**@fn errprint_stats_codectime
+ * @brief print stats about the time to en/de-code the source file to stderr
+ *
+ * @param pcmtime length of the PCM in seconds
+ * @param codectime time it took to en/de-code the source file
+ * @param nbytes_pcm size of the PCM
+**/
 static void
-errprint_stats_codectime(double pcmtime, double encodetime, size_t nbytes_pcm)
+errprint_stats_codectime(double pcmtime, double codectime, size_t nbytes_pcm)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 {
 	(void) fputs(" time   : ", stderr);
-	errprint_time(encodetime);
+	errprint_time(codectime);
 	//
 	(void) fputs("\t; ", stderr);
-	errprint_size((size_t) (((double) (8u * nbytes_pcm)) / encodetime));
+	errprint_size((size_t) (((double) (8u * nbytes_pcm)) / codectime));
 	(void) fputs("b/s", stderr);
 	//
 	(void) fputs("\t, ", stderr);
-	(void) fprintf(stderr, "%.1f", pcmtime / encodetime);
+	(void) fprintf(stderr, "%.1f", pcmtime / codectime);
 	(void) fputc('\n', stderr);
 	//
 	return;
@@ -330,6 +396,13 @@ errprint_stats_codectime(double pcmtime, double encodetime, size_t nbytes_pcm)
 
 //--------------------------------------------------------------------------//
 
+/**@fn decfmt_name
+ * @brief returns a string of the name of the decoded format
+ *
+ * @param fmt format id
+ *
+ * @return the name of the format
+**/
 /*@observer@*/
 static CONST const char *
 decfmt_name(enum DecFormat fmt)
@@ -340,6 +413,13 @@ decfmt_name(enum DecFormat fmt)
 	return name[fmt];
 }
 
+/**@fn decfmt_name
+ * @brief returns a string of the name of the encoded format
+ *
+ * @param fmt format id
+ *
+ * @return the name of the format
+**/
 /*@observer@*/
 static CONST const char *
 encfmt_name(enum EncFormat fmt)
@@ -350,16 +430,29 @@ encfmt_name(enum EncFormat fmt)
 	return name[fmt];
 }
 
+/**@fn calc_time_pcm
+ * @brief calculates the length of PCM in seconds
+ *
+ * @param nsamples the number of PCM samples of 'nchan' channels
+ * @param fstat[in] the bloated file stats struct
+ *
+ * @return the length in seconds
+**/
 static CONST double
-calc_time_pcm(size_t nsamples, const struct FileStats *const restrict stats)
+calc_time_pcm(size_t nsamples, const struct FileStats *const restrict fstat)
 /*@*/
 {
 	double size;
 	size  = (double) nsamples;
-	size /= (double) (stats->samplerate * stats->nchan);
+	size /= (double) (fstat->samplerate * fstat->nchan);
 	return size;
 }
 
+/**@fn errprint_size
+ * @brief print a formatted size string to stderr
+ *
+ * @param size the size to format
+**/
 static void
 errprint_size(size_t size)
 /*@globals	fileSystem@*/
@@ -388,6 +481,11 @@ errprint_size(size_t size)
 	return;
 }
 
+/**@fn errprint_time
+ * @brief print a formatted time string to stderr
+ *
+ * @param sec number of seconds
+**/
 static void
 errprint_time(double sec)
 /*@globals	fileSystem@*/
@@ -415,6 +513,12 @@ errprint_time(double sec)
 
 // this could be useful if TTA2 ever gets supported
 #if 0
+/**@fn errprint_chanmask
+ * @brief print a formatted channel mask string to stderr
+ *
+ * @param nchan number of audio channels
+ * @param mask the channel mask
+**/
 static void
 errprint_chanmask_wav(uint nchan, u32 mask)
 /*@globals	fileSystem@*/

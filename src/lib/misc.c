@@ -36,7 +36,7 @@ struct LibTTAr_VersionInfo {
 };
 
 /**@struct libttaR_info
- * @brief library version and copyright info
+ * @brief library version, copyright, and license info
  *
  * @note read the manpage for more info
 **/

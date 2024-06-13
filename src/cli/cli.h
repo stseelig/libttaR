@@ -65,6 +65,14 @@ extern HOT void errprint_spinner(void)
 
 //////////////////////////////////////////////////////////////////////////////
 
+/**@fn timediff
+ * @brief turns some timespec structs into a double
+ *
+ * @param start the first time
+ * @param finish the second time
+ *
+ * @return the difference in seconds
+**/
 INLINE CONST double
 timediff(
 	register const struct timespec *const restrict start,

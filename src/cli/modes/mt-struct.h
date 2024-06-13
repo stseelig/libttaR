@@ -326,6 +326,13 @@ extern void decmt_state_free(
 
 //////////////////////////////////////////////////////////////////////////////
 
+/**@fn encmt_fstat_init
+ * @brief initializes the compact file stats struct for the multi-threaded
+ *   encoder
+ *
+ * @param fstat_c[out] the compact file stats struct
+ * @param fstat[in] the bloated file stats struct
+**/
 INLINE void
 encmt_fstat_init(
 	/*@out@*/ register struct FileStats_EncMT *const restrict fstat_c,
@@ -340,6 +347,13 @@ encmt_fstat_init(
 	return;
 }
 
+/**@fn decmt_fstat_init
+ * @brief initializes the compact file stats struct for the multi-threaded
+ *   decoder
+ *
+ * @param fstat_c[out] the compact file stats struct
+ * @param fstat[in] the bloated file stats struct
+**/
 INLINE void
 decmt_fstat_init(
 	/*@out@*/ register struct FileStats_DecMT *const restrict fstat_c,

@@ -223,6 +223,7 @@ extern LIBTTAr_CONST bool libttaR_test_nchan(unsigned int nchan)
 #undef samplebytes
 /*@external@*/ /*@unused@*/
 extern size_t libttaR_pcm_read(
+	/*@out@*/
 	int32_t *dest,
 	const uint8_t *src,
 	size_t nsamples,
@@ -237,6 +238,7 @@ extern size_t libttaR_pcm_read(
 #undef samplebytes
 /*@external@*/ /*@unused@*/
 extern size_t libttaR_pcm_write(
+	/*@out@*/
 	uint8_t *dest,
 	const int32_t *src,
 	size_t nsamples,

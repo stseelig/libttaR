@@ -68,7 +68,15 @@ static int longoptget(uint, const struct OptDict *const restrict)
 
 //////////////////////////////////////////////////////////////////////////////
 
-// returns 0 on success, or number of errors
+/**@fn optargs_process
+ * @brief open files and/or process the command line arguments
+ *
+ * @param of[in out] the opened files struct array
+ * @param optind index for g_argv
+ * @param optdict[in] the option dictionary
+ *
+ * @return 0 on success, else number of errors
+**/
 uint
 optargs_process(
 	struct OpenedFiles *const restrict of, uint optind,
@@ -106,7 +114,14 @@ optargs_process(
 	return r;
 }
 
-// returns number of args used; negative number used on stop processing opts
+/**@fn optsget
+ * @brief process the command line arguments
+ *
+ * @param optind index for g_argv
+ * @param optdict[in] the option dictionary
+ *
+ * @return number of args used; negative number used on stop processing opts
+**/
 static int
 optsget(uint optind, const struct OptDict *const restrict optdict)
 /*@globals	fileSystem,
@@ -153,10 +168,18 @@ optsget(uint optind, const struct OptDict *const restrict optdict)
 
 //--------------------------------------------------------------------------//
 
-// returns the number of args used, or if a bad opt, the bad opt negated
-// shortopt function-pointer return:
-//	>0: number of chars in the opt used
-// 	<0: number of args used
+/**@fn shortoptsget
+ * @brief process an entire string of short ("-xyz") command line arguments
+ *
+ * @param optind index for g_argv
+ * @param optdict[in] the option dictionary
+ *
+ * @return number of args used, or if a bad opt, the bad opt negated
+ *
+ * @note shortopt function-pointer return:
+ *    >0: number of chars in the opt used
+ *    <0: number of args used
+**/
 static int
 shortoptsget(uint optind, const struct OptDict *const restrict optdict)
 /*@globals	fileSystem,
@@ -189,8 +212,14 @@ cont_outer_loop:
 	return 0;
 }
 
-// processes an entire string of shortopts
-// returns number of args used, or -1 if bad opt
+/**@fn longoptsget
+ * @brief process the long ("--xyz") command line arguments
+ *
+ * @param optind index for g_argv
+ * @param optdict[in] the option dictionary
+ *
+ * @return number of args used, or -1 on bad opt
+**/
 static int
 longoptget(uint optind, const struct OptDict *const restrict optdict)
 /*@globals	fileSystem,
@@ -225,6 +254,13 @@ longoptget(uint optind, const struct OptDict *const restrict optdict)
 
 //==========================================================================//
 
+/**@fn optsget_argcheck
+ * @brief checks that g_argv is long enough for the current opt
+ *
+ * @param optind the index of g_argv
+ * @param opt[in] the opt to check (for error message)
+ * @param nargs the number of arguments the opt has
+**/
 void
 optsget_argcheck(uint optind, char *opt, uint nargs)
 /*@globals	fileSystem@*/

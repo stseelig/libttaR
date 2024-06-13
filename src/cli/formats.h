@@ -147,7 +147,8 @@ extern enum FileCheck metatags_skip(FILE *const restrict file)
 #undef fstat
 #undef file
 extern enum FileCheck filecheck_tta1(
-	struct FileStats *const restrict fstat,	FILE *const restrict file
+	/*@out@*/ struct FileStats *const restrict fstat,
+	FILE *const restrict file
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -176,7 +177,7 @@ extern void seektable_init(
 
 #undef st
 extern HOT void seektable_add(
-	struct SeekTable *const restrict st, size_t, size_t, const char *
+	struct SeekTable *const restrict st, size_t, const char *
 )
 /*@globals	fileSystem,
 		internalState
@@ -256,7 +257,8 @@ extern void write_tta_seektable(
 #undef fstat
 #undef file
 extern enum FileCheck filecheck_w64(
-	struct FileStats *const restrict fstat, FILE *const restrict file
+	/*@out@*/ struct FileStats *const restrict fstat,
+	FILE *const restrict file
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -295,7 +297,8 @@ extern void write_w64_header(
 #undef fstat
 #undef file
 extern enum FileCheck filecheck_wav(
-	struct FileStats *const restrict fstat, FILE *const restrict file
+	/*@out@*/ struct FileStats *const restrict fstat,
+	FILE *const restrict file
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -307,7 +310,8 @@ extern enum FileCheck filecheck_wav(
 #undef fstat
 #undef file
 extern enum FileCheck filecheck_wav_read_subchunk_fmt(
-	struct FileStats *const restrict fstat, FILE *const restrict file
+	/*@out@*/ struct FileStats *const restrict fstat,
+	FILE *const restrict file
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -341,14 +345,15 @@ extern void write_wav_header(
 
 #undef body
 extern void fill_waveformatex_body(
-	struct RiffSubChunk_WaveFormatEX_Body *const restrict body, u16,
-	const struct FileStats *const restrict
+	/*@out@*/ struct RiffSubChunk_WaveFormatEX_Body *const restrict body,
+	u16, const struct FileStats *const restrict
 )
 /*@modifies	*body@*/
 ;
 
 #undef wfx
 extern void fill_waveformatextensible(
+	/*@out@*/
 	struct RiffSubChunk_WaveFormatExtensible_Tail *const restrict wfx,
 	const struct FileStats *const restrict
 )

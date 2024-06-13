@@ -93,9 +93,9 @@
 // mainly for byte-shaving errors
 
 #if HAS_BUILTIN(__builtin_unreachable)
-#define UNREACHABLE		__builtin_unreachable();
+#define UNREACHABLE		__builtin_unreachable(); /*@notreached@*/
 #else
-#define UNREACHABLE		;
+#define UNREACHABLE		; /*@notreached@*/
 #endif
 
 //--------------------------------------------------------------------------//
