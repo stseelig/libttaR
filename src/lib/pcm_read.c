@@ -46,20 +46,8 @@ NOINLINE size_t pcm_read_i24le(
 //--------------------------------------------------------------------------//
 
 ALWAYS_INLINE CONST i32 u8_to_i32h(register u8) /*@*/;
-
-#undef dest
-ALWAYS_INLINE void read_i16le_to_i32h(
-	/*@out@*/ register i32 *const dest, register const u8 *const
-)
-/*@modifies	*dest@*/
-;
-
-#undef dest
-ALWAYS_INLINE void read_i24le_to_i32h(
-	/*@out@*/ register i32 *const dest, register const u8 *const
-)
-/*@modifies	*dest@*/
-;
+ALWAYS_INLINE PURE i32 i16le_to_i32h(register const u8 *const restrict) /*@*/;
+ALWAYS_INLINE PURE i32 i24le_to_i32h(register const u8 *const restrict) /*@*/;
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -133,7 +121,7 @@ pcm_read_i16le(
 {
 	size_t i, j;
 	for ( i = 0, j = 0; i < nsamples; ++i, j += (size_t) 2u ){
-		read_i16le_to_i32h(&dest[i], &src[j]);
+		dest[i] = i16le_to_i32h(&src[j]);
 	}
 	return i;
 }
@@ -155,7 +143,7 @@ pcm_read_i24le(
 {
 	size_t i, j;
 	for ( i = 0, j = 0; i < nsamples; ++i, j += (size_t) 3u ){
-		read_i24le_to_i32h(&dest[i], &src[j]);
+		dest[i] = i24le_to_i32h(&src[j]);
 	}
 	return i;
 }
@@ -179,36 +167,36 @@ u8_to_i32h(register u8 x)
 /**@fn pcm_read_i16le
  * @brief reads a sample of i16le PCM into an i32 sample
  *
- * @param dest[out] destination sample
  * @param src[in] source buffer
+ *
+ * @return i32 sample
 **/
-ALWAYS_INLINE void
-read_i16le_to_i32h(
-	/*@out@*/ register i32 *const dest, register const u8 *const src
-)
-/*@modifies	*dest@*/
+ALWAYS_INLINE PURE i32
+i16le_to_i32h(register const u8 *const restrict src)
+/*@*/
 {
-	*((u32 *) dest)  =  (u32)       src[0u];
-	*((u32 *) dest) |= ((u32) ((i8) src[1u])) << 8u;
-	return;
+	register u32 r = 0;
+	r |=  (u32)       src[0u];
+	r |= ((u32) ((i8) src[1u])) << 8u;
+	return (i32) r;
 }
 
 /**@fn pcm_read_i24le
  * @brief reads a sample of i24le PCM into an i32 sample
  *
- * @param dest[out] destination sample
  * @param src[in] source buffer
+ *
+ * @return i32 sample
 **/
-ALWAYS_INLINE void
-read_i24le_to_i32h(
-	/*@out@*/ register i32 *const dest, register const u8 *const src
-)
-/*@modifies	*dest@*/
+ALWAYS_INLINE PURE i32
+i24le_to_i32h(register const u8 *const restrict src)
+/*@*/
 {
-	*((u32 *) dest)  =  (u32)       src[0u];
-	*((u32 *) dest) |= ((u32)       src[1u])  <<  8u;
-	*((u32 *) dest) |= ((u32) ((i8) src[2u])) << 16u;
-	return;
+	register u32 r = 0;
+	r |=  (u32)       src[0u];
+	r |= ((u32)       src[1u])  <<  8u;
+	r |= ((u32) ((i8) src[2u])) << 16u;
+	return (i32) r;
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////

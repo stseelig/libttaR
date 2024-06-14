@@ -14,9 +14,9 @@
 #define LIBTTAr_VERSION_NUM		1u
 #define LIBTTAr_VERSION_NUM_MAJOR	1u
 #define LIBTTAr_VERSION_NUM_MINOR	0u
-#define LIBTTAr_VERSION_NUM_REVIS	6u
+#define LIBTTAr_VERSION_NUM_REVIS	7u
 #define LIBTTAr_VERSION_STR_EXTRA	""
-#define LIBTTAr_VERSION_STR_DATE	"2024-06-12"
+#define LIBTTAr_VERSION_STR_DATE	"2024-06-13"
 #define LIBTTAr_COPYRIGHT_STR		\
 	"Copyright (C) 2007, Aleksander Djuric;" \
 	"Copyright (C) 2023-2024, Shane Seelig"
