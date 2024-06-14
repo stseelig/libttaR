@@ -164,7 +164,7 @@ u8_to_i32h(register u8 x)
 	return (i32) (x - 0x80u);
 }
 
-/**@fn pcm_read_i16le
+/**@fn i16le_to_i32h
  * @brief reads a sample of i16le PCM into an i32 sample
  *
  * @param src[in] source buffer
@@ -181,7 +181,7 @@ i16le_to_i32h(register const u8 *const restrict src)
 	return (i32) r;
 }
 
-/**@fn pcm_read_i24le
+/**@fn i24le_to_i32h
  * @brief reads a sample of i24le PCM into an i32 sample
  *
  * @param src[in] source buffer
