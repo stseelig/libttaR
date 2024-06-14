@@ -46,8 +46,14 @@ NOINLINE size_t pcm_read_i24le(
 //--------------------------------------------------------------------------//
 
 ALWAYS_INLINE CONST i32 u8_to_i32h(register u8) /*@*/;
-ALWAYS_INLINE PURE i32 i16le_to_i32h(register const u8 *const restrict) /*@*/;
-ALWAYS_INLINE PURE i32 i24le_to_i32h(register const u8 *const restrict) /*@*/;
+
+ALWAYS_INLINE PURE i32 read_i16le_to_i32h(register const u8 *const restrict)
+/*@*/
+;
+
+ALWAYS_INLINE PURE i32 read_i24le_to_i32h(register const u8 *const restrict)
+/*@*/
+;
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -121,7 +127,7 @@ pcm_read_i16le(
 {
 	size_t i, j;
 	for ( i = 0, j = 0; i < nsamples; ++i, j += (size_t) 2u ){
-		dest[i] = i16le_to_i32h(&src[j]);
+		dest[i] = read_i16le_to_i32h(&src[j]);
 	}
 	return i;
 }
@@ -143,7 +149,7 @@ pcm_read_i24le(
 {
 	size_t i, j;
 	for ( i = 0, j = 0; i < nsamples; ++i, j += (size_t) 3u ){
-		dest[i] = i24le_to_i32h(&src[j]);
+		dest[i] = read_i24le_to_i32h(&src[j]);
 	}
 	return i;
 }
@@ -164,7 +170,7 @@ u8_to_i32h(register u8 x)
 	return (i32) (x - 0x80u);
 }
 
-/**@fn i16le_to_i32h
+/**@fn read_i16le_to_i32h
  * @brief reads a sample of i16le PCM into an i32 sample
  *
  * @param src[in] source buffer
@@ -172,7 +178,7 @@ u8_to_i32h(register u8 x)
  * @return i32 sample
 **/
 ALWAYS_INLINE PURE i32
-i16le_to_i32h(register const u8 *const restrict src)
+read_i16le_to_i32h(register const u8 *const restrict src)
 /*@*/
 {
 	register u32 r = 0;
@@ -181,7 +187,7 @@ i16le_to_i32h(register const u8 *const restrict src)
 	return (i32) r;
 }
 
-/**@fn i24le_to_i32h
+/**@fn read_i24le_to_i32h
  * @brief reads a sample of i24le PCM into an i32 sample
  *
  * @param src[in] source buffer
@@ -189,7 +195,7 @@ i16le_to_i32h(register const u8 *const restrict src)
  * @return i32 sample
 **/
 ALWAYS_INLINE PURE i32
-i24le_to_i32h(register const u8 *const restrict src)
+read_i24le_to_i32h(register const u8 *const restrict src)
 /*@*/
 {
 	register u32 r = 0;
