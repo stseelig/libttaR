@@ -163,7 +163,7 @@ pcm_write_i24le(
 //--------------------------------------------------------------------------//
 
 /**@fn i32h_to_u8
- * @brief converts an i32 sample into a u8 PCM sample
+ * @brief converts an i32 sample from a u8 PCM sample
  *
  * @param x u8 sample
  *
@@ -177,7 +177,7 @@ i32h_to_u8(register i32 x)
 }
 
 /**@fn write_i32h_to_i16le
- * @brief writes a sample of i16le PCM into an i32 sample
+ * @brief writes a sample of i16le PCM from an i32 sample
  *
  * @param dest[out] destination sample
  * @param src[in] source buffer
@@ -194,7 +194,7 @@ write_i32h_to_i16le(
 }
 
 /**@fn write_i32h_to_i24le
- * @brief writes a sample of i24le PCM into an i32 sample
+ * @brief writes a sample of i24le PCM from an i32 sample
  *
  * @param dest[out] destination sample
  * @param src[in] source buffer
