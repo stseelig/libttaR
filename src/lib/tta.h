@@ -48,14 +48,17 @@ enum TTASampleBytes {
 #define TTA_SAMPLEBYTES_MAX	((unsigned int) TTASAMPLEBYTES_3)
 #define TTA_SAMPLEBITS_MAX	((uint) (8u*TTA_SAMPLEBYTES_MAX))
 
-// max unary output (second loop possible for 24-bit)
-#define TTABUF_SAFETY_MARGIN_UNARY	((size_t) (256u + 256u))
+// max unary output
+//	u8    : 16u
+//	i16le : 16u
+//	i24le : 2048u
+#define TTABUF_SAFETY_MARGIN_UNARY	((size_t) 2048u)
 // max binary output
-#define TTABUF_SAFETY_MARGIN_BINARY	((size_t) 256u)
+#define TTABUF_SAFETY_MARGIN_BINARY	((size_t) 3u)
 // only needed for encode
-#define TTABUF_SAFETY_MARGIN_CACHEFLUSH	((size_t) 32u)
-// rounded up to the nearest power of 2
-#define TTABUF_SAFETY_MARGIN_FAST	((size_t) 1024u)
+#define TTABUF_SAFETY_MARGIN_CACHEFLUSH	((size_t) 4u)
+// rounded up to the nearest (power of 2) + (power of 2)
+#define TTABUF_SAFETY_MARGIN_TOTAL	((size_t) 2056u)
 
 //////////////////////////////////////////////////////////////////////////////
 
