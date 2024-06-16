@@ -51,14 +51,14 @@ enum TTASampleBytes {
 // max unary output
 //	u8    : 16u
 //	i16le : 16u
-//	i24le : 2048u
-#define TTABUF_SAFETY_MARGIN_UNARY	((size_t) 2048u)
+//	i24le : 4096u
+#define TTABUF_SAFETY_MARGIN_UNARY	((size_t) 4096u)
 // max binary output
 #define TTABUF_SAFETY_MARGIN_BINARY	((size_t) 3u)
 // only needed for encode
 #define TTABUF_SAFETY_MARGIN_CACHEFLUSH	((size_t) 4u)
 // rounded up to the nearest (power of 2) + (power of 2)
-#define TTABUF_SAFETY_MARGIN_TOTAL	((size_t) 2056u)
+#define TTABUF_SAFETY_MARGIN_TOTAL	((size_t) 5004u)
 
 //////////////////////////////////////////////////////////////////////////////
 

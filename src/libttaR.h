@@ -71,7 +71,7 @@ enum TTASampleBytes {
   >
    the max nbytes_tta that could be read/written for 1 sample
 */
-#define TTABUF_SAFETY_MARGIN	((size_t) 2056u)
+#define TTABUF_SAFETY_MARGIN	((size_t) 5004u)
 
 /* ######################################################################## */
 
