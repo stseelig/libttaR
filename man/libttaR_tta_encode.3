@@ -1,7 +1,7 @@
 '\# t
 .\#     Title: libttaR_tta_encode
 .\#    Author: Shane Seelig
-.\#      Date: 2024-06-10
+.\#      Date: 2024-06-15
 .\#    Source: libttaR 1.1
 .\#  Language: English
 .\#
@@ -305,7 +305,7 @@ enc_frame_encode(
     // encode i32 to tta
     goto loop_entr;
     do {
-           encbuf_adjust(encbuf, TTABUF_LEN_DEFAULT);
+           encbuf_adjust(encbuf, TTABUF_LEN_DEFAULT, nchan);
            ni32_target = ni32_perframe - user.ni32_total;
 loop_entr:
            t.d = libttaR_tta_encode(
