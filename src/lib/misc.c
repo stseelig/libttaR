@@ -79,6 +79,30 @@ libttaR_codecstate_priv_size(uint nchan)
 	return r;
 }
 
+/**@fn libttaR_ttabuf_safety_margin_size
+ * @brief calculates the size of safety margin for the TTA buffer
+ *
+ * @param samplebytes number of bytes per PCM sample
+ * @param nchan number of audio channels
+ *
+ * @return size of safety margin
+ * @retval 0 error
+ *
+ * @note read the manpage for more info
+**/
+CONST size_t
+libttaR_ttabuf_safety_margin(enum TTASampleBytes samplebytes, uint nchan)
+/*@*/
+{
+	if ( ((uint) samplebytes == 0)
+	    ||
+	     ((uint) samplebytes > TTA_SAMPLEBYTES_MAX)
+	){
+		return 0;
+	}
+	return (size_t) (safety_margin_perchan(samplebytes) * nchan);
+}
+
 /**@fn libttaR_test_nchan
  * @brief tests whether libttaR was configured to support 'nchan' audio
  *   channels

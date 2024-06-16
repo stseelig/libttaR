@@ -48,17 +48,16 @@ enum TTASampleBytes {
 #define TTA_SAMPLEBYTES_MAX	((unsigned int) TTASAMPLEBYTES_3)
 #define TTA_SAMPLEBITS_MAX	((uint) (8u*TTA_SAMPLEBYTES_MAX))
 
-// max unary output
-//	u8    : 16u
-//	i16le : 16u
-//	i24le : 4096u
-#define TTABUF_SAFETY_MARGIN_UNARY	((size_t) 4096u)
-// max binary output
-#define TTABUF_SAFETY_MARGIN_BINARY	((size_t) 3u)
-// only needed for encode
-#define TTABUF_SAFETY_MARGIN_CACHEFLUSH	((size_t) 4u)
+// max unary code size
+//	8-bit  : 16u
+//	16-bit : 16u
+//	24-bit : 4096u
+// max binary code size : 3u
+// max cacheflush size  : 4u
+//
 // rounded up to the nearest (power of 2) + (power of 2)
-#define TTABUF_SAFETY_MARGIN_TOTAL	((size_t) 5004u)
+#define TTABUF_SAFETY_MARGIN_1or2byte	((size_t)   24u)
+#define TTABUF_SAFETY_MARGIN_3byte	((size_t) 5004u)
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -99,9 +98,10 @@ INLINE CONST u8 tta_filter_k(register enum TTASampleBytes) /*@*/;
 
 //--------------------------------------------------------------------------//
 
-ALWAYS_INLINE CONST i32 tta_predict1(register i32, register u8) /*@*/;
-ALWAYS_INLINE CONST i32 tta_postfilter_enc(register i32) /*@*/;
-ALWAYS_INLINE CONST i32 tta_prefilter_dec(register i32) /*@*/;
+INLINE CONST size_t safety_margin_perchan(register enum TTASampleBytes) /*@*/;
+INLINE CONST i32 tta_predict1(register i32, register u8) /*@*/;
+INLINE CONST i32 tta_postfilter_enc(register i32) /*@*/;
+INLINE CONST i32 tta_prefilter_dec(register i32) /*@*/;
 
 //--------------------------------------------------------------------------//
 
@@ -138,6 +138,30 @@ codec_init(
 }
 
 //--------------------------------------------------------------------------//
+
+/**@fn safety_margin_perchan
+ * @brief per channel safety margin for the TTA buffer
+ *
+ * @param samplebytes number of bytes per PCM sample
+ *
+ * @return per channel safety margin
+**/
+INLINE CONST size_t
+safety_margin_perchan(register enum TTASampleBytes samplebytes)
+/*@*/
+{
+	register size_t r;
+	switch ( samplebytes ){
+	case TTASAMPLEBYTES_1:
+	case TTASAMPLEBYTES_2:
+		r = TTABUF_SAFETY_MARGIN_1or2byte;
+		break;
+	case TTASAMPLEBYTES_3:
+		r = TTABUF_SAFETY_MARGIN_3byte;
+		break;
+	}
+	return r;
+}
 
 /**@fn tta_predict_k
  * @brief arg for tta_predict1

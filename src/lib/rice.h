@@ -286,7 +286,7 @@ shift32p4_bit(register u8 k, const enum ShiftMaskMode mode)
  *
  * @pre 0 <= 'k' <= 27u
  *
- * @note affected by LIBTTAr_CMOV_SHIFTER
+ * @note affected by LIBTTAr_OPT_CMOV_SHIFTER
 **/
 ALWAYS_INLINE CONST u32
 lsmask32(register u8 k, const enum ShiftMaskMode mode)
@@ -296,7 +296,7 @@ lsmask32(register u8 k, const enum ShiftMaskMode mode)
 	switch ( mode ){
 	case SMM_CONST:
 	case SMM_SHIFT:
-#ifndef LIBTTAr_CMOV_SHIFTER
+#ifndef LIBTTAr_OPT_CMOV_SHIFTER
 		r = (u32) (0x1u << k) - 1u;
 #else
 		// can be faster on older x86
@@ -601,7 +601,7 @@ rice_decode(
  *
  * @return number of bytes read from 'src' + 'r'
  *
- * @note affected by LIBTTAr_NO_TZCNT
+ * @note affected by LIBTTAr_OPT_NO_TZCNT
 **/
 ALWAYS_INLINE size_t
 rice_unary_get(
@@ -623,7 +623,7 @@ rice_unary_get(
 	//   to a 'unary = 0' in !depth1 branch
 	*unary = UINT32_MAX;
 
-#ifndef LIBTTAr_NO_TZCNT
+#ifndef LIBTTAr_OPT_NO_TZCNT
 	// this loop is slightly better than the lookup-table one, as long as
 	//   tbcnt32 is an instruction (tzcnt/ctz). otherwise a bit slower
 	goto loop_entr;

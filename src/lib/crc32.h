@@ -33,7 +33,7 @@ extern HIDDEN const u32 crc32_table[];
  *
  * @return the updated CRC
  *
- * @note affected by LIBTTAr_MEM_XOR
+ * @note affected by LIBTTAr_OPT_MEM_XOR
 **/
 ALWAYS_INLINE CONST u32
 crc32_cont(register u8 x, register u32 crc)
@@ -42,7 +42,7 @@ crc32_cont(register u8 x, register u32 crc)
 	// having the variable instead of just having a one line return is
 	//   important. otherwise it does a xor against memory, which is much
 	//   slower on modern x86. probably a compiler bug
-#ifndef LIBTTAr_MEM_XOR
+#ifndef LIBTTAr_OPT_MEM_XOR
 	register const u32 lookup = crc32_table[((u8) crc) ^ x];
 	return (u32) ((crc >> 8u) ^ lookup);
 #else

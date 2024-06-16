@@ -352,7 +352,7 @@ decmt_state_init(
 	for ( i = 0; i < framequeue_len; ++i ){
 		t.z = decbuf_init(
 			&io->frames.decbuf[i], i32buf_len,
-			TTABUF_LEN_DEFAULT, fstat->nchan
+			TTABUF_LEN_DEFAULT, fstat->nchan, fstat->samplebytes
 		);
 		assert(t.z == i32buf_len * fstat->nchan);
 	}

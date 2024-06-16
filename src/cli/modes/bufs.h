@@ -65,7 +65,7 @@ extern size_t encbuf_init(
 ;
 
 #undef eb
-extern HOT void encbuf_adjust(struct EncBuf *const restrict eb, size_t)
+extern HOT void encbuf_adjust(struct EncBuf *const restrict eb, size_t, uint)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -91,7 +91,8 @@ extern void encbuf_free(struct EncBuf *const restrict eb)
 
 #undef db
 extern size_t decbuf_init(
-	/*@out@*/ struct DecBuf *const restrict db, size_t, size_t, uint
+	/*@out@*/ struct DecBuf *const restrict db, size_t, size_t, uint,
+	enum TTASampleBytes
 )
 /*@globals	fileSystem,
 		internalState
@@ -107,7 +108,8 @@ extern size_t decbuf_init(
 
 #undef db
 extern HOT void decbuf_check_adjust(
-	struct DecBuf *const restrict db, size_t, uint
+	struct DecBuf *const restrict db, size_t, uint,
+	enum TTASampleBytes
 )
 /*@globals	fileSystem,
 		internalState

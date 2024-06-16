@@ -96,16 +96,16 @@ CFLAGS_LIB="$CFLAGS_LIB -O2";
 CFLAGS_LIB="$CFLAGS_LIB -fPIC";
 
 # uncomment to disable the unrolled codecs
-#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_DISABLE_UNROLLED_1CH";
-#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_DISABLE_UNROLLED_2CH";
+#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_OPT_DISABLE_UNROLLED_1CH";
+#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_OPT_DISABLE_UNROLLED_2CH";
 
 # uncomment to disable the multichannel/general codec
-#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_DISABLE_MCH";
+#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_OPT_DISABLE_MCH";
 
 # try uncommenting some of these if your cpu is an old piece of shit
-#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_NO_TZCNT";     # rice.h:rice_unary_get
-#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_CMOV_SHIFTER"; # rice.h:lsmask32
-#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_MEM_XOR";      # crc32.h:crc32_cont
+#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_OPT_NO_TZCNT";     # rice.h:rice_unary_get
+#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_OPT_CMOV_SHIFTER"; # rice.h:lsmask32
+#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_OPT_MEM_XOR";      # crc32.h:crc32_cont
 
 readonly CFLAGS_LIB;
 

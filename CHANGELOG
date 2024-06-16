@@ -1,10 +1,15 @@
 
 # libttaR ####################################################################
 
+1.2.0 (2024-XX-XX):-----------------------------------------------------------
+
+	- libttaR_ttabuf_safety_margin is now a function (instead of a macro)
+    with an additional parameter. This is to make the library more memory
+    efficient with 8/16-bit audio.
+
 1.1.1 (2024-06-15):-----------------------------------------------------------
 
-	- safety-margin bug again (the 24-bit unary can blow up on certian
-    channel counts)
+	- safety-margin bug again (the 24-bit unary can blow up)
 	- additional compile option symbols
 	- performance improvements
 
@@ -37,6 +42,11 @@
 	- initial release
 
 # ttaR #######################################################################
+
+1.1.2 (2024-XX-XX):-----------------------------------------------------------
+
+	- encode buffer size scales with channel count
+	- updated for libttaR 1.2.0
 
 1.1.1 (2024-06-15):-----------------------------------------------------------
 

@@ -62,11 +62,16 @@ encbuf_init(
 {
 	const size_t r = (size_t) (ni32_len * nchan);
 	const size_t pcmbuf_size = (size_t) (r * samplebytes);
+	const size_t safety_margin = libttaR_ttabuf_safety_margin(
+		samplebytes, nchan
+	);
 	union {	uintptr_t p; } t;
+
+	assert(safety_margin != 0);
 
 	eb->i32buf_len = r + BUF_ALIGN;
 	assert(eb->i32buf_len != 0);
-	eb->ttabuf_len = ttabuf_len + libttaR_ttabuf_safety_margin(nchan);
+	eb->ttabuf_len = (ttabuf_len * nchan) + safety_margin;
 	assert(eb->ttabuf_len != 0);
 
 	eb->i32buf = calloc(eb->i32buf_len, sizeof *eb->i32buf);
@@ -93,11 +98,12 @@ encbuf_init(
  *
  * @param eb[in out] the encode buffers struct
  * @param add_len additional size for the ttabuf
+ * @param nchan number of audio channels
  *
  * @note in encode loop
 **/
 HOT void
-encbuf_adjust(struct EncBuf *const restrict eb, size_t add_len)
+encbuf_adjust(struct EncBuf *const restrict eb, size_t add_len, uint nchan)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -108,7 +114,7 @@ encbuf_adjust(struct EncBuf *const restrict eb, size_t add_len)
 @*/
 {
 	// the safety-margin should have already been added by here
-	eb->ttabuf_len += add_len;
+	eb->ttabuf_len += (add_len * nchan);
 	assert(eb->ttabuf_len != 0);
 
 	eb->ttabuf = realloc(eb->ttabuf, eb->ttabuf_len);
@@ -149,13 +155,14 @@ encbuf_free(struct EncBuf *const restrict eb)
  * @param ni32_len length of the i32buf
  * @param ttabuf_len size of the ttabuf
  * @param nchan number of audio channels
+ * @param samplebytes number of bytes per PCM sample
  *
  * @return (ni32_len * nchan) for sanity check
 **/
 size_t
 decbuf_init(
 	/*@out@*/ struct DecBuf *const restrict db, size_t ni32_len,
-	size_t ttabuf_len, uint nchan
+	size_t ttabuf_len, uint nchan, enum TTASampleBytes samplebytes
 )
 /*@globals	fileSystem,
 		internalState
@@ -169,10 +176,15 @@ decbuf_init(
 @*/
 {
 	const size_t r = (size_t) (ni32_len * nchan);
+	const size_t safety_margin = libttaR_ttabuf_safety_margin(
+		samplebytes, nchan
+	);
+
+	assert(safety_margin != 0);
 
 	db->i32buf_len = r;
 	assert(db->i32buf_len != 0);
-	db->ttabuf_len = ttabuf_len + libttaR_ttabuf_safety_margin(nchan);
+	db->ttabuf_len = ttabuf_len + safety_margin;
 	assert(db->ttabuf_len != 0);
 
 	db->pcmbuf = calloc(r + BUF_ALIGN, sizeof(i32));
@@ -198,12 +210,14 @@ decbuf_init(
  * @param db[in out] the decode buffers struct
  * @param newsize new ttabuf size
  * @param nchan number of audio channels
+ * @param samplebytes number of bytes per PCM sample
  *
  * @note in decode loop
 **/
 HOT void
 decbuf_check_adjust(
-	struct DecBuf *const restrict db, size_t newsize, uint nchan
+	struct DecBuf *const restrict db, size_t newsize, uint nchan,
+	enum TTASampleBytes samplebytes
 )
 /*@globals	fileSystem,
 		internalState
@@ -214,8 +228,14 @@ decbuf_check_adjust(
 		db->ttabuf
 @*/
 {
+	const size_t safety_margin = libttaR_ttabuf_safety_margin(
+		samplebytes, nchan
+	);
+
+	assert(safety_margin != 0);
+
 	// the safety-margin needs to be re-applied here
-	newsize += libttaR_ttabuf_safety_margin(nchan);
+	newsize += safety_margin;
 	assert(newsize != 0);
 
 	if ( newsize > db->ttabuf_len ){

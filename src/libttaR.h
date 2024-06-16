@@ -2,7 +2,7 @@
 #define LIBTTAr_H
 /* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// libttaR.h - 1.1                                                          //
+// libttaR.h - 1.2                                                          //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
@@ -66,12 +66,6 @@ enum TTASampleBytes {
 #define TTA1_FRAME_TIME		((double) 1.04489795918367346939)
 
 #define TTA_CRC32_INIT		((uint32_t) 0xFFFFFFFFu)
-
-/* perchannel safety margin
-  >
-   the max nbytes_tta that could be read/written for 1 sample
-*/
-#define TTABUF_SAFETY_MARGIN	((size_t) 5004u)
 
 /* ######################################################################## */
 
@@ -189,15 +183,14 @@ extern LIBTTAr_CONST size_t libttaR_codecstate_priv_size(unsigned int nchan)
 /*@*/
 ;
 
+#undef samplebytes
 #undef nchan
 /*@external@*/ /*@unused@*/
-extern LIBTTAr_CONST size_t libttaR_ttabuf_safety_margin(unsigned int nchan)
+extern LIBTTAr_CONST size_t libttaR_ttabuf_safety_margin(
+	enum TTASampleBytes samplebytes, unsigned int nchan
+)
 /*@*/
 ;
-
-#define libttaR_ttabuf_safety_margin(nchan) ( \
-	(size_t) (TTABUF_SAFETY_MARGIN * (nchan)) \
-)
 
 #undef samplerate
 /*@external@*/ /*@unused@*/

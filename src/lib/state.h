@@ -44,11 +44,11 @@ struct LibTTAr_CodecState_User {
  * @param priv[out] the private state struct
  * @param nchan number of audio channels
 **/
-#undef priv
 INLINE void
 state_priv_init(
-	/*@out@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
-	uint nchan
+	/*@out@*/
+	register struct LibTTAr_CodecState_Priv *const restrict priv,
+	register uint nchan
 )
 /*@modifies	*priv@*/
 {

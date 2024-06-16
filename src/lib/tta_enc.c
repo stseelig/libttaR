@@ -20,7 +20,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-#ifndef LIBTTAr_DISABLE_MCH
+#ifndef LIBTTAr_OPT_DISABLE_MCH
 #undef dest
 #undef crc_out
 #undef ni32_out
@@ -42,7 +42,7 @@ static size_t tta_encode_mch(
 ;
 #endif
 
-#ifndef LIBTTAr_DISABLE_UNROLLED_1CH
+#ifndef LIBTTAr_OPT_DISABLE_UNROLLED_1CH
 #undef dest
 #undef crc_out
 #undef ni32_out
@@ -53,7 +53,7 @@ static size_t tta_encode_1ch(
 	u32 *const restrict crc_out,
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
-	struct Codec *const restrict codec, size_t, size_t, u8, i32, u8
+	struct Codec *const restrict codec, size_t, size_t, u8, i32, u8, uint
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -64,7 +64,7 @@ static size_t tta_encode_1ch(
 ;
 #endif
 
-#ifndef LIBTTAr_DISABLE_UNROLLED_2CH
+#ifndef LIBTTAr_OPT_DISABLE_UNROLLED_2CH
 #undef dest
 #undef crc_out
 #undef ni32_out
@@ -75,7 +75,7 @@ static size_t tta_encode_2ch(
 	u32 *const restrict crc_out,
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
-	struct Codec *const restrict codec, size_t, size_t, u8, i32, u8
+	struct Codec *const restrict codec, size_t, size_t, u8, i32, u8, uint
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -131,11 +131,14 @@ libttaR_tta_encode(
 	const i32 filter_round = tta_filter_round(samplebytes);
 	const  u8 filter_k     = tta_filter_k(samplebytes);
 	const size_t safety_margin = (size_t) (
-		TTABUF_SAFETY_MARGIN_TOTAL * nchan
+		safety_margin_perchan(samplebytes) * nchan
 	);
 	const size_t soft_write_limit = dest_len - safety_margin;
 
 	// initial state setup
+	// inlining this instead of having it as its own library function is
+	//   only slower if ni32_target is small and many calls are made for
+	//   a frame
 	// faster/smaller binary if this is before the checks
 	if ( user->ncalls_codec == 0 ){
 		state_priv_init(priv, nchan);
@@ -171,26 +174,26 @@ libttaR_tta_encode(
 
 	// encode
 	switch ( nchan ){
-#ifndef LIBTTAr_DISABLE_UNROLLED_1CH
+#ifndef LIBTTAr_OPT_DISABLE_UNROLLED_1CH
 	case 1u:
 		nbytes_tta_enc = tta_encode_1ch(
 			dest, src, &user->crc, &user->ni32, &priv->bitcache,
 			priv->codec, ni32_target, soft_write_limit, predict_k,
-			filter_round, filter_k
+			filter_round, filter_k, nchan
 		);
 		break;
 #endif
-#ifndef LIBTTAr_DISABLE_UNROLLED_2CH
+#ifndef LIBTTAr_OPT_DISABLE_UNROLLED_2CH
 	case 2u:
 		nbytes_tta_enc = tta_encode_2ch(
 			dest, src, &user->crc, &user->ni32, &priv->bitcache,
 			priv->codec, ni32_target, soft_write_limit, predict_k,
-			filter_round, filter_k
+			filter_round, filter_k, nchan
 		);
 		break;
 #endif
 	default:
-#ifndef LIBTTAr_DISABLE_MCH
+#ifndef LIBTTAr_OPT_DISABLE_MCH
 		nbytes_tta_enc = tta_encode_mch(
 			dest, src, &user->crc, &user->ni32, &priv->bitcache,
 			priv->codec, ni32_target, soft_write_limit, predict_k,
@@ -201,9 +204,9 @@ libttaR_tta_encode(
 		return LIBTTAr_RET_MISCONFIG;
 #endif
 
-#if defined(LIBTTAr_DISABLE_UNROLLED_1CH) \
- && defined(LIBTTAr_DISABLE_UNROLLED_2CH) \
- && defined(LIBTTAr_DISABLE_MCH)
+#if defined(LIBTTAr_OPT_DISABLE_UNROLLED_1CH) \
+ && defined(LIBTTAr_OPT_DISABLE_UNROLLED_2CH) \
+ && defined(LIBTTAr_OPT_DISABLE_MCH)
 #error "misconfigured codec functions, all channel counts disabled"
 #endif
 	}
@@ -226,7 +229,7 @@ libttaR_tta_encode(
 
 //--------------------------------------------------------------------------//
 
-#ifndef LIBTTAr_DISABLE_MCH
+#ifndef LIBTTAr_OPT_DISABLE_MCH
 /**@fn tta_encode_mch
  * @brief multichannel/general encode loop
  *
@@ -270,7 +273,7 @@ tta_encode_mch(
 
 	for ( i = 0; i < ni32_target; i += (size_t) nchan ){
 		if ( r > soft_write_limit ){ break; }
-#ifdef LIBTTAr_DISABLE_UNROLLED_1CH
+#ifdef LIBTTAr_OPT_DISABLE_UNROLLED_1CH
 		prev = 0;	// for mono
 #endif
 		for ( j = 0; j <= nchan - 1u; ++j ){
@@ -310,7 +313,7 @@ tta_encode_mch(
 }
 #endif
 
-#ifndef LIBTTAr_DISABLE_UNROLLED_1CH
+#ifndef LIBTTAr_OPT_DISABLE_UNROLLED_1CH
 /**@fn tta_encode_1ch
  * @brief unrolled mono encode loop
  *
@@ -335,7 +338,8 @@ tta_encode_1ch(
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
 	struct Codec *const restrict codec, size_t ni32_target,
-	size_t soft_write_limit, u8 predict_k, i32 filter_round, u8 filter_k
+	size_t soft_write_limit, u8 predict_k, i32 filter_round, u8 filter_k,
+	/*@unused@*/ uint nchan
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -344,6 +348,9 @@ tta_encode_1ch(
 		*codec
 @*/
 {
+#ifndef S_SPLINT_S
+	(void) nchan;
+#endif
 	size_t r = 0;
 	u32 crc = *crc_out;
 	i32 curr, prev;
@@ -378,7 +385,7 @@ tta_encode_1ch(
 }
 #endif
 
-#ifndef LIBTTAr_DISABLE_UNROLLED_2CH
+#ifndef LIBTTAr_OPT_DISABLE_UNROLLED_2CH
 /**@fn tta_encode_2ch
  * @brief unrolled stereo encode loop
  *
@@ -403,7 +410,8 @@ tta_encode_2ch(
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
 	struct Codec *const restrict codec, size_t ni32_target,
-	size_t soft_write_limit, u8 predict_k, i32 filter_round, u8 filter_k
+	size_t soft_write_limit, u8 predict_k, i32 filter_round, u8 filter_k,
+	/*@unused@*/ uint nchan
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -412,6 +420,9 @@ tta_encode_2ch(
 		*codec
 @*/
 {
+#ifndef S_SPLINT_S
+	(void) nchan;
+#endif
 	size_t r = 0;
 	u32 crc = *crc_out;
 	i32 curr, prev, next;

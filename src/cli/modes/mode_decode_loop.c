@@ -173,7 +173,9 @@ decst_loop(
 	} t;
 
 	// setup buffers
-	t.z = decbuf_init(&decbuf, buflen, TTABUF_LEN_DEFAULT, nchan);
+	t.z = decbuf_init(
+		&decbuf, buflen, TTABUF_LEN_DEFAULT, nchan, samplebytes
+	);
 	assert(t.z == (size_t) (buflen * nchan));
 	//
 	t.z = libttaR_codecstate_priv_size(nchan);
@@ -209,7 +211,9 @@ decst_loop(
 		nsamples_perchan_dec_total += ni32_perframe / nchan;
 
 		// read tta from infile
-		decbuf_check_adjust(&decbuf, framesize_tta, nchan);
+		decbuf_check_adjust(
+			&decbuf, framesize_tta, nchan, samplebytes
+		);
 		nbytes_read = fread(
 			decbuf.ttabuf, (size_t) 1u, framesize_tta, infile
 		);
@@ -680,7 +684,9 @@ decmt_io(struct MTArg_DecIO *const restrict arg)
 		nsamples_perchan_dec_total += ni32_perframe[i] / nchan;
 
 		// read tta from infile
-		decbuf_check_adjust(&decbuf[i], framesize_tta, nchan);
+		decbuf_check_adjust(
+			&decbuf[i], framesize_tta, nchan, samplebytes
+		);
 		nbytes_read = fread(
 			decbuf[i].ttabuf, (size_t) 1u, framesize_tta,
 			infile_fh
