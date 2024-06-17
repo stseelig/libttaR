@@ -64,8 +64,7 @@ ALWAYS_INLINE CONST u32 lsmask32(u8, enum ShiftMaskMode) /*@*/;
 
 #undef sum
 #undef k
-/*@unused@*/
-void rice_cmpsum(u32 *restrict sum, u8 *restrict k, u32)
+ALWAYS_INLINE void rice_cmpsum(u32 *restrict sum, u8 *restrict k, u32)
 /*@modifies	*sum,
 		*k
 @*/
@@ -299,22 +298,21 @@ lsmask32(register const u8 k, const enum ShiftMaskMode mode)
  * @param value input value to code
  *
  * @post 0 <= 'k' <= 27u
- *
- * @note
- *     This procedure got macro'd because the compiler wasn't ALWAYS_INLINE-
- *   ing it. It is faster than a functional version (ie, returning 'k', not
- *   using pointers), because *'k' often does not change (lots of unnecessary
- *   moves/writes).
 **/
-#define rice_cmpsum(sum, k, value) \
-{ \
-	*(sum) += (value) - (*(sum) >> 4u); \
-	if UNLIKELY ( *(sum) < shift32p4_bit(*(k), SMM_TABLE) ){ \
-		--(*(k)); \
-	} \
-	else if UNLIKELY ( *(sum) > shift32p4_bit(*(k) + 1u, SMM_TABLE) ){ \
-		++(*(k)); \
-	} else{;} \
+ALWAYS_INLINE void
+rice_cmpsum(u32 *const restrict sum, u8 *const restrict k, const u32 value)
+/*@modifies	*sum,
+		*k
+@*/
+{
+	*sum += value - (*sum >> 4u);
+	if UNLIKELY ( *sum < shift32p4_bit(*k, SMM_TABLE) ){
+		--(*k);
+	}
+	else if UNLIKELY ( *sum > shift32p4_bit(*k + 1u, SMM_TABLE) ){
+		++(*k);
+	} else{;}
+	return;
 }
 
 /**@fn rice_crc32
