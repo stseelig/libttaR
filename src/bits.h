@@ -50,8 +50,7 @@
 #define CONST		__attribute__((const))
 
 #define NORETURN	__attribute__((noreturn))
-
-//--------------------------------------------------------------------------//
+#define UNUSED		/*@unused@*/ __attribute__((unused))
 
 #define PACKED		__attribute__((packed))
 #define HIDDEN		__attribute__((visibility("hidden")))

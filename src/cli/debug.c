@@ -68,7 +68,7 @@ static int inc_nwarnings(void)
  * @param name[in] function name
  * @param extra[in] any extra info, probably a filename
 **/
-COLD NORETURN void
+NORETURN COLD void
 error_sys(
 	int errnum, const char *const name,
 	/*@null@*/ const char *const extra
@@ -159,7 +159,7 @@ print_error_sys(
  * @param format[in] formatted error string
  * @param ...[in] args for 'format'
 **/
-COLD NORETURN void error_tta(const char *const format, ...)
+NORETURN COLD void error_tta(const char *const format, ...)
 /*@globals	fileSystem,
 		g_nwarnings
 @*/

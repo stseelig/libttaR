@@ -143,17 +143,11 @@ opt_decode_format(uint optind, char *opt, enum OptMode mode)
 **/
 NORETURN int
 opt_decode_help(
-	/*@unused@*/ uint optind, /*@unused@*/ char *opt,
-	/*@unused@*/ enum OptMode mode
+	UNUSED uint optind, UNUSED char *opt, UNUSED enum OptMode mode
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 {
-#ifndef S_SPLINT_S
-	(void) optind;
-	(void) opt;
-	(void) mode;
-#endif
 	errprint_help_mode_decode();
 	exit(EXIT_SUCCESS);
 }

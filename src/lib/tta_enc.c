@@ -339,7 +339,7 @@ tta_encode_1ch(
 	struct BitCache *const restrict bitcache,
 	struct Codec *const restrict codec, size_t ni32_target,
 	size_t soft_write_limit, u8 predict_k, i32 filter_round, u8 filter_k,
-	/*@unused@*/ uint nchan
+	UNUSED uint nchan
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -348,9 +348,6 @@ tta_encode_1ch(
 		*codec
 @*/
 {
-#ifndef S_SPLINT_S
-	(void) nchan;
-#endif
 	size_t r = 0;
 	u32 crc = *crc_out;
 	i32 curr, prev;
@@ -411,7 +408,7 @@ tta_encode_2ch(
 	struct BitCache *const restrict bitcache,
 	struct Codec *const restrict codec, size_t ni32_target,
 	size_t soft_write_limit, u8 predict_k, i32 filter_round, u8 filter_k,
-	/*@unused@*/ uint nchan
+	UNUSED uint nchan
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -420,9 +417,6 @@ tta_encode_2ch(
 		*codec
 @*/
 {
-#ifndef S_SPLINT_S
-	(void) nchan;
-#endif
 	size_t r = 0;
 	u32 crc = *crc_out;
 	i32 curr, prev, next;

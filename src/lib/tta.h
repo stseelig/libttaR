@@ -45,11 +45,11 @@ enum TTASampleBytes {
 	TTASAMPLEBYTES_2 = 2u,
 	TTASAMPLEBYTES_3 = 3u
 };
-#define TTA_SAMPLEBYTES_MAX	((unsigned int) TTASAMPLEBYTES_3)
+#define TTA_SAMPLEBYTES_MAX	((uint) TTASAMPLEBYTES_3)
 #define TTA_SAMPLEBITS_MAX	((uint) (8u*TTA_SAMPLEBYTES_MAX))
 
 // max unary code size
-//	8-bit  : 16u
+//	 8-bit : 16u
 //	16-bit : 16u
 //	24-bit : 4096u
 // max binary code size : 3u

@@ -29,7 +29,7 @@ enum Fatality {
 
 //////////////////////////////////////////////////////////////////////////////
 
-extern COLD NORETURN void error_sys(
+extern NORETURN COLD void error_sys(
 	int, const char *const, /*@null@*/ const char *const
 )
 /*@globals	fileSystem,
@@ -64,7 +64,7 @@ extern COLD void print_error_sys(
 ;
 
 
-extern COLD NORETURN void error_tta(const char *const, ...)
+extern NORETURN COLD void error_tta(const char *const, ...)
 /*@globals	fileSystem,
 		g_nwarnings
 @*/
