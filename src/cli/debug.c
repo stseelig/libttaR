@@ -29,7 +29,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 NOINLINE COLD void print_error_tta(
-	const enum Fatality fatality, const char *const, va_list args
+	enum Fatality fatality, const char *, va_list args
 )
 /*@globals	fileSystem,
 		g_nwarnings
@@ -70,7 +70,7 @@ static int inc_nwarnings(void)
 **/
 NORETURN COLD void
 error_sys(
-	int errnum, const char *const name,
+	const int errnum, const char *const name,
 	/*@null@*/ const char *const extra
 )
 /*@globals	fileSystem,
@@ -93,7 +93,7 @@ error_sys(
 **/
 COLD void
 error_sys_nf(
-	int errnum, const char *const name,
+	const int errnum, const char *const name,
 	/*@null@*/ const char *const extra
 )
 /*@globals	fileSystem,
@@ -116,7 +116,7 @@ error_sys_nf(
 **/
 COLD void
 print_error_sys(
-	int errnum, const char *const name,
+	const int errnum, const char *const name,
 	/*@null@*/ const char *const extra, const enum Fatality fatality
 )
 /*@globals	fileSystem,
@@ -284,7 +284,7 @@ warning_tta(const char *const format, ...)
 **/
 COLD void
 error_filecheck(
-	enum FileCheck fc, int errnum,
+	const enum FileCheck fc, const int errnum,
 	const struct FileStats *const restrict fstat,
 	const char *const restrict filename
 )

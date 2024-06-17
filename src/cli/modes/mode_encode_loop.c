@@ -38,9 +38,9 @@
 #undef user
 #undef encbuf
 static void enc_frame_encode(
-	struct EncBuf *const restrict encbuf,
-	/*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
-	/*@out@*/ struct LibTTAr_CodecState_User *const restrict user_out,
+	struct EncBuf *restrict encbuf,
+	/*@reldef@*/ struct LibTTAr_CodecState_Priv *restrict priv,
+	/*@out@*/ struct LibTTAr_CodecState_User *restrict user_out,
 	enum TTASampleBytes, uint, size_t
 )
 /*@globals	fileSystem,
@@ -61,11 +61,10 @@ static void enc_frame_encode(
 #undef estat_out
 #undef outfile
 static void enc_frame_write(
-	struct EncBuf *const restrict,
-	struct SeekTable *const restrict seektable,
-	/*@in@*/ struct EncStats *const restrict estat_out,
-	struct LibTTAr_CodecState_User *const restrict,
-	FILE *const restrict outfile, const char *const restrict, uint
+	struct EncBuf *restrict, struct SeekTable *restrict seektable,
+	/*@in@*/ struct EncStats *restrict estat_out,
+	struct LibTTAr_CodecState_User *restrict,
+	FILE *restrict outfile, const char *restrict, uint
 )
 /*@globals	fileSystem,
 		internalState
@@ -86,7 +85,7 @@ static CONST size_t enc_readlen(
 
 #undef pcmbuf
 NOINLINE COLD uint enc_frame_zeropad(
-	u8 *const restrict pcmbuf, size_t, uint, enum TTASampleBytes, uint
+	u8 *restrict pcmbuf, size_t, uint, enum TTASampleBytes, uint
 )
 /*@modifies	*pcmbuf@*/
 ;
@@ -95,7 +94,7 @@ NOINLINE COLD uint enc_frame_zeropad(
 
 #undef arg
 /*@null@*/
-static HOT void *encmt_io(struct MTArg_EncIO *const restrict arg)
+static HOT void *encmt_io(struct MTArg_EncIO *restrict arg)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -114,7 +113,7 @@ static HOT void *encmt_io(struct MTArg_EncIO *const restrict arg)
 
 #undef arg
 /*@null@*/
-static HOT void *encmt_encoder(struct MTArg_Encoder *const restrict arg)
+static HOT void *encmt_encoder(struct MTArg_Encoder *restrict arg)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -288,7 +287,7 @@ encmt_loop(
 	const struct FileStats *const restrict fstat,
 	FILE *const restrict outfile, const char *const outfile_name,
 	FILE *const restrict infile, const char *const infile_name,
-	uint nthreads
+	const uint nthreads
 )
 /*@globals	fileSystem,
 		internalState
@@ -389,7 +388,8 @@ enc_frame_encode(
 	struct EncBuf *const restrict encbuf,
 	/*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
 	/*@out@*/ struct LibTTAr_CodecState_User *const restrict user_out,
-	enum TTASampleBytes samplebytes, uint nchan, size_t ni32_perframe
+	const enum TTASampleBytes samplebytes, const uint nchan,
+	const size_t ni32_perframe
 )
 /*@globals	fileSystem,
 		internalState
@@ -462,7 +462,7 @@ enc_frame_write(
 	/*@in@*/ struct EncStats *const restrict estat_out,
 	struct LibTTAr_CodecState_User *const restrict user_in,
 	FILE *const restrict outfile, const char *const restrict outfile_name,
-	uint nchan
+	const uint nchan
 )
 /*@globals	fileSystem,
 		internalState
@@ -520,8 +520,9 @@ enc_frame_write(
 **/
 static CONST size_t
 enc_readlen(
-	size_t nsamples_perframe, size_t nsamples_flat_read,
-	size_t decpcm_size, enum TTASampleBytes samplebytes, uint nchan
+	const size_t nsamples_perframe, const size_t nsamples_flat_read,
+	const size_t decpcm_size, const enum TTASampleBytes samplebytes,
+	const uint nchan
 )
 /*@*/
 {
@@ -559,8 +560,8 @@ enc_readlen(
 **/
 NOINLINE COLD uint
 enc_frame_zeropad(
-	u8 *const restrict pcmbuf, size_t nmemb_read, uint diff,
-	enum TTASampleBytes samplebytes, uint nchan
+	u8 *const restrict pcmbuf, const size_t nmemb_read, const uint diff,
+	enum TTASampleBytes samplebytes, const uint nchan
 )
 /*@modifies	*pcmbuf@*/
 {

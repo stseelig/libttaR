@@ -46,8 +46,9 @@
 **/
 size_t
 encbuf_init(
-	/*@out@*/ struct EncBuf *const restrict eb, size_t ni32_len,
-	size_t ttabuf_len, uint nchan, enum TTASampleBytes samplebytes
+	/*@out@*/ struct EncBuf *const restrict eb, const size_t ni32_len,
+	const size_t ttabuf_len, const uint nchan,
+	const enum TTASampleBytes samplebytes
 )
 /*@globals	fileSystem,
 		internalState
@@ -103,7 +104,10 @@ encbuf_init(
  * @note in encode loop
 **/
 HOT void
-encbuf_adjust(struct EncBuf *const restrict eb, size_t add_len, uint nchan)
+encbuf_adjust(
+	struct EncBuf *const restrict eb, const size_t add_len,
+	const uint nchan
+)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -132,11 +136,9 @@ encbuf_adjust(struct EncBuf *const restrict eb, size_t add_len, uint nchan)
  * @param eb[in] the encode buffers struct
 **/
 void
-encbuf_free(struct EncBuf *const restrict eb)
+encbuf_free(const struct EncBuf *const restrict eb)
 /*@globals	internalState@*/
-/*@modifies	internalState,
-		*eb
-@*/
+/*@modifies	internalState@*/
 /*@releases	eb->i32buf,
 		eb->ttabuf
 @*/
@@ -161,8 +163,9 @@ encbuf_free(struct EncBuf *const restrict eb)
 **/
 size_t
 decbuf_init(
-	/*@out@*/ struct DecBuf *const restrict db, size_t ni32_len,
-	size_t ttabuf_len, uint nchan, enum TTASampleBytes samplebytes
+	/*@out@*/ struct DecBuf *const restrict db, const size_t ni32_len,
+	const size_t ttabuf_len, const uint nchan,
+	const enum TTASampleBytes samplebytes
 )
 /*@globals	fileSystem,
 		internalState
@@ -216,8 +219,8 @@ decbuf_init(
 **/
 HOT void
 decbuf_check_adjust(
-	struct DecBuf *const restrict db, size_t newsize, uint nchan,
-	enum TTASampleBytes samplebytes
+	struct DecBuf *const restrict db, size_t newsize, const uint nchan,
+	const enum TTASampleBytes samplebytes
 )
 /*@globals	fileSystem,
 		internalState
@@ -256,11 +259,9 @@ decbuf_check_adjust(
  * @param db[in] the decode buffers struct
 **/
 void
-decbuf_free(struct DecBuf *const restrict db)
+decbuf_free(const struct DecBuf *const restrict db)
 /*@globals	internalState@*/
-/*@modifies	internalState,
-		*db
-@*/
+/*@modifies	internalState@*/
 /*@releases	db->pcmbuf,
 		db->ttabuf
 @*/

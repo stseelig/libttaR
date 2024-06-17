@@ -35,7 +35,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-static int optsget(uint, const struct OptDict *const restrict)
+static int optsget(uint, const struct OptDict *restrict)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -45,7 +45,7 @@ static int optsget(uint, const struct OptDict *const restrict)
 ;
 
 /*@-globuse@*/	// called function pointers
-static int shortoptsget(uint, const struct OptDict *const restrict)
+static int shortoptsget(uint, const struct OptDict *restrict)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -56,7 +56,7 @@ static int shortoptsget(uint, const struct OptDict *const restrict)
 /*@=globuse@*/
 
 /*@-globuse@*/	// called function pointers
-static int longoptget(uint, const struct OptDict *const restrict)
+static int longoptget(uint, const struct OptDict *restrict)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -123,7 +123,7 @@ optargs_process(
  * @return number of args used; negative number used on stop processing opts
 **/
 static int
-optsget(uint optind, const struct OptDict *const restrict optdict)
+optsget(const uint optind, const struct OptDict *const restrict optdict)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -181,7 +181,7 @@ optsget(uint optind, const struct OptDict *const restrict optdict)
  *    <0: number of args used
 **/
 static int
-shortoptsget(uint optind, const struct OptDict *const restrict optdict)
+shortoptsget(const uint optind, const struct OptDict *const restrict optdict)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -221,7 +221,7 @@ cont_outer_loop:
  * @return number of args used, or -1 on bad opt
 **/
 static int
-longoptget(uint optind, const struct OptDict *const restrict optdict)
+longoptget(const uint optind, const struct OptDict *const restrict optdict)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -262,7 +262,9 @@ longoptget(uint optind, const struct OptDict *const restrict optdict)
  * @param nargs the number of arguments the opt has
 **/
 void
-optsget_argcheck(uint optind, char *opt, uint nargs)
+optsget_argcheck(
+	const uint optind, const char *const restrict opt, const uint nargs
+)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 {

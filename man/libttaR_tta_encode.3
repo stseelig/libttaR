@@ -273,7 +273,8 @@ enc_frame_encode(
     struct EncBuf *const restrict encbuf,
     /*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
     /*@out@*/ struct LibTTAr_CodecState_User *const restrict user_out,
-    enum TTASampleBytes samplebytes, uint nchan, size_t ni32_perframe
+    const enum TTASampleBytes samplebytes, const uint nchan,
+    const size_t ni32_perframe
 )
 /*@globals      fileSystem,
                 internalState
@@ -338,8 +339,8 @@ dec_frame_decode(
     struct DecBuf *const restrict decbuf,
     /*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
     /*@out@*/ struct LibTTAr_CodecState_User *const restrict user_out,
-    enum TTASampleBytes samplebytes, uint nchan, size_t ni32_perframe,
-    size_t nbytes_tta_perframe,
+    const enum TTASampleBytes samplebytes, const uint nchan,
+    size_t ni32_perframe, const size_t nbytes_tta_perframe,
     /*@out@*/ size_t *const restrict nsamples_flat_2pad
 )
 /*@modifies     *decbuf->i32buf,

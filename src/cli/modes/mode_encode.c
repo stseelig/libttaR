@@ -36,11 +36,10 @@
 #undef outfile
 #undef infile
 extern HOT void encst_loop(
-	struct SeekTable *const restrict seektable,
-	/*@out@*/ struct EncStats *const restrict estat_out,
-	const struct FileStats *const restrict,
-	FILE *const restrict outfile, const char *const,
-	FILE *const restrict infile, const char *const
+	struct SeekTable *restrict seektable,
+	/*@out@*/ struct EncStats *restrict estat_out,
+	const struct FileStats *restrict, FILE *restrict outfile,
+	const char *, FILE *restrict infile, const char *
 )
 /*@globals	fileSystem,
 		internalState
@@ -59,11 +58,10 @@ extern HOT void encst_loop(
 #undef outfile
 #undef infile
 extern void encmt_loop(
-	struct SeekTable *const restrict seektable,
-	/*@out@*/ struct EncStats *const restrict estat_out,
-	const struct FileStats *const restrict fstat,
-	FILE *const restrict outfile, const char *const,
-	FILE *const restrict infile, const char *const, uint
+	struct SeekTable *restrict seektable,
+	/*@out@*/ struct EncStats *restrict estat_out,
+	const struct FileStats *restrict fstat, FILE *restrict outfile,
+	const char *, FILE *restrict infile, const char *, uint
 )
 /*@globals	fileSystem,
 		internalState
@@ -79,7 +77,7 @@ extern void encmt_loop(
 
 //////////////////////////////////////////////////////////////////////////////
 
-static void enc_loop(const struct OpenedFilesMember *const restrict)
+static void enc_loop(const struct OpenedFilesMember *restrict)
 /*@globals	fileSystem,
 		internalState,
 		g_rm_on_sigint
@@ -100,7 +98,7 @@ static void enc_loop(const struct OpenedFilesMember *const restrict)
  * @return the number of warnings/errors
 **/
 int
-mode_encode(uint optind)
+mode_encode(const uint optind)
 /*@globals	fileSystem,
 		internalState
 @*/

@@ -97,7 +97,7 @@ uint g_argc;
  * @brief copy of argv from main
 **/
 /*@checkmod@*/ /*@temp@*/
-char **g_argv;
+char *const *g_argv;
 
 /**@var g_nwarnings
  * @brief number of warnings and errors; exit status
@@ -140,7 +140,7 @@ char *g_rm_on_sigint = NULL;
  * @return program exit status; number of warnings and errors
 **/
 int
-main(int argc, /*@dependent@*/ char **argv)
+main(const int argc, char *const *const argv)
 /*@globals	fileSystem,
 		internalState,
 		g_argc,
@@ -204,7 +204,7 @@ print_main_help:
  * @note only async-signal-safe functions should be used ($ man signal-safe)
 **/
 NORETURN COLD void
-sighand(enum HandledSignals signum)
+sighand(const enum HandledSignals signum)
 /*@globals	fileSystem,
 		internalState
 @*/

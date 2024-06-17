@@ -133,22 +133,22 @@ typedef uint_fast64_t	u64fast;
 
 //////////////////////////////////////////////////////////////////////////////
 
-ALWAYS_INLINE CONST u16 bswap16(register u16) /*@*/;
-ALWAYS_INLINE CONST u32 bswap32(register u32) /*@*/;
-ALWAYS_INLINE CONST u64 bswap64(register u64) /*@*/;
+ALWAYS_INLINE CONST u16 bswap16(u16) /*@*/;
+ALWAYS_INLINE CONST u32 bswap32(u32) /*@*/;
+ALWAYS_INLINE CONST u64 bswap64(u64) /*@*/;
 
-ALWAYS_INLINE CONST u16 htole16(register u16) /*@*/;
-ALWAYS_INLINE CONST u16 letoh16(register u16) /*@*/;
-ALWAYS_INLINE CONST u32 htole32(register u32) /*@*/;
-ALWAYS_INLINE CONST u32 letoh32(register u32) /*@*/;
-ALWAYS_INLINE CONST u64 htole64(register u64) /*@*/;
-ALWAYS_INLINE CONST u64 letoh64(register u64) /*@*/;
+ALWAYS_INLINE CONST u16 htole16(u16) /*@*/;
+ALWAYS_INLINE CONST u16 letoh16(u16) /*@*/;
+ALWAYS_INLINE CONST u32 htole32(u32) /*@*/;
+ALWAYS_INLINE CONST u32 letoh32(u32) /*@*/;
+ALWAYS_INLINE CONST u64 htole64(u64) /*@*/;
+ALWAYS_INLINE CONST u64 letoh64(u64) /*@*/;
 
-ALWAYS_INLINE CONST i32 asl32(register i32, register u8) /*@*/;
-ALWAYS_INLINE CONST i32 asr32(register i32, register u8) /*@*/;
+ALWAYS_INLINE CONST i32 asl32(i32, u8) /*@*/;
+ALWAYS_INLINE CONST i32 asr32(i32, u8) /*@*/;
 
-ALWAYS_INLINE CONST uint tzcnt32(register u32) /*@*/;
-ALWAYS_INLINE CONST uint tbcnt32(register u32) /*@*/;
+ALWAYS_INLINE CONST uint tzcnt32(u32) /*@*/;
+ALWAYS_INLINE CONST uint tbcnt32(u32) /*@*/;
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -194,7 +194,7 @@ ALWAYS_INLINE CONST uint tbcnt32(register u32) /*@*/;
  * @return byteswapped value
  */
 ALWAYS_INLINE CONST u16
-bswap16(register u16 x)
+bswap16(register const u16 x)
 /*@*/
 {
 #if HAS_BUILTIN(BUILTIN_BSWAP16)
@@ -219,7 +219,7 @@ bswap16(register u16 x)
  * @return byteswapped value
  */
 ALWAYS_INLINE CONST u32
-bswap32(register u32 x)
+bswap32(register const u32 x)
 /*@*/
 {
 #if HAS_BUILTIN(BUILTIN_BSWAP32)
@@ -244,7 +244,7 @@ bswap32(register u32 x)
  * @return byteswapped value
  */
 ALWAYS_INLINE CONST u64
-bswap64(register u64 x)
+bswap64(register const u64 x)
 /*@*/
 {
 #if HAS_BUILTIN(BUILTIN_BSWAP64)
@@ -272,6 +272,18 @@ bswap64(register u64 x)
  *
  * @return little-endian value
 **/
+ALWAYS_INLINE CONST u16
+htole16(register const u16 x)
+/*@*/
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+	return bswap16(x);
+#elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+	return x;
+#else
+#error "weird endianness"
+#endif
+}
 
  /**@fn letoh16
   * @brief little-endian to host 16-bit
@@ -280,6 +292,18 @@ bswap64(register u64 x)
   *
   * @return host-endian value
  **/
+ALWAYS_INLINE CONST u16
+letoh16(register const u16 x)
+/*@*/
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+	return bswap16(x);
+#elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+	return x;
+#else
+#error "weird endianness"
+#endif
+}
 
  /**@fn htole32
   * @brief host to little-endian 32-bit
@@ -288,6 +312,18 @@ bswap64(register u64 x)
   *
   * @return little-endian value
  **/
+ALWAYS_INLINE CONST u32
+htole32(register const u32 x)
+/*@*/
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+	return bswap32(x);
+#elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+	return x;
+#else
+#error "weird endianness"
+#endif
+}
 
  /**@fn letoh32
   * @brief little-endian to host 32-bit
@@ -297,6 +333,19 @@ bswap64(register u64 x)
   * @return host-endian value
  **/
 
+ALWAYS_INLINE CONST u32
+letoh32(register const u32 x)
+/*@*/
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+	return bswap32(x);
+#elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+	return x;
+#else
+#error "weird endianness"
+#endif
+}
+
  /**@fn htole64
   * @brief host to little-endian 64-bit
   *
@@ -304,6 +353,18 @@ bswap64(register u64 x)
   *
   * @return little-endian value
  **/
+ALWAYS_INLINE CONST u64
+htole64(register const u64 x)
+/*@*/
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+	return bswap64(x);
+#elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+	return x;
+#else
+#error "weird endianness"
+#endif
+}
 
  /**@fn letoh64
   * @brief little-endian to host 64-bit
@@ -313,25 +374,18 @@ bswap64(register u64 x)
   * @return host-endian value
  **/
 
+ALWAYS_INLINE CONST u64
+letoh64(register const u64 x)
+/*@*/
+{
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-ALWAYS_INLINE CONST u16 htole16(register u16 x) /*@*/ { return bswap16(x); }
-ALWAYS_INLINE CONST u16 letoh16(register u16 x) /*@*/ { return bswap16(x); }
-ALWAYS_INLINE CONST u32 htole32(register u32 x) /*@*/ { return bswap32(x); }
-ALWAYS_INLINE CONST u32 letoh32(register u32 x) /*@*/ { return bswap32(x); }
-ALWAYS_INLINE CONST u64 htole64(register u64 x) /*@*/ { return bswap64(x); }
-ALWAYS_INLINE CONST u64 letoh64(register u64 x) /*@*/ { return bswap64(x); }
-
+	return bswap64(x);
 #elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-ALWAYS_INLINE CONST u16 htole16(register u16 x) /*@*/ { return x; }
-ALWAYS_INLINE CONST u16 letoh16(register u16 x) /*@*/ { return x; }
-ALWAYS_INLINE CONST u32 htole32(register u32 x) /*@*/ { return x; }
-ALWAYS_INLINE CONST u32 letoh32(register u32 x) /*@*/ { return x; }
-ALWAYS_INLINE CONST u64 htole64(register u64 x) /*@*/ { return x; }
-ALWAYS_INLINE CONST u64 letoh64(register u64 x) /*@*/ { return x; }
-
+	return x;
 #else
 #error "weird endianness"
 #endif
+}
 
 //==========================================================================//
 
@@ -346,7 +400,7 @@ ALWAYS_INLINE CONST u64 letoh64(register u64 x) /*@*/ { return x; }
  * @return shifted value
 **/
 ALWAYS_INLINE CONST i32
-asl32(register i32 x, register u8 k)
+asl32(register const i32 x, register const u8 k)
 /*@*/
 {
 	return (i32) (((u32) x) << k);
@@ -361,7 +415,7 @@ asl32(register i32 x, register u8 k)
  * @return shifted value
 **/
 ALWAYS_INLINE CONST i32
-asr32(register i32 x, register u8 k)
+asr32(register const i32 x, register const u8 k)
 /*@*/
 {
 	if ( (! HAS_ASR(i32)) && (x < 0) ){
@@ -385,7 +439,7 @@ asr32(register i32 x, register u8 k)
  * @note undefined for 0
 **/
 ALWAYS_INLINE CONST uint
-tzcnt32(register u32 x)
+tzcnt32(register const u32 x)
 /*@*/
 {
 #if HAS_BUILTIN(BUILTIN_TZCNT32)
@@ -416,7 +470,12 @@ tzcnt32(register u32 x)
  *
  * @note undefined for UINT32_MAX
 **/
-ALWAYS_INLINE CONST uint tbcnt32(register u32 x) /*@*/ { return tzcnt32(~x); }
+ALWAYS_INLINE CONST uint
+tbcnt32(register const u32 x)
+/*@*/
+{
+	return tzcnt32(~x);
+}
 
 // EOF ///////////////////////////////////////////////////////////////////////
 #endif

@@ -43,7 +43,7 @@ struct ID3TagHeader {
 //////////////////////////////////////////////////////////////////////////////
 
 #undef file
-static enum FileCheck apetag_skip(FILE *const restrict file)
+static enum FileCheck apetag_skip(FILE *restrict file)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
 		file
@@ -51,7 +51,7 @@ static enum FileCheck apetag_skip(FILE *const restrict file)
 ;
 
 #undef file
-static enum FileCheck id3tag_skip(FILE *const restrict file)
+static enum FileCheck id3tag_skip(FILE *restrict file)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
 		file
@@ -70,7 +70,7 @@ static CONST u32 id3syncsafeint(u8, u8, u8, u8) /*@*/;
  * @return FILECHECK_MISMATCH on success
 **/
 enum FileCheck
-metatags_skip(FILE *const restrict file)
+metatags_skip(FILE *restrict file)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
 		file
@@ -212,7 +212,7 @@ id3tag_skip(FILE *const restrict file)
  * @note IMO, it is an over-engineered solution to a non-existent problem.
 **/
 static CONST u32
-id3syncsafeint(u8 x0, u8 x1, u8 x2, u8 x3)
+id3syncsafeint(const u8 x0, const u8 x1, const u8 x2, const u8 x3)
 /*@*/
 {
 	u32 r = 0;

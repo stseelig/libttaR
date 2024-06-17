@@ -27,11 +27,10 @@
 #undef bitcache
 #undef codec
 static size_t tta_encode_mch(
-	/*@out@*/ u8 *const dest, const i32 *const,
-	u32 *const restrict crc_out,
-	/*@out@*/ size_t *const restrict ni32_out,
-	struct BitCache *const restrict bitcache,
-	struct Codec *const restrict codec, size_t, size_t, u8, i32, u8, uint
+	/*@out@*/ u8 *dest, const i32 *, u32 *restrict crc_out,
+	/*@out@*/ size_t *restrict ni32_out,
+	struct BitCache *restrict bitcache, struct Codec *restrict codec,
+	size_t, size_t, u8, i32, u8, uint
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -49,11 +48,10 @@ static size_t tta_encode_mch(
 #undef bitcache
 #undef codec
 static size_t tta_encode_1ch(
-	/*@out@*/ u8 *const dest, const i32 *const,
-	u32 *const restrict crc_out,
-	/*@out@*/ size_t *const restrict ni32_out,
-	struct BitCache *const restrict bitcache,
-	struct Codec *const restrict codec, size_t, size_t, u8, i32, u8, uint
+	/*@out@*/ u8 *dest, const i32 *, u32 *restrict crc_out,
+	/*@out@*/ size_t *restrict ni32_out,
+	struct BitCache *restrict bitcache, struct Codec *restrict codec,
+	size_t, size_t, u8, i32, u8, uint
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -71,11 +69,11 @@ static size_t tta_encode_1ch(
 #undef bitcache
 #undef codec
 static size_t tta_encode_2ch(
-	/*@out@*/ u8 *const dest, const i32 *const,
-	u32 *const restrict crc_out,
-	/*@out@*/ size_t *const restrict ni32_out,
-	struct BitCache *const restrict bitcache,
-	struct Codec *const restrict codec, size_t, size_t, u8, i32, u8, uint
+	/*@out@*/ u8 *dest, const i32 *,
+	u32 *restrict crc_out,
+	/*@out@*/ size_t *restrict ni32_out,
+	struct BitCache *restrict bitcache, struct Codec *restrict codec,
+	size_t, size_t, u8, i32, u8, uint
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -115,10 +113,11 @@ static size_t tta_encode_2ch(
 int
 libttaR_tta_encode(
 	/*@out@*/ u8 *const dest, const i32 *const src,
-	size_t dest_len, size_t src_len, size_t ni32_target,
+	const size_t dest_len, const size_t src_len, const size_t ni32_target,
 	/*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
 	/*@in@*/ struct LibTTAr_CodecState_User *const restrict user,
-	enum TTASampleBytes samplebytes, uint nchan, size_t ni32_perframe
+	const enum TTASampleBytes samplebytes, const uint nchan,
+	const size_t ni32_perframe
 )
 /*@modifies	*dest,
 		*priv,
@@ -254,9 +253,9 @@ tta_encode_mch(
 	u32 *const restrict crc_out,
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
-	struct Codec *const restrict codec, size_t ni32_target,
-	size_t soft_write_limit, u8 predict_k, i32 filter_round, u8 filter_k,
-	uint nchan
+	struct Codec *const restrict codec, const size_t ni32_target,
+	const size_t soft_write_limit, const u8 predict_k,
+	const i32 filter_round, const u8 filter_k, const uint nchan
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -337,9 +336,9 @@ tta_encode_1ch(
 	u32 *const restrict crc_out,
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
-	struct Codec *const restrict codec, size_t ni32_target,
-	size_t soft_write_limit, u8 predict_k, i32 filter_round, u8 filter_k,
-	UNUSED uint nchan
+	struct Codec *const restrict codec, const size_t ni32_target,
+	const size_t soft_write_limit, const u8 predict_k,
+	const i32 filter_round, const u8 filter_k, UNUSED const uint nchan
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -406,9 +405,9 @@ tta_encode_2ch(
 	u32 *const restrict crc_out,
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
-	struct Codec *const restrict codec, size_t ni32_target,
-	size_t soft_write_limit, u8 predict_k, i32 filter_round, u8 filter_k,
-	UNUSED uint nchan
+	struct Codec *const restrict codec, const size_t ni32_target,
+	const size_t soft_write_limit, const u8 predict_k,
+	const i32 filter_round, const u8 filter_k, UNUSED const uint nchan
 )
 /*@modifies	*dest,
 		*crc_out,

@@ -34,7 +34,9 @@
  * @note MAYBE write a preliminary header instead
 **/
 void
-prewrite_w64_header(FILE *const restrict outfile, const char *outfile_name)
+prewrite_w64_header(
+	FILE *const restrict outfile, const char *const restrict outfile_name
+)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
 		outfile
@@ -75,8 +77,9 @@ prewrite_w64_header(FILE *const restrict outfile, const char *outfile_name)
 **/
 void
 write_w64_header(
-	FILE *const restrict outfile, size_t data_size,
-	const struct FileStats *const restrict fstat, const char *outfile_name
+	FILE *const restrict outfile, const size_t data_size,
+	const struct FileStats *const restrict fstat,
+	const char *const restrict outfile_name
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,

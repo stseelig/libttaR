@@ -33,7 +33,9 @@
  * @note MAYBE write a preliminary header instead
 **/
 void
-prewrite_wav_header(FILE *const restrict outfile, const char *outfile_name)
+prewrite_wav_header(
+	FILE *const restrict outfile, const char *const restrict outfile_name
+)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
 		outfile
@@ -75,7 +77,8 @@ prewrite_wav_header(FILE *const restrict outfile, const char *outfile_name)
 void
 write_wav_header(
 	FILE *const restrict outfile, size_t data_size,
-	const struct FileStats *const restrict fstat, const char *outfile_name
+	const struct FileStats *const restrict fstat,
+	const char *const restrict outfile_name
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,

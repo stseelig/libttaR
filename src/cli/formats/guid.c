@@ -31,7 +31,7 @@
 **/
 COLD char *
 guid128_format(
-	/*@returned@*/ /*@out@*/ char *const restrict buf, size_t buflen,
+	/*@returned@*/ /*@out@*/ char *const restrict buf, const size_t buflen,
 	const struct Guid128 *const restrict guid
 )
 /*@modifies	*buf@*/

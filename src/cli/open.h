@@ -35,7 +35,9 @@ struct OpenedFiles {
 //////////////////////////////////////////////////////////////////////////////
 
 /*@dependent@*/ /*@null@*/
-extern FILE *fopen_check(const char *, const char *, enum Fatality)
+extern FILE *fopen_check(
+	const char *restrict, const char *restrict, enum Fatality
+)
 /*@globals	fileSystem,
 		internalState
 @*/

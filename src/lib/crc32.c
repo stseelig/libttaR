@@ -113,7 +113,7 @@ HIDDEN const u32 crc32_table[] = {
  *   the rice coder.
 **/
 PURE u32
-libttaR_crc32(const u8 *const restrict buf, size_t size)
+libttaR_crc32(const u8 *const restrict buf, const size_t size)
 /*@*/
 {
 	u32 crc = CRC32_INIT;

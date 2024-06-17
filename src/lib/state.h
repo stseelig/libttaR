@@ -48,7 +48,7 @@ INLINE void
 state_priv_init(
 	/*@out@*/
 	register struct LibTTAr_CodecState_Priv *const restrict priv,
-	register uint nchan
+	register const uint nchan
 )
 /*@modifies	*priv@*/
 {

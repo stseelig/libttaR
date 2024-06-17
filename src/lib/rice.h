@@ -50,39 +50,29 @@ extern HIDDEN const u32 lsmask32_table[];
 //////////////////////////////////////////////////////////////////////////////
 
 #undef rice
-INLINE void rice_init(
-	/*@out@*/ register struct Rice *const restrict rice, register u8,
-	register u8
-)
+INLINE void rice_init(/*@out@*/ struct Rice *restrict rice, u8, u8)
 /*@modifies	*rice@*/
 ;
 
 //--------------------------------------------------------------------------//
 
-ALWAYS_INLINE CONST u32 shift32_bit(register u8) /*@*/;
-
-ALWAYS_INLINE CONST u32 shift32p4_bit(register u8, const enum ShiftMaskMode)
-/*@*/
-;
-
-ALWAYS_INLINE CONST u32 lsmask32(register u8, const enum ShiftMaskMode) /*@*/;
+ALWAYS_INLINE CONST u32 shift32_bit(u8) /*@*/;
+ALWAYS_INLINE CONST u32 shift32p4_bit(u8, enum ShiftMaskMode) /*@*/;
+ALWAYS_INLINE CONST u32 lsmask32(u8, enum ShiftMaskMode) /*@*/;
 
 //--------------------------------------------------------------------------//
 
 #undef sum
 #undef k
 /*@unused@*/
-void rice_cmpsum(
-	register u32 *const restrict sum, register u8 *const restrict k,
-	register u32
-)
+void rice_cmpsum(u32 *restrict sum, u8 *restrict k, u32)
 /*@modifies	*sum,
 		*k
 @*/
 ;
 
 #undef crc
-ALWAYS_INLINE u8 rice_crc32(register u8, register u32 *const restrict crc)
+ALWAYS_INLINE u8 rice_crc32(u8, u32 *restrict crc)
 /*@modifies	*crc@*/
 ;
 
@@ -93,10 +83,8 @@ ALWAYS_INLINE u8 rice_crc32(register u8, register u32 *const restrict crc)
 #undef bitcache
 #undef crc
 ALWAYS_INLINE size_t rice_encode(
-	/*@out@*/ register u8 *const restrict dest, register size_t,
-	register u32, register struct Rice *const restrict rice,
-	register struct BitCache *const restrict bitcache,
-	register u32 *const restrict crc
+	/*@out@*/ u8 *restrict dest, size_t, u32, struct Rice *restrict rice,
+	struct BitCache *restrict bitcache, u32 *restrict crc
 )
 /*@modifies	*dest,
 		*rice,
@@ -110,9 +98,8 @@ ALWAYS_INLINE size_t rice_encode(
 #undef count
 #undef crc
 INLINE size_t rice_encode_cacheflush(
-	/*@out@*/ register u8 *const restrict dest, register size_t,
-	register struct BitCache *const restrict bitcache,
-	register u32 *const restrict crc
+	/*@out@*/ u8 *restrict dest, size_t,
+	struct BitCache *restrict bitcache, u32 *restrict crc
 )
 /*@modifies	*dest,
 		*bitcache,
@@ -125,9 +112,8 @@ INLINE size_t rice_encode_cacheflush(
 #undef count
 #undef crc
 ALWAYS_INLINE size_t rice_unary_put(
-	/*@out@*/ register u8 *const restrict dest, register size_t,
-	register u32, register u32 *const restrict cache,
-	register u8 *const restrict count, register u32 *const restrict crc
+	/*@out@*/ u8 *restrict dest, size_t, u32, u32 *restrict cache,
+	u8 *restrict count, u32 *restrict crc
 )
 /*@modifies	*dest,
 		*cache,
@@ -141,9 +127,8 @@ ALWAYS_INLINE size_t rice_unary_put(
 #undef count
 #undef crc
 ALWAYS_INLINE size_t rice_binary_put(
-	/*@out@*/ register u8 *const restrict dest, register size_t,
-	register u32, register u8, register u32 *const restrict cache,
-	register u8 *const restrict count, register u32 *const restrict crc
+	/*@out@*/ u8 *restrict dest, size_t, u32, u8, u32 *restrict cache,
+	u8 *restrict count, u32 *restrict crc
 )
 /*@modifies	*dest,
 		*cache,
@@ -159,11 +144,9 @@ ALWAYS_INLINE size_t rice_binary_put(
 #undef bitcache
 #undef crc
 ALWAYS_INLINE size_t rice_decode(
-	/*@out@*/ register u32 *const restrict value,
-	register const u8 *const restrict, register size_t,
-	register struct Rice *const restrict rice,
-	register struct BitCache *const restrict bitcache,
-	register u32 *const restrict crc
+	/*@out@*/ u32 *restrict value, const u8 *restrict, size_t,
+	struct Rice *restrict rice, struct BitCache *restrict bitcache,
+	u32 *restrict crc
 )
 /*@modifies	*value,
 		*rice,
@@ -177,10 +160,8 @@ ALWAYS_INLINE size_t rice_decode(
 #undef count
 #undef crc
 ALWAYS_INLINE size_t rice_unary_get(
-	/*@out@*/ register u32 *const restrict unary,
-	register const u8 *const restrict, register size_t,
-	register u32 *const restrict cache, register u8 *const restrict count,
-	register u32 *const restrict crc
+	/*@out@*/ u32 *restrict unary, const u8 *restrict, size_t,
+	u32 *restrict cache, u8 *restrict count, u32 *restrict crc
 )
 /*@modifies	*unary,
 		*cache,
@@ -194,10 +175,8 @@ ALWAYS_INLINE size_t rice_unary_get(
 #undef count
 #undef crc
 ALWAYS_INLINE size_t rice_binary_get(
-	/*@out@*/ register u32 *const restrict binary,
-	register const u8 *const restrict, register size_t, register u8,
-	register u32 *const restrict cache, register u8 *const restrict count,
-	register u32 *const restrict crc
+	/*@out@*/ u32 *restrict binary, const u8 *restrict, size_t, u8,
+	u32 *restrict cache, u8 *restrict count, u32 *restrict crc
 )
 /*@modifies	*binary,
 		*cache,
@@ -217,8 +196,8 @@ ALWAYS_INLINE size_t rice_binary_get(
 **/
 INLINE void
 rice_init(
-	/*@out@*/ register struct Rice *const restrict rice, register u8 k0,
-	register u8 k1
+	/*@out@*/ register struct Rice *const restrict rice,
+	register const u8 k0, register const u8 k1
 )
 /*@modifies	*rice@*/
 {
@@ -241,7 +220,7 @@ rice_init(
  * @pre 0 <= 'k' <= 31u
 **/
 ALWAYS_INLINE CONST u32
-shift32_bit(register u8 k)
+shift32_bit(register const u8 k)
 /*@*/
 {
 	return (u32) (0x1u << k);
@@ -258,7 +237,7 @@ shift32_bit(register u8 k)
  * @pre 0 <= 'k' <= 28u
 **/
 ALWAYS_INLINE CONST u32
-shift32p4_bit(register u8 k, const enum ShiftMaskMode mode)
+shift32p4_bit(register const u8 k, const enum ShiftMaskMode mode)
 /*@*/
 {
 	register u32 r;
@@ -289,7 +268,7 @@ shift32p4_bit(register u8 k, const enum ShiftMaskMode mode)
  * @note affected by LIBTTAr_OPT_CMOV_SHIFTER
 **/
 ALWAYS_INLINE CONST u32
-lsmask32(register u8 k, const enum ShiftMaskMode mode)
+lsmask32(register const u8 k, const enum ShiftMaskMode mode)
 /*@*/
 {
 	register u32 r;
@@ -347,7 +326,7 @@ lsmask32(register u8 k, const enum ShiftMaskMode mode)
  * @return 'x'
 **/
 ALWAYS_INLINE u8
-rice_crc32(register u8 x, register u32 *const restrict crc)
+rice_crc32(register const u8 x, register u32 *const restrict crc)
 /*@modifies	*crc@*/
 {
 	*crc = crc32_cont(x, *crc);
@@ -503,7 +482,7 @@ loop_entr:
 ALWAYS_INLINE size_t
 rice_binary_put(
 	/*@out@*/ register u8 *const restrict dest, register size_t r,
-	register u32 binary, register u8 k,
+	register const u32 binary, register const u8 k,
 	register u32 *const restrict cache, register u8 *const restrict count,
 	register u32 *const restrict crc
 )
@@ -667,7 +646,7 @@ ALWAYS_INLINE size_t
 rice_binary_get(
 	/*@out@*/ register u32 *const restrict binary,
 	register const u8 *const restrict src, register size_t r,
-	register u8 k, register u32 *const restrict cache,
+	register const u8 k, register u32 *const restrict cache,
 	register u8 *const restrict count, register u32 *const restrict crc
 )
 /*@modifies	*binary,

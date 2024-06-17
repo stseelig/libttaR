@@ -200,8 +200,8 @@ errprint_help_mode_decode(void)
 **/
 static void
 errprint_program_intro(
-	const struct LibTTAr_VersionInfo *cli,
-	const struct LibTTAr_VersionInfo *lib
+	const struct LibTTAr_VersionInfo *const restrict cli,
+	const struct LibTTAr_VersionInfo *const restrict lib
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
@@ -225,7 +225,8 @@ errprint_program_intro(
 **/
 static void
 errprint_ttaR_version(
-	const char *name, const struct LibTTAr_VersionInfo *info
+	const char *const restrict name,
+	const struct LibTTAr_VersionInfo *const restrict info
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
@@ -250,7 +251,7 @@ errprint_ttaR_version(
  * @param str[in] the copyright string
 **/
 static void
-errprint_libstr_copyright(const char *str)
+errprint_libstr_copyright(const char *restrict str)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 {

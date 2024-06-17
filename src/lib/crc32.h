@@ -36,7 +36,7 @@ extern HIDDEN const u32 crc32_table[];
  * @note affected by LIBTTAr_OPT_MEM_XOR
 **/
 ALWAYS_INLINE CONST u32
-crc32_cont(register u8 x, register u32 crc)
+crc32_cont(register const u8 x, register const u32 crc)
 /*@*/
 {
 	// having the variable instead of just having a one line return is
@@ -57,7 +57,12 @@ crc32_cont(register u8 x, register u32 crc)
  *
  * @return the finished CRC
 **/
-ALWAYS_INLINE CONST u32 crc32_end(register u32 crc) /*@*/ { return ~crc; }
+ALWAYS_INLINE CONST u32
+crc32_end(register const u32 crc)
+/*@*/
+{
+	return ~crc;
+}
 
 // EOF ///////////////////////////////////////////////////////////////////////
 #endif

@@ -77,11 +77,9 @@ extern HOT void encbuf_adjust(struct EncBuf *const restrict eb, size_t, uint)
 ;
 
 #undef eb
-extern void encbuf_free(struct EncBuf *const restrict eb)
+extern void encbuf_free(const struct EncBuf *const restrict eb)
 /*@globals	internalState@*/
-/*@modifies	internalState,
-		*eb
-@*/
+/*@modifies	internalState@*/
 /*@releases	eb->i32buf,
 		eb->ttabuf
 @*/
@@ -122,11 +120,9 @@ extern HOT void decbuf_check_adjust(
 ;
 
 #undef db
-extern void decbuf_free(struct DecBuf *const restrict db)
+extern void decbuf_free(const struct DecBuf *const restrict db)
 /*@globals	internalState@*/
-/*@modifies	internalState,
-		*db
-@*/
+/*@modifies	internalState@*/
 /*@releases	db->pcmbuf,
 		db->ttabuf
 @*/

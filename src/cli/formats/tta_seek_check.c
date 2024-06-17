@@ -39,7 +39,7 @@
 **/
 enum FileCheck
 filecheck_tta_seektable(
-	/*@out@*/ struct SeekTable *const restrict st, size_t nframes,
+	/*@out@*/ struct SeekTable *const restrict st, const size_t nframes,
 	FILE *const restrict file
 )
 /*@globals	fileSystem@*/

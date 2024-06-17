@@ -28,28 +28,28 @@ extern const struct OptDict decode_optdict[];
 
 // common
 
-extern int opt_common_single_threaded(uint, char *, enum OptMode)
+extern int opt_common_single_threaded(uint, char *restrict, enum OptMode)
 /*@globals	g_flag@*/
 /*@modifies	g_flag.threadmode@*/
 ;
 
-extern int opt_common_multi_threaded(uint, char *, enum OptMode)
+extern int opt_common_multi_threaded(uint, char *restrict, enum OptMode)
 /*@globals	g_flag@*/
 /*@modifies	g_flag.threadmode@*/
 ;
 
-extern int opt_common_low_memory(uint, char *, enum OptMode)
+extern int opt_common_low_memory(uint, char *restrict, enum OptMode)
 /*@globals	g_flag@*/
 /*@modifies	g_flag.threadmode@*/
 ;
 
-extern int opt_common_delete_src(uint, char *, enum OptMode)
+extern int opt_common_delete_src(uint, char *restrict, enum OptMode)
 /*@globals	g_flag@*/
 /*@modifies	g_flag.delete_src@*/
 ;
 
 #undef opt
-extern int opt_common_outfile(uint, char *opt, enum OptMode)
+extern int opt_common_outfile(uint, char *restrict opt, enum OptMode)
 /*@globals	fileSystem,
 		internalState,
 		g_flag
@@ -62,13 +62,13 @@ extern int opt_common_outfile(uint, char *opt, enum OptMode)
 @*/
 ;
 
-extern int opt_common_quiet(uint, char *, enum OptMode)
+extern int opt_common_quiet(uint, char *restrict, enum OptMode)
 /*@globals	g_flag@*/
 /*@modifies	g_flag.quiet@*/
 ;
 
 #undef opt
-extern int opt_common_threads(uint, char *opt, enum OptMode)
+extern int opt_common_threads(uint, char *restrict opt, enum OptMode)
 /*@globals	fileSystem,
 		internalState,
 		g_flag,
@@ -87,7 +87,7 @@ extern int opt_common_threads(uint, char *opt, enum OptMode)
 // tta2enc
 
 #undef fstat
-extern void rawpcm_statcopy(/*@out@*/ struct FileStats *const restrict fstat)
+extern void rawpcm_statcopy(/*@out@*/ struct FileStats *restrict fstat)
 /*@modifies	*fstat@*/
 ;
 

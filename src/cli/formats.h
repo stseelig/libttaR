@@ -122,8 +122,8 @@ struct DecStats {
 
 #undef buf
 extern COLD char *guid128_format(
-	/*@returned@*/ /*@out@*/ char *const restrict buf, size_t,
-	const struct Guid128 *const restrict
+	/*@returned@*/ /*@out@*/ char *restrict buf, size_t,
+	const struct Guid128 *restrict
 )
 /*@modifies	*buf@*/
 ;
@@ -133,7 +133,7 @@ extern COLD char *guid128_format(
 // metatags_skip.c
 
 #undef file
-extern enum FileCheck metatags_skip(FILE *const restrict file)
+extern enum FileCheck metatags_skip(FILE *restrict file)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
 		file
@@ -147,8 +147,7 @@ extern enum FileCheck metatags_skip(FILE *const restrict file)
 #undef fstat
 #undef file
 extern enum FileCheck filecheck_tta1(
-	/*@out@*/ struct FileStats *const restrict fstat,
-	FILE *const restrict file
+	/*@out@*/ struct FileStats *restrict fstat, FILE *restrict file
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -162,9 +161,7 @@ extern enum FileCheck filecheck_tta1(
 // tta_seek.c
 
 #undef st
-extern void seektable_init(
-	/*@out@*/ struct SeekTable *const restrict st, size_t
-)
+extern void seektable_init(/*@out@*/ struct SeekTable *restrict st, size_t)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -177,7 +174,7 @@ extern void seektable_init(
 
 #undef st
 extern HOT void seektable_add(
-	struct SeekTable *const restrict st, size_t, const char *
+	struct SeekTable *restrict st, size_t, const char *restrict
 )
 /*@globals	fileSystem,
 		internalState
@@ -189,11 +186,9 @@ extern HOT void seektable_add(
 ;
 
 #undef st
-extern void seektable_free(struct SeekTable *const restrict st)
+extern void seektable_free(const struct SeekTable *restrict st)
 /*@globals	internalState@*/
-/*@modifies	internalState,
-		*st
-@*/
+/*@modifies	internalState@*/
 /*@releases	st->table@*/
 ;
 
@@ -202,8 +197,7 @@ extern void seektable_free(struct SeekTable *const restrict st)
 #undef st
 #undef file
 extern enum FileCheck filecheck_tta_seektable(
-	/*@out@*/ struct SeekTable *const restrict st, size_t,
-	FILE *const restrict file
+	/*@out@*/ struct SeekTable *restrict st, size_t, FILE *restrict file
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -219,8 +213,8 @@ extern enum FileCheck filecheck_tta_seektable(
 
 #undef outfile
 extern void prewrite_tta1_header_seektable(
-	FILE *const restrict outfile, const struct SeekTable *const restrict,
-	const char *
+	FILE *restrict outfile, const struct SeekTable *restrict,
+	const char *restrict
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -230,8 +224,8 @@ extern void prewrite_tta1_header_seektable(
 
 #undef outfile
 extern off_t write_tta1_header(
-	FILE *const restrict outfile, size_t,
-	const struct FileStats *const restrict, const char *
+	FILE *restrict outfile, size_t, const struct FileStats *restrict,
+	const char *
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -241,8 +235,8 @@ extern off_t write_tta1_header(
 
 #undef outfile
 extern void write_tta_seektable(
-	FILE *const restrict outfile, const struct SeekTable *const restrict,
-	const char *
+	FILE *restrict outfile, const struct SeekTable *restrict,
+	const char *restrict
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -257,8 +251,7 @@ extern void write_tta_seektable(
 #undef fstat
 #undef file
 extern enum FileCheck filecheck_w64(
-	/*@out@*/ struct FileStats *const restrict fstat,
-	FILE *const restrict file
+	/*@out@*/ struct FileStats *restrict fstat, FILE *restrict file
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -272,7 +265,7 @@ extern enum FileCheck filecheck_w64(
 // w64_write.c
 
 #undef outfile
-extern void prewrite_w64_header(FILE *const restrict outfile, const char *)
+extern void prewrite_w64_header(FILE *restrict outfile, const char *)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
 		outfile
@@ -281,8 +274,8 @@ extern void prewrite_w64_header(FILE *const restrict outfile, const char *)
 
 #undef outfile
 extern void write_w64_header(
-	FILE *const restrict outfile, size_t,
-	const struct FileStats *const restrict, const char *
+	FILE *restrict outfile, size_t, const struct FileStats *restrict,
+	const char *restrict
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -297,8 +290,7 @@ extern void write_w64_header(
 #undef fstat
 #undef file
 extern enum FileCheck filecheck_wav(
-	/*@out@*/ struct FileStats *const restrict fstat,
-	FILE *const restrict file
+	/*@out@*/ struct FileStats *restrict fstat, FILE *restrict file
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -310,8 +302,7 @@ extern enum FileCheck filecheck_wav(
 #undef fstat
 #undef file
 extern enum FileCheck filecheck_wav_read_subchunk_fmt(
-	/*@out@*/ struct FileStats *const restrict fstat,
-	FILE *const restrict file
+	/*@out@*/ struct FileStats *restrict fstat, FILE *restrict file
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -325,7 +316,7 @@ extern enum FileCheck filecheck_wav_read_subchunk_fmt(
 // wav_write.c
 
 #undef outfile
-extern void prewrite_wav_header(FILE *const restrict outfile, const char *)
+extern void prewrite_wav_header(FILE *restrict outfile, const char *restrict)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
 		outfile
@@ -334,8 +325,8 @@ extern void prewrite_wav_header(FILE *const restrict outfile, const char *)
 
 #undef outfile
 extern void write_wav_header(
-	FILE *const restrict outfile, size_t,
-	const struct FileStats *const restrict, const char *
+	FILE *restrict outfile, size_t, const struct FileStats *restrict,
+	const char *restrict
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -345,8 +336,8 @@ extern void write_wav_header(
 
 #undef body
 extern void fill_waveformatex_body(
-	/*@out@*/ struct RiffSubChunk_WaveFormatEX_Body *const restrict body,
-	u16, const struct FileStats *const restrict
+	/*@out@*/ struct RiffSubChunk_WaveFormatEX_Body *restrict body,
+	u16, const struct FileStats *restrict
 )
 /*@modifies	*body@*/
 ;
@@ -354,8 +345,8 @@ extern void fill_waveformatex_body(
 #undef wfx
 extern void fill_waveformatextensible(
 	/*@out@*/
-	struct RiffSubChunk_WaveFormatExtensible_Tail *const restrict wfx,
-	const struct FileStats *const restrict
+	struct RiffSubChunk_WaveFormatExtensible_Tail *restrict wfx,
+	const struct FileStats *restrict
 )
 /*@modifies	*wfx@*/
 ;

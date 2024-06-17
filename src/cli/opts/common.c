@@ -35,7 +35,8 @@
 **/
 int
 opt_common_single_threaded(
-	UNUSED uint optind, UNUSED char *opt, UNUSED enum OptMode mode
+	UNUSED const uint optind, UNUSED char *const restrict opt,
+	UNUSED const enum OptMode mode
 )
 /*@globals	g_flag@*/
 /*@modifies	g_flag.threadmode@*/
@@ -55,7 +56,8 @@ opt_common_single_threaded(
 **/
 int
 opt_common_multi_threaded(
-	UNUSED uint optind, UNUSED char *opt, UNUSED enum OptMode mode
+	UNUSED const uint optind, UNUSED char *const restrict opt,
+	UNUSED const enum OptMode mode
 )
 /*@globals	g_flag@*/
 /*@modifies	g_flag.threadmode@*/
@@ -75,7 +77,8 @@ opt_common_multi_threaded(
 **/
 int
 opt_common_delete_src(
-	UNUSED uint optind, UNUSED char *opt, UNUSED enum OptMode mode
+	UNUSED const uint optind, UNUSED char *const restrict opt,
+	UNUSED const enum OptMode mode
 )
 /*@globals	g_flag@*/
 /*@modifies	g_flag.delete_src@*/
@@ -94,7 +97,9 @@ opt_common_delete_src(
  * @return number of args used (long), or number of char's read (short)
 **/
 int
-opt_common_threads(uint optind, char *opt, enum OptMode mode)
+opt_common_threads(
+	const uint optind, char *const restrict opt, const enum OptMode mode
+)
 /*@globals	fileSystem,
 		internalState,
 		g_flag,
@@ -164,7 +169,9 @@ opt_common_threads(uint optind, char *opt, enum OptMode mode)
  * @return number of args used (long), or number of char's read (short)
 **/
 int
-opt_common_outfile(uint optind, char *opt, enum OptMode mode)
+opt_common_outfile(
+	const uint optind, char *const restrict opt, const enum OptMode mode
+)
 /*@globals	fileSystem,
 		internalState,
 		g_flag
@@ -222,7 +229,8 @@ opt_common_outfile(uint optind, char *opt, enum OptMode mode)
 **/
 int
 opt_common_quiet(
-	UNUSED uint optind, UNUSED char *opt, UNUSED enum OptMode mode
+	UNUSED const uint optind, UNUSED char *const restrict opt,
+	UNUSED const enum OptMode mode
 )
 /*@globals	g_flag@*/
 /*@modifies	g_flag.quiet@*/

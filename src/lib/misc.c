@@ -65,7 +65,7 @@ const struct LibTTAr_VersionInfo libttaR_info = {
  * @note read the manpage for more info
 **/
 CONST size_t
-libttaR_codecstate_priv_size(uint nchan)
+libttaR_codecstate_priv_size(const uint nchan)
 /*@*/
 {
 	size_t r = 0;
@@ -91,7 +91,9 @@ libttaR_codecstate_priv_size(uint nchan)
  * @note read the manpage for more info
 **/
 CONST size_t
-libttaR_ttabuf_safety_margin(enum TTASampleBytes samplebytes, uint nchan)
+libttaR_ttabuf_safety_margin(
+	const enum TTASampleBytes samplebytes, const uint nchan
+)
 /*@*/
 {
 	if ( ((uint) samplebytes == 0)
@@ -114,7 +116,7 @@ libttaR_ttabuf_safety_margin(enum TTASampleBytes samplebytes, uint nchan)
  * @note read the manpage for more info
 **/
 CONST bool
-libttaR_test_nchan(uint nchan)
+libttaR_test_nchan(const uint nchan)
 /*@*/
 {
 	bool r = false;

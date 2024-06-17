@@ -39,11 +39,11 @@
 #undef user_out
 #undef nsamples_flat_2pad
 static int dec_frame_decode(
-	struct DecBuf *const restrict decbuf,
-	/*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
-	/*@out@*/ struct LibTTAr_CodecState_User *const restrict user_out,
+	struct DecBuf *restrict decbuf,
+	/*@reldef@*/ struct LibTTAr_CodecState_Priv *restrict priv,
+	/*@out@*/ struct LibTTAr_CodecState_User *restrict user_out,
 	enum TTASampleBytes, uint, size_t, size_t,
-	/*@out@*/ size_t *const restrict nsamples_flat_2pad
+	/*@out@*/ size_t *restrict nsamples_flat_2pad
 )
 /*@modifies	*decbuf->i32buf,
 		*decbuf->pcmbuf,
@@ -57,11 +57,11 @@ static int dec_frame_decode(
 #undef dstat_out
 #undef outfile
 static void dec_frame_write(
-	struct DecBuf *const restrict decbuf,
-	/*@in@*/ struct DecStats *const restrict dstat_out,
-	struct LibTTAr_CodecState_User *const restrict,
-	const char *const restrict, FILE *const restrict outfile,
-	const char *const restrict, enum TTASampleBytes, uint, u32, ichar,
+	struct DecBuf *restrict decbuf,
+	/*@in@*/ struct DecStats *restrict dstat_out,
+	struct LibTTAr_CodecState_User *restrict,
+	const char *restrict, FILE *restrict outfile,
+	const char *restrict, enum TTASampleBytes, uint, u32, ichar,
 	size_t, size_t
 )
 /*@globals	fileSystem@*/
@@ -76,7 +76,7 @@ static CONST size_t dec_ni32_perframe(size_t, size_t, size_t, uint) /*@*/;
 
 #undef pcmbuf
 NOINLINE COLD void dec_frame_zeropad(
-	u8 *const restrict pcmbuf, size_t, size_t, enum TTASampleBytes
+	u8 *restrict pcmbuf, size_t, size_t, enum TTASampleBytes
 )
 /*@modifies	*pcmbuf@*/
 ;
@@ -85,7 +85,7 @@ NOINLINE COLD void dec_frame_zeropad(
 
 #undef arg
 /*@null@*/
-static HOT void *decmt_io(struct MTArg_DecIO *const restrict arg)
+static HOT void *decmt_io(struct MTArg_DecIO *restrict arg)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -105,7 +105,7 @@ static HOT void *decmt_io(struct MTArg_DecIO *const restrict arg)
 
 #undef arg
 /*@null@*/
-static HOT void *decmt_decoder(struct MTArg_Decoder *const restrict arg)
+static HOT void *decmt_decoder(struct MTArg_Decoder *restrict arg)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -294,7 +294,7 @@ decmt_loop(
 	const struct FileStats *const restrict fstat,
 	FILE *const restrict outfile, const char *const outfile_name,
 	FILE *const restrict infile, const char *const infile_name,
-	uint nthreads
+	const uint nthreads
 )
 /*@globals	fileSystem,
 		internalState
@@ -396,8 +396,8 @@ dec_frame_decode(
 	struct DecBuf *const restrict decbuf,
 	/*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
 	/*@out@*/ struct LibTTAr_CodecState_User *const restrict user_out,
-	enum TTASampleBytes samplebytes, uint nchan, size_t ni32_perframe,
-	size_t nbytes_tta_perframe,
+	const enum TTASampleBytes samplebytes, const uint nchan,
+	size_t ni32_perframe, const size_t nbytes_tta_perframe,
 	/*@out@*/ size_t *const restrict nsamples_flat_2pad
 )
 /*@modifies	*decbuf->i32buf,
@@ -480,9 +480,9 @@ dec_frame_write(
 	struct LibTTAr_CodecState_User *const restrict user_in,
 	const char *const restrict infile_name,
 	FILE *const restrict outfile, const char *const restrict outfile_name,
-	enum TTASampleBytes samplebytes, uint nchan,
-	u32 crc_read /*little-endian*/, ichar dec_retval,
-	size_t nsamples_flat_2pad, size_t nbytes_tta_perframe
+	const enum TTASampleBytes samplebytes, const uint nchan,
+	const u32 crc_read /*little-endian*/, const ichar dec_retval,
+	const size_t nsamples_flat_2pad, const size_t nbytes_tta_perframe
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -556,8 +556,8 @@ dec_frame_write(
 **/
 static CONST size_t
 dec_ni32_perframe(
-	size_t nsamples_dec, size_t nsamples_enc, size_t nsamples_perframe,
-	uint nchan
+	const size_t nsamples_dec, const size_t nsamples_enc,
+	const size_t nsamples_perframe, const uint nchan
 )
 /*@*/
 {
@@ -577,8 +577,8 @@ dec_ni32_perframe(
 **/
 NOINLINE COLD void
 dec_frame_zeropad(
-	u8 *const restrict pcmbuf, size_t pcmbuf_nsamples_flat,
-	size_t nsamples_flat_2pad, enum TTASampleBytes samplebytes
+	u8 *const restrict pcmbuf, const size_t pcmbuf_nsamples_flat,
+	const size_t nsamples_flat_2pad, const enum TTASampleBytes samplebytes
 )
 /*@modifies	*pcmbuf@*/
 {

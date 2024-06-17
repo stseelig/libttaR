@@ -57,7 +57,7 @@ extern const uint g_argc;
 #endif
 
 /*@checkmod@*/ /*@temp@*/
-extern char **g_argv;
+extern char *const *g_argv;
 
 /*@checkmod@*/
 extern u8 g_nwarnings;

@@ -25,7 +25,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #undef opt
-static int opt_decode_format(uint, char *opt, enum OptMode)
+static int opt_decode_format(uint, char *restrict opt, enum OptMode)
 /*@globals	fileSystem,
 		internalState,
 		g_flag
@@ -38,7 +38,7 @@ static int opt_decode_format(uint, char *opt, enum OptMode)
 ;
 
 static int
-opt_decode_help(uint, char *,enum OptMode)
+opt_decode_help(uint, char *restrict ,enum OptMode)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;
@@ -77,7 +77,9 @@ const struct OptDict decode_optdict[] = {
  * @return number of args used (long), or number of char's read (short)
 **/
 static int
-opt_decode_format(uint optind, char *opt, enum OptMode mode)
+opt_decode_format(
+	const uint optind, char *const restrict opt, const enum OptMode mode
+)
 /*@globals	fileSystem,
 		internalState,
 		g_flag
@@ -143,7 +145,8 @@ opt_decode_format(uint optind, char *opt, enum OptMode mode)
 **/
 NORETURN int
 opt_decode_help(
-	UNUSED uint optind, UNUSED char *opt, UNUSED enum OptMode mode
+	UNUSED const uint optind, UNUSED char *const restrict opt,
+	UNUSED const enum OptMode mode
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/

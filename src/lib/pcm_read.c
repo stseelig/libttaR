@@ -23,37 +23,25 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #undef dest
-NOINLINE size_t pcm_read_u8(
-	/*@out@*/ i32 *const dest, const u8 *const, size_t
-)
+NOINLINE size_t pcm_read_u8(/*@out@*/ i32 *dest, const u8 *, size_t)
 /*@modifies	*dest@*/
 ;
 
 #undef dest
-NOINLINE size_t pcm_read_i16le(
-	/*@out@*/ i32 *const dest, const u8 *const, size_t
-)
+NOINLINE size_t pcm_read_i16le(/*@out@*/ i32 *dest, const u8 *, size_t)
 /*@modifies	*dest@*/
 ;
 
 #undef dest
-NOINLINE size_t pcm_read_i24le(
-	/*@out@*/ i32 *const dest, const u8 *const, size_t
-)
+NOINLINE size_t pcm_read_i24le(/*@out@*/ i32 *dest, const u8 *, size_t)
 /*@modifies	*dest@*/
 ;
 
 //--------------------------------------------------------------------------//
 
-ALWAYS_INLINE CONST i32 u8_to_i32h(register u8) /*@*/;
-
-ALWAYS_INLINE PURE i32 read_i16le_to_i32h(register const u8 *const restrict)
-/*@*/
-;
-
-ALWAYS_INLINE PURE i32 read_i24le_to_i32h(register const u8 *const restrict)
-/*@*/
-;
+ALWAYS_INLINE CONST i32 u8_to_i32h(u8) /*@*/;
+ALWAYS_INLINE PURE i32 read_i16le_to_i32h(const u8 *restrict) /*@*/;
+ALWAYS_INLINE PURE i32 read_i24le_to_i32h(const u8 *restrict) /*@*/;
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -72,8 +60,8 @@ ALWAYS_INLINE PURE i32 read_i24le_to_i32h(register const u8 *const restrict)
 **/
 size_t
 libttaR_pcm_read(
-	/*@out@*/ i32 *const dest, const u8 *const src, size_t nsamples,
-	enum TTASampleBytes samplebytes
+	/*@out@*/ i32 *const dest, const u8 *const src, const size_t nsamples,
+	const enum TTASampleBytes samplebytes
 )
 /*@modifies	*dest@*/
 {
@@ -100,7 +88,9 @@ libttaR_pcm_read(
  * @return 'nsamples'
 **/
 NOINLINE size_t
-pcm_read_u8(/*@out@*/ i32 *const dest, const u8 *const src, size_t nsamples)
+pcm_read_u8(
+	/*@out@*/ i32 *const dest, const u8 *const src, const size_t nsamples
+)
 /*@modifies	*dest@*/
 {
 	size_t i;
@@ -121,7 +111,7 @@ pcm_read_u8(/*@out@*/ i32 *const dest, const u8 *const src, size_t nsamples)
 **/
 NOINLINE size_t
 pcm_read_i16le(
-	/*@out@*/ i32 *const dest, const u8 *const src, size_t nsamples
+	/*@out@*/ i32 *const dest, const u8 *const src, const size_t nsamples
 )
 /*@modifies	*dest@*/
 {
@@ -143,7 +133,7 @@ pcm_read_i16le(
 **/
 NOINLINE size_t
 pcm_read_i24le(
-	/*@out@*/ i32 *const dest, const u8 *const src, size_t nsamples
+	/*@out@*/ i32 *const dest, const u8 *const src, const size_t nsamples
 )
 /*@modifies	*dest@*/
 {
@@ -164,7 +154,7 @@ pcm_read_i24le(
  * @return i32 sample
 **/
 ALWAYS_INLINE CONST i32
-u8_to_i32h(register u8 x)
+u8_to_i32h(register const u8 x)
 /*@*/
 {
 	return (i32) (x - 0x80u);

@@ -51,8 +51,8 @@ static void fdlimit_check(void)
 #undef fstat
 #undef file
 static enum FileCheck filecheck_codecfmt(
-	struct FileStats *const restrict fstat, FILE *const restrict file,
-	const char *const restrict, const enum ProgramMode
+	struct FileStats *restrict fstat, FILE *restrict file,
+	const char *restrict, enum ProgramMode
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -89,7 +89,10 @@ outfile_name_fmt(
 **/
 /*@dependent@*/ /*@null@*/
 FILE
-*fopen_check(const char *pathname, const char *mode, enum Fatality fatality)
+*fopen_check(
+	const char *const restrict pathname, const char *const restrict mode,
+	const enum Fatality fatality
+)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -383,7 +386,7 @@ end_error:
 **/
 /*@observer@*/
 CONST const char *
-get_encfmt_sfx(enum EncFormat fmt)
+get_encfmt_sfx(const enum EncFormat fmt)
 /*@*/
 {
 	/*@observer@*/
@@ -400,7 +403,7 @@ get_encfmt_sfx(enum EncFormat fmt)
 **/
 /*@observer@*/
 CONST const char *
-get_decfmt_sfx(enum DecFormat fmt)
+get_decfmt_sfx(const enum DecFormat fmt)
 /*@*/
 {
 	/*@observer@*/
@@ -419,7 +422,7 @@ get_decfmt_sfx(enum DecFormat fmt)
 **/
 /*@only@*/
 char *
-get_outfile_name(const char *infile_name, const char *sfx)
+get_outfile_name(const char *const infile_name, const char *const sfx)
 /*@globals	internalState,
 		fileSystem
 @*/
@@ -464,8 +467,8 @@ get_outfile_name(const char *infile_name, const char *sfx)
 /*@only@*/
 static char *
 outfile_name_fmt(
-	/*@null@*/ const char *outfile_dir, const char *infile_name,
-	/*@null@*/ const char *suffix
+	/*@null@*/ const char *const outfile_dir,
+	const char *infile_name, /*@null@*/ const char *const suffix
 )
 /*@globals	fileSystem,
 		internalState

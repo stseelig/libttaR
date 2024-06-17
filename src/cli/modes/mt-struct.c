@@ -46,7 +46,7 @@ void
 encmt_state_init(
 	/*@out@*/ struct MTArg_EncIO *const restrict io,
 	/*@out@*/ struct MTArg_Encoder *const restrict encoder,
-	uint framequeue_len, size_t i32buf_len,
+	const uint framequeue_len, const size_t i32buf_len,
 	const FILE *const restrict outfile, const char *const outfile_name,
 	const FILE *const restrict infile, const char *const infile_name,
 	const struct SeekTable *const restrict seektable,
@@ -179,7 +179,8 @@ encmt_state_init(
 void
 encmt_state_free(
 	struct MTArg_EncIO *const restrict io,
-	struct MTArg_Encoder *const restrict encoder, uint framequeue_len
+	struct MTArg_Encoder *const restrict encoder,
+	const uint framequeue_len
 )
 /*@globals	internalState@*/
 /*@modifies	internalState,
@@ -241,7 +242,7 @@ void
 decmt_state_init(
 	/*@out@*/ struct MTArg_DecIO *const restrict io,
 	/*@out@*/ struct MTArg_Decoder *const restrict decoder,
-	uint framequeue_len, size_t i32buf_len,
+	const uint framequeue_len, const size_t i32buf_len,
 	const FILE *const restrict outfile, const char *const outfile_name,
 	const FILE *const restrict infile, const char *const infile_name,
 	const struct SeekTable *const restrict seektable,
@@ -406,7 +407,8 @@ decmt_state_init(
 void
 decmt_state_free(
 	struct MTArg_DecIO *const restrict io,
-	struct MTArg_Decoder *const restrict decoder, uint framequeue_len
+	struct MTArg_Decoder *const restrict decoder,
+	const uint framequeue_len
 )
 
 /*@globals	internalState@*/

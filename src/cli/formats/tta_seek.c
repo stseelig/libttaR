@@ -32,7 +32,9 @@
  * @param nframes number of frames in the seektable
 **/
 void
-seektable_init(/*@out@*/ struct SeekTable *const restrict st, size_t nframes)
+seektable_init(
+	/*@out@*/ struct SeekTable *const restrict st, const size_t nframes
+)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -63,8 +65,8 @@ seektable_init(/*@out@*/ struct SeekTable *const restrict st, size_t nframes)
 **/
 HOT void
 seektable_add(
-	struct SeekTable *const restrict st, size_t value,
-	const char *outfile_name
+	struct SeekTable *const restrict st, const size_t value,
+	const char *const restrict outfile_name
 )
 /*@globals	fileSystem,
 		internalState
@@ -101,11 +103,9 @@ seektable_add(
  * @param st[in] the seektable struct
 **/
 void
-seektable_free(struct SeekTable *const restrict st)
+seektable_free(const struct SeekTable *const restrict st)
 /*@globals	internalState@*/
-/*@modifies	internalState,
-		*st
-@*/
+/*@modifies	internalState@*/
 /*@releases	st->table@*/
 {
 	free(st->table);

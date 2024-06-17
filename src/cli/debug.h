@@ -30,7 +30,7 @@ enum Fatality {
 //////////////////////////////////////////////////////////////////////////////
 
 extern NORETURN COLD void error_sys(
-	int, const char *const, /*@null@*/ const char *const
+	int, const char *, /*@null@*/ const char *
 )
 /*@globals	fileSystem,
 		g_nwarnings
@@ -40,9 +40,7 @@ extern NORETURN COLD void error_sys(
 @*/
 ;
 
-extern COLD void error_sys_nf(
-	int, const char *const, /*@null@*/ const char *const
-)
+extern COLD void error_sys_nf(int, const char *, /*@null@*/ const char *)
 /*@globals	fileSystem,
 		g_nwarnings
 @*/
@@ -52,8 +50,7 @@ extern COLD void error_sys_nf(
 ;
 
 extern COLD void print_error_sys(
-	int, const char *const, /*@null@*/ const char *const,
-	const enum Fatality
+	int, const char *, /*@null@*/ const char *, enum Fatality
 )
 /*@globals	fileSystem,
 		g_nwarnings
@@ -64,7 +61,7 @@ extern COLD void print_error_sys(
 ;
 
 
-extern NORETURN COLD void error_tta(const char *const, ...)
+extern NORETURN COLD void error_tta(const char *, ...)
 /*@globals	fileSystem,
 		g_nwarnings
 @*/
@@ -73,7 +70,7 @@ extern NORETURN COLD void error_tta(const char *const, ...)
 @*/
 ;
 
-extern COLD void error_tta_nf(const char *const, ...)
+extern COLD void error_tta_nf(const char *, ...)
 /*@globals	fileSystem,
 		g_nwarnings
 @*/
@@ -82,7 +79,7 @@ extern COLD void error_tta_nf(const char *const, ...)
 @*/
 ;
 
-extern COLD void warning_tta(const char *const, ...)
+extern COLD void warning_tta(const char *, ...)
 /*@globals	fileSystem,
 		g_nwarnings
 @*/
@@ -92,8 +89,8 @@ extern COLD void warning_tta(const char *const, ...)
 ;
 
 extern COLD void error_filecheck(
-	enum FileCheck, int, const struct FileStats *const restrict,
-	const char *const restrict
+	enum FileCheck, int, const struct FileStats *restrict,
+	const char *restrict
 )
 /*@globals	fileSystem,
 		g_nwarnings
