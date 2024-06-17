@@ -54,10 +54,10 @@ extern const struct LibTTAr_VersionInfo ttaR_info;
 #ifndef TTA_MAIN_C
 /*@checkmod@*/
 extern const uint g_argc;
-#endif
 
 /*@checkmod@*/ /*@temp@*/
-extern char *const *g_argv;
+extern char *const *const g_argv;
+#endif
 
 /*@checkmod@*/
 extern u8 g_nwarnings;
