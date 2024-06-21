@@ -161,17 +161,6 @@ extern void *malloc(size_t)
 ;
 /*@=incondefs@*/
 
-/*@temp@*/ /*@null@*/ /*@external@*/ /*@unused@*/
-extern void *memrchr(const void *, int, size_t)
-/*@*/
-;
-
-/*@only@*/ /*@null@*/ /*@partial@*/ /*@external@*/ /*@unused@*/
-extern void *reallocarray(/*@only@*/ /*@null@*/ void *, size_t, size_t)
-/*@globals	internalState@*/
-/*@modifies	internalState@*/
-;
-
 /*@external@*/ /*@unused@*/
 extern int setrlimit(int, /*@in@*/ struct rlimit *)
 /*@globals	internalState@*/
