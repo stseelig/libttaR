@@ -42,14 +42,14 @@ struct LibTTAr_VersionInfo {
 **/
 /*@unchecked@*/ /*@unused@*/
 const struct LibTTAr_VersionInfo libttaR_info = {
-	LIBTTAr_VERSION_NUM,
-	LIBTTAr_VERSION_NUM_MAJOR,
-	LIBTTAr_VERSION_NUM_MINOR,
-	LIBTTAr_VERSION_NUM_REVIS,
-	LIBTTAr_VERSION_STR_EXTRA,
-	LIBTTAr_VERSION_STR_DATE,
-	LIBTTAr_COPYRIGHT_STR,
-	LIBTTAr_LICENSE_STR
+	LIB_VERSION_NUM,
+	LIB_VERSION_NUM_MAJOR,
+	LIB_VERSION_NUM_MINOR,
+	LIB_VERSION_NUM_REVIS,
+	LIB_VERSION_STR_EXTRA,
+	LIB_VERSION_STR_DATE,
+	LIB_COPYRIGHT_STR,
+	LIB_LICENSE_STR
 };
 
 //////////////////////////////////////////////////////////////////////////////

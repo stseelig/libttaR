@@ -75,14 +75,14 @@ NORETURN COLD void sighand(enum HandledSignals)
 **/
 /*@unchecked@*/
 const struct LibTTAr_VersionInfo ttaR_info = {
-	TTAr_VERSION_NUM,
-	TTAr_VERSION_NUM_MAJOR,
-	TTAr_VERSION_NUM_MINOR,
-	TTAr_VERSION_NUM_REVIS,
-	TTAr_VERSION_STR_EXTRA,
-	TTAr_VERSION_STR_DATE,
-	TTAr_COPYRIGHT_STR,
-	TTAr_LICENSE_STR
+	CLI_VERSION_NUM,
+	CLI_VERSION_NUM_MAJOR,
+	CLI_VERSION_NUM_MINOR,
+	CLI_VERSION_NUM_REVIS,
+	CLI_VERSION_STR_EXTRA,
+	CLI_VERSION_STR_DATE,
+	CLI_COPYRIGHT_STR,
+	CLI_LICENSE_STR
 };
 
 //--------------------------------------------------------------------------//

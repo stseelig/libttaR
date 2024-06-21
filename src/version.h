@@ -11,28 +11,28 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
-#define LIBTTAr_VERSION_NUM		1u
-#define LIBTTAr_VERSION_NUM_MAJOR	2u
-#define LIBTTAr_VERSION_NUM_MINOR	0u
-#define LIBTTAr_VERSION_NUM_REVIS	0u
-#define LIBTTAr_VERSION_STR_EXTRA	"beta"
-#define LIBTTAr_VERSION_STR_DATE	"2024-XX-XX"
-#define LIBTTAr_COPYRIGHT_STR		\
+#define LIB_VERSION_NUM		1u
+#define LIB_VERSION_NUM_MAJOR	2u
+#define LIB_VERSION_NUM_MINOR	0u
+#define LIB_VERSION_NUM_REVIS	0u
+#define LIB_VERSION_STR_EXTRA	"beta"
+#define LIB_VERSION_STR_DATE	"2024-XX-XX"
+#define LIB_COPYRIGHT_STR	\
 	"Copyright (C) 2007, Aleksander Djuric;" \
 	"Copyright (C) 2023-2024, Shane Seelig"
-#define LIBTTAr_LICENSE_STR		"GPL-3.0-or-later"
+#define LIB_LICENSE_STR		"GPL-3.0-or-later"
 
 //--------------------------------------------------------------------------//
 
-#define TTAr_VERSION_NUM		1u
-#define TTAr_VERSION_NUM_MAJOR		1u
-#define TTAr_VERSION_NUM_MINOR		2u
-#define TTAr_VERSION_NUM_REVIS		0u
-#define TTAr_VERSION_STR_EXTRA		"beta"
-#define TTAr_VERSION_STR_DATE		"2024-XX-XX"
-#define TTAr_COPYRIGHT_STR		\
+#define CLI_VERSION_NUM		1u
+#define CLI_VERSION_NUM_MAJOR	1u
+#define CLI_VERSION_NUM_MINOR	2u
+#define CLI_VERSION_NUM_REVIS	0u
+#define CLI_VERSION_STR_EXTRA	"beta"
+#define CLI_VERSION_STR_DATE	"2024-XX-XX"
+#define CLI_COPYRIGHT_STR	\
 	"Copyright (C) 2023-2024, Shane Seelig"
-#define TTAr_LICENSE_STR		"GPL-3.0-or-later"
+#define CLI_LICENSE_STR		"GPL-3.0-or-later"
 
 // EOF ///////////////////////////////////////////////////////////////////////
 #endif
