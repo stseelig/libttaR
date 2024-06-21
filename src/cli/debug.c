@@ -112,7 +112,7 @@ error_sys_nf(
  * @param errnum error number
  * @param name[in] function name
  * @param extra[in] any extra info, probably a filename
- * @param fatality fatal or non-fatal
+ * @param fatality whether the error is fatal or non-fatal
 **/
 COLD void
 print_error_sys(
@@ -129,13 +129,19 @@ print_error_sys(
 	char buf[128u];
 	union {	int d; } t;
 
+	// XSI-compliant version returns an int
+	t.d = strerror_r(errnum, buf, sizeof buf);
+	if ( t.d != 0 ){
+		buf[0] = '\0';
+	}
+
 	flockfile(stdout);
 	flockfile(stderr);
 	//
 	(void) fprintf(stderr, T_B_DEFAULT "%s: ", g_argv[0]);
 	(void) fputs(T_B_RED "error:" T_B_DEFAULT " ", stderr);
 	(void) fprintf(stderr, "%s: (%d) ", name, errnum);
-	(void) fputs(strerror_r(errnum, buf, sizeof buf), stderr);
+	(void) fputs(buf, stderr);
 	if ( extra != NULL ){
 		(void) fprintf(stderr, ": %s", extra);
 	}
@@ -197,7 +203,7 @@ COLD void error_tta_nf(const char *const format, ...)
 /**@fn print_error_tta
  * @brief print a non-fatal program error
  *
- * @param fatality fatal or non-fatal
+ * @param fatality whether the error is fatal or non-fatal
  * @param format[in] formatted error string
  * @param args[in] args for 'format'
 **/

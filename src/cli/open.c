@@ -76,6 +76,11 @@ outfile_name_fmt(
 @*/
 ;
 
+/*@temp@*/ /*@null@*/
+static PURE char *findrchar(const char *restrict, char, size_t)
+/*@*/
+;
+
 //////////////////////////////////////////////////////////////////////////////
 
 /**@fn fopen_check
@@ -83,6 +88,7 @@ outfile_name_fmt(
  *
  * @param pathname[in] the name of the file
  * @param mode[in] the name of the mode
+ * @param fatality whether an error is fatal or non-fatal
  *
  * @return the opened file
  * @retval NULL error
@@ -198,9 +204,9 @@ openedfiles_add(
 	struct OpenedFilesMember **added;
 
 	++(of->nmemb);
-	of->file = reallocarray(of->file, of->nmemb, sizeof *of->file);
+	of->file = realloc(of->file, of->nmemb * (sizeof *of->file));
 	if UNLIKELY ( of->file == NULL ){
-		error_sys(errno, "reallocarray", NULL);
+		error_sys(errno, "realloc", NULL);
 	}
 	assert(of->file != NULL);
 
@@ -224,6 +230,8 @@ openedfiles_add(
 /**@fn openedfiles_close_free
  * @brief closes any files and frees any allocated pointer in the opened files
  *   array struct
+ *
+ * @param of[in] the opened files struct
 **/
 void
 openedfiles_close_free(struct OpenedFiles *const restrict of)
@@ -487,9 +495,7 @@ outfile_name_fmt(
 	if ( outfile_dir != NULL ){
 		dir_len = strlen(outfile_dir);
 		// remove any directory paths from infile_name
-		t.p = (uintptr_t) memrchr(
-			infile_name, (int) PATH_DELIM, in_len
-		);
+		t.p = (uintptr_t) findrchar(infile_name, PATH_DELIM, in_len);
 		if ( t.p != 0 ){
 			++t.p;
 			in_len -= (size_t) (t.p - ((uintptr_t) infile_name));
@@ -498,7 +504,7 @@ outfile_name_fmt(
 	}
 	if ( suffix != NULL ){
 		suffix_len = strlen(suffix);
-		fxdot = memrchr(infile_name, (int) '.', in_len);
+		fxdot = findrchar(infile_name, '.', in_len);
 	}
 
 	if ( fxdot == NULL ){
@@ -522,6 +528,28 @@ outfile_name_fmt(
 	r[dir_len + base_len + suffix_len] = '\0';
 
 	return r;
+}
+
+/**@fn findrchar
+ * @brief slightly modified memrchr
+ *    wrote my own for portability reasons (memrchr is a GNU extension)
+ *
+ * @param s[in] the input string
+ * @param c the target character
+ * @param n the size of 's'; assumed non-zero, but still works if 0 as long as
+ *    's' just a null-byte
+ *
+ * @return a pointer to last instance of 'c' in 's'
+ * @retval NULL not found
+**/
+/*@temp@*/ /*@null@*/
+static PURE char *
+findrchar(const char *const restrict s, const char c, size_t n)
+/*@*/
+{
+	do {	if ( s[n] == c ){ return (char *) &s[n]; }
+	} while ( --n != 0 );
+	return NULL;
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////

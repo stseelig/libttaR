@@ -1,11 +1,11 @@
 
 # libttaR ####################################################################
 
-1.2.0 (2024-XX-XX):-----------------------------------------------------------
+1.2.0 (2024-XX-XX):===========================================================
 
 	- libttaR_ttabuf_safety_margin is now a function (instead of a macro)
-    with an additional parameter. This is to make the library more memory
-    efficient with 8/16-bit audio.
+    with an additional parameter. This is to make a program using the library
+    more memory efficient with 8/16-bit audio.
 
 1.1.1 (2024-06-15):-----------------------------------------------------------
 
@@ -13,7 +13,7 @@
 	- additional compile option symbols
 	- performance improvements
 
-1.1.0 (2024-06-01):-----------------------------------------------------------
+1.1.0 (2024-06-01):===========================================================
 
 	- libttaR_tta_encode/libttaR_tta_decode:
 		- enum returns and new parameter(s)
@@ -37,7 +37,7 @@
 	- extra parameter checks (some functions now return errors)
 	- performance impovements
 
-1.0.0 (2023-12-10):-----------------------------------------------------------
+1.0.0 (2023-12-10):===========================================================
 
 	- initial release
 
@@ -45,6 +45,7 @@
 
 1.1.2 (2024-XX-XX):-----------------------------------------------------------
 
+	- POSIX.1-2001 compliant (no longer uses GNU extension functions)
 	- encode buffer size scales with channel count
 	- updated for libttaR 1.2.0
 
@@ -53,7 +54,7 @@
 	- removed channel mask and frame from info printout
 	- refactored some stuff
 
-1.1.0 (2024-06-01):-----------------------------------------------------------
+1.1.0 (2024-06-01):===========================================================
 
 	- multi-threaded encoder and decoder
 	- faster single-threaded encoder and decoder
@@ -71,6 +72,6 @@
 
 	- removed copyright/version info printing from standard use
 
-1.0.0 (2023-12-10):-----------------------------------------------------------
+1.0.0 (2023-12-10):===========================================================
 
 	- initial release

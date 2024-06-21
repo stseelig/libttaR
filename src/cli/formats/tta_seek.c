@@ -78,11 +78,11 @@ seektable_add(
 {
 	if ( st->nmemb == st->limit ){
 		st->limit += SEEKTABLE_INIT_DEFAULT;
-		st->table  = reallocarray(
-			st->table, st->limit, (sizeof *(st->table))
+		st->table  = realloc(
+			st->table, st->limit * (sizeof *(st->table))
 		);
 		if UNLIKELY ( st->table == NULL ){
-			error_sys(errno, "reallocarray", NULL);
+			error_sys(errno, "realloc", NULL);
 		}
 	}
 	assert(st->table != NULL);
