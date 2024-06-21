@@ -194,8 +194,7 @@ encst_loop(
 	goto loop_entr;
 	do {
 		nmemb_read = fread(
-			encbuf.pcmbuf, (size_t) samplebytes, readlen,
-			infile
+			encbuf.pcmbuf, (size_t) samplebytes, readlen, infile
 		);
 		ni32_perframe             = nmemb_read;
 		nsamples_flat_read_total += nmemb_read;
