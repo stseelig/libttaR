@@ -77,9 +77,7 @@ outfile_name_fmt(
 ;
 
 /*@temp@*/ /*@null@*/
-static PURE char *findrchar(const char *restrict, char, size_t)
-/*@*/
-;
+static PURE char *findrchar(const char *restrict, char, size_t) /*@*/;
 
 //////////////////////////////////////////////////////////////////////////////
 
