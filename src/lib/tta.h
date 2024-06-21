@@ -71,8 +71,8 @@ enum TTAMode {
 struct Filter {
 	i32	error;
 	i32	qm[8u];
-	i32	dx[9u];
-	i32	dl[9u];
+	i32	dx[9u];	// the extra value is for a memmove trick
+	i32	dl[9u];	// ~
 };
 
 struct Codec {
@@ -90,13 +90,13 @@ INLINE void codec_init(/*@out@*/ struct Codec *restrict codec , uint)
 
 //--------------------------------------------------------------------------//
 
+INLINE CONST size_t safety_margin_perchan(enum TTASampleBytes) /*@*/;
 INLINE CONST u8 tta_predict_k(enum TTASampleBytes) /*@*/;
 INLINE CONST i32 tta_filter_round(enum TTASampleBytes) /*@*/;
 INLINE CONST u8 tta_filter_k(enum TTASampleBytes) /*@*/;
 
 //--------------------------------------------------------------------------//
 
-INLINE CONST size_t safety_margin_perchan(enum TTASampleBytes) /*@*/;
 INLINE CONST i32 tta_predict1(i32, u8) /*@*/;
 INLINE CONST i32 tta_postfilter_enc(i32) /*@*/;
 INLINE CONST i32 tta_prefilter_dec(i32) /*@*/;
@@ -257,7 +257,7 @@ tta_predict1(register const i32 x, register const u8 k)
  * @return interleaved value
  *
  * @note https://en.wikipedia.org/wiki/Golomb_coding#Overview#\
- * Use%20with%20signed%20integers
+ *     Use%20with%20signed%20integers
 **/
 ALWAYS_INLINE CONST i32
 tta_postfilter_enc(register const i32 x)
@@ -274,7 +274,7 @@ tta_postfilter_enc(register const i32 x)
  * @return deinterleaved value
  *
  * @note https://en.wikipedia.org/wiki/Golomb_coding#Overview#\
- * Use%20with%20signed%20integers
+ *     Use%20with%20signed%20integers
 **/
 ALWAYS_INLINE CONST i32
 tta_prefilter_dec(register const i32 x)
