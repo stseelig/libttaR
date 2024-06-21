@@ -233,8 +233,12 @@ openedfiles_add(
 **/
 void
 openedfiles_close_free(struct OpenedFiles *const restrict of)
-/*@globals	fileSystem@*/
-/*@modifies	*of@*/
+/*@globals	fileSystem,
+		internalState
+@*/
+/*@modifies	fileSystem,
+		internalState
+@*/
 /*@releases	of->file,
 		of->file[]
 @*/
