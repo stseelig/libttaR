@@ -161,6 +161,14 @@ extern void *malloc(size_t)
 ;
 /*@=incondefs@*/
 
+/*@-incondefs@*/
+/*@only@*/ /*@null@*/ /*@partial@*/ /*@external@*/ /*@unused@*/
+extern void *realloc(/*@only@*/ /*@null@*/ void *, size_t)
+/*@globals	internalState@*/
+/*@modifies	internalState@*/
+;
+/*@=incondefs@*/
+
 /*@external@*/ /*@unused@*/
 extern int setrlimit(int, /*@in@*/ struct rlimit *)
 /*@globals	internalState@*/
