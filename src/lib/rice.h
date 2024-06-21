@@ -344,6 +344,11 @@ rice_crc32(register const u8 x, register u32 *const restrict crc)
  * @param crc[in out] the current CRC
  *
  * @return number of bytes written to 'dest' + 'r'
+ *
+ * @note max write size (unary + binary):
+ *     8-bit :   19u bytes
+ *    16-bit :   19u bytes
+ *    24-bit : 4099u bytes
 **/
 ALWAYS_INLINE size_t
 rice_encode(
@@ -390,7 +395,7 @@ rice_encode(
 }
 
 /**@fn rice_encode_cacheflush
- * @brief flush any data left in the 'bitcache'
+ * @brief flush any data left in the 'bitcache' to 'dest'
  *
  * @param dest[out] destination buffer
  * @param r index of 'dest'
@@ -398,6 +403,8 @@ rice_encode(
  * @param crc[in out] the current CRC
  *
  * @return number of bytes written to 'dest' + 'r'
+ *
+ * @note max write size: 4u bytes
 **/
 INLINE size_t
 rice_encode_cacheflush(
@@ -434,6 +441,11 @@ rice_encode_cacheflush(
  * @param crc[in out] the current CRC
  *
  * @return number of bytes written to 'dest' + 'r'
+ *
+ * @note max unary code / write size:
+ *	 8-bit :   16u bytes
+ *	16-bit :   16u bytes
+ *	24-bit : 4096u bytes
 **/
 ALWAYS_INLINE size_t
 rice_unary_put(
@@ -476,6 +488,8 @@ loop_entr:
  * @param crc[in out] the current CRC
  *
  * @return number of bytes written to 'dest' + 'r'
+ *
+ * @note max binary code / write size: 3u bytes
 **/
 ALWAYS_INLINE size_t
 rice_binary_put(
@@ -513,6 +527,11 @@ rice_binary_put(
  * @param crc[in out] the current CRC
  *
  * @return number of bytes read from 'src' + 'r'
+ *
+ * @note max read size (unary + binary):
+ *     8-bit :   19u bytes
+ *    16-bit :   19u bytes
+ *    24-bit : 4099u bytes
 **/
 ALWAYS_INLINE size_t
 rice_decode(
@@ -578,6 +597,10 @@ rice_decode(
  *
  * @return number of bytes read from 'src' + 'r'
  *
+ * @note max unary code / read size:
+ *     8-bit :   16u bytes
+ *    16-bit :   16u bytes
+ *    24-bit : 4096u bytes
  * @note affected by LIBTTAr_OPT_NO_TZCNT
 **/
 ALWAYS_INLINE size_t
@@ -639,6 +662,8 @@ loop_entr:
  * @param crc[in out] the current CRC
  *
  * @return number of bytes read from 'src' + 'r'
+ *
+ * @note max binary code / read size: 3u bytes
 **/
 ALWAYS_INLINE size_t
 rice_binary_get(
