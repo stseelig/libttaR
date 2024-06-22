@@ -49,9 +49,8 @@ enum TTASampleBytes {
 #define TTA_SAMPLEBITS_MAX	((uint) (8u*TTA_SAMPLEBYTES_MAX))
 
 // max unary code size
-//	 8-bit :   16u
-//	16-bit :   16u
-//	24-bit : 4096u
+//	8/16-bit :   16u
+//	  24-bit : 4096u
 // max binary code size : 3u
 // max cacheflush size  : 4u
 //
@@ -273,8 +272,7 @@ tta_postfilter_enc(register const i32 x)
  *
  * @return deinterleaved value
  *
- * @note https://en.wikipedia.org/wiki/Golomb_coding#Overview#\
- *     Use%20with%20signed%20integers
+ * @see tta_postfilter_enc
 **/
 ALWAYS_INLINE CONST i32
 tta_prefilter_dec(register const i32 x)

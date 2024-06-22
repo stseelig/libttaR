@@ -285,7 +285,7 @@ loop_entr:
  * @param infile_name[in] the name of the source file (warnings/errors)
  * @param nthreads the number of encoder threads to use
  *
- * @note see encmt_loop in mode_encode_loop.c for info on the threads layout
+ * @see encmt_loop
 **/
 void
 decmt_loop(
