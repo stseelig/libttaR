@@ -297,6 +297,7 @@ lsmask32(register const u8 k, const enum ShiftMaskMode mode)
  * @param k[in out] rice->k[]
  * @param value input value to code
  *
+ * @pre  0 <= 'k' <= 27u
  * @post 0 <= 'k' <= 27u
 **/
 ALWAYS_INLINE void
@@ -346,9 +347,8 @@ rice_crc32(register const u8 x, register u32 *const restrict crc)
  * @return number of bytes written to 'dest' + 'r'
  *
  * @note max write size (unary + binary):
- *     8-bit :   19u bytes
- *    16-bit :   19u bytes
- *    24-bit : 4099u bytes
+ *    8/16-bit :   19u
+ *      24-bit : 4099u
 **/
 ALWAYS_INLINE size_t
 rice_encode(
@@ -404,7 +404,7 @@ rice_encode(
  *
  * @return number of bytes written to 'dest' + 'r'
  *
- * @note max write size: 4u bytes
+ * @note max write size: 4u
 **/
 INLINE size_t
 rice_encode_cacheflush(
@@ -443,9 +443,8 @@ rice_encode_cacheflush(
  * @return number of bytes written to 'dest' + 'r'
  *
  * @note max unary code / write size:
- *	 8-bit :   16u bytes
- *	16-bit :   16u bytes
- *	24-bit : 4096u bytes
+ *	8/16-bit :   16u
+ *	  24-bit : 4096u
 **/
 ALWAYS_INLINE size_t
 rice_unary_put(
@@ -489,7 +488,7 @@ loop_entr:
  *
  * @return number of bytes written to 'dest' + 'r'
  *
- * @note max binary code / write size: 3u bytes
+ * @note max binary code / write size: 3u
 **/
 ALWAYS_INLINE size_t
 rice_binary_put(
@@ -529,9 +528,8 @@ rice_binary_put(
  * @return number of bytes read from 'src' + 'r'
  *
  * @note max read size (unary + binary):
- *     8-bit :   19u bytes
- *    16-bit :   19u bytes
- *    24-bit : 4099u bytes
+ *    8/16-bit :   19u
+ *      24-bit : 4099u
 **/
 ALWAYS_INLINE size_t
 rice_decode(
@@ -554,7 +552,7 @@ rice_decode(
 	register u32 *const restrict cache = &bitcache->cache;
 	register  u8 *const restrict count = &bitcache->count;
 
-	u32 unary, binary;
+	u32 unary, binary = 0;
 	register  u8 kx;
 	register bool depth1;
 
@@ -570,9 +568,8 @@ rice_decode(
 
 	if LIKELY ( kx != 0 ){
 		r = rice_binary_get(&binary, src, r, kx, cache, count, crc);
-		*value = (unary << kx) + binary;
 	}
-	else {	*value = unary; }
+	*value = (unary << kx) + binary;
 
 	if LIKELY_P ( depth1, 0.575 ){
 		rice_cmpsum(sum1, k1, *value);
@@ -598,9 +595,8 @@ rice_decode(
  * @return number of bytes read from 'src' + 'r'
  *
  * @note max unary code / read size:
- *     8-bit :   16u bytes
- *    16-bit :   16u bytes
- *    24-bit : 4096u bytes
+ *    8/16-bit :   16u
+ *      24-bit : 4096u
  * @note affected by LIBTTAr_OPT_NO_TZCNT
 **/
 ALWAYS_INLINE size_t
@@ -663,7 +659,7 @@ loop_entr:
  *
  * @return number of bytes read from 'src' + 'r'
  *
- * @note max binary code / read size: 3u bytes
+ * @note max binary code / read size: 3u
 **/
 ALWAYS_INLINE size_t
 rice_binary_get(

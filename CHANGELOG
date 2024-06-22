@@ -6,6 +6,7 @@
 	- libttaR_ttabuf_safety_margin is now a function (instead of a macro)
     with an additional parameter. This is to make a program using the library
     more memory efficient with 8/16-bit audio.
+	- decoder performance improvement
 
 1.1.1 (2024-06-15):-----------------------------------------------------------
 
