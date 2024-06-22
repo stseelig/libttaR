@@ -150,7 +150,7 @@ OPT_COMMON_THREADS
 /**@fn errprint_help_main
  * @brief print main's help to stderr
 **/
-void COLD
+COLD void
 errprint_help_main(void)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
@@ -163,7 +163,7 @@ errprint_help_main(void)
 /**@fn errprint_help_mode_encode
  * @brief print the mode encode's help to stderr
 **/
-void COLD
+COLD void
 errprint_help_mode_encode(void)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
@@ -178,7 +178,7 @@ errprint_help_mode_encode(void)
 /**@fn errprint_help_mode_decode
  * @brief print the mode decode's help to stderr
 **/
-void COLD
+COLD void
 errprint_help_mode_decode(void)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
