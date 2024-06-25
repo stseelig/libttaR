@@ -49,7 +49,8 @@ NOINLINE COLD void print_error_tta(
  *
  * @note g_nwarnings is the return value of the program
 **/
-static int inc_nwarnings(void)
+static int
+inc_nwarnings(void)
 /*@globals	g_nwarnings@*/
 /*@modifies	g_nwarnings@*/
 {
@@ -114,6 +115,7 @@ error_sys_nf(
  * @param extra[in] any extra info, probably a filename
  * @param fatality whether the error is fatal or non-fatal
 **/
+/*@maynotreturn@*/
 COLD void
 print_error_sys(
 	const int errnum, const char *const name,
@@ -165,7 +167,9 @@ print_error_sys(
  * @param format[in] formatted error string
  * @param ...[in] args for 'format'
 **/
-NORETURN COLD void error_tta(const char *const format, ...)
+/*@printflike@*/
+NORETURN COLD void
+error_tta(const char *const format, ...)
 /*@globals	fileSystem,
 		g_nwarnings
 @*/
@@ -185,7 +189,9 @@ NORETURN COLD void error_tta(const char *const format, ...)
  * @param format[in] formatted error string
  * @param ...[in] args for 'format'
 **/
-COLD void error_tta_nf(const char *const format, ...)
+/*@printflike@*/
+COLD void
+error_tta_nf(const char *const format, ...)
 /*@globals	fileSystem,
 		g_nwarnings
 @*/
@@ -207,6 +213,7 @@ COLD void error_tta_nf(const char *const format, ...)
  * @param format[in] formatted error string
  * @param args[in] args for 'format'
 **/
+/*@maynotreturn@*/
 NOINLINE COLD void
 print_error_tta(
 	const enum Fatality fatality, const char *const format, va_list args
@@ -245,6 +252,7 @@ print_error_tta(
  * @param format[in] formatted error string
  * @param ...[in] args for 'format'
 **/
+/*@printflike@*/
 COLD void
 warning_tta(const char *const format, ...)
 /*@globals	fileSystem,
@@ -339,7 +347,7 @@ error_filecheck(
 		break;
 	case FILECHECK_UNSUPPORTED_RESOLUTION:
 		error_tta_nf("%s: unsupported resolution: "
-			"%"PRIu16"-ch, %u-bits, %"PRIu32"-Hz",
+			"%"PRIu16"-ch, %"PRIu16"-bits, %"PRIu32"-Hz",
 			filename, fstat->nchan, fstat->samplebits,
 			fstat->samplerate
 		);

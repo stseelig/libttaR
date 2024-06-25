@@ -82,7 +82,7 @@ ALWAYS_INLINE u8 rice_crc32(u8, u32 *restrict crc)
 #undef bitcache
 #undef crc
 ALWAYS_INLINE size_t rice_encode(
-	/*@out@*/ u8 *restrict dest, size_t, u32, struct Rice *restrict rice,
+	/*@partial@*/ u8 *restrict dest, size_t, u32, struct Rice *restrict rice,
 	struct BitCache *restrict bitcache, u32 *restrict crc
 )
 /*@modifies	*dest,
@@ -97,7 +97,7 @@ ALWAYS_INLINE size_t rice_encode(
 #undef count
 #undef crc
 INLINE size_t rice_encode_cacheflush(
-	/*@out@*/ u8 *restrict dest, size_t,
+	/*@partial@*/ u8 *restrict dest, size_t,
 	struct BitCache *restrict bitcache, u32 *restrict crc
 )
 /*@modifies	*dest,
@@ -111,7 +111,7 @@ INLINE size_t rice_encode_cacheflush(
 #undef count
 #undef crc
 ALWAYS_INLINE size_t rice_unary_put(
-	/*@out@*/ u8 *restrict dest, size_t, u32, u32 *restrict cache,
+	/*@partial@*/ u8 *restrict dest, size_t, u32, u32 *restrict cache,
 	u8 *restrict count, u32 *restrict crc
 )
 /*@modifies	*dest,
@@ -126,7 +126,7 @@ ALWAYS_INLINE size_t rice_unary_put(
 #undef count
 #undef crc
 ALWAYS_INLINE size_t rice_binary_put(
-	/*@out@*/ u8 *restrict dest, size_t, u32, u8, u32 *restrict cache,
+	/*@partial@*/ u8 *restrict dest, size_t, u32, u8, u32 *restrict cache,
 	u8 *restrict count, u32 *restrict crc
 )
 /*@modifies	*dest,
@@ -352,7 +352,7 @@ rice_crc32(register const u8 x, register u32 *const restrict crc)
 **/
 ALWAYS_INLINE size_t
 rice_encode(
-	/*@out@*/ register u8 *const restrict dest, register size_t r,
+	/*@partial@*/ register u8 *const restrict dest, register size_t r,
 	register u32 value, register struct Rice *const restrict rice,
 	register struct BitCache *const restrict bitcache,
 	register u32 *const restrict crc
@@ -408,7 +408,7 @@ rice_encode(
 **/
 INLINE size_t
 rice_encode_cacheflush(
-	/*@out@*/ register u8 *const restrict dest, register size_t r,
+	/*@partial@*/ register u8 *const restrict dest, register size_t r,
 	register struct BitCache *const restrict bitcache,
 	register u32 *const restrict crc
 )
@@ -448,7 +448,7 @@ rice_encode_cacheflush(
 **/
 ALWAYS_INLINE size_t
 rice_unary_put(
-	/*@out@*/ register u8 *const restrict dest, register size_t r,
+	/*@partial@*/ register u8 *const restrict dest, register size_t r,
 	register u32 unary, register u32 *const restrict cache,
 	register u8 *const restrict count, register u32 *const restrict crc
 )
@@ -492,7 +492,7 @@ loop_entr:
 **/
 ALWAYS_INLINE size_t
 rice_binary_put(
-	/*@out@*/ register u8 *const restrict dest, register size_t r,
+	/*@partial@*/ register u8 *const restrict dest, register size_t r,
 	register const u32 binary, register const u8 k,
 	register u32 *const restrict cache, register u8 *const restrict count,
 	register u32 *const restrict crc

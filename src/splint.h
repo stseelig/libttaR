@@ -176,8 +176,8 @@ extern int setrlimit(int, /*@in@*/ struct rlimit *)
 ;
 
 #undef buf
-/*@temp@*/ /*@external@*/ /*@unused@*/
-extern char *strerror_r(int, /*@out@*/ char *buf, size_t)
+/*@external@*/ /*@unused@*/
+extern int strerror_r(int, /*@out@*/ char *buf, size_t)
 /*@modifies	*buf@*/
 ;
 

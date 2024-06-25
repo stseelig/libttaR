@@ -49,6 +49,7 @@ extern COLD void error_sys_nf(int, const char *, /*@null@*/ const char *)
 @*/
 ;
 
+/*@maynotreturn@*/
 extern COLD void print_error_sys(
 	int, const char *, /*@null@*/ const char *, enum Fatality
 )
@@ -60,7 +61,7 @@ extern COLD void print_error_sys(
 @*/
 ;
 
-
+/*@printflike@*/
 extern NORETURN COLD void error_tta(const char *, ...)
 /*@globals	fileSystem,
 		g_nwarnings
@@ -70,6 +71,7 @@ extern NORETURN COLD void error_tta(const char *, ...)
 @*/
 ;
 
+/*@printflike@*/
 extern COLD void error_tta_nf(const char *, ...)
 /*@globals	fileSystem,
 		g_nwarnings
@@ -79,6 +81,7 @@ extern COLD void error_tta_nf(const char *, ...)
 @*/
 ;
 
+/*@printflike@*/
 extern COLD void warning_tta(const char *, ...)
 /*@globals	fileSystem,
 		g_nwarnings
