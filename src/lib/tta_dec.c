@@ -28,8 +28,8 @@
 #undef bitcache
 #undef codec
 static size_t tta_decode_mch(
-	/*@out@*/ i32 *const dest, const u8 *, u32 *restrict crc_out,
-	/*@out@*/ size_t *restrict ni32_out,
+	/*@out@*/ i32 *const dest, const u8 *,
+	u32 *restrict crc_out, /*@out@*/ size_t *restrict ni32_out,
 	struct BitCache *restrict bitcache, struct Codec *restrict codec,
 	size_t, size_t, u8, i32, u8, uint
 )
@@ -49,8 +49,8 @@ static size_t tta_decode_mch(
 #undef bitcache
 #undef codec
 static size_t tta_decode_1ch(
-	/*@out@*/ i32 *const dest, const u8 *, u32 *restrict crc_out,
-	/*@out@*/ size_t *restrict ni32_out,
+	/*@out@*/ i32 *const dest, const u8 *,
+	u32 *restrict crc_out, /*@out@*/ size_t *restrict ni32_out,
 	struct BitCache *restrict bitcache, struct Codec *restrict codec,
 	size_t, size_t, u8, i32, u8, uint
 )
@@ -70,8 +70,8 @@ static size_t tta_decode_1ch(
 #undef bitcache
 #undef codec
 static size_t tta_decode_2ch(
-	/*@out@*/ i32 *dest, const u8 *, u32 *restrict crc_out,
-	/*@out@*/ size_t *restrict ni32_out,
+	/*@out@*/ i32 *dest, const u8 *,
+	u32 *restrict crc_out, /*@out@*/ size_t *restrict ni32_out,
 	struct BitCache *restrict bitcache, struct Codec *restrict codec,
 	size_t, size_t, u8, i32, u8, uint
 )
@@ -141,17 +141,13 @@ libttaR_tta_decode(
 	);
 
 	// initial state setup
-	// inlining this instead of having it as its own library function is
-	//   only slower if ni32_target is small and many calls are made for
-	//   a frame
-	// faster/smaller binary if this is before the checks
+	// see tta_enc
 	if ( user->ncalls_codec == 0 ){
 		state_priv_init(priv, nchan);
 	}
 
 	// check for bad parameters
-	// having these checks makes it faster, and the order and different
-	//   return values matter. not completely sure why
+	// see tta_enc
 	if ( (src_len == 0) || (dest_len == 0)
 	    ||
 	     (ni32_target == 0) || (nbytes_tta_target == 0)
@@ -191,30 +187,27 @@ libttaR_tta_decode(
 #ifndef LIBTTAr_OPT_DISABLE_UNROLLED_1CH
 	case 1u:
 		nbytes_tta_dec = tta_decode_1ch(
-			dest, src, &user->crc, &user->ni32,
-			&priv->bitcache, priv->codec, ni32_target,
-			soft_read_limit, predict_k, filter_round, filter_k,
-			nchan
+			dest, src, &user->crc, &user->ni32, &priv->bitcache,
+			priv->codec, ni32_target, soft_read_limit, predict_k,
+			filter_round, filter_k, nchan
 		);
 		break;
 #endif
 #ifndef LIBTTAr_OPT_DISABLE_UNROLLED_2CH
 	case 2u:
 		nbytes_tta_dec = tta_decode_2ch(
-			dest, src, &user->crc, &user->ni32,
-			&priv->bitcache, priv->codec, ni32_target,
-			soft_read_limit, predict_k, filter_round, filter_k,
-			nchan
+			dest, src, &user->crc, &user->ni32, &priv->bitcache,
+			priv->codec, ni32_target, soft_read_limit, predict_k,
+			filter_round, filter_k, nchan
 		);
 		break;
 #endif
 	default:
 #ifndef LIBTTAr_OPT_DISABLE_MCH
 		nbytes_tta_dec = tta_decode_mch(
-			dest, src, &user->crc, &user->ni32,
-			&priv->bitcache, priv->codec, ni32_target,
-			soft_read_limit, predict_k, filter_round, filter_k,
-			nchan
+			dest, src, &user->crc, &user->ni32, &priv->bitcache,
+			priv->codec, ni32_target, soft_read_limit, predict_k,
+			filter_round, filter_k, nchan
 		);
 		break;
 #else

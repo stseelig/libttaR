@@ -176,7 +176,7 @@ encst_loop(
 		size_t	z;
 	} t;
 
-	// setup buffers
+	// setup
 	t.z = encbuf_init(
 		&encbuf, buflen, TTABUF_LEN_DEFAULT, nchan, samplebytes
 	);
@@ -312,7 +312,7 @@ encmt_loop(
 
 	assert(nthreads >= 1u);
 
-	// init
+	// setup/init
 	memset(&estat, 0x00, sizeof estat);
 	encmt_fstat_init(&fstat_c, fstat);
 	encmt_state_init(

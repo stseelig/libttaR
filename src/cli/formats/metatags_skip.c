@@ -70,7 +70,7 @@ static CONST u32 id3syncsafeint(u8, u8, u8, u8) /*@*/;
  * @return FILECHECK_MISMATCH on success
 **/
 enum FileCheck
-metatags_skip(FILE *restrict file)
+metatags_skip(FILE *const restrict file)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
 		file

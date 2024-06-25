@@ -49,7 +49,7 @@
 #define PURE		__attribute__((pure))
 #define CONST		__attribute__((const))
 
-#define NORETURN	__attribute__((noreturn))
+#define NORETURN	/*@noreturn@*/ __attribute__((noreturn))
 #define UNUSED		/*@unused@*/ __attribute__((unused))
 
 #define PACKED		__attribute__((packed))
@@ -300,13 +300,7 @@ ALWAYS_INLINE CONST u16
 letoh16(register const u16 x)
 /*@*/
 {
-#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-	return bswap16(x);
-#elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-	return x;
-#else
-#error "weird endianness"
-#endif
+	return htole16(x);
 }
 
  /**@fn htole32
@@ -341,13 +335,7 @@ ALWAYS_INLINE CONST u32
 letoh32(register const u32 x)
 /*@*/
 {
-#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-	return bswap32(x);
-#elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-	return x;
-#else
-#error "weird endianness"
-#endif
+	return htole32(x);
 }
 
  /**@fn htole64
@@ -382,18 +370,12 @@ ALWAYS_INLINE CONST u64
 letoh64(register const u64 x)
 /*@*/
 {
-#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-	return bswap64(x);
-#elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-	return x;
-#else
-#error "weird endianness"
-#endif
+	return htole64(x);
 }
 
 //==========================================================================//
 
-// shifting signed integers is naughty
+// shifting signed integers is naughty (implementation defined)
 
 /**@fn asl32
  * @brief arithmetic shift left 32-bit

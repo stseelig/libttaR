@@ -251,7 +251,7 @@ errprint_ttaR_version(
  * @param str[in] the copyright string
 **/
 static void
-errprint_libstr_copyright(const char *restrict str)
+errprint_libstr_copyright(const char *str)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 {

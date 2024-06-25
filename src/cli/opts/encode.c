@@ -26,7 +26,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #undef opt
-static int opt_encode_rawpcm(uint, char *restrict opt, enum OptMode)
+static int opt_encode_rawpcm(uint, char *opt, enum OptMode)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -36,7 +36,7 @@ static int opt_encode_rawpcm(uint, char *restrict opt, enum OptMode)
 @*/
 ;
 
-static int opt_encode_help(uint, char *restrict, enum OptMode)
+static int opt_encode_help(uint, char *, enum OptMode)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;
@@ -113,7 +113,7 @@ rawpcm_statcopy(/*@out@*/ struct FileStats *const restrict fstat)
 // --rawpcm=format,samplerate,nchan
 static int
 opt_encode_rawpcm(
-	UNUSED const uint optind, char *const restrict opt,
+	UNUSED const uint optind, char *const opt,
 	UNUSED const enum OptMode mode
 )
 /*@globals	fileSystem,
@@ -204,7 +204,7 @@ opt_encode_rawpcm(
 **/
 NORETURN int
 opt_encode_help(
-	UNUSED const uint optind, UNUSED char *const restrict opt,
+	UNUSED const uint optind, UNUSED char *const opt,
 	UNUSED const enum OptMode mode
 )
 /*@globals	fileSystem@*/

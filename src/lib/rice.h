@@ -82,8 +82,9 @@ ALWAYS_INLINE u8 rice_crc32(u8, u32 *restrict crc)
 #undef bitcache
 #undef crc
 ALWAYS_INLINE size_t rice_encode(
-	/*@partial@*/ u8 *restrict dest, size_t, u32, struct Rice *restrict rice,
-	struct BitCache *restrict bitcache, u32 *restrict crc
+	/*@partial@*/ u8 *restrict dest, size_t, u32,
+	struct Rice *restrict rice, struct BitCache *restrict bitcache,
+	u32 *restrict crc
 )
 /*@modifies	*dest,
 		*rice,
@@ -301,7 +302,10 @@ lsmask32(register const u8 k, const enum ShiftMaskMode mode)
  * @post 0 <= 'k' <= 27u
 **/
 ALWAYS_INLINE void
-rice_cmpsum(u32 *const restrict sum, u8 *const restrict k, const u32 value)
+rice_cmpsum(
+	register u32 *const restrict sum, register u8 *const restrict k,
+	register const u32 value
+)
 /*@modifies	*sum,
 		*k
 @*/

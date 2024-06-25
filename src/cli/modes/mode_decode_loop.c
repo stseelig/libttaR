@@ -172,7 +172,7 @@ decst_loop(
 		int	d;
 	} t;
 
-	// setup buffers
+	// setup
 	t.z = decbuf_init(
 		&decbuf, buflen, TTABUF_LEN_DEFAULT, nchan, samplebytes
 	);
@@ -319,7 +319,7 @@ decmt_loop(
 
 	assert(nthreads >= 1u);
 
-	// init
+	// setup/init
 	memset(&dstat, 0x00, sizeof dstat);
 	decmt_fstat_init(&fstat_c, fstat);
 	decmt_state_init(

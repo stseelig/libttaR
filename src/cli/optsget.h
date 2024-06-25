@@ -29,7 +29,7 @@ struct OptDict {
 	char	 *longopt;
 	int	  shortopt;	// -1: none
 	/*@null@*/
-	int	(*fn)(uint, char *restrict, enum OptMode);
+	int	(*fn)(uint, char *, enum OptMode);
 };
 
 //////////////////////////////////////////////////////////////////////////////
