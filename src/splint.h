@@ -215,7 +215,7 @@ extern int pthread_create(
 extern int pthread_join(pthread_t, /*@null@*/ void **retval)
 /*@globals	internalState@*/
 /*@modifies	internalState,
-		retval
+		*retval
 @*/
 ;
 /*@=protoparammatch@*/
