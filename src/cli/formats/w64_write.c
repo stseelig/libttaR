@@ -87,7 +87,7 @@ write_w64_header(
 @*/
 {
 	struct Riff64Header_WriteTemplate wt;
-	union {	int z; } t;
+	union {	size_t z; } t;
 
 	// assuming that 64-bit values will not overflow
 

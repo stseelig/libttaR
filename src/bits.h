@@ -166,6 +166,8 @@ ALWAYS_INLINE CONST uint tbcnt32(u32) /*@*/;
 
 //--------------------------------------------------------------------------//
 
+#ifndef S_SPLINT_S	// splint preproc bugs
+
 #if UINT_MAX == UINT32_MAX
 #define BUILTIN_TZCNT32			__builtin_ctz
 #elif ULONG_MAX == UINT32_MAX
@@ -182,6 +184,8 @@ ALWAYS_INLINE CONST uint tbcnt32(u32) /*@*/;
 #define BUILTIN_TZCNT64			__builtin_ctzll
 #else
 #define BUILTIN_TZCNT64			nil
+#endif
+
 #endif
 
 //////////////////////////////////////////////////////////////////////////////

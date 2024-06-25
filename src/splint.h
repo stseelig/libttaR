@@ -94,6 +94,7 @@ extern long long atoll(const char *) /*@*/;
 
 /*@-incondefs@*/
 /*@external@*/ /*@unused@*/
+/*@only@*/ /*@null@*/ /*@in@*/
 extern void *calloc(size_t, size_t)
 /*@globals	internalState@*/
 /*@modifies	internalState@*/
@@ -155,6 +156,7 @@ extern int getrlimit(int, /*@out@*/ struct rlimit *rlim)
 
 /*@-incondefs@*/
 /*@external@*/ /*@unused@*/
+/*@only@*/ /*@null@*/ /*@out@*/
 extern void *malloc(size_t)
 /*@globals	internalState@*/
 /*@modifies	internalState@*/
@@ -162,7 +164,8 @@ extern void *malloc(size_t)
 /*@=incondefs@*/
 
 /*@-incondefs@*/
-/*@only@*/ /*@null@*/ /*@partial@*/ /*@external@*/ /*@unused@*/
+/*@external@*/ /*@unused@*/
+/*@only@*/ /*@null@*/ /*@partial@*/
 extern void *realloc(/*@only@*/ /*@null@*/ void *, size_t)
 /*@globals	internalState@*/
 /*@modifies	internalState@*/
@@ -174,6 +177,15 @@ extern int setrlimit(int, /*@in@*/ struct rlimit *)
 /*@globals	internalState@*/
 /*@modifies	internalState@*/
 ;
+
+/*@-incondefs@*/
+#undef str
+/*@external@*/ /*@unused@*/
+/*@printflike@*/
+extern int snprintf(char *str, size_t, const char *, ...)
+/*@modifies	*str@*/
+;
+/*@=incondefs@*/
 
 #undef buf
 /*@external@*/ /*@unused@*/

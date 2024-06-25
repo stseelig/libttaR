@@ -11,6 +11,7 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stdint.h>	// uintptr_t
 #include <stdio.h>
@@ -301,7 +302,7 @@ filestats_get(
 
 	if UNLIKELY ( ! libttaR_test_nchan((uint)ofm->fstat.nchan) ){
 		error_tta_nf("%s: libttaR built without support for "
-			"%u audio channels", ofm->infile_name,
+			"%"PRIu16" audio channels", ofm->infile_name,
 			ofm->fstat.nchan
 		);
 		return 1u;

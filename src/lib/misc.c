@@ -120,31 +120,25 @@ libttaR_test_nchan(const uint nchan)
 /*@*/
 {
 	bool r = false;
-
 	switch ( nchan ){
 	case 0:
 		break;
 	case 1u:
-#ifndef LIBTTAr_DISABLE_MCH
-		r = true;
-#elif !defined(LIBTTAr_DISABLE_UNROLLED_1CH)
+#if !defined(LIBTTAr_DISABLE_MCH) || !defined(LIBTTAr_DISABLE_UNROLLED_1CH)
 		r = true;
 #endif
 		break;
 	case 2u:
-#ifndef LIBTTAr_DISABLE_MCH
-		r = true;
-#elif !defined(LIBTTAr_DISABLE_UNROLLED_2CH)
+#if !defined(LIBTTAr_DISABLE_MCH) || !defined(LIBTTAr_DISABLE_UNROLLED_2CH)
 		r = true;
 #endif
 		break;
 	default:
-#ifndef LIBTTAr_DISABLE_MCH
+#if !defined(LIBTTAr_DISABLE_MCH)
 		r = true;
 #endif
 		break;
 	}
-
 	return r;
 }
 

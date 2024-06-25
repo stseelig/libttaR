@@ -205,7 +205,7 @@ encst_loop(
 				error_sys(errno, "fread", infile_name);
 			}
 			else {	warning_tta("%s: frame %zu: truncated file",
-					infile, nframes_read
+					infile_name, nframes_read
 				);
 			}
 			// forces readlen to 0
