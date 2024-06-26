@@ -108,6 +108,10 @@ static size_t tta_encode_2ch(
  * @pre 'user' initialized with LIBTTAr_CODECSTATE_USER_INIT before 1st call
  *
  * @note read the manpage for more info
+ * @note affected by:
+ *     LIBTTAr_OPT_DISABLE_UNROLLED_1CH,
+ *     LIBTTAr_OPT_DISABLE_UNROLLED_2CH,
+ *     LIBTTAr_OPT_DISABLE_MCH
 **/
 int
 libttaR_tta_encode(

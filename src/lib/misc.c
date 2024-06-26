@@ -68,15 +68,12 @@ CONST size_t
 libttaR_codecstate_priv_size(const uint nchan)
 /*@*/
 {
-	size_t r = 0;
-
 	if ( nchan == 0 ){
-		return r;
+		return 0;
 	}
-
-	r  = sizeof(struct LibTTAr_CodecState_Priv);
-	r += (size_t) (nchan * sizeof(struct Codec));
-	return r;
+	return (sizeof(struct LibTTAr_CodecState_Priv)
+	     + ((size_t) (nchan * sizeof(struct Codec)))
+	);
 }
 
 /**@fn libttaR_ttabuf_safety_margin_size
@@ -114,6 +111,10 @@ libttaR_ttabuf_safety_margin(
  * @return true or false
  *
  * @note read the manpage for more info
+ * @note affected by:
+ *     LIBTTAr_OPT_DISABLE_UNROLLED_1CH,
+ *     LIBTTAr_OPT_DISABLE_UNROLLED_2CH,
+ *     LIBTTAr_OPT_DISABLE_MCH
 **/
 CONST bool
 libttaR_test_nchan(const uint nchan)

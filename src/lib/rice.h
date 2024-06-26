@@ -351,8 +351,8 @@ rice_crc32(register const u8 x, register u32 *const restrict crc)
  * @return number of bytes written to 'dest' + 'r'
  *
  * @note max write size (unary + binary):
- *    8/16-bit :   19u
- *      24-bit : 4099u
+ *     8/16-bit :   19u
+ *       24-bit : 4099u
 **/
 ALWAYS_INLINE size_t
 rice_encode(
@@ -447,8 +447,8 @@ rice_encode_cacheflush(
  * @return number of bytes written to 'dest' + 'r'
  *
  * @note max unary code / write size:
- *	8/16-bit :   16u
- *	  24-bit : 4096u
+ *	 8/16-bit :   16u
+ *	   24-bit : 4096u
 **/
 ALWAYS_INLINE size_t
 rice_unary_put(
@@ -532,8 +532,8 @@ rice_binary_put(
  * @return number of bytes read from 'src' + 'r'
  *
  * @note max read size (unary + binary):
- *    8/16-bit :   19u
- *      24-bit : 4099u
+ *     8/16-bit :   19u
+ *       24-bit : 4099u
 **/
 ALWAYS_INLINE size_t
 rice_decode(
@@ -599,8 +599,8 @@ rice_decode(
  * @return number of bytes read from 'src' + 'r'
  *
  * @note max unary code / read size:
- *    8/16-bit :   16u
- *      24-bit : 4096u
+ *     8/16-bit :   16u
+ *       24-bit : 4096u
  * @note affected by LIBTTAr_OPT_NO_TZCNT
 **/
 ALWAYS_INLINE size_t

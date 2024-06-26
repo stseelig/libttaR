@@ -71,9 +71,9 @@ enum TTASampleBytes {
 
 struct LibTTAr_VersionInfo {
 	unsigned int	 version;
-	unsigned int	 version_major;
-	unsigned int 	 version_minor;
-	unsigned int	 version_revis;
+	unsigned int	 version_major;	/* API change               */
+	unsigned int 	 version_minor;	/* bugfix or improvement    */
+	unsigned int	 version_revis;	/* inbetween minor versions */
 	/*@observer@*/
 	const char	*version_extra;
 	/*@observer@*/
