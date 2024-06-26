@@ -353,10 +353,12 @@ encmt_loop(
 
 	// join
 	for ( i = 0; i < nthreads - 1u; ++i ){
-		(void) pthread_join(thread_encoder[i], NULL);
+		t.d = pthread_join(thread_encoder[i], NULL);
+		assert(t.d == 0);
 	}
 	//
-	(void) pthread_join(thread_io, NULL);
+	t.d = pthread_join(thread_io, NULL);
+	assert(t.d == 0);
 
 	// cleanup
 	encmt_state_free(&state_io, &state_encoder, framequeue_len);
@@ -626,7 +628,9 @@ encmt_io(struct MTArg_EncIO *const restrict arg)
 	bool start_writing = false;
 	size_t nframes_read = 0;
 	uint i = 0, last;
-	union {	uint u; } t;
+	union {	int	d;
+		uint	u;
+	} t;
 
 	goto loop0_entr;
 	do {
@@ -665,7 +669,8 @@ encmt_io(struct MTArg_EncIO *const restrict arg)
 		}
 
 		// make frame available
-		(void) sem_post(nframes_avail);
+		t.d = sem_post(nframes_avail);
+		assert(t.d == 0);
 
 		++nframes_read;
 		i = (i + 1u < framequeue_len ? i + 1u : 0);
@@ -676,7 +681,8 @@ encmt_io(struct MTArg_EncIO *const restrict arg)
 		}
 
 		// wait for frame to finish encoding
-		(void) sem_wait(&post_encoder[i]);
+		t.d = sem_wait(&post_encoder[i]);
+		assert(t.d == 0);
 
 		// write tta to outfile
 		enc_frame_write(
@@ -701,12 +707,14 @@ loop0_read:
 	// write the remaining frames
 	if ( start_writing ){ goto loop1_not_tiny; }
 	else {	// unlock any uninitialized frames (tiny infile)
-		do {	(void) sem_post(nframes_avail);
+		do {	t.d = sem_post(nframes_avail);
+			assert(t.d == 0);
 			i = (i + 1u < framequeue_len ? i + 1u : 0);
 		} while ( i != 0 );
 	}
 	do {	// wait for frame to finish encoding
-		(void) sem_wait(&post_encoder[i]);
+		t.d = sem_wait(&post_encoder[i]);
+		assert(t.d == 0);
 
 		// write tta to outfile
 		enc_frame_write(
@@ -716,7 +724,8 @@ loop0_read:
 
 		// mark frame as done and make available
 		ni32_perframe[i] = 0;
-		(void) sem_post(nframes_avail);
+		t.d = sem_post(nframes_avail);
+		assert(t.d == 0);
 loop1_not_tiny:
 		i = (i + 1u < framequeue_len ? i + 1u : 0);
 	}
@@ -762,7 +771,9 @@ encmt_encoder(struct MTArg_Encoder *const restrict arg)
 
 	struct LibTTAr_CodecState_Priv *restrict priv;
 	uint i;
-	union {	size_t z; } t;
+	union {	int	d;
+		size_t	z;
+	} t;
 
 	// setup
 	t.z = libttaR_codecstate_priv_size(nchan);
@@ -782,15 +793,19 @@ encmt_encoder(struct MTArg_Encoder *const restrict arg)
 		);
 
 		// unlock frame
-		(void) sem_post(&post_encoder[i]);
+		t.d = sem_post(&post_encoder[i]);
+		assert(t.d == 0);
 loop_entr:
 		// wait for a frame to be available
-		(void) sem_wait(nframes_avail);
+		t.d = sem_wait(nframes_avail);
+		assert(t.d == 0);
 
 		// get frame id from encode queue
-		(void) pthread_spin_lock(&queue->lock);
+		t.d = pthread_spin_lock(&queue->lock);
+		assert(t.d == 0);
 		i = pdequeue(&queue->q);
-		(void) pthread_spin_unlock(&queue->lock);
+		t.d = pthread_spin_unlock(&queue->lock);
+		assert(t.d == 0);
 	}
 	while ( ni32_perframe[i] != 0 );
 

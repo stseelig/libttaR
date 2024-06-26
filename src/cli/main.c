@@ -10,6 +10,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
+#include <assert.h>
 #include <errno.h>
 #include <signal.h>
 #include <stdbool.h>	// true
@@ -26,16 +27,6 @@
 #include "debug.h"
 #include "help.h"
 #include "main.h"
-
-//////////////////////////////////////////////////////////////////////////////
-
-enum HandledSignals {
-	HS_ABRT = SIGABRT,
-	HS_HUP  = SIGHUP,
-	HS_INT  = SIGINT,
-	HS_QUIT = SIGQUIT,
-	HS_TERM = SIGTERM
-};
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -59,7 +50,7 @@ extern int mode_decode(uint)
 
 //--------------------------------------------------------------------------//
 
-NORETURN COLD void sighand(enum HandledSignals)
+NORETURN COLD void sighand_cleanup_exit(int)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -152,26 +143,32 @@ main(const int argc, char *const *const argv)
 		g_argv
 @*/
 {
-	int r;
-
+	int r = EXIT_FAILURE;
+	struct sigaction sigact;
+	union {	int d; } t;
+#ifdef NDEBUG
+	(void) t.d;	// gcc
+#endif
 	if UNLIKELY ( argc == 1 ){
 		goto print_main_help;
 	}
 
 	// setup signals
-	if UNLIKELY (
-	     (signal((int) HS_ABRT, (void (*)(int)) sighand) == SIG_ERR)
-	    ||
-	     (signal((int) HS_HUP , (void (*)(int)) sighand) == SIG_ERR)
-	    ||
-	     (signal((int) HS_INT , (void (*)(int)) sighand) == SIG_ERR)
-	    ||
-	     (signal((int) HS_QUIT, (void (*)(int)) sighand) == SIG_ERR)
-	    ||
-	     (signal((int) HS_TERM, (void (*)(int)) sighand) == SIG_ERR)
-	){
-		error_sys_nf(errno, "signal", NULL);
-	}
+	memset(&sigact, 0x00, sizeof sigact);
+	sigact.sa_handler = sighand_cleanup_exit;
+	t.d = sigfillset(&sigact.sa_mask);
+	assert(t.d == 0);
+	// should only fail on bad parameter
+	t.d = sigaction(SIGABRT, &sigact, NULL);
+	assert(t.d == 0);
+	t.d = sigaction(SIGHUP , &sigact, NULL);
+	assert(t.d == 0);
+	t.d = sigaction(SIGINT , &sigact, NULL);
+	assert(t.d == 0);
+	t.d = sigaction(SIGQUIT, &sigact, NULL);
+	assert(t.d == 0);
+	t.d = sigaction(SIGTERM, &sigact, NULL);
+	assert(t.d == 0);
 
 	// these are saved for argument parsing in the modes
 	g_argc = (uint) argc;
@@ -188,7 +185,6 @@ main(const int argc, char *const *const argv)
 		error_tta_nf("bad mode '%s'", argv[1u]);
 print_main_help:
 		errprint_help_main();
-		r = EXIT_FAILURE;
 	} else{;}
 
 	return r;
@@ -196,15 +192,15 @@ print_main_help:
 
 //--------------------------------------------------------------------------//
 
-/**@fn sighand
- * @brief signal handler
+/**@fn sighand_cleanup_exit
+ * @brief signal handler that removes any imcomplete files then exits
  *
  * @param signum signal number
  *
  * @note only async-signal-safe functions should be used ($ man signal-safe)
 **/
 NORETURN COLD void
-sighand(const enum HandledSignals signum)
+sighand_cleanup_exit(const int signum)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -212,36 +208,16 @@ sighand(const enum HandledSignals signum)
 		internalState
 @*/
 {
-	const char intro0[] = "\n" T_B_DEFAULT;
-	const char intro1[] = ": " T_PURPLE;
-	const char *signame;
-	const char intro2[] = T_B_DEFAULT " ";
-	const char action[] = ". ";
-	const char outro[]  = T_PURPLE "!" T_RESET "\n";
-
-	// ignore any more signals
-	(void) signal((int) signum, SIG_IGN);
+	const char intro0[]       = "\n" T_B_DEFAULT;
+	const char intro1[]       = ": " T_PURPLE;
+	const char *const signame = strsignal(signum);
+	const char intro2[]       = T_B_DEFAULT " ";
+	const char action[]       = ". ";
+	const char outro[]        = T_PURPLE "!" T_RESET "\n";
 
 	(void) write(STDERR_FILENO, intro0, (sizeof intro0) - 1u);
 	(void) write(STDERR_FILENO, g_argv[0], strlen(g_argv[0]));
 	(void) write(STDERR_FILENO, intro1, (sizeof intro1) - 1u);
-	switch ( signum ){
-	case HS_ABRT:
-		signame = "SIGABRT";
-		break;
-	case HS_HUP:
-		signame = "SIGHUP";
-		break;
-	case HS_INT:
-		signame = "SIGINT";
-		break;
-	case HS_QUIT:
-		signame = "SIGQUIT";
-		break;
-	case HS_TERM:
-		signame = "SIGTERM";
-		break;
-	}
 	(void) write(STDERR_FILENO, signame, strlen(signame));
 	(void) write(STDERR_FILENO, intro2, (sizeof intro2) - 1u);
 
@@ -252,7 +228,7 @@ sighand(const enum HandledSignals signum)
 	}
 
 	(void) write(STDERR_FILENO, outro, (sizeof outro) - 1u);
-	_exit((int) signum);
+	_exit(signum);
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////

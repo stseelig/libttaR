@@ -46,8 +46,9 @@
 
 1.1.2 (2024-XX-XX):-----------------------------------------------------------
 
-	- POSIX.1-2001 compliant (no longer uses GNU extension functions)
+	- POSIX.1-2008 compliant (no longer uses GNU extension functions)
 	- encode buffer size scales with channel count
+	- more debug asserts
 	- minor bugfixes and changes
 	- updated for libttaR 1.2.0
 

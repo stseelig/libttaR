@@ -116,7 +116,8 @@ mode_encode(const uint optind)
 
 	memset(&openedfiles, 0x00, sizeof openedfiles);
 
-	(void) clock_gettime(CLOCK_MONOTONIC, &ts_start);
+	t.d = clock_gettime(CLOCK_MONOTONIC, &ts_start);
+	assert(t.d == 0);
 
 	// process opts/args
 	nerrors_file += optargs_process(
@@ -157,7 +158,8 @@ mode_encode(const uint optind)
 
 		enc_loop(openedfiles.file[i]);
 
-		(void) fclose(openedfiles.file[i]->infile);
+		t.d = fclose(openedfiles.file[i]->infile);
+		assert(t.d == 0);
 		openedfiles.file[i]->infile = NULL;
 
 		if ( g_flag.delete_src ){
@@ -173,7 +175,8 @@ mode_encode(const uint optind)
 
 	// print multifile stats
 	if ( (! g_flag.quiet) && (openedfiles.nmemb > (size_t) 1u) ){
-		(void) clock_gettime(CLOCK_MONOTONIC, &ts_stop);
+		t.d = clock_gettime(CLOCK_MONOTONIC, &ts_stop);
+		assert(t.d == 0);
 		errprint_runtime(
 			timediff(&ts_start, &ts_stop), openedfiles.nmemb,
 			MODE_ENCODE
@@ -265,10 +268,14 @@ enc_loop(const struct OpenedFilesMember *const restrict ofm)
 	}
 
 	// seek to start of pcm
-	(void) fseeko(infile, fstat->decpcm_off, SEEK_SET);
+	t.d = fseeko(infile, fstat->decpcm_off, SEEK_SET);
+	if UNLIKELY ( t.d != 0 ){
+		error_sys(errno, "fseeko", infile_name);
+	}
 
 	if ( ! g_flag.quiet ){
-		(void) clock_gettime(CLOCK_MONOTONIC, &ts_start);
+		t.d = clock_gettime(CLOCK_MONOTONIC, &ts_start);
+		assert(t.d == 0);
 	}
 
 	// encode
@@ -315,7 +322,8 @@ encode_multi:
 	g_rm_on_sigint = NULL;
 
 	if ( ! g_flag.quiet ){
-		(void) clock_gettime(CLOCK_MONOTONIC, &ts_stop);
+		t.d = clock_gettime(CLOCK_MONOTONIC, &ts_stop);
+		assert(t.d == 0);
 		estat.encodetime += timediff(&ts_start, &ts_stop);
 	}
 

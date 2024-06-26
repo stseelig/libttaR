@@ -193,6 +193,10 @@ extern int strerror_r(int, /*@out@*/ char *buf, size_t)
 /*@modifies	*buf@*/
 ;
 
+/*@external@*/ /*@unused@*/
+/*@temp@*/ /*@observer@*/
+extern char *strsignal(int sig) /*@*/;
+
 //==========================================================================//
 
 /*@-protoparammatch@*/

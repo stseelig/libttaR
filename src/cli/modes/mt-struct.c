@@ -200,12 +200,17 @@ encmt_state_free(
 @*/
 {
 	uint i;
-
+	union {	int d; } t;
+#ifdef NDEBUG
+	(void) t.d;	// gcc
+#endif
 	// io
-	(void) sem_destroy(io->frames.navailable);
+	t.d = sem_destroy(io->frames.navailable);
+	assert(t.d == 0);
 	free(io->frames.navailable);
 	for ( i = 0; i < framequeue_len; ++i ){
-		(void) sem_destroy(&io->frames.post_encoder[i]);
+		t.d = sem_destroy(&io->frames.post_encoder[i]);
+		assert(t.d == 0);
 	}
 	free(io->frames.post_encoder);
 	free(io->frames.ni32_perframe);
@@ -216,7 +221,8 @@ encmt_state_free(
 	free(io->frames.user);
 
 	// encoder
-	(void) pthread_spin_destroy(&encoder->frames.queue.lock);
+	t.d = pthread_spin_destroy(&encoder->frames.queue.lock);
+	assert(t.d == 0);
 
 	return;
 }
@@ -433,12 +439,17 @@ decmt_state_free(
 @*/
 {
 	uint i;
-
+	union {	int d; } t;
+#ifdef NDEBUG
+	(void) t.d;	// gcc
+#endif
 	// io
-	(void) sem_destroy(io->frames.navailable);
+	t.d = sem_destroy(io->frames.navailable);
+	assert(t.d == 0);
 	free(io->frames.navailable);
 	for ( i = 0; i < framequeue_len; ++i ){
-		(void) sem_destroy(&io->frames.post_decoder[i]);
+		t.d = sem_destroy(&io->frames.post_decoder[i]);
+		assert(t.d == 0);
 	}
 	free(io->frames.post_decoder);
 	free(io->frames.ni32_perframe);
@@ -453,7 +464,8 @@ decmt_state_free(
 	free(io->frames.nsamples_flat_2pad);
 
 	// decoder
-	(void) pthread_spin_destroy(&decoder->frames.queue.lock);
+	t.d = pthread_spin_destroy(&decoder->frames.queue.lock);
+	assert(t.d == 0);
 
 	return;
 }
