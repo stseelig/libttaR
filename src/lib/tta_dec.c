@@ -141,13 +141,13 @@ libttaR_tta_decode(
 	);
 
 	// initial state setup
-	// see tta_enc
+	// see libttaR_tta_encode
 	if ( user->ncalls_codec == 0 ){
 		state_priv_init(priv, nchan);
 	}
 
 	// check for bad parameters
-	// see tta_enc
+	// see libttaR_tta_encode
 	if ( (src_len == 0) || (dest_len == 0)
 	    ||
 	     (ni32_target == 0) || (nbytes_tta_target == 0)
