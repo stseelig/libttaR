@@ -50,13 +50,14 @@ extern int mode_decode(uint)
 
 //--------------------------------------------------------------------------//
 
+void atexit_cleanup(void)
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem@*/
+;
+
 NORETURN COLD void sighand_cleanup_exit(int)
-/*@globals	fileSystem,
-		internalState
-@*/
-/*@modifies	fileSystem,
-		internalState
-@*/
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem@*/
 ;
 
 //////////////////////////////////////////////////////////////////////////////
@@ -153,12 +154,12 @@ main(const int argc, char *const *const argv)
 		goto print_main_help;
 	}
 
-	// setup signals
+	// signals
 	memset(&sigact, 0x00, sizeof sigact);
 	sigact.sa_handler = sighand_cleanup_exit;
 	t.d = sigfillset(&sigact.sa_mask);
 	assert(t.d == 0);
-	// should only fail on bad parameter
+	//
 	t.d = sigaction(SIGABRT, &sigact, NULL);
 	assert(t.d == 0);
 	t.d = sigaction(SIGHUP , &sigact, NULL);
@@ -168,6 +169,10 @@ main(const int argc, char *const *const argv)
 	t.d = sigaction(SIGQUIT, &sigact, NULL);
 	assert(t.d == 0);
 	t.d = sigaction(SIGTERM, &sigact, NULL);
+	assert(t.d == 0);
+
+	// atexit
+	t.d = atexit(atexit_cleanup);
 	assert(t.d == 0);
 
 	// these are saved for argument parsing in the modes
@@ -192,8 +197,26 @@ print_main_help:
 
 //--------------------------------------------------------------------------//
 
+/**@fn atexit_cleanup
+ * @brief removes any incomplete file(s) for an early exit on error
+**/
+void
+atexit_cleanup(void)
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem@*/
+{
+	union {	int d; } t;
+	if UNLIKELY ( g_rm_on_sigint != NULL ){
+		t.d = remove(g_rm_on_sigint);
+		if ( t.d != 0 ){
+			error_sys_nf(errno, "remove", g_rm_on_sigint);
+		}
+	}
+	return;
+}
+
 /**@fn sighand_cleanup_exit
- * @brief signal handler that removes any imcomplete files then exits
+ * @brief signal handler that removes any incomplete file(s) then _exits
  *
  * @param signum signal number
  *
@@ -201,12 +224,8 @@ print_main_help:
 **/
 NORETURN COLD void
 sighand_cleanup_exit(const int signum)
-/*@globals	fileSystem,
-		internalState
-@*/
-/*@modifies	fileSystem,
-		internalState
-@*/
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem@*/
 {
 	const char intro0[]       = "\n" T_B_DEFAULT;
 	const char intro1[]       = ": " T_PURPLE;

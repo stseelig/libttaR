@@ -194,7 +194,7 @@ extern int strerror_r(int, /*@out@*/ char *buf, size_t)
 ;
 
 /*@external@*/ /*@unused@*/
-/*@temp@*/ /*@observer@*/
+/*@observer@*/
 extern char *strsignal(int sig) /*@*/;
 
 //==========================================================================//
