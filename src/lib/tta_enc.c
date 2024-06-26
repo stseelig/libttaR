@@ -299,7 +299,7 @@ tta_encode_mch(
 
 			// encode
 			r = rice_encode(
-				dest, r, (u32) curr, &codec[j].rice, bitcache,
+				dest, (u32) curr, r, &codec[j].rice, bitcache,
 				&crc
 			);
 		}
@@ -370,7 +370,7 @@ tta_encode_1ch(
 
 		// encode
 		r = rice_encode(
-			dest, r, (u32) curr, &codec->rice, bitcache, &crc
+			dest, (u32) curr, r, &codec->rice, bitcache, &crc
 		);
 	}
 
@@ -441,7 +441,7 @@ tta_encode_2ch(
 
 		// encode
 		r = rice_encode(
-			dest, r, (u32) curr, &codec[0].rice, bitcache, &crc
+			dest, (u32) curr, r, &codec[0].rice, bitcache, &crc
 		);
 
 	// 1	// correlate
@@ -461,7 +461,7 @@ tta_encode_2ch(
 
 		// encode
 		r = rice_encode(
-			dest, r, (u32) curr, &codec[1u].rice, bitcache, &crc
+			dest, (u32) curr, r, &codec[1u].rice, bitcache, &crc
 		);
 	}
 
