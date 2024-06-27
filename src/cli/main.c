@@ -230,9 +230,13 @@ sighand_cleanup_exit(const int signum)
 	const char intro0[]       = "\n" T_B_DEFAULT;
 	const char intro1[]       = ": " T_PURPLE;
 	const char *const signame = strsignal(signum);
-	const char intro2[]       = T_B_DEFAULT " ";
-	const char action[]       = ". ";
+	const char intro2[]       = T_DEFAULT " ";
+	const char act_start[]    = "?";
+	const char act_ok[]       = "\b. ";
+	const char act_err[]      = "\b" T_RED "X" T_DEFAULT " ";
 	const char outro[]        = T_PURPLE "!" T_RESET "\n";
+	//
+	union {	int d; } t;
 
 	(void) write(STDERR_FILENO, intro0, (sizeof intro0) - 1u);
 	(void) write(STDERR_FILENO, g_argv[0], strlen(g_argv[0]));
@@ -242,8 +246,19 @@ sighand_cleanup_exit(const int signum)
 
 	// remove any incomplete file(s)
 	if ( g_rm_on_sigint != NULL ){
-		(void) write(STDERR_FILENO, action, (sizeof action) - 1u);
-		(void) unlink(g_rm_on_sigint);
+		(void) write(
+			STDERR_FILENO, act_start, (sizeof act_start) - 1u
+		);
+		t.d = unlink(g_rm_on_sigint);
+		if ( t.d == 0 ){
+			(void) write(
+				STDERR_FILENO, act_ok, (sizeof act_ok) - 1u
+			);
+		}
+		else {	(void) write(
+				STDERR_FILENO, act_err, (sizeof act_err) - 1u
+			);
+		}
 	}
 
 	(void) write(STDERR_FILENO, outro, (sizeof outro) - 1u);
