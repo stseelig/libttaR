@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include "../bits.h"
@@ -48,14 +49,24 @@ extern int mode_decode(uint)
 @*/
 ;
 
-//--------------------------------------------------------------------------//
+//////////////////////////////////////////////////////////////////////////////
 
-void atexit_cleanup(void)
+static void atexit_cleanup(void)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;
 
-NORETURN COLD void sighand_cleanup_exit(int)
+static NORETURN COLD void sighand_cleanup_exit(int)
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem@*/
+;
+
+static void errwrite_action_start(void)
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem@*/
+;
+
+static void errwrite_action_end(int result)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;
@@ -200,7 +211,7 @@ print_main_help:
 /**@fn atexit_cleanup
  * @brief removes any incomplete file(s) for an early exit on error
 **/
-void
+static void
 atexit_cleanup(void)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
@@ -208,7 +219,7 @@ atexit_cleanup(void)
 	union {	int d; } t;
 	if UNLIKELY ( g_rm_on_sigint != NULL ){
 		t.d = remove(g_rm_on_sigint);
-		if ( t.d != 0 ){
+		if ( (t.d != 0) &&  (errno != EACCES) ){ // /dev/null
 			error_sys_nf(errno, "remove", g_rm_on_sigint);
 		}
 	}
@@ -222,7 +233,7 @@ atexit_cleanup(void)
  *
  * @note only async-signal-safe functions should be used ($ man signal-safe)
 **/
-NORETURN COLD void
+static NORETURN COLD void
 sighand_cleanup_exit(const int signum)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
@@ -231,9 +242,6 @@ sighand_cleanup_exit(const int signum)
 	const char intro1[]       = ": " T_PURPLE;
 	const char *const signame = strsignal(signum);
 	const char intro2[]       = T_DEFAULT " ";
-	const char act_start[]    = "?";
-	const char act_ok[]       = "\b. ";
-	const char act_err[]      = "\b" T_RED "X" T_DEFAULT " ";
 	const char outro[]        = T_PURPLE "!" T_RESET "\n";
 	//
 	union {	int d; } t;
@@ -246,23 +254,49 @@ sighand_cleanup_exit(const int signum)
 
 	// remove any incomplete file(s)
 	if ( g_rm_on_sigint != NULL ){
-		(void) write(
-			STDERR_FILENO, act_start, (sizeof act_start) - 1u
-		);
+		errwrite_action_start();
 		t.d = unlink(g_rm_on_sigint);
-		if ( t.d == 0 ){
-			(void) write(
-				STDERR_FILENO, act_ok, (sizeof act_ok) - 1u
-			);
+		if ( (t.d != 0) && (errno == EACCES) ){	// /dev/null
+			t.d = 0;
 		}
-		else {	(void) write(
-				STDERR_FILENO, act_err, (sizeof act_err) - 1u
-			);
-		}
+		errwrite_action_end(t.d);
 	}
 
 	(void) write(STDERR_FILENO, outro, (sizeof outro) - 1u);
 	_exit(signum);
+}
+
+static void
+errwrite_action_start(void)
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem@*/
+{
+	const char act_start[]    = "?";
+
+	(void) write(STDERR_FILENO, act_start, (sizeof act_start) - 1u);
+	return;
+}
+
+static void
+errwrite_action_end(int result)
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem@*/
+{
+	const char act_ok[]       = "\b. ";
+	const char act_err[]      = "\b" T_RED "x" T_DEFAULT " ";
+	//
+	const char *str;
+	size_t size;
+
+	if ( result == 0 ){
+		str  = act_ok;
+		size = (sizeof act_ok) - 1u;
+	}
+	else {	str  = act_err;
+		size = (sizeof act_err) - 1u;
+	}
+	(void) write(STDERR_FILENO, str, size);
+	return;
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////
