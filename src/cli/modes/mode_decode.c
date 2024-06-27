@@ -133,8 +133,7 @@ mode_decode(const uint optind)
 	    &&
 	     (g_flag.outfile != NULL) && (! g_flag.outfile_is_dir)
 	){
-		error_tta_nf("multiple infiles, but outfile not a directory");
-		++nerrors_file;
+		warning_tta("multiple infiles, but outfile not a directory");
 	}
 	else if UNLIKELY ( openedfiles.nmemb == 0 ){
 		warning_tta("nothing to do");
