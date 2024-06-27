@@ -141,13 +141,13 @@ print_error_sys(
 	flockfile(stderr);
 	//
 	(void) fprintf(stderr, T_B_DEFAULT "%s: ", g_argv[0]);
-	(void) fputs(T_B_RED "error:" T_B_DEFAULT " ", stderr);
+	(void) fputs(T_RED "error:" T_DEFAULT " ", stderr);
 	(void) fprintf(stderr, "%s: (%d) ", name, errnum);
 	(void) fputs(buf, stderr);
 	if ( extra != NULL ){
 		(void) fprintf(stderr, ": %s", extra);
 	}
-	(void) fputs(" " T_B_RED "!" T_RESET "\n", stderr);
+	(void) fputs(" " T_RED "!" T_RESET "\n", stderr);
 	//
 	funlockfile(stdout);
 	funlockfile(stderr);
@@ -232,9 +232,9 @@ print_error_tta(
 	flockfile(stderr);
 	//
 	(void) fprintf(stderr, T_B_DEFAULT "%s: ", g_argv[0]);
-	(void) fputs(T_B_RED "error:" T_B_DEFAULT " ", stderr);
+	(void) fputs(T_RED "error:" T_DEFAULT " ", stderr);
 	(void) vfprintf(stderr, format, args);
-	(void) fputs(" " T_B_RED "!" T_RESET "\n", stderr);
+	(void) fputs(" " T_RED "!" T_RESET "\n", stderr);
 	//
 	funlockfile(stdout);
 	funlockfile(stderr);

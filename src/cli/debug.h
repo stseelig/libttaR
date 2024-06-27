@@ -17,10 +17,14 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #define T_RESET		"\033[0m"
+//
+#define T_DEFAULT 	"\033[;1m"
+#define T_RED		"\033[31m"
+#define T_PURPLE	"\033[35m"
+//
 #define T_B_DEFAULT 	"\033[0;1m"
 #define T_B_RED		"\033[1;31m"
 #define T_B_YELLOW	"\033[1;33m"
-#define T_PURPLE	"\033[35m"
 
 enum Fatality {
 	FATAL,
