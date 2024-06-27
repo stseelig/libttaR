@@ -270,9 +270,9 @@ warning_tta(const char *const format, ...)
 	flockfile(stderr);
 	//
 	(void) fprintf(stderr, T_B_DEFAULT "%s: ", g_argv[0]);
-	(void) fputs(T_B_YELLOW "warning:" T_B_DEFAULT " ", stderr);
+	(void) fputs(T_YELLOW "warning:" T_DEFAULT " ", stderr);
 	(void) vfprintf(stderr, format, args);
-	(void) fputs(" " T_B_YELLOW "!" T_RESET "\n", stderr);
+	(void) fputs(" " T_YELLOW "!" T_RESET "\n", stderr);
 	//
 	funlockfile(stdout);
 	funlockfile(stderr);
