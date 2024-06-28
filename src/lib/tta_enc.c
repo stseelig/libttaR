@@ -132,8 +132,8 @@ libttaR_tta_encode(
 	const  u8 predict_k    = tta_predict_k(samplebytes);
 	const i32 filter_round = tta_filter_round(samplebytes);
 	const  u8 filter_k     = tta_filter_k(samplebytes);
-	const size_t safety_margin = (size_t) (
-		safety_margin_perchan(samplebytes) * nchan
+	const size_t safety_margin    = (size_t) (
+		tta_safety_margin_perchan(samplebytes) * nchan
 	);
 	const size_t soft_write_limit = dest_len - safety_margin;
 
@@ -433,19 +433,19 @@ tta_encode_2ch(
 		prev = curr;
 
 		// predict
-		curr -= tta_predict1(codec[0].prev, predict_k);
-		codec[0].prev = prev;
+		curr -= tta_predict1(codec[0u].prev, predict_k);
+		codec[0u].prev = prev;
 
 		// filter
 		curr = tta_filter(
-			&codec[0].filter, filter_round, filter_k, curr,
+			&codec[0u].filter, filter_round, filter_k, curr,
 			TTA_ENC
 		);
 		curr = tta_postfilter_enc(curr);
 
 		// encode
 		r = rice_encode(
-			dest, (u32) curr, r, &codec[0].rice, bitcache, &crc
+			dest, (u32) curr, r, &codec[0u].rice, bitcache, &crc
 		);
 
 	// 1	// correlate

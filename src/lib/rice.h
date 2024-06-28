@@ -146,7 +146,7 @@ ALWAYS_INLINE size_t rice_binary_put(
 ALWAYS_INLINE size_t rice_decode(
 	/*@out@*/ u32 *restrict value, const u8 *restrict, size_t,
 	struct Rice *restrict rice, struct BitCache *restrict bitcache,
-	u32 *restrict crc
+	u32 *restrict crc, u32
 )
 /*@modifies	*value,
 		*rice,
@@ -161,7 +161,7 @@ ALWAYS_INLINE size_t rice_decode(
 #undef crc
 ALWAYS_INLINE size_t rice_unary_get(
 	/*@out@*/ u32 *restrict unary, const u8 *restrict, size_t,
-	u32 *restrict cache, u8 *restrict count, u32 *restrict crc
+	u32 *restrict cache, u8 *restrict count, u32 *restrict crc, u32
 )
 /*@modifies	*unary,
 		*cache,
@@ -300,6 +300,8 @@ lsmask32(register const u8 k, const enum ShiftMaskMode mode)
  *
  * @pre  0 <= 'k' <= 27u
  * @post 0 <= 'k' <= 27u
+ *
+ * @note in practice, 'k' maxes out at 24u
 **/
 ALWAYS_INLINE void
 rice_cmpsum(
@@ -312,10 +314,10 @@ rice_cmpsum(
 {
 	*sum += value - (*sum >> 4u);
 	if UNLIKELY ( *sum < shift32p4_bit(*k, SMM_TABLE) ){
-		--(*k);
+		*k -= 1u;
 	}
 	else if UNLIKELY ( *sum > shift32p4_bit(*k + 1u, SMM_TABLE) ){
-		++(*k);
+		*k += 1u;
 	} else{;}
 	return;
 }
@@ -528,6 +530,7 @@ rice_binary_put(
  * @param rice[in out] the rice code data for the current channel
  * @param bitcache[in out] the bitcache data
  * @param crc[in out] the current CRC
+ * @param max_unary_bits limit for the unary code
  *
  * @return number of bytes read from 'src' + 'r'
  *
@@ -541,7 +544,7 @@ rice_decode(
 	register const u8 *const restrict src, register size_t r,
 	register struct Rice *const restrict rice,
 	register struct BitCache *const restrict bitcache,
-	register u32 *const restrict crc
+	register u32 *const restrict crc, register const u32 max_unary_bits
 )
 /*@modifies	*value,
 		*rice,
@@ -560,13 +563,13 @@ rice_decode(
 	register  u8 kx;
 	register bool depth1;
 
-	r = rice_unary_get(&unary, src, r, cache, count, crc);
-	if LIKELY_P ( unary + 1u != 0, 0.575 ){
+	r = rice_unary_get(&unary, src, r, cache, count, crc, max_unary_bits);
+	if LIKELY_P ( unary != 0, 0.575 ){
+		unary -= 1u;
 		kx     = *k1;
 		depth1 = true;
 	}
-	else {	unary  = 0;
-		kx     = *k0;
+	else {	kx     = *k0;
 		depth1 = false;
 	}
 
@@ -595,6 +598,7 @@ rice_decode(
  * @param cache[in out] the bitcache
  * @param count[in out] number of active bits in the 'cache'
  * @param crc[in out] the current CRC
+ * @param max_unary_bits limit for the unary code
  *
  * @return number of bytes read from 'src' + 'r'
  *
@@ -608,7 +612,7 @@ rice_unary_get(
 	/*@out@*/ register u32 *const restrict unary,
 	register const u8 *const restrict src, register size_t r,
 	register u32 *const restrict cache, register u8 *const restrict count,
-	register u32 *const restrict crc
+	register u32 *const restrict crc, register const u32 max_unary_bits
 )
 /*@modifies	*unary,
 		*cache,
@@ -618,10 +622,8 @@ rice_unary_get(
 {
 	register union { u8 u_8; } t;
 
-	// switched initial value from 0, because in rice_decode, depth1 is
-	//   much more likely than not; moved a '--unary' in the depth1 branch
-	//   to a 'unary = 0' in !depth1 branch
-	*unary = UINT32_MAX;
+	// reverted to 0, becasuse UINT32_MAX was ruining the safety check
+	*unary = 0;
 
 #ifndef LIBTTAr_OPT_NO_TZCNT
 	// this loop is slightly better than the lookup-table one, as long as
@@ -632,20 +634,22 @@ rice_unary_get(
 loop_entr:
 		t.u_8 = (u8) tbcnt32(*cache);
 		*unary += t.u_8;
+		if UNLIKELY ( *unary > max_unary_bits ){ break; }
 	} while UNLIKELY_P ( t.u_8 == *count, 0.25 );
 #else
 	while UNLIKELY_P (
-		// 0 <= *count <= 7u
+		// 0 <= *count <= 8u
 		(*cache ^ lsmask32(*count, SMM_TABLE)) == 0, 0.25
 	){
 		*unary += *count;
+		if UNLIKELY ( *unary > max_unary_bits - 7u ){ break; }
 		*cache  = rice_crc32(src[r++], crc);
 		*count  = (u8) 8u;
 	}
-	t.u_8 = (u8) tbcnt32(*cache);	// *cache is always < UINT8_MAX
+	t.u_8 = (u8) tbcnt32(*cache);	// *cache here is always <= 0x7fu
 	*unary  += t.u_8;
 #endif
-	*cache >>= t.u_8 + 1u;		// t.u_8 is always < 8u
+	*cache >>= t.u_8 + 1u;		//  t.u_8 here is always <= 7u
 	*count  -= t.u_8 + 1u;
 	return r;
 }
@@ -679,6 +683,7 @@ rice_binary_get(
 @*/
 {
 	while LIKELY_P ( *count < k, 0.9 ){
+		// a check like in the unary decoder should be unnecessary
 		*cache |= rice_crc32(src[r++], crc) << *count;
 		*count += 8u;
 	}

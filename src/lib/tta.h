@@ -57,6 +57,10 @@ enum TTASampleBytes {
 // rounded up to the nearest (power of 2) + (power of 2)
 #define TTABUF_SAFETY_MARGIN_1or2byte	((size_t)   24u)
 #define TTABUF_SAFETY_MARGIN_3byte	((size_t) 5004u)
+//
+// maximum number of 1-bits in a unary code
+#define TTA_MAX_UNARY_BITS_1or2byte	((u32) (8u *   16u) - 1u)
+#define TTA_MAX_UNARY_BITS_3byte	((u32) (8u * 4096u) - 1u)
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -89,7 +93,8 @@ INLINE void codec_init(/*@out@*/ struct Codec *restrict codec , uint)
 
 //--------------------------------------------------------------------------//
 
-INLINE CONST size_t safety_margin_perchan(enum TTASampleBytes) /*@*/;
+INLINE CONST size_t tta_safety_margin_perchan(enum TTASampleBytes) /*@*/;
+INLINE CONST u32 tta_max_unary_bits(enum TTASampleBytes) /*@*/;
 INLINE CONST u8 tta_predict_k(enum TTASampleBytes) /*@*/;
 INLINE CONST i32 tta_filter_round(enum TTASampleBytes) /*@*/;
 INLINE CONST u8 tta_filter_k(enum TTASampleBytes) /*@*/;
@@ -135,7 +140,7 @@ codec_init(
 
 //--------------------------------------------------------------------------//
 
-/**@fn safety_margin_perchan
+/**@fn tta_safety_margin_perchan
  * @brief per channel safety margin for the TTA buffer
  *
  * @param samplebytes number of bytes per PCM sample
@@ -143,7 +148,7 @@ codec_init(
  * @return per channel safety margin
 **/
 INLINE CONST size_t
-safety_margin_perchan(register const enum TTASampleBytes samplebytes)
+tta_safety_margin_perchan(register const enum TTASampleBytes samplebytes)
 /*@*/
 {
 	register size_t r;
@@ -154,6 +159,31 @@ safety_margin_perchan(register const enum TTASampleBytes samplebytes)
 		break;
 	case TTASAMPLEBYTES_3:
 		r = TTABUF_SAFETY_MARGIN_3byte;
+		break;
+	}
+	return r;
+}
+
+/**@fn tta_max_unary_bits
+ * @brief max number of 1-bits in a unary code (to prevent possible buffer
+ *   issues)
+ *
+ * @param samplebytes number of bytes per PCM sample
+ *
+ * @return max number of 1-bits in a unary code
+**/
+INLINE CONST u32
+tta_max_unary_bits(register const enum TTASampleBytes samplebytes)
+/*@*/
+{
+	register uint r;
+	switch ( samplebytes ){
+	case TTASAMPLEBYTES_1:
+	case TTASAMPLEBYTES_2:
+		r = TTA_MAX_UNARY_BITS_1or2byte;
+		break;
+	case TTASAMPLEBYTES_3:
+		r = TTA_MAX_UNARY_BITS_3byte;
 		break;
 	}
 	return r;

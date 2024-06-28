@@ -31,7 +31,7 @@ static size_t tta_decode_mch(
 	/*@out@*/ i32 *const dest, const u8 *,
 	u32 *restrict crc_out, /*@out@*/ size_t *restrict ni32_out,
 	struct BitCache *restrict bitcache, struct Codec *restrict codec,
-	size_t, size_t, u8, i32, u8, uint
+	size_t, size_t, u8, i32, u8, u32, uint
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -52,7 +52,7 @@ static size_t tta_decode_1ch(
 	/*@out@*/ i32 *const dest, const u8 *,
 	u32 *restrict crc_out, /*@out@*/ size_t *restrict ni32_out,
 	struct BitCache *restrict bitcache, struct Codec *restrict codec,
-	size_t, size_t, u8, i32, u8, uint
+	size_t, size_t, u8, i32, u8, u32, uint
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -73,7 +73,7 @@ static size_t tta_decode_2ch(
 	/*@out@*/ i32 *dest, const u8 *,
 	u32 *restrict crc_out, /*@out@*/ size_t *restrict ni32_out,
 	struct BitCache *restrict bitcache, struct Codec *restrict codec,
-	size_t, size_t, u8, i32, u8, uint
+	size_t, size_t, u8, i32, u8, u32, uint
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -137,8 +137,9 @@ libttaR_tta_decode(
 	const  u8 predict_k    = tta_predict_k(samplebytes);
 	const i32 filter_round = tta_filter_round(samplebytes);
 	const  u8 filter_k     = tta_filter_k(samplebytes);
-	const size_t safety_margin = (size_t) (
-		safety_margin_perchan(samplebytes) * nchan
+	const u32 max_unary_bits     = tta_max_unary_bits(samplebytes);
+	const size_t safety_margin   = (size_t) (
+		tta_safety_margin_perchan(samplebytes) * nchan
 	);
 	const size_t soft_read_limit = (nbytes_tta_target < safety_margin
 		? src_len - safety_margin : nbytes_tta_target
@@ -193,7 +194,7 @@ libttaR_tta_decode(
 		nbytes_tta_dec = tta_decode_1ch(
 			dest, src, &user->crc, &user->ni32, &priv->bitcache,
 			priv->codec, ni32_target, soft_read_limit, predict_k,
-			filter_round, filter_k, nchan
+			filter_round, filter_k, max_unary_bits, nchan
 		);
 		break;
 #endif
@@ -202,7 +203,7 @@ libttaR_tta_decode(
 		nbytes_tta_dec = tta_decode_2ch(
 			dest, src, &user->crc, &user->ni32, &priv->bitcache,
 			priv->codec, ni32_target, soft_read_limit, predict_k,
-			filter_round, filter_k, nchan
+			filter_round, filter_k, max_unary_bits, nchan
 		);
 		break;
 #endif
@@ -211,7 +212,7 @@ libttaR_tta_decode(
 		nbytes_tta_dec = tta_decode_mch(
 			dest, src, &user->crc, &user->ni32, &priv->bitcache,
 			priv->codec, ni32_target, soft_read_limit, predict_k,
-			filter_round, filter_k, nchan
+			filter_round, filter_k, max_unary_bits, nchan
 		);
 		break;
 #else
@@ -261,6 +262,7 @@ libttaR_tta_decode(
  * @param predict_k arg 'k' for tta_predict1
  * @param filter_round arg 'round' for tta_filter
  * @param filter_k arg 'k' for tta_filter
+ * @param max_unary_bits limit for the unary code
  * @param nchan number of audio channels
  *
  * @return number of bytes read from 'src'
@@ -273,7 +275,8 @@ tta_decode_mch(
 	struct BitCache *const restrict bitcache,
 	struct Codec *const restrict codec, const size_t ni32_target,
 	const size_t soft_read_limit, const u8 predict_k,
-	const i32 filter_round, const u8 filter_k, const uint nchan
+	const i32 filter_round, const u8 filter_k, const u32 max_unary_bits,
+	const uint nchan
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -298,7 +301,7 @@ tta_decode_mch(
 			// decode
 			r = rice_decode(
 				(u32 *) &curr, src, r, &codec[j].rice,
-				bitcache, &crc
+				bitcache, &crc, max_unary_bits
 			);
 
 			// filter
@@ -349,6 +352,8 @@ tta_decode_mch(
  * @param predict_k arg 'k' for tta_predict1
  * @param filter_round arg 'round' for tta_filter
  * @param filter_k arg 'k' for tta_filter
+ * @param max_unary_bits limit for the unary code
+ * @param nchan unused
  *
  * @return number of bytes read from 'src'
 **/
@@ -360,7 +365,8 @@ tta_decode_1ch(
 	struct BitCache *const restrict bitcache,
 	struct Codec *const restrict codec, const size_t ni32_target,
 	const size_t soft_read_limit, const u8 predict_k,
-	const i32 filter_round, const u8 filter_k, UNUSED const uint nchan
+	const i32 filter_round, const u8 filter_k, const u32 max_unary_bits,
+	UNUSED const uint nchan
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -379,7 +385,8 @@ tta_decode_1ch(
 
 		// decode
 		r = rice_decode(
-			(u32 *) &curr, src, r, &codec->rice, bitcache, &crc
+			(u32 *) &curr, src, r, &codec->rice, bitcache, &crc,
+			max_unary_bits
 		);
 
 		// filter
@@ -417,6 +424,8 @@ tta_decode_1ch(
  * @param predict_k arg 'k' for tta_predict1
  * @param filter_round arg 'round' for tta_filter
  * @param filter_k arg 'k' for tta_filter
+ * @param max_unary_bits limit for the unary code
+ * @param nchan unused
  *
  * @return number of bytes read from 'src'
 **/
@@ -428,7 +437,8 @@ tta_decode_2ch(
 	struct BitCache *const restrict bitcache,
 	struct Codec *const restrict codec, const size_t ni32_target,
 	const size_t soft_read_limit, const u8 predict_k,
-	const i32 filter_round, const u8 filter_k, UNUSED const uint nchan
+	const i32 filter_round, const u8 filter_k, const u32 max_unary_bits,
+	UNUSED const uint nchan
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -447,26 +457,28 @@ tta_decode_2ch(
 
 	// 0	// decode
 		r = rice_decode(
-			(u32 *) &curr, src, r, &codec[0].rice, bitcache, &crc
+			(u32 *) &curr, src, r, &codec[0u].rice, bitcache,
+			&crc, max_unary_bits
 		);
 
 		// filter
 		curr = tta_prefilter_dec(curr);
 		curr = tta_filter(
-			&codec[0].filter, filter_round, filter_k, curr,
+			&codec[0u].filter, filter_round, filter_k, curr,
 			TTA_DEC
 		);
 
 		// predict
-		curr += tta_predict1(codec[0].prev, predict_k);
-		codec[0].prev = curr;
+		curr += tta_predict1(codec[0u].prev, predict_k);
+		codec[0u].prev = curr;
 
 		// save for decorrelation
 		prev = curr;
 
 	// 1	// decode
 		r = rice_decode(
-			(u32 *) &curr, src, r, &codec[1u].rice, bitcache, &crc
+			(u32 *) &curr, src, r, &codec[1u].rice, bitcache,
+			&crc, max_unary_bits
 		);
 
 		// filter
