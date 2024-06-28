@@ -530,7 +530,7 @@ rice_binary_put(
  * @param rice[in out] the rice code data for the current channel
  * @param bitcache[in out] the bitcache data
  * @param crc[in out] the current CRC
- * @param max_unary_bits limit for the unary code
+ * @param unary_soft_limit limit for the unary code
  *
  * @return number of bytes read from 'src' + 'r'
  *
@@ -544,7 +544,7 @@ rice_decode(
 	register const u8 *const restrict src, register size_t r,
 	register struct Rice *const restrict rice,
 	register struct BitCache *const restrict bitcache,
-	register u32 *const restrict crc, register const u32 max_unary_bits
+	register u32 *const restrict crc, register const u32 unary_soft_limit
 )
 /*@modifies	*value,
 		*rice,
@@ -563,7 +563,7 @@ rice_decode(
 	register  u8 kx;
 	register bool depth1;
 
-	r = rice_unary_get(&unary, src, r, cache, count, crc, max_unary_bits);
+	r = rice_unary_get(&unary, src, r, cache, count, crc, unary_soft_limit);
 	if LIKELY_P ( unary != 0, 0.575 ){
 		unary -= 1u;
 		kx     = *k1;
@@ -598,7 +598,7 @@ rice_decode(
  * @param cache[in out] the bitcache
  * @param count[in out] number of active bits in the 'cache'
  * @param crc[in out] the current CRC
- * @param max_unary_bits limit for the unary code
+ * @param unary_soft_limit limit for the unary code
  *
  * @return number of bytes read from 'src' + 'r'
  *
@@ -612,7 +612,7 @@ rice_unary_get(
 	/*@out@*/ register u32 *const restrict unary,
 	register const u8 *const restrict src, register size_t r,
 	register u32 *const restrict cache, register u8 *const restrict count,
-	register u32 *const restrict crc, register const u32 max_unary_bits
+	register u32 *const restrict crc, register const u32 unary_soft_limit
 )
 /*@modifies	*unary,
 		*cache,
@@ -634,7 +634,7 @@ rice_unary_get(
 loop_entr:
 		t.u_8 = (u8) tbcnt32(*cache);
 		*unary += t.u_8;
-		if UNLIKELY ( *unary >= max_unary_bits ){ break; }
+		if UNLIKELY ( *unary > unary_soft_limit ){ break; }
 	} while UNLIKELY_P ( t.u_8 == *count, 0.25 );
 #else
 	while UNLIKELY_P (
@@ -642,14 +642,14 @@ loop_entr:
 		(*cache ^ lsmask32(*count, SMM_TABLE)) == 0, 0.25
 	){
 		*unary += *count;
-		if UNLIKELY ( *unary >= max_unary_bits - 7u ){ break; }
 		*cache  = rice_crc32(src[r++], crc);
 		*count  = (u8) 8u;
+		if UNLIKELY ( *unary > unary_soft_limit - 7u ){ break; }
 	}
-	t.u_8 = (u8) tbcnt32(*cache);	// *cache here is always <= 0x7fu
+	t.u_8 = (u8) tbcnt32(*cache);	// *cache should always be <= 0x7Fu
 	*unary  += t.u_8;
 #endif
-	*cache >>= t.u_8 + 1u;		//  t.u_8 here is always <= 7u
+	*cache >>= t.u_8 + 1u;		//  t.u_8 should always be <= 7u
 	*count  -= t.u_8 + 1u;
 	return r;
 }

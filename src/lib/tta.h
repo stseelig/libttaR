@@ -58,9 +58,9 @@ enum TTASampleBytes {
 #define TTABUF_SAFETY_MARGIN_1or2byte	((size_t)   24u)
 #define TTABUF_SAFETY_MARGIN_3byte	((size_t) 5004u)
 //
-// maximum number of 1-bits in a unary code
-#define TTA_MAX_UNARY_BITS_1or2byte	((u32) (8u *   16u) - 1u)
-#define TTA_MAX_UNARY_BITS_3byte	((u32) (8u * 4096u) - 1u)
+// maximum number (minus 8u) of 1-bits in a unary code
+#define TTA_UNARY_SOFT_LIMIT_1or2byte	((u32) (8u * (  16u - 1u)))
+#define TTA_UNARY_SOFT_LIMIT_3byte	((u32) (8u * (4096u - 1u)))
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -94,7 +94,7 @@ INLINE void codec_init(/*@out@*/ struct Codec *restrict codec , uint)
 //--------------------------------------------------------------------------//
 
 INLINE CONST size_t tta_safety_margin_perchan(enum TTASampleBytes) /*@*/;
-INLINE CONST u32 tta_max_unary_bits(enum TTASampleBytes) /*@*/;
+INLINE CONST u32 tta_unary_soft_limit(enum TTASampleBytes) /*@*/;
 INLINE CONST u8 tta_predict_k(enum TTASampleBytes) /*@*/;
 INLINE CONST i32 tta_filter_round(enum TTASampleBytes) /*@*/;
 INLINE CONST u8 tta_filter_k(enum TTASampleBytes) /*@*/;
@@ -164,7 +164,7 @@ tta_safety_margin_perchan(register const enum TTASampleBytes samplebytes)
 	return r;
 }
 
-/**@fn tta_max_unary_bits
+/**@fn tta_unary_soft_limit
  * @brief max number of 1-bits in a unary code (to prevent possible buffer
  *   issues)
  *
@@ -173,17 +173,17 @@ tta_safety_margin_perchan(register const enum TTASampleBytes samplebytes)
  * @return max number of 1-bits in a unary code
 **/
 INLINE CONST u32
-tta_max_unary_bits(register const enum TTASampleBytes samplebytes)
+tta_unary_soft_limit(register const enum TTASampleBytes samplebytes)
 /*@*/
 {
 	register uint r;
 	switch ( samplebytes ){
 	case TTASAMPLEBYTES_1:
 	case TTASAMPLEBYTES_2:
-		r = TTA_MAX_UNARY_BITS_1or2byte;
+		r = TTA_UNARY_SOFT_LIMIT_1or2byte;
 		break;
 	case TTASAMPLEBYTES_3:
-		r = TTA_MAX_UNARY_BITS_3byte;
+		r = TTA_UNARY_SOFT_LIMIT_3byte;
 		break;
 	}
 	return r;
