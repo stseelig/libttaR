@@ -1,13 +1,13 @@
 '\# t
 .\#     Title: libttaR_tta_encode
 .\#    Author: Shane Seelig
-.\#      Date: 2024-06-10
-.\#    Source: libttaR 1.1
+.\#      Date: 2024-06-27
+.\#    Source: libttaR 1.2
 .\#  Language: English
 .\#
 .\############################################################################
 
-.TH "LIBTTAr_TTA_ENCODE" "3" "2024\-06\-01" "libttaR 1.1" \
+.TH "LIBTTAr_TTA_ENCODE" "3" "2024\-07\-01" "libttaR 1.2" \
 "LibTTAr Programmer's Manual"
 
 .\############################################################################
@@ -228,6 +228,14 @@ The frame finished decoding, but
 the frame did not finish decoding, but
 (\fIuser\fR->nbytes_tta_total > \fInbytes_tta_perframe\fR).
 This would be caused by either corrupted or malformed TTA data.
+
+The absense of this value does not guarantee that the data was correctly
+decoded, only that the "correct" number of bytes was read.
+There is a check in the rice decoder to stop after reading so many bytes, but
+it does not return an error, it just stops reading the current code and then
+continues (for performance reasons).
+It should be possible to construct an invalid TTA frame (with a good CRC) that
+could get the decoder to read the "correct" number of bytes.
 .RE
 
 .RE
