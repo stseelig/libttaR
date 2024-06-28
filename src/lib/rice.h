@@ -111,7 +111,7 @@ INLINE size_t rice_encode_cacheflush(
 #undef cache
 #undef count
 #undef crc
-ALWAYS_INLINE size_t rice_unary_put(
+ALWAYS_INLINE size_t rice_unary_write(
 	/*@partial@*/ u8 *restrict dest, u32, size_t, u32 *restrict cache,
 	u8 *restrict count, u32 *restrict crc
 )
@@ -126,7 +126,7 @@ ALWAYS_INLINE size_t rice_unary_put(
 #undef cache
 #undef count
 #undef crc
-ALWAYS_INLINE size_t rice_binary_put(
+ALWAYS_INLINE size_t rice_binary_write(
 	/*@partial@*/ u8 *restrict dest, u32, size_t, u8, u32 *restrict cache,
 	u8 *restrict count, u32 *restrict crc
 )
@@ -159,7 +159,7 @@ ALWAYS_INLINE size_t rice_decode(
 #undef cache
 #undef count
 #undef crc
-ALWAYS_INLINE size_t rice_unary_get(
+ALWAYS_INLINE size_t rice_unary_read(
 	/*@out@*/ u32 *restrict unary, const u8 *restrict, size_t,
 	u32 *restrict cache, u8 *restrict count, u32 *restrict crc, u32
 )
@@ -174,7 +174,7 @@ ALWAYS_INLINE size_t rice_unary_get(
 #undef cache
 #undef count
 #undef crc
-ALWAYS_INLINE size_t rice_binary_get(
+ALWAYS_INLINE size_t rice_binary_read(
 	/*@out@*/ u32 *restrict binary, const u8 *restrict, size_t, u8,
 	u32 *restrict cache, u8 *restrict count, u32 *restrict crc
 )
@@ -391,10 +391,10 @@ rice_encode(
 		unary  = (value >> kx) + 1u;
 	}
 
-	r = rice_unary_put(dest, unary, r, cache, count, crc);
+	r = rice_unary_write(dest, unary, r, cache, count, crc);
 	if LIKELY ( kx != 0 ){
 		binary = value & lsmask32(kx, SMM_SHIFT);
-		r = rice_binary_put(dest, binary, r, kx, cache, count, crc);
+		r = rice_binary_write(dest, binary, r, kx, cache, count, crc);
 	}
 
 	return r;
@@ -436,7 +436,7 @@ rice_encode_cacheflush(
 
 //--------------------------------------------------------------------------//
 
-/**@fn rice_unary_put
+/**@fn rice_unary_write
  * @brief write a unary code to 'dest'
  *
  * @param dest[out] destination buffer
@@ -453,7 +453,7 @@ rice_encode_cacheflush(
  *	   24-bit : 4096u
 **/
 ALWAYS_INLINE size_t
-rice_unary_put(
+rice_unary_write(
 	/*@partial@*/ register u8 *const restrict dest, register u32 unary,
 	register size_t r, register u32 *const restrict cache,
 	register u8 *const restrict count, register u32 *const restrict crc
@@ -481,7 +481,7 @@ loop_entr:
 	return r;
 }
 
-/**@fn rice_binary_put
+/**@fn rice_binary_write
  * @brief write a binary code to 'dest'
  *
  * @param dest[out] destination buffer
@@ -497,7 +497,7 @@ loop_entr:
  * @note max binary code / write size: 3u
 **/
 ALWAYS_INLINE size_t
-rice_binary_put(
+rice_binary_write(
 	/*@partial@*/ register u8 *const restrict dest,
 	register const u32 binary, register size_t r, register const u8 k,
 	register u32 *const restrict cache, register u8 *const restrict count,
@@ -563,7 +563,7 @@ rice_decode(
 	register  u8 kx;
 	register bool depth1;
 
-	r = rice_unary_get(
+	r = rice_unary_read(
 		&unary, src, r, cache, count, crc, unary_soft_limit
 	);
 	if LIKELY_P ( unary != 0, 0.575 ){
@@ -576,7 +576,7 @@ rice_decode(
 	}
 
 	if LIKELY ( kx != 0 ){
-		r = rice_binary_get(&binary, src, r, kx, cache, count, crc);
+		r = rice_binary_read(&binary, src, r, kx, cache, count, crc);
 	}
 	*value = (unary << kx) + binary;
 
@@ -591,7 +591,7 @@ rice_decode(
 
 //--------------------------------------------------------------------------//
 
-/**@fn rice_unary_get
+/**@fn rice_unary_read
  * @brief read a unary code from 'src'
  *
  * @param unary[out] the unary code
@@ -610,7 +610,7 @@ rice_decode(
  * @note affected by LIBTTAr_OPT_NO_TZCNT
 **/
 ALWAYS_INLINE size_t
-rice_unary_get(
+rice_unary_read(
 	/*@out@*/ register u32 *const restrict unary,
 	register const u8 *const restrict src, register size_t r,
 	register u32 *const restrict cache, register u8 *const restrict count,
@@ -643,10 +643,10 @@ loop_entr:
 		// 0 <= *count <= 8u
 		(*cache ^ lsmask32(*count, SMM_TABLE)) == 0, 0.25
 	){
+		if UNLIKELY ( *unary > unary_soft_limit - 8u ){ break; }
 		*unary += *count;
 		*cache  = rice_crc32(src[r++], crc);
 		*count  = (u8) 8u;
-		if UNLIKELY ( *unary >= unary_soft_limit ){ break; }
 	}
 	t.u_8 = (u8) tbcnt32(*cache);	// *cache should always be <= 0x7Fu
 	*unary  += t.u_8;
@@ -656,7 +656,7 @@ loop_entr:
 	return r;
 }
 
-/**@fn rice_binary_get
+/**@fn rice_binary_read
  * @brief read a binary code from 'src'
  *
  * @param binary[out] the binary code
@@ -672,7 +672,7 @@ loop_entr:
  * @note max binary code / read size: 3u
 **/
 ALWAYS_INLINE size_t
-rice_binary_get(
+rice_binary_read(
 	/*@out@*/ register u32 *const restrict binary,
 	register const u8 *const restrict src, register size_t r,
 	register const u8 k, register u32 *const restrict cache,
