@@ -563,7 +563,9 @@ rice_decode(
 	register  u8 kx;
 	register bool depth1;
 
-	r = rice_unary_get(&unary, src, r, cache, count, crc, unary_soft_limit);
+	r = rice_unary_get(
+		&unary, src, r, cache, count, crc, unary_soft_limit
+	);
 	if LIKELY_P ( unary != 0, 0.575 ){
 		unary -= 1u;
 		kx     = *k1;
