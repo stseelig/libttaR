@@ -644,7 +644,7 @@ loop_entr:
 		*unary += *count;
 		*cache  = rice_crc32(src[r++], crc);
 		*count  = (u8) 8u;
-		if UNLIKELY ( *unary > unary_soft_limit - 7u ){ break; }
+		if UNLIKELY ( *unary >= unary_soft_limit ){ break; }
 	}
 	t.u_8 = (u8) tbcnt32(*cache);	// *cache should always be <= 0x7Fu
 	*unary  += t.u_8;
