@@ -58,7 +58,7 @@ enum TTASampleBytes {
 #define TTABUF_SAFETY_MARGIN_1or2byte	((size_t)   24u)
 #define TTABUF_SAFETY_MARGIN_3byte	((size_t) 5004u)
 //
-// maximum number (minus 8u) of 1-bits in a unary code
+// maximum number (minus 8u) of bits in a unary code
 #define TTA_UNARY_SOFT_LIMIT_1or2byte	((u32) (8u * (  16u - 1u)))
 #define TTA_UNARY_SOFT_LIMIT_3byte	((u32) (8u * (4096u - 1u)))
 
