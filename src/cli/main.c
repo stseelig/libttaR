@@ -219,7 +219,7 @@ atexit_cleanup(void)
 	union {	int d; } t;
 	if UNLIKELY ( g_rm_on_sigint != NULL ){
 		t.d = remove(g_rm_on_sigint);
-		if ( (t.d != 0) &&  (errno != EACCES) ){ // /dev/null
+		if ( (t.d != 0) && (errno != EACCES) ){	// /dev/null
 			error_sys_nf(errno, "remove", g_rm_on_sigint);
 		}
 	}
@@ -271,7 +271,7 @@ errwrite_action_start(void)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 {
-	const char act_start[]    = "?";
+	const char act_start[] = "?";
 
 	(void) write(STDERR_FILENO, act_start, (sizeof act_start) - 1u);
 	return;
@@ -282,8 +282,8 @@ errwrite_action_end(int result)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 {
-	const char act_ok[]       = "\b. ";
-	const char act_err[]      = "\b" T_RED "x" T_DEFAULT " ";
+	const char act_ok[]  = "\b. ";
+	const char act_err[] = "\b" T_RED "x" T_DEFAULT " ";
 	//
 	const char *str;
 	size_t size;
