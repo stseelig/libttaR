@@ -8,11 +8,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
-//                                                                          //
-//      i32buf and pcmbuf overlap to save space                             //
-//      all pointers are aligned to 16                                      //
-//                                                                          //
-//////////////////////////////////////////////////////////////////////////////
 
 #include <assert.h>
 #include <errno.h>
@@ -29,10 +24,6 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-#define BUF_ALIGN	((size_t) 16u)
-
-//////////////////////////////////////////////////////////////////////////////
-
 /**@fn encbuf_init
  * @brief initializes an encbuf
  *
@@ -41,10 +32,8 @@
  * @param ttabuf_len size of the ttabuf
  * @param nchan number of audio channels
  * @param samplebytes number of bytes per PCM sample
- *
- * @return (ni32_len * nchan) for sanity check
 **/
-size_t
+void
 encbuf_init(
 	/*@out@*/ struct EncBuf *const restrict eb, const size_t ni32_len,
 	const size_t ttabuf_len, const uint nchan,
@@ -58,19 +47,17 @@ encbuf_init(
 		*eb
 @*/
 /*@allocates	eb->i32buf,
+		eb->pcmbuf,
 		eb->ttabuf
 @*/
 {
-	const size_t r = (size_t) (ni32_len * nchan);
-	const size_t pcmbuf_size = (size_t) (r * samplebytes);
 	const size_t safety_margin = libttaR_ttabuf_safety_margin(
 		samplebytes, nchan
 	);
-	union {	uintptr_t p; } t;
 
 	assert(safety_margin != 0);
 
-	eb->i32buf_len = r + BUF_ALIGN;
+	eb->i32buf_len = ni32_len;
 	assert(eb->i32buf_len != 0);
 	eb->ttabuf_len = (ttabuf_len * nchan) + safety_margin;
 	assert(eb->ttabuf_len != 0);
@@ -81,9 +68,11 @@ encbuf_init(
 	}
 	assert(eb->i32buf != NULL);
 
-	t.p	    = (uintptr_t) &eb->i32buf[eb->i32buf_len];
-	t.p        -= pcmbuf_size + 1u;
-	eb->pcmbuf  = (u8 *) (t.p - (t.p % BUF_ALIGN));
+	eb->pcmbuf = calloc(eb->i32buf_len, (size_t) samplebytes);
+	if UNLIKELY ( eb->pcmbuf == NULL ){
+		error_sys(errno, "calloc", NULL);
+	}
+	assert(eb->pcmbuf != NULL);
 
 	eb->ttabuf = malloc(eb->ttabuf_len);
 	if UNLIKELY ( eb->ttabuf == NULL ){
@@ -91,7 +80,7 @@ encbuf_init(
 	}
 	assert(eb->ttabuf != NULL);
 
-	return r;
+	return;
 }
 
 /**@fn encbuf_adjust
@@ -130,24 +119,6 @@ encbuf_adjust(
 	return;
 }
 
-/**@fn encbuf_free
- * @brief free any allocated pointers in an encbuf
- *
- * @param eb[in] the encode buffers struct
-**/
-void
-encbuf_free(const struct EncBuf *const restrict eb)
-/*@globals	internalState@*/
-/*@modifies	internalState@*/
-/*@releases	eb->i32buf,
-		eb->ttabuf
-@*/
-{
-	free(eb->i32buf);
-	free(eb->ttabuf);
-	return;
-}
-
 //==========================================================================//
 
 /**@fn decbuf_init
@@ -158,10 +129,8 @@ encbuf_free(const struct EncBuf *const restrict eb)
  * @param ttabuf_len size of the ttabuf
  * @param nchan number of audio channels
  * @param samplebytes number of bytes per PCM sample
- *
- * @return (ni32_len * nchan) for sanity check
 **/
-size_t
+void
 decbuf_init(
 	/*@out@*/ struct DecBuf *const restrict db, const size_t ni32_len,
 	const size_t ttabuf_len, const uint nchan,
@@ -174,29 +143,33 @@ decbuf_init(
 		internalState,
 		*db
 @*/
-/*@allocates	db->pcmbuf,
+/*@allocates	db->i32buf,
+		db->pcmbuf,
 		db->ttabuf
 @*/
 {
-	const size_t r = (size_t) (ni32_len * nchan);
 	const size_t safety_margin = libttaR_ttabuf_safety_margin(
 		samplebytes, nchan
 	);
 
 	assert(safety_margin != 0);
 
-	db->i32buf_len = r;
+	db->i32buf_len = ni32_len;
 	assert(db->i32buf_len != 0);
-	db->ttabuf_len = ttabuf_len + safety_margin;
+	db->ttabuf_len = (ttabuf_len * nchan) + safety_margin;
 	assert(db->ttabuf_len != 0);
 
-	db->pcmbuf = calloc(r + BUF_ALIGN, sizeof(i32));
+	db->i32buf = calloc(ni32_len, sizeof *db->i32buf);
+	if UNLIKELY ( db->i32buf == NULL ){
+		error_sys(errno, "calloc", NULL);
+	}
+	assert(db->i32buf != NULL);
+
+	db->pcmbuf = calloc(ni32_len, (size_t) samplebytes);
 	if UNLIKELY ( db->pcmbuf == NULL ){
 		error_sys(errno, "calloc", NULL);
 	}
 	assert(db->pcmbuf != NULL);
-
-	db->i32buf = (i32 *) &db->pcmbuf[BUF_ALIGN * sizeof(i32)];
 
 	db->ttabuf = malloc(db->ttabuf_len);
 	if UNLIKELY ( db->ttabuf == NULL ){
@@ -204,7 +177,7 @@ decbuf_init(
 	}
 	assert(db->ttabuf != NULL);
 
-	return r;
+	return;
 }
 
 /**@fn decbuf_check_adjust
@@ -253,21 +226,25 @@ decbuf_check_adjust(
 	return;
 }
 
-/**@fn decbuf_free
- * @brief free any allocated pointers in a decbuf
+//==========================================================================//
+
+/**@fn codecbuf_free
+ * @brief free any allocated pointers in a codecbuf
  *
- * @param db[in] the decode buffers struct
+ * @param cb[in] the codec buffers struct
 **/
 void
-decbuf_free(const struct DecBuf *const restrict db)
+codecbuf_free(const struct EncBuf *const restrict cb)
 /*@globals	internalState@*/
 /*@modifies	internalState@*/
-/*@releases	db->pcmbuf,
-		db->ttabuf
+/*@releases	cb->i32buf,
+		cb->pcmbuf,
+		cb->ttabuf
 @*/
 {
-	free(db->pcmbuf);
-	free(db->ttabuf);
+	free(cb->i32buf);
+	free(cb->pcmbuf);
+	free(cb->ttabuf);
 	return;
 }
 

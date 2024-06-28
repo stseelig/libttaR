@@ -74,9 +74,7 @@ encmt_state_init(
 @*/
 {
 	uint i;
-	union {	size_t	z;
-		int	d;
-	} t;
+	union {	int d; } t;
 
 	// io->frames
 	io->frames.nmemb	= framequeue_len;
@@ -126,11 +124,10 @@ encmt_state_init(
 		}
 	}
 	for ( i = 0; i < framequeue_len; ++i ){
-		t.z = encbuf_init(
+		encbuf_init(
 			&io->frames.encbuf[i], i32buf_len,
 			TTABUF_LEN_DEFAULT, fstat->nchan, fstat->samplebytes
 		);
-		assert(t.z == i32buf_len * fstat->nchan);
 	}
 
 	// io->outfile
@@ -215,7 +212,7 @@ encmt_state_free(
 	free(io->frames.post_encoder);
 	free(io->frames.ni32_perframe);
 	for ( i = 0; i < framequeue_len; ++i ){
-		encbuf_free(&io->frames.encbuf[i]);
+		codecbuf_free(&io->frames.encbuf[i]);
 	}
 	free(io->frames.encbuf);
 	free(io->frames.user);
@@ -280,9 +277,7 @@ decmt_state_init(
 @*/
 {
 	uint i;
-	union {	size_t	z;
-		int	d;
-	} t;
+	union {	int d; } t;
 
 	// io->frames
 	io->frames.nmemb	= framequeue_len;
@@ -357,11 +352,10 @@ decmt_state_init(
 		}
 	}
 	for ( i = 0; i < framequeue_len; ++i ){
-		t.z = decbuf_init(
+		decbuf_init(
 			&io->frames.decbuf[i], i32buf_len,
 			TTABUF_LEN_DEFAULT, fstat->nchan, fstat->samplebytes
 		);
-		assert(t.z == i32buf_len * fstat->nchan);
 	}
 
 	// io->outfile
@@ -455,7 +449,7 @@ decmt_state_free(
 	free(io->frames.ni32_perframe);
 	free(io->frames.nbytes_tta_perframe);
 	for ( i = 0; i < framequeue_len; ++i ){
-		decbuf_free(&io->frames.decbuf[i]);
+		codecbuf_free((struct EncBuf *) &io->frames.decbuf[i]);
 	}
 	free(io->frames.decbuf);
 	free(io->frames.crc_read);

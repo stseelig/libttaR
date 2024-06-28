@@ -177,11 +177,7 @@ encst_loop(
 	} t;
 
 	// setup
-	t.z = encbuf_init(
-		&encbuf, buflen, TTABUF_LEN_DEFAULT, nchan, samplebytes
-	);
-	assert(t.z == (size_t) (buflen * nchan));
-	//
+	encbuf_init(&encbuf, buflen, TTABUF_LEN_DEFAULT, nchan, samplebytes);
 	t.z = libttaR_codecstate_priv_size(nchan);
 	assert(t.z != 0);
 	priv = malloc(t.z);
@@ -253,7 +249,7 @@ loop_entr:
 
 	// cleanup
 	free(priv);
-	encbuf_free(&encbuf);
+	codecbuf_free(&encbuf);
 
 	*estat_out = estat;
 	return;

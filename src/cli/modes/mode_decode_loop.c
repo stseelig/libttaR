@@ -173,11 +173,7 @@ decst_loop(
 	} t;
 
 	// setup
-	t.z = decbuf_init(
-		&decbuf, buflen, TTABUF_LEN_DEFAULT, nchan, samplebytes
-	);
-	assert(t.z == (size_t) (buflen * nchan));
-	//
+	decbuf_init(&decbuf, buflen, TTABUF_LEN_DEFAULT, nchan, samplebytes);
 	t.z = libttaR_codecstate_priv_size(nchan);
 	assert(t.z != 0);
 	priv = malloc(t.z);
@@ -267,7 +263,7 @@ loop_entr:
 
 	// cleanup
 	free(priv);
-	decbuf_free(&decbuf);
+	codecbuf_free((struct EncBuf *) &decbuf);
 
 	*dstat_out = dstat;
 	return;
