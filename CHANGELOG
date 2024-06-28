@@ -6,7 +6,8 @@
 	- libttaR_ttabuf_safety_margin is now a function (instead of a macro)
     with an additional parameter. This is to make a program using the library
     more memory efficient with 8/16-bit audio.
-	- decoder performance improvement
+	- added another safety check to the decoder
+	- decoder performance improvement (despite the new check)
 
 1.1.1 (2024-06-15):-----------------------------------------------------------
 
@@ -46,10 +47,13 @@
 
 1.1.2 (2024-XX-XX):-----------------------------------------------------------
 
-	- POSIX.1-2008 compliant (no longer uses GNU extension functions)
+	- POSIX.1-2008 instead of GNU_SOURCE
 	- encode buffer size scales with channel count
+	- fixed codec a bug where the codec buffers could get way too large
+	- uses more memory now (codec buffers no longer overlap)
+		- the codec buffers bug was hiding how much slower it was
+	- other minor bugfixes and changes
 	- more debug asserts
-	- minor bugfixes and changes
 	- updated for libttaR 1.2.0
 
 1.1.1 (2024-06-15):-----------------------------------------------------------
