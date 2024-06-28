@@ -62,9 +62,6 @@ enum TTASampleBytes {
 #define TTA_SAMPLEBYTES_MAX	((unsigned int) TTASAMPLEBYTES_3)
 #define TTA_SAMPLEBITS_MAX	((unsigned int) (8u*TTA_SAMPLEBYTES_MAX))
 
-/* seconds per TTA1 frame */
-#define TTA1_FRAME_TIME		((double) 1.04489795918367346939)
-
 #define TTA_CRC32_INIT		((uint32_t) 0xFFFFFFFFu)
 
 /* ######################################################################## */
@@ -198,8 +195,8 @@ extern LIBTTAr_CONST size_t libttaR_nsamples_perframe_tta1(size_t samplerate)
 /*@*/
 ;
 
-#define libttaR_nsamples_perframe_tta1(samplerate) ( \
-	(size_t) (TTA1_FRAME_TIME * (samplerate)) \
+#define libttaR_nsamples_perframe_tta1(samplerate) ((size_t) \
+	((256u * (samplerate)) / 245u) \
 )
 
 #undef nchan
