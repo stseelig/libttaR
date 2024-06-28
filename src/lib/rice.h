@@ -634,7 +634,7 @@ rice_unary_get(
 loop_entr:
 		t.u_8 = (u8) tbcnt32(*cache);
 		*unary += t.u_8;
-		if UNLIKELY ( *unary > max_unary_bits ){ break; }
+		if UNLIKELY ( *unary >= max_unary_bits ){ break; }
 	} while UNLIKELY_P ( t.u_8 == *count, 0.25 );
 #else
 	while UNLIKELY_P (
@@ -642,7 +642,7 @@ loop_entr:
 		(*cache ^ lsmask32(*count, SMM_TABLE)) == 0, 0.25
 	){
 		*unary += *count;
-		if UNLIKELY ( *unary > max_unary_bits - 7u ){ break; }
+		if UNLIKELY ( *unary >= max_unary_bits - 7u ){ break; }
 		*cache  = rice_crc32(src[r++], crc);
 		*count  = (u8) 8u;
 	}
