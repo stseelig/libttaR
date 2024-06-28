@@ -51,7 +51,7 @@ enum TTASampleBytes {
 // max unary code size
 //	8/16-bit :   16u
 //	  24-bit : 4096u
-// max binary code size : 3u
+// max binary code size : 3u (might be 4u with malformed data when decoding)
 // max cacheflush size  : 4u
 //
 // rounded up to the nearest (power of 2) + (power of 2)

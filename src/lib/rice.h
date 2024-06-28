@@ -537,6 +537,8 @@ rice_binary_write(
  * @note max read size (unary + binary):
  *     8/16-bit :   19u
  *       24-bit : 4099u
+ * @note read size might be +1u with malformed data
+ * @see rice_binary_read
 **/
 ALWAYS_INLINE size_t
 rice_decode(
@@ -670,6 +672,8 @@ loop_entr:
  * @return number of bytes read from 'src' + 'r'
  *
  * @note max binary code / read size: 3u
+ * @note read size might be 4u with malformed data. I'm fairly skeptical
+ *   though.
 **/
 ALWAYS_INLINE size_t
 rice_binary_read(
