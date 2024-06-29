@@ -665,7 +665,7 @@ loop_end:
 unary_at_limit:
 	// this prevents *count from possibly underflowing, which would cause
 	//   an out-of-bounds read of lsmask32_table in the binary decoder
-	if ( t.u_8 > 7u ){ t.u_8 = 7u; }
+	if ( t.u_8 > (u8) 7u ){ t.u_8 = (u8) 7u; }
 	*unary = unary_soft_limit + t.u_8;
 	goto loop_end;
 }
