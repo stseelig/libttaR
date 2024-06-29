@@ -89,8 +89,8 @@ readonly CFLAGS_CLI;
 
 CFLAGS_LIB=;
 
-# -O3 is safe
-CFLAGS_LIB="$CFLAGS_LIB -O3";
+# -O3 is safe, but it can be slower
+CFLAGS_LIB="$CFLAGS_LIB -O2";
 
 CFLAGS_LIB="$CFLAGS_LIB -fPIC";
 
@@ -102,7 +102,7 @@ CFLAGS_LIB="$CFLAGS_LIB -fPIC";
 #CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_OPT_DISABLE_MCH";
 
 # try uncommenting some of these if your cpu is an old piece of shit
-#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_OPT_NO_TZCNT";     # rice.h:rice_unary_get
+#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_OPT_NO_TZCNT";     # rice.h:rice_unary_read
 #CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_OPT_CMOV_SHIFTER"; # rice.h:lsmask32
 
 readonly CFLAGS_LIB;
