@@ -266,6 +266,9 @@ sighand_cleanup_exit(const int signum)
 	_exit(signum);
 }
 
+/**@fn errwrite_action_start
+ * @brief writes a '?' to stderr
+**/
 static void
 errwrite_action_start(void)
 /*@globals	fileSystem@*/
@@ -277,6 +280,11 @@ errwrite_action_start(void)
 	return;
 }
 
+/**@fn errwrite_action_start
+ * @brief overwrites action_start with the return status of the action
+ *
+ * @param result action return value
+**/
 static void
 errwrite_action_end(int result)
 /*@globals	fileSystem@*/
