@@ -12,7 +12,6 @@
 #include <assert.h>
 #include <errno.h>
 #include <stdlib.h>
-#include <stdint.h>	// uintptr_t
 #include <string.h>
 
 #include "../../bits.h"
