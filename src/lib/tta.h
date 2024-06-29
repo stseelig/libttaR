@@ -55,12 +55,13 @@ enum TTASampleBytes {
 // max cacheflush size  : 4u
 //
 // rounded up to the nearest (power of 2) + (power of 2)
-#define TTABUF_SAFETY_MARGIN_1or2byte	((size_t)   24u)
-#define TTABUF_SAFETY_MARGIN_3byte	((size_t) 5004u)
+#define TTABUF_SAFETY_MARGIN_1_2	((size_t)   24u)
+#define TTABUF_SAFETY_MARGIN_3		((size_t) 5004u)
 //
-// maximum number (minus 8u) of 1-bits in a unary code
-#define TTA_UNARY_SOFT_LIMIT_1or2byte	((u32) ((8u * (  16u - 1u)) - 1u))
-#define TTA_UNARY_SOFT_LIMIT_3byte	((u32) ((8u * (4096u - 1u)) - 1u))
+// maximum number (minus 7u) of 1-bits in a unary code
+#define TTA_UNARY_SOFT_LIMIT_1_2	((u32) (8u * (  16u - 1u)))
+#define TTA_UNARY_SOFT_LIMIT_3		((u32) (8u * (4096u - 1u)))
+#define TTA_UNARY_LIMIT_DIFF		((u8) 8u)
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -155,22 +156,22 @@ tta_safety_margin_perchan(register const enum TTASampleBytes samplebytes)
 	switch ( samplebytes ){
 	case TTASAMPLEBYTES_1:
 	case TTASAMPLEBYTES_2:
-		r = TTABUF_SAFETY_MARGIN_1or2byte;
+		r = TTABUF_SAFETY_MARGIN_1_2;
 		break;
 	case TTASAMPLEBYTES_3:
-		r = TTABUF_SAFETY_MARGIN_3byte;
+		r = TTABUF_SAFETY_MARGIN_3;
 		break;
 	}
 	return r;
 }
 
 /**@fn tta_unary_soft_limit
- * @brief max number of 1-bits in a unary code (to prevent possible buffer
- *   issues)
+ * @brief max number (minus 7u) of 1-bits in a unary code (to prevent possible
+ *   buffer issues)
  *
  * @param samplebytes number of bytes per PCM sample
  *
- * @return max number of 1-bits in a unary code
+ * @return max number (minus 7u) of 1-bits in a unary code
 **/
 INLINE CONST u32
 tta_unary_soft_limit(register const enum TTASampleBytes samplebytes)
@@ -180,10 +181,10 @@ tta_unary_soft_limit(register const enum TTASampleBytes samplebytes)
 	switch ( samplebytes ){
 	case TTASAMPLEBYTES_1:
 	case TTASAMPLEBYTES_2:
-		r = TTA_UNARY_SOFT_LIMIT_1or2byte;
+		r = TTA_UNARY_SOFT_LIMIT_1_2;
 		break;
 	case TTASAMPLEBYTES_3:
-		r = TTA_UNARY_SOFT_LIMIT_3byte;
+		r = TTA_UNARY_SOFT_LIMIT_3;
 		break;
 	}
 	return r;

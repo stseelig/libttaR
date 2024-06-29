@@ -638,14 +638,19 @@ rice_unary_read(
 loop_entr:
 		t.u_8 = (u8) tbcnt32(*cache);
 		*unary += t.u_8;
-		if UNLIKELY ( *unary > unary_soft_limit ){ break; }
+		if UNLIKELY ( *unary > unary_soft_limit ){
+			goto unary_at_limit;
+		}
 	} while UNLIKELY_P ( t.u_8 == *count, 0.25 );
 #else
 	while UNLIKELY_P (
 		// 0 <= *count <= 8u
 		(*cache ^ lsmask32(*count, SMM_TABLE)) == 0, 0.25
 	){
-		if UNLIKELY ( *unary > unary_soft_limit - 8u ){ break; }
+		if UNLIKELY ( *unary > unary_soft_limit - 8u ){
+			t.u_8 = (u8) tbcnt32(*cache);
+			goto unary_at_limit;
+		}
 		*unary += *count;
 		*cache  = rice_crc32(src[r++], crc);
 		*count  = (u8) 8u;
@@ -653,9 +658,16 @@ loop_entr:
 	t.u_8 = (u8) tbcnt32(*cache);	// *cache should always be <= 0x7Fu
 	*unary  += t.u_8;
 #endif
+loop_end:
 	*cache >>= t.u_8 + 1u;		//  t.u_8 should always be <= 7u
 	*count  -= t.u_8 + 1u;
 	return r;
+unary_at_limit:
+	// this prevents *count from possibly underflowing, which would cause
+	//   an out-of-bounds read of lsmask32_table in the binary decoder
+	if ( t.u_8 > 7u ){ t.u_8 = 7u; }
+	*unary = unary_soft_limit + t.u_8;
+	goto loop_end;
 }
 
 /**@fn rice_binary_read
