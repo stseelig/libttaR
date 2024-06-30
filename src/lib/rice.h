@@ -28,9 +28,9 @@ enum ShiftMaskMode {
 	SMM_TABLE
 };
 
-// max unary code size:
-//	8/16-bit :   16u
-//	  24-bit : 4096u
+// max unary size:
+//	8/16-bit :   16u bytes + 7u bits
+//	  24-bit : 4096u bytes + 7u bits
 #define UNARY_SOFT_LIMIT_1_2		((u32) (8u *   16u))
 #define UNARY_SOFT_LIMIT_3		((u32) (8u * 4096u))
 #define UNARY_HARD_LIMIT(soft_limit)	((u32) ((soft_limit) + 7u))
@@ -455,7 +455,7 @@ rice_encode_cacheflush(
  *
  * @return number of bytes written to 'dest' + 'r'
  *
- * @note max unary code / write size:
+ * @note max write size:
  *	 8/16-bit :   16u
  *	   24-bit : 4096u
 **/
@@ -501,7 +501,7 @@ loop_entr:
  *
  * @return number of bytes written to 'dest' + 'r'
  *
- * @note max binary code / write size: 3u
+ * @note max write size: 3u
 **/
 ALWAYS_INLINE size_t
 rice_binary_write(
@@ -542,9 +542,8 @@ rice_binary_write(
  * @return number of bytes read from 'src' + 'r'
  *
  * @note max read size (unary + binary):
- *     8/16-bit :   19u
- *       24-bit : 4099u
- * @note read size might be +1u with malformed data
+ *     8/16-bit :   21u
+ *       24-bit : 4101u
  * @see rice_binary_read
 **/
 ALWAYS_INLINE size_t
@@ -613,9 +612,9 @@ rice_decode(
  *
  * @return number of bytes read from 'src' + 'r'
  *
- * @note max unary code / read size:
- *     8/16-bit :   16u
- *       24-bit : 4096u
+ * @note max read size:
+ *     8/16-bit :   17u
+ *       24-bit : 4097u
  * @note affected by LIBTTAr_OPT_NO_TZCNT
 **/
 ALWAYS_INLINE size_t
@@ -677,7 +676,7 @@ unary_check:
 	//   out-of-bounds read of lsmask32_table in the binary decoder
 	// when the data is malformed, having "correct" values for 't.u_8' and
 	//   '*unary' should not matter, because the data is garbage anyway,
-	//    plus it is a little faster
+	//   plus it is a little faster
 	if ( t.u_8 > (u8) 7u ){	t.u_8 = (u8) 7u; }
 	goto loop_end;
 }
@@ -695,8 +694,8 @@ unary_check:
  *
  * @return number of bytes read from 'src' + 'r'
  *
- * @note max binary code / read size: 3u
- * @note read size might be 4u with malformed data.
+ * @note max read size: 4u
+ * @note max read size normally is 3u, but might be 4u with malformed data
 **/
 ALWAYS_INLINE size_t
 rice_binary_read(
