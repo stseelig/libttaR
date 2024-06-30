@@ -141,7 +141,7 @@ libttaR_tta_decode(
 	const size_t safety_margin   = (size_t) (
 		tta_safety_margin_perchan(samplebytes) * nchan
 	);
-	const size_t soft_read_limit = (nbytes_tta_target < safety_margin
+	const size_t read_soft_limit = (nbytes_tta_target < safety_margin
 		? src_len - safety_margin : nbytes_tta_target
 	);
 
@@ -193,7 +193,7 @@ libttaR_tta_decode(
 	case 1u:
 		nbytes_tta_dec = tta_decode_1ch(
 			dest, src, &user->crc, &user->ni32, &priv->bitcache,
-			priv->codec, ni32_target, soft_read_limit, predict_k,
+			priv->codec, ni32_target, read_soft_limit, predict_k,
 			filter_round, filter_k, unary_soft_limit, nchan
 		);
 		break;
@@ -202,7 +202,7 @@ libttaR_tta_decode(
 	case 2u:
 		nbytes_tta_dec = tta_decode_2ch(
 			dest, src, &user->crc, &user->ni32, &priv->bitcache,
-			priv->codec, ni32_target, soft_read_limit, predict_k,
+			priv->codec, ni32_target, read_soft_limit, predict_k,
 			filter_round, filter_k, unary_soft_limit, nchan
 		);
 		break;
@@ -211,7 +211,7 @@ libttaR_tta_decode(
 #ifndef LIBTTAr_OPT_DISABLE_MCH
 		nbytes_tta_dec = tta_decode_mch(
 			dest, src, &user->crc, &user->ni32, &priv->bitcache,
-			priv->codec, ni32_target, soft_read_limit, predict_k,
+			priv->codec, ni32_target, read_soft_limit, predict_k,
 			filter_round, filter_k, unary_soft_limit, nchan
 		);
 		break;
@@ -258,7 +258,7 @@ libttaR_tta_decode(
  * @param bitcache[in out] the bitcache data
  * @param codec[in out] the codec struct array
  * @param ni32_target target number of dest i32 to write
- * @param soft_read_limit soft limit on the safe number of TTA bytes to read
+ * @param read_soft_limit soft limit on the safe number of TTA bytes to read
  * @param predict_k arg 'k' for tta_predict1
  * @param filter_round arg 'round' for tta_filter
  * @param filter_k arg 'k' for tta_filter
@@ -274,7 +274,7 @@ tta_decode_mch(
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
 	struct Codec *const restrict codec, const size_t ni32_target,
-	const size_t soft_read_limit, const u8 predict_k,
+	const size_t read_soft_limit, const u8 predict_k,
 	const i32 filter_round, const u8 filter_k, const u32 unary_soft_limit,
 	const uint nchan
 )
@@ -292,7 +292,7 @@ tta_decode_mch(
 	uint j;
 
 	for ( i = 0; i < ni32_target; i += (size_t) nchan ){
-		if ( r > soft_read_limit ){ break; }
+		if ( r > read_soft_limit ){ break; }
 #ifdef LIBTTAr_OPT_DISABLE_UNROLLED_1CH
 		prev = 0;	// for mono
 #endif
@@ -348,7 +348,7 @@ tta_decode_mch(
  * @param bitcache[in out] the bitcache data
  * @param codec[in out] the codec struct
  * @param ni32_target target number of dest i32 to write
- * @param soft_read_limit soft limit on the safe number of TTA bytes to read
+ * @param read_soft_limit soft limit on the safe number of TTA bytes to read
  * @param predict_k arg 'k' for tta_predict1
  * @param filter_round arg 'round' for tta_filter
  * @param filter_k arg 'k' for tta_filter
@@ -364,7 +364,7 @@ tta_decode_1ch(
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
 	struct Codec *const restrict codec, const size_t ni32_target,
-	const size_t soft_read_limit, const u8 predict_k,
+	const size_t read_soft_limit, const u8 predict_k,
 	const i32 filter_round, const u8 filter_k, const u32 unary_soft_limit,
 	UNUSED const uint nchan
 )
@@ -381,7 +381,7 @@ tta_decode_1ch(
 	size_t i;
 
 	for ( i = 0; i < ni32_target; ++i ){
-		if ( r > soft_read_limit ){ break; }
+		if ( r > read_soft_limit ){ break; }
 
 		// decode
 		r = rice_decode(
@@ -420,7 +420,7 @@ tta_decode_1ch(
  * @param bitcache[in out] the bitcache data
  * @param codec[in out] the codec struct array
  * @param ni32_target target number of dest i32 to write
- * @param soft_read_limit soft limit on the safe number of TTA bytes to read
+ * @param read_soft_limit soft limit on the safe number of TTA bytes to read
  * @param predict_k arg 'k' for tta_predict1
  * @param filter_round arg 'round' for tta_filter
  * @param filter_k arg 'k' for tta_filter
@@ -436,7 +436,7 @@ tta_decode_2ch(
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
 	struct Codec *const restrict codec, const size_t ni32_target,
-	const size_t soft_read_limit, const u8 predict_k,
+	const size_t read_soft_limit, const u8 predict_k,
 	const i32 filter_round, const u8 filter_k, const u32 unary_soft_limit,
 	UNUSED const uint nchan
 )
@@ -453,7 +453,7 @@ tta_decode_2ch(
 	size_t i;
 
 	for ( i = 0; i < ni32_target; i += (size_t) 2u ){
-		if ( r > soft_read_limit ){ break; }
+		if ( r > read_soft_limit ){ break; }
 
 	// 0	// decode
 		r = rice_decode(
