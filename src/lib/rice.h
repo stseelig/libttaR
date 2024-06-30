@@ -612,6 +612,8 @@ rice_decode(
  *
  * @return number of bytes read from 'src' + 'r'
  *
+ * @pre 0 <= '*count' <= 7u
+ *
  * @note max read size:
  *     8/16-bit :   17u
  *       24-bit : 4097u
@@ -648,7 +650,6 @@ loop_entr:
 	} while UNLIKELY_P ( t.u_8 == *count, 0.25 );
 #else
 	while UNLIKELY_P (
-		// 0 <= *count <= 8u
 		(*cache ^ lsmask32(*count, SMM_TABLE)) == 0, 0.25
 	){
 		if UNLIKELY ( *unary > soft_limit - 8u ){ goto unary_check; }
@@ -671,13 +672,21 @@ unary_check:
 	t.u_8 = (u8) tbcnt32(*cache);
 	*unary  += t.u_8;
 #endif
-	// this checks for a malformed unary. the last byte read should never
-	//   be 0xFFu. if it is, *count will underflow, which will cause an
+	// the last byte read should not be 0xFFu (the unary code ends with a
+	//   0-bit). if it is, *count will underflow, which will cause an
 	//   out-of-bounds read of lsmask32_table in the binary decoder
 	// when the data is malformed, having "correct" values for 't.u_8' and
-	//   '*unary' should not matter, because the data is garbage anyway,
-	//   plus it is a little faster
-	if ( t.u_8 > (u8) 7u ){	t.u_8 = (u8) 7u; }
+	//   '*unary' should not matter, because the data is garbage anyway
+	if ( t.u_8 == (u8) 8u ){
+		if ( *unary <= UNARY_HARD_LIMIT(soft_limit) ){
+			// could be valid
+			*cache = rice_crc32(src[r++], crc);
+			t.u_8  = 0;	// assuming not malformed
+		}
+		else {	// malformed
+			t.u_8  = (u8) 7u;
+		}
+	}
 	goto loop_end;
 }
 

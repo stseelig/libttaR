@@ -8,7 +8,7 @@
     more memory efficient with 8/16-bit audio.
 	- libttaR_nsamples_perframe_tta1 macro uses integer math
 	- added another safety check to the decoder
-	- decoder performance improvement (despite the new check)
+	- decoder performance improvement (may be eliminated by the new check)
 
 1.1.1 (2024-06-15):-----------------------------------------------------------
 
