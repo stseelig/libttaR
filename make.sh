@@ -79,8 +79,9 @@ CFLAGS_CLI=;
 CFLAGS_CLI="$CFLAGS_CLI -D_POSIX_C_SOURCE=200809L";
 CFLAGS_CLI="$CFLAGS_CLI -D_FILE_OFFSET_BITS=64";
 
-# -O3 is safe, but it can be slower
+# -Os is recommended; -O3 is safe, but it can be slower
 CFLAGS_CLI="$CFLAGS_CLI -Os";
+# floats are only used for printf-ing
 CFLAGS_CLI="$CFLAGS_CLI -ffast-math";
 
 readonly CFLAGS_CLI;
@@ -89,7 +90,7 @@ readonly CFLAGS_CLI;
 
 CFLAGS_LIB=;
 
-# -O3 is safe, but it can be slower
+# -O2 is recommended; -O3 is safe, but it can be slower
 CFLAGS_LIB="$CFLAGS_LIB -O2";
 
 CFLAGS_LIB="$CFLAGS_LIB -fPIC";
