@@ -672,10 +672,9 @@ unary_check:
 	t.u_8 = (u8) tbcnt32(*cache);
 	*unary  += t.u_8;
 #endif
-	// this checks for a malformed unary. the last byte of a multibyte
-	//   unary should never be 0xFFu. if it is, *count will underflow,
-	//   which will cause an out-of-bounds read of lsmask32_table in the
-	//   binary decoder
+	// this checks for a malformed unary. the last byte of a unary should
+	//   never be 0xFFu. if it is, *count will underflow, which will cause
+	//   an out-of-bounds read of lsmask32_table in the binary decoder
 	// when the data is malformed, having "correct" values for 't.u_8' and
 	//   '*unary' should not matter, because the data is garbage anyway,
 	//    plus it is a little faster
