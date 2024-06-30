@@ -28,6 +28,13 @@ enum ShiftMaskMode {
 	SMM_TABLE
 };
 
+// max unary code size:
+//	8/16-bit :   16u
+//	  24-bit : 4096u
+#define UNARY_SOFT_LIMIT_1_2		((u32) (8u * (  16u - 1u)))
+#define UNARY_SOFT_LIMIT_3		((u32) (8u * (4096u - 1u)))
+#define UNARY_HARD_LIMIT(soft_limit)	((u32) ((soft_limit) + 7u))
+
 //////////////////////////////////////////////////////////////////////////////
 
 struct Rice {
@@ -616,7 +623,7 @@ rice_unary_read(
 	/*@out@*/ register u32 *const restrict unary,
 	register const u8 *const restrict src, register size_t r,
 	register u32 *const restrict cache, register u8 *const restrict count,
-	register u32 *const restrict crc, register const u32 unary_soft_limit
+	register u32 *const restrict crc, register const u32 soft_limit
 )
 /*@modifies	*unary,
 		*cache,
@@ -638,35 +645,41 @@ rice_unary_read(
 loop_entr:
 		t.u_8 = (u8) tbcnt32(*cache);
 		*unary += t.u_8;
-		if UNLIKELY ( *unary > unary_soft_limit ){
-			goto unary_at_limit;
-		}
+		if UNLIKELY ( *unary > soft_limit ){ goto unary_check; }
 	} while UNLIKELY_P ( t.u_8 == *count, 0.25 );
 #else
 	while UNLIKELY_P (
 		// 0 <= *count <= 8u
 		(*cache ^ lsmask32(*count, SMM_TABLE)) == 0, 0.25
 	){
-		if UNLIKELY ( *unary > unary_soft_limit - 8u ){
-			t.u_8 = (u8) tbcnt32(*cache);
-			goto unary_at_limit;
-		}
+		if UNLIKELY ( *unary > soft_limit - 8u ){ goto unary_check; }
 		*unary += *count;
 		*cache  = rice_crc32(src[r++], crc);
 		*count  = (u8) 8u;
 	}
-	t.u_8 = (u8) tbcnt32(*cache);	// *cache should always be <= 0x7Fu
+	t.u_8 = (u8) tbcnt32(*cache);
 	*unary  += t.u_8;
 #endif
 loop_end:
-	*cache >>= t.u_8 + 1u;		//  t.u_8 should always be <= 7u
+	// *cache should always be <= 0x7Fu
+	//  t.u_8 should always be <= 7u
+	*cache >>= t.u_8 + 1u;
 	*count  -= t.u_8 + 1u;
 	return r;
-unary_at_limit:
-	// this prevents *count from possibly underflowing, which would cause
-	//   an out-of-bounds read of lsmask32_table in the binary decoder
-	if ( t.u_8 > (u8) 7u ){ t.u_8 = (u8) 7u; }
-	*unary = unary_soft_limit + t.u_8;
+
+unary_check:
+#ifdef LIBTTAr_OPT_NO_TZCNT
+	t.u_8 = (u8) tbcnt32(*cache);
+	*unary  += t.u_8;
+#endif
+	// this checks for a malformed unary. the last byte of a multibyte
+	//   unary should always be <= 0x7Fu. if it is not, *count will
+	//   underflow, which will cause an out-of-bounds read of
+	//   lsmask32_table in the binary decoder
+	// "correcting" *unary should not matter; the data is garbage anyway
+	if UNLIKELY ( *unary > UNARY_HARD_LIMIT(soft_limit) ){
+		t.u_8 -= (u8) (UNARY_HARD_LIMIT(soft_limit) - *unary);
+	}
 	goto loop_end;
 }
 
@@ -684,8 +697,7 @@ unary_at_limit:
  * @return number of bytes read from 'src' + 'r'
  *
  * @note max binary code / read size: 3u
- * @note read size might be 4u with malformed data. I'm fairly skeptical
- *   though.
+ * @note read size might be 4u with malformed data.
 **/
 ALWAYS_INLINE size_t
 rice_binary_read(

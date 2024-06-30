@@ -48,20 +48,14 @@ enum TTASampleBytes {
 #define TTA_SAMPLEBYTES_MAX	((uint) TTASAMPLEBYTES_3)
 #define TTA_SAMPLEBITS_MAX	((uint) (8u*TTA_SAMPLEBYTES_MAX))
 
-// max unary code size
+// max unary code size:
 //	8/16-bit :   16u
 //	  24-bit : 4096u
 // max binary code size : 3u (might be 4u with malformed data when decoding)
 // max cacheflush size  : 4u
-//
 // rounded up to the nearest (power of 2) + (power of 2)
 #define TTABUF_SAFETY_MARGIN_1_2	((size_t)   24u)
 #define TTABUF_SAFETY_MARGIN_3		((size_t) 5004u)
-//
-// maximum number (minus 7u) of 1-bits in a unary code
-#define TTA_UNARY_SOFT_LIMIT_1_2	((u32) (8u * (  16u - 1u)))
-#define TTA_UNARY_SOFT_LIMIT_3		((u32) (8u * (4096u - 1u)))
-#define TTA_UNARY_LIMIT_DIFF		((u8) 8u)
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -181,10 +175,10 @@ tta_unary_soft_limit(register const enum TTASampleBytes samplebytes)
 	switch ( samplebytes ){
 	case TTASAMPLEBYTES_1:
 	case TTASAMPLEBYTES_2:
-		r = TTA_UNARY_SOFT_LIMIT_1_2;
+		r = UNARY_SOFT_LIMIT_1_2;
 		break;
 	case TTASAMPLEBYTES_3:
-		r = TTA_UNARY_SOFT_LIMIT_3;
+		r = UNARY_SOFT_LIMIT_3;
 		break;
 	}
 	return r;
