@@ -31,8 +31,8 @@ enum ShiftMaskMode {
 // max unary code size:
 //	8/16-bit :   16u
 //	  24-bit : 4096u
-#define UNARY_SOFT_LIMIT_1_2		((u32) (8u * (  16u - 1u)))
-#define UNARY_SOFT_LIMIT_3		((u32) (8u * (4096u - 1u)))
+#define UNARY_SOFT_LIMIT_1_2		((u32) (8u *   16u))
+#define UNARY_SOFT_LIMIT_3		((u32) (8u * 4096u))
 #define UNARY_HARD_LIMIT(soft_limit)	((u32) ((soft_limit) + 7u))
 
 //////////////////////////////////////////////////////////////////////////////
