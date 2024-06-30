@@ -231,7 +231,7 @@ atexit_cleanup(void)
  *
  * @param signum signal number
  *
- * @note only async-signal-safe functions should be used ($ man signal-safe)
+ * @note only async-signal-safe functions should be used (man 7 signal-safety)
 **/
 static NORETURN COLD void
 sighand_cleanup_exit(const int signum)
