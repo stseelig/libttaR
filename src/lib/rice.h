@@ -676,10 +676,9 @@ unary_check:
 	//   unary should always be <= 0x7Fu. if it is not, *count will
 	//   underflow, which will cause an out-of-bounds read of
 	//   lsmask32_table in the binary decoder
-	// "correcting" *unary should not matter; the data is garbage anyway
-	if UNLIKELY ( *unary > UNARY_HARD_LIMIT(soft_limit) ){
-		t.u_8 -= (u8) (UNARY_HARD_LIMIT(soft_limit) - *unary);
-	}
+	// having "correct" values for 't.u_8' and '*unary' should not matter,
+	//   because the data is garbage anyway, plus it is a little faster
+	if ( t.u_8 > (u8) 7u ){	t.u_8 = (u8) 7u; }
 	goto loop_end;
 }
 
