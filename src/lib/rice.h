@@ -29,11 +29,10 @@ enum ShiftMaskMode {
 };
 
 // max unary size:
-//	8/16-bit :   16u bytes + 7u bits
-//	  24-bit : 4096u bytes + 7u bits
-#define UNARY_SOFT_LIMIT_1_2		((u32) (8u *   16u))
-#define UNARY_SOFT_LIMIT_3		((u32) (8u * 4096u))
-#define UNARY_HARD_LIMIT(soft_limit)	((u32) ((soft_limit) + 7u))
+//	8/16-bit :   16u bytes + 7u bits + terminator
+//	  24-bit : 4096u bytes + 7u bits + terminator
+#define UNARY_LIMIT_1_2		((u32) (8u *   17u))
+#define UNARY_LIMIT_3		((u32) (8u * 4097u))
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -537,13 +536,13 @@ rice_binary_write(
  * @param rice[in out] the rice code data for the current channel
  * @param bitcache[in out] the bitcache data
  * @param crc[in out] the current CRC
- * @param unary_soft_limit limit for the unary code
+ * @param unary_limit limit for the unary code
  *
  * @return number of bytes read from 'src' + 'r'
  *
  * @note max read size (unary + binary):
- *     8/16-bit :   21u
- *       24-bit : 4101u
+ *     8/16-bit :   22u
+ *       24-bit : 4102u
  * @see rice_binary_read
 **/
 ALWAYS_INLINE size_t
@@ -552,7 +551,7 @@ rice_decode(
 	register const u8 *const restrict src, register size_t r,
 	register struct Rice *const restrict rice,
 	register struct BitCache *const restrict bitcache,
-	register u32 *const restrict crc, register const u32 unary_soft_limit
+	register u32 *const restrict crc, register const u32 unary_limit
 )
 /*@modifies	*value,
 		*rice,
@@ -571,9 +570,7 @@ rice_decode(
 	register  u8 kx;
 	register bool depth1;
 
-	r = rice_unary_read(
-		&unary, src, r, cache, count, crc, unary_soft_limit
-	);
+	r = rice_unary_read(&unary, src, r, cache, count, crc, unary_limit);
 	if LIKELY_P ( unary != 0, 0.575 ){
 		unary -= 1u;
 		kx     = *k1;
@@ -608,15 +605,15 @@ rice_decode(
  * @param cache[in out] the bitcache
  * @param count[in out] number of active bits in the 'cache'
  * @param crc[in out] the current CRC
- * @param unary_soft_limit limit for the unary code
+ * @param limit limit for the unary code
  *
  * @return number of bytes read from 'src' + 'r'
  *
  * @pre 0 <= '*count' <= 7u
  *
  * @note max read size:
- *     8/16-bit :   17u
- *       24-bit : 4097u
+ *     8/16-bit :   18u
+ *       24-bit : 4098u
  * @note affected by LIBTTAr_OPT_NO_TZCNT
 **/
 ALWAYS_INLINE size_t
@@ -624,7 +621,7 @@ rice_unary_read(
 	/*@out@*/ register u32 *const restrict unary,
 	register const u8 *const restrict src, register size_t r,
 	register u32 *const restrict cache, register u8 *const restrict count,
-	register u32 *const restrict crc, register const u32 soft_limit
+	register u32 *const restrict crc, register const u32 limit
 )
 /*@modifies	*unary,
 		*cache,
@@ -646,13 +643,13 @@ rice_unary_read(
 loop_entr:
 		t.u_8 = (u8) tbcnt32(*cache);
 		*unary += t.u_8;
-		if UNLIKELY ( *unary > soft_limit ){ goto unary_check; }
+		if UNLIKELY ( *unary > limit ){ goto max_unary; }
 	} while UNLIKELY_P ( t.u_8 == *count, 0.25 );
 #else
 	while UNLIKELY_P (
 		(*cache ^ lsmask32(*count, SMM_TABLE)) == 0, 0.25
 	){
-		if UNLIKELY ( *unary > soft_limit - 8u ){ goto unary_check; }
+		if UNLIKELY ( *unary > limit - 8u ){ goto max_unary; }
 		*unary += *count;
 		*cache  = rice_crc32(src[r++], crc);
 		*count  = (u8) 8u;
@@ -661,32 +658,16 @@ loop_entr:
 	*unary  += t.u_8;
 #endif
 loop_end:
-	// *cache should always be != 0xFFu
-	//  t.u_8 should always be <= 7u
+	// (*cache < 0xFFu) && (t.u_8 <= 7u)
 	*cache >>= t.u_8 + 1u;
 	*count  -= t.u_8 + 1u;
 	return r;
 
-unary_check:
-#ifdef LIBTTAr_OPT_NO_TZCNT
-	t.u_8 = (u8) tbcnt32(*cache);
-	*unary  += t.u_8;
-#endif
-	// the last byte read should not be 0xFFu (the unary code ends with a
-	//   0-bit). if it is, *count will underflow, which will cause an
-	//   out-of-bounds read of lsmask32_table in the binary decoder
-	// when the data is malformed, having "correct" values for 't.u_8' and
-	//   '*unary' should not matter, because the data is garbage anyway
-	if ( t.u_8 == (u8) 8u ){
-		if ( *unary <= UNARY_HARD_LIMIT(soft_limit) ){
-			// could be valid
-			*cache = rice_crc32(src[r++], crc);
-			t.u_8  = 0;	// assuming not malformed
-		}
-		else {	// malformed
-			t.u_8  = (u8) 7u;
-		}
-	}
+max_unary:
+	// when here, the 0th bit of the cache should be a 0
+	// without this, an out-of-bounds read could happen in binary_read if
+	//   the data if malformed
+	t.u_8 = 0;	// assuming not malformed
 	goto loop_end;
 }
 
