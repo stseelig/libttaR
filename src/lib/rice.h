@@ -661,7 +661,7 @@ loop_entr:
 	*unary  += t.u_8;
 #endif
 loop_end:
-	// *cache should always be <= 0x7Fu
+	// *cache should always be != 0xFFu
 	//  t.u_8 should always be <= 7u
 	*cache >>= t.u_8 + 1u;
 	*count  -= t.u_8 + 1u;
@@ -673,9 +673,9 @@ unary_check:
 	*unary  += t.u_8;
 #endif
 	// this checks for a malformed unary. the last byte of a multibyte
-	//   unary should always be <= 0x7Fu. if it is not, *count will
-	//   underflow, which will cause an out-of-bounds read of
-	//   lsmask32_table in the binary decoder
+	//   unary should never be 0xFFu. if it is, *count will underflow,
+	//   which will cause an out-of-bounds read of lsmask32_table in the
+	//   binary decoder
 	// when the data is malformed, having "correct" values for 't.u_8' and
 	//   '*unary' should not matter, because the data is garbage anyway,
 	//    plus it is a little faster
