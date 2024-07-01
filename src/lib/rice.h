@@ -28,6 +28,23 @@ enum ShiftMaskMode {
 	SMM_TABLE
 };
 
+#ifndef LIBTTAr_OPT_PREFER_LOOKUP_TABLES
+#define SMM_ENC		SMM_SHIFT
+#else
+#define SMM_ENC		SMM_TABLE
+#endif
+
+#define SMM_DEC		SMM_TABLE
+
+//--------------------------------------------------------------------------//
+
+// max unary size:
+//	8/16-bit :   16u bytes + 7u bits + terminator
+//	  24-bit : 4096u bytes + 7u bits + terminator
+// the lax_limit has an extra byte to make handling invalid data faster/easier
+#define UNARY_LAX_LIMIT_1_2		((u32) ((8u *   18u) - 1u))
+#define UNARY_LAX_LIMIT_3		((u32) ((8u * 4098u) - 1u))
+
 //////////////////////////////////////////////////////////////////////////////
 
 struct Rice {
@@ -50,39 +67,28 @@ extern HIDDEN const u32 lsmask32_table[];
 //////////////////////////////////////////////////////////////////////////////
 
 #undef rice
-INLINE void rice_init(
-	/*@out@*/ register struct Rice *const restrict rice, register u8,
-	register u8
-)
+INLINE void rice_init(/*@out@*/ struct Rice *restrict rice, u8, u8)
 /*@modifies	*rice@*/
 ;
 
 //--------------------------------------------------------------------------//
 
-ALWAYS_INLINE CONST u32 shift32_bit(register u8) /*@*/;
-
-ALWAYS_INLINE CONST u32 shift32p4_bit(register u8, const enum ShiftMaskMode)
-/*@*/
-;
-
-ALWAYS_INLINE CONST u32 lsmask32(register u8, const enum ShiftMaskMode) /*@*/;
+ALWAYS_INLINE CONST u32 shift32_bit(u8) /*@*/;
+ALWAYS_INLINE CONST u32 shift32p4_bit(u8, enum ShiftMaskMode) /*@*/;
+ALWAYS_INLINE CONST u32 lsmask32(u8, enum ShiftMaskMode) /*@*/;
 
 //--------------------------------------------------------------------------//
 
 #undef sum
 #undef k
-/*@unused@*/
-void rice_cmpsum(
-	register u32 *const restrict sum, register u8 *const restrict k,
-	register u32
-)
+ALWAYS_INLINE void rice_cmpsum(u32 *restrict sum, u8 *restrict k, u32)
 /*@modifies	*sum,
 		*k
 @*/
 ;
 
 #undef crc
-ALWAYS_INLINE u8 rice_crc32(register u8, register u32 *const restrict crc)
+ALWAYS_INLINE u8 rice_crc32(u8, u32 *restrict crc)
 /*@modifies	*crc@*/
 ;
 
@@ -93,10 +99,9 @@ ALWAYS_INLINE u8 rice_crc32(register u8, register u32 *const restrict crc)
 #undef bitcache
 #undef crc
 ALWAYS_INLINE size_t rice_encode(
-	/*@out@*/ register u8 *const restrict dest, register size_t,
-	register u32, register struct Rice *const restrict rice,
-	register struct BitCache *const restrict bitcache,
-	register u32 *const restrict crc
+	/*@partial@*/ u8 *restrict dest, u32, size_t,
+	struct Rice *restrict rice, struct BitCache *restrict bitcache,
+	u32 *restrict crc
 )
 /*@modifies	*dest,
 		*rice,
@@ -110,9 +115,8 @@ ALWAYS_INLINE size_t rice_encode(
 #undef count
 #undef crc
 INLINE size_t rice_encode_cacheflush(
-	/*@out@*/ register u8 *const restrict dest, register size_t,
-	register struct BitCache *const restrict bitcache,
-	register u32 *const restrict crc
+	/*@partial@*/ u8 *restrict dest, size_t,
+	struct BitCache *restrict bitcache, u32 *restrict crc
 )
 /*@modifies	*dest,
 		*bitcache,
@@ -124,10 +128,9 @@ INLINE size_t rice_encode_cacheflush(
 #undef cache
 #undef count
 #undef crc
-ALWAYS_INLINE size_t rice_unary_put(
-	/*@out@*/ register u8 *const restrict dest, register size_t,
-	register u32, register u32 *const restrict cache,
-	register u8 *const restrict count, register u32 *const restrict crc
+ALWAYS_INLINE size_t rice_unary_write(
+	/*@partial@*/ u8 *restrict dest, u32, size_t, u32 *restrict cache,
+	u8 *restrict count, u32 *restrict crc
 )
 /*@modifies	*dest,
 		*cache,
@@ -140,10 +143,9 @@ ALWAYS_INLINE size_t rice_unary_put(
 #undef cache
 #undef count
 #undef crc
-ALWAYS_INLINE size_t rice_binary_put(
-	/*@out@*/ register u8 *const restrict dest, register size_t,
-	register u32, register u8, register u32 *const restrict cache,
-	register u8 *const restrict count, register u32 *const restrict crc
+ALWAYS_INLINE size_t rice_binary_write(
+	/*@partial@*/ u8 *restrict dest, u32, size_t, u8, u32 *restrict cache,
+	u8 *restrict count, u32 *restrict crc
 )
 /*@modifies	*dest,
 		*cache,
@@ -159,11 +161,9 @@ ALWAYS_INLINE size_t rice_binary_put(
 #undef bitcache
 #undef crc
 ALWAYS_INLINE size_t rice_decode(
-	/*@out@*/ register u32 *const restrict value,
-	register const u8 *const restrict, register size_t,
-	register struct Rice *const restrict rice,
-	register struct BitCache *const restrict bitcache,
-	register u32 *const restrict crc
+	/*@out@*/ u32 *restrict value, const u8 *restrict, size_t,
+	struct Rice *restrict rice, struct BitCache *restrict bitcache,
+	u32 *restrict crc, u32
 )
 /*@modifies	*value,
 		*rice,
@@ -176,11 +176,9 @@ ALWAYS_INLINE size_t rice_decode(
 #undef cache
 #undef count
 #undef crc
-ALWAYS_INLINE size_t rice_unary_get(
-	/*@out@*/ register u32 *const restrict unary,
-	register const u8 *const restrict, register size_t,
-	register u32 *const restrict cache, register u8 *const restrict count,
-	register u32 *const restrict crc
+ALWAYS_INLINE size_t rice_unary_read(
+	/*@out@*/ u32 *restrict unary, const u8 *restrict, size_t,
+	u32 *restrict cache, u8 *restrict count, u32 *restrict crc, u32
 )
 /*@modifies	*unary,
 		*cache,
@@ -193,11 +191,9 @@ ALWAYS_INLINE size_t rice_unary_get(
 #undef cache
 #undef count
 #undef crc
-ALWAYS_INLINE size_t rice_binary_get(
-	/*@out@*/ register u32 *const restrict binary,
-	register const u8 *const restrict, register size_t, register u8,
-	register u32 *const restrict cache, register u8 *const restrict count,
-	register u32 *const restrict crc
+ALWAYS_INLINE size_t rice_binary_read(
+	/*@out@*/ u32 *restrict binary, const u8 *restrict, size_t, u8,
+	u32 *restrict cache, u8 *restrict count, u32 *restrict crc
 )
 /*@modifies	*binary,
 		*cache,
@@ -217,8 +213,8 @@ ALWAYS_INLINE size_t rice_binary_get(
 **/
 INLINE void
 rice_init(
-	/*@out@*/ register struct Rice *const restrict rice, register u8 k0,
-	register u8 k1
+	/*@out@*/ register struct Rice *const restrict rice,
+	register const u8 k0, register const u8 k1
 )
 /*@modifies	*rice@*/
 {
@@ -241,7 +237,7 @@ rice_init(
  * @pre 0 <= 'k' <= 31u
 **/
 ALWAYS_INLINE CONST u32
-shift32_bit(register u8 k)
+shift32_bit(register const u8 k)
 /*@*/
 {
 	return (u32) (0x1u << k);
@@ -258,7 +254,7 @@ shift32_bit(register u8 k)
  * @pre 0 <= 'k' <= 28u
 **/
 ALWAYS_INLINE CONST u32
-shift32p4_bit(register u8 k, const enum ShiftMaskMode mode)
+shift32p4_bit(register const u8 k, const enum ShiftMaskMode mode)
 /*@*/
 {
 	register u32 r;
@@ -266,7 +262,7 @@ shift32p4_bit(register u8 k, const enum ShiftMaskMode mode)
 	case SMM_CONST:
 	case SMM_SHIFT:
 		r = (u32) (k != 0
-			? (k < (u8) 28u ? 0x10u << (u8) k : 0xFFFFFFFFu) : 0
+			? (k < (u8) 28u ? 0x10u << k : 0xFFFFFFFFu) : 0
 		);
 		break;
 	case SMM_TABLE:
@@ -285,23 +281,16 @@ shift32p4_bit(register u8 k, const enum ShiftMaskMode mode)
  * @return a mask with 'k' low bits set
  *
  * @pre 0 <= 'k' <= 27u
- *
- * @note affected by LIBTTAr_CMOV_SHIFTER
 **/
 ALWAYS_INLINE CONST u32
-lsmask32(register u8 k, const enum ShiftMaskMode mode)
+lsmask32(register const u8 k, const enum ShiftMaskMode mode)
 /*@*/
 {
 	register u32 r;
 	switch ( mode ){
 	case SMM_CONST:
 	case SMM_SHIFT:
-#ifndef LIBTTAr_CMOV_SHIFTER
-		r = (u32) (0x1u << k) - 1u;
-#else
-		// can be faster on older x86
-		r = (u32) (k != 0 ? 0xFFFFFFFFu >> ((u8) 32u - k) : 0);
-#endif
+		r = (u32) ((0x1u << k) - 1u);
 		break;
 	case SMM_TABLE:
 		r = lsmask32_table[k];
@@ -319,23 +308,28 @@ lsmask32(register u8 k, const enum ShiftMaskMode mode)
  * @param k[in out] rice->k[]
  * @param value input value to code
  *
+ * @pre  0 <= 'k' <= 27u
  * @post 0 <= 'k' <= 27u
  *
- * @note
- *     This procedure got macro'd because the compiler wasn't ALWAYS_INLINE-
- *   ing it. It is faster than a functional version (ie, returning 'k', not
- *   using pointers), because *'k' often does not change (lots of unnecessary
- *   moves/writes).
+ * @note in practice, 'k' maxes out at 24u
 **/
-#define rice_cmpsum(sum, k, value) \
-{ \
-	*(sum) += (value) - (*(sum) >> 4u); \
-	if UNLIKELY ( *(sum) < shift32p4_bit(*(k), SMM_TABLE) ){ \
-		--(*(k)); \
-	} \
-	else if UNLIKELY ( *(sum) > shift32p4_bit(*(k) + 1u, SMM_TABLE) ){ \
-		++(*(k)); \
-	} else{;} \
+ALWAYS_INLINE void
+rice_cmpsum(
+	register u32 *const restrict sum, register u8 *const restrict k,
+	register const u32 value
+)
+/*@modifies	*sum,
+		*k
+@*/
+{
+	*sum += value - (*sum >> 4u);
+	if UNLIKELY ( *sum < shift32p4_bit(*k, SMM_TABLE) ){
+		*k -= 1u;
+	}
+	else if UNLIKELY ( *sum > shift32p4_bit(*k + 1u, SMM_TABLE) ){
+		*k += 1u;
+	} else{;}
+	return;
 }
 
 /**@fn rice_crc32
@@ -347,7 +341,7 @@ lsmask32(register u8 k, const enum ShiftMaskMode mode)
  * @return 'x'
 **/
 ALWAYS_INLINE u8
-rice_crc32(register u8 x, register u32 *const restrict crc)
+rice_crc32(register const u8 x, register u32 *const restrict crc)
 /*@modifies	*crc@*/
 {
 	*crc = crc32_cont(x, *crc);
@@ -367,11 +361,16 @@ rice_crc32(register u8 x, register u32 *const restrict crc)
  * @param crc[in out] the current CRC
  *
  * @return number of bytes written to 'dest' + 'r'
+ *
+ * @note max write size (unary + binary):
+ *     8/16-bit :   19u
+ *       24-bit : 4099u
+ * @note affected by LIBTTAr_OPT_PREFER_LOOKUP_TABLES
 **/
 ALWAYS_INLINE size_t
 rice_encode(
-	/*@out@*/ register u8 *const restrict dest, register size_t r,
-	register u32 value, register struct Rice *const restrict rice,
+	/*@partial@*/ register u8 *const restrict dest, register u32 value,
+	register size_t r, register struct Rice *const restrict rice,
 	register struct BitCache *const restrict bitcache,
 	register u32 *const restrict crc
 )
@@ -390,30 +389,30 @@ rice_encode(
 
 	register u32 unary = 0, binary;
 	register  u8 kx;
-	register union { u32 u_32; } t;
+	register u32 depth1_trigger;
 
 	kx = *k0;
 	rice_cmpsum(sum0, k0, value);
 
-	t.u_32 = shift32_bit(kx);
-	if LIKELY_P ( value >= t.u_32, 0.575 ){
-		value -= t.u_32;
+	depth1_trigger = shift32_bit(kx);
+	if LIKELY_P ( value >= depth1_trigger, 0.575 ){
+		value -= depth1_trigger;
 		kx     = *k1;
 		rice_cmpsum(sum1, k1, value);
 		unary  = (value >> kx) + 1u;
 	}
 
-	r = rice_unary_put(dest, r, unary, cache, count, crc);
+	r = rice_unary_write(dest, unary, r, cache, count, crc);
 	if LIKELY ( kx != 0 ){
-		binary = value & lsmask32(kx, SMM_SHIFT);
-		r = rice_binary_put(dest, r, binary, kx, cache, count, crc);
+		binary = value & lsmask32(kx, SMM_ENC);
+		r = rice_binary_write(dest, binary, r, kx, cache, count, crc);
 	}
 
 	return r;
 }
 
 /**@fn rice_encode_cacheflush
- * @brief flush any data left in the 'bitcache'
+ * @brief flush any data left in the 'bitcache' to 'dest'
  *
  * @param dest[out] destination buffer
  * @param r index of 'dest'
@@ -421,10 +420,12 @@ rice_encode(
  * @param crc[in out] the current CRC
  *
  * @return number of bytes written to 'dest' + 'r'
+ *
+ * @note max write size: 4u
 **/
 INLINE size_t
 rice_encode_cacheflush(
-	/*@out@*/ register u8 *const restrict dest, register size_t r,
+	/*@partial@*/ register u8 *const restrict dest, register size_t r,
 	register struct BitCache *const restrict bitcache,
 	register u32 *const restrict crc
 )
@@ -446,7 +447,7 @@ rice_encode_cacheflush(
 
 //--------------------------------------------------------------------------//
 
-/**@fn rice_unary_put
+/**@fn rice_unary_write
  * @brief write a unary code to 'dest'
  *
  * @param dest[out] destination buffer
@@ -457,11 +458,16 @@ rice_encode_cacheflush(
  * @param crc[in out] the current CRC
  *
  * @return number of bytes written to 'dest' + 'r'
+ *
+ * @note max write size:
+ *	 8/16-bit :   16u
+ *	   24-bit : 4096u
+ * @note affected by LIBTTAr_OPT_PREFER_LOOKUP_TABLES
 **/
 ALWAYS_INLINE size_t
-rice_unary_put(
-	/*@out@*/ register u8 *const restrict dest, register size_t r,
-	register u32 unary, register u32 *const restrict cache,
+rice_unary_write(
+	/*@partial@*/ register u8 *const restrict dest, register u32 unary,
+	register size_t r, register u32 *const restrict cache,
 	register u8 *const restrict count, register u32 *const restrict crc
 )
 /*@modifies	*dest,
@@ -482,12 +488,12 @@ loop_entr:
 		}
 	} while UNLIKELY ( unary > (u32) 23u );
 
-	*cache |= lsmask32((u8) unary, SMM_SHIFT) << *count;
+	*cache |= lsmask32((u8) unary, SMM_ENC) << *count;
 	*count += unary + 1u;
 	return r;
 }
 
-/**@fn rice_binary_put
+/**@fn rice_binary_write
  * @brief write a binary code to 'dest'
  *
  * @param dest[out] destination buffer
@@ -499,11 +505,13 @@ loop_entr:
  * @param crc[in out] the current CRC
  *
  * @return number of bytes written to 'dest' + 'r'
+ *
+ * @note max write size: 3u
 **/
 ALWAYS_INLINE size_t
-rice_binary_put(
-	/*@out@*/ register u8 *const restrict dest, register size_t r,
-	register u32 binary, register u8 k,
+rice_binary_write(
+	/*@partial@*/ register u8 *const restrict dest,
+	register const u32 binary, register size_t r, register const u8 k,
 	register u32 *const restrict cache, register u8 *const restrict count,
 	register u32 *const restrict crc
 )
@@ -534,8 +542,14 @@ rice_binary_put(
  * @param rice[in out] the rice code data for the current channel
  * @param bitcache[in out] the bitcache data
  * @param crc[in out] the current CRC
+ * @param unary_lax_limit limit for the unary code
  *
  * @return number of bytes read from 'src' + 'r'
+ *
+ * @note max read size (unary + binary):
+ *     8/16-bit :   22u
+ *       24-bit : 4102u
+ * @see rice_binary_read
 **/
 ALWAYS_INLINE size_t
 rice_decode(
@@ -543,7 +557,7 @@ rice_decode(
 	register const u8 *const restrict src, register size_t r,
 	register struct Rice *const restrict rice,
 	register struct BitCache *const restrict bitcache,
-	register u32 *const restrict crc
+	register u32 *const restrict crc, register const u32 unary_lax_limit
 )
 /*@modifies	*value,
 		*rice,
@@ -558,25 +572,26 @@ rice_decode(
 	register u32 *const restrict cache = &bitcache->cache;
 	register  u8 *const restrict count = &bitcache->count;
 
-	u32 unary, binary;
+	u32 unary, binary = 0;
 	register  u8 kx;
 	register bool depth1;
 
-	r = rice_unary_get(&unary, src, r, cache, count, crc);
-	if LIKELY_P ( unary + 1u != 0, 0.575 ){
+	r = rice_unary_read(
+		&unary, src, r, cache, count, crc, unary_lax_limit
+	);
+	if LIKELY_P ( unary != 0, 0.575 ){
+		unary -= 1u;
 		kx     = *k1;
 		depth1 = true;
 	}
-	else {	unary  = 0;
-		kx     = *k0;
+	else {	kx     = *k0;
 		depth1 = false;
 	}
 
 	if LIKELY ( kx != 0 ){
-		r = rice_binary_get(&binary, src, r, kx, cache, count, crc);
-		*value = (unary << kx) + binary;
+		r = rice_binary_read(&binary, src, r, kx, cache, count, crc);
 	}
-	else {	*value = unary; }
+	*value = (unary << kx) + binary;
 
 	if LIKELY_P ( depth1, 0.575 ){
 		rice_cmpsum(sum1, k1, *value);
@@ -589,7 +604,7 @@ rice_decode(
 
 //--------------------------------------------------------------------------//
 
-/**@fn rice_unary_get
+/**@fn rice_unary_read
  * @brief read a unary code from 'src'
  *
  * @param unary[out] the unary code
@@ -598,17 +613,23 @@ rice_decode(
  * @param cache[in out] the bitcache
  * @param count[in out] number of active bits in the 'cache'
  * @param crc[in out] the current CRC
+ * @param lax_limit limit for the unary code. has an extra byte of margin, so
+ *   if it is surpased, then the data is definitely invalid (corrupt or
+ *   malicious). this would be caused by an overly long string of 0xFFu bytes
+ *   in the source
  *
  * @return number of bytes read from 'src' + 'r'
  *
- * @note affected by LIBTTAr_NO_TZCNT
+ * @note max read size:
+ *     8/16-bit :   18u
+ *       24-bit : 4098u
 **/
 ALWAYS_INLINE size_t
-rice_unary_get(
+rice_unary_read(
 	/*@out@*/ register u32 *const restrict unary,
 	register const u8 *const restrict src, register size_t r,
 	register u32 *const restrict cache, register u8 *const restrict count,
-	register u32 *const restrict crc
+	register u32 *const restrict crc, register const u32 lax_limit
 )
 /*@modifies	*unary,
 		*cache,
@@ -616,41 +637,27 @@ rice_unary_get(
 		*crc
 @*/
 {
-	register union { u8 u_8; } t;
+	register u8 nbits;
 
-	// switched initial value from 0, because in rice_decode, depth1 is
-	//   much more likely than not; moved a '--unary' in the depth1 branch
-	//   to a 'unary = 0' in !depth1 branch
-	*unary = UINT32_MAX;
-
-#ifndef LIBTTAr_NO_TZCNT
-	// this loop is slightly better than the lookup-table one, as long as
-	//   tbcnt32 is an instruction (tzcnt/ctz). otherwise a bit slower
-	goto loop_entr;
-	do {	*cache  = rice_crc32(src[r++], crc);
-		*count  = (u8) 8u;
-loop_entr:
-		t.u_8 = (u8) tbcnt32(*cache);
-		*unary += t.u_8;
-	} while UNLIKELY_P ( t.u_8 == *count, 0.25 );
-#else
-	while UNLIKELY_P (
-		// 0 <= *count <= 7u
-		(*cache ^ lsmask32(*count, SMM_TABLE)) == 0, 0.25
-	){
-		*unary += *count;
-		*cache  = rice_crc32(src[r++], crc);
-		*count  = (u8) 8u;
+	nbits  = (u8) tbcnt32(*cache);
+	*unary = nbits;
+	if UNLIKELY_P ( nbits == *count, 0.25 ){
+		do {	*cache  = rice_crc32(src[r++], crc);
+			nbits   = (u8) tbcnt32(*cache);
+			*unary += nbits;
+			if UNLIKELY ( *unary > lax_limit ){
+				nbits = 0;	// prevents *count underflow
+				break;
+			}
+		} while UNLIKELY ( nbits == (u8) 8u );
+		*count = (u8) 8u;
 	}
-	t.u_8 = (u8) tbcnt32(*cache);	// *cache is always < UINT8_MAX
-	*unary  += t.u_8;
-#endif
-	*cache >>= t.u_8 + 1u;		// t.u_8 is always < 8u
-	*count  -= t.u_8 + 1u;
+	*cache >>= nbits + 1u;
+	*count  -= nbits + 1u;
 	return r;
 }
 
-/**@fn rice_binary_get
+/**@fn rice_binary_read
  * @brief read a binary code from 'src'
  *
  * @param binary[out] the binary code
@@ -662,12 +669,14 @@ loop_entr:
  * @param crc[in out] the current CRC
  *
  * @return number of bytes read from 'src' + 'r'
+ *
+ * @note max read size: 4u (normally 3u, but might be 4u with malformed data)
 **/
 ALWAYS_INLINE size_t
-rice_binary_get(
+rice_binary_read(
 	/*@out@*/ register u32 *const restrict binary,
 	register const u8 *const restrict src, register size_t r,
-	register u8 k, register u32 *const restrict cache,
+	register const u8 k, register u32 *const restrict cache,
 	register u8 *const restrict count, register u32 *const restrict crc
 )
 /*@modifies	*binary,
@@ -677,11 +686,12 @@ rice_binary_get(
 @*/
 {
 	while LIKELY_P ( *count < k, 0.9 ){
+		// a check like in the unary reader is unnecessary
 		*cache |= rice_crc32(src[r++], crc) << *count;
 		*count += 8u;
 	}
-	*binary = *cache & lsmask32(k, SMM_TABLE);
-	*cache  = (*cache >> k) & lsmask32(*count - k, SMM_TABLE);
+	*binary = *cache & lsmask32(k, SMM_DEC);
+	*cache  = (*cache >> k) & lsmask32(*count - k, SMM_DEC);
 	*count -= k;
 	return r;
 }

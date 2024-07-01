@@ -87,7 +87,7 @@ extern int opt_common_threads(uint, char *opt, enum OptMode)
 // tta2enc
 
 #undef fstat
-extern void rawpcm_statcopy(/*@out@*/ struct FileStats *const restrict fstat)
+extern void rawpcm_statcopy(/*@out@*/ struct FileStats *restrict fstat)
 /*@modifies	*fstat@*/
 ;
 

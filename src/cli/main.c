@@ -10,6 +10,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
+#include <assert.h>
 #include <errno.h>
 #include <signal.h>
 #include <stdbool.h>	// true
@@ -17,6 +18,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include "../bits.h"
@@ -26,16 +28,6 @@
 #include "debug.h"
 #include "help.h"
 #include "main.h"
-
-//////////////////////////////////////////////////////////////////////////////
-
-enum HandledSignals {
-	HS_ABRT = SIGABRT,
-	HS_HUP  = SIGHUP,
-	HS_INT  = SIGINT,
-	HS_QUIT = SIGQUIT,
-	HS_TERM = SIGTERM
-};
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -57,15 +49,26 @@ extern int mode_decode(uint)
 @*/
 ;
 
-//--------------------------------------------------------------------------//
+//////////////////////////////////////////////////////////////////////////////
 
-NORETURN COLD void sighand(enum HandledSignals)
-/*@globals	fileSystem,
-		internalState
-@*/
-/*@modifies	fileSystem,
-		internalState
-@*/
+static void atexit_cleanup(void)
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem@*/
+;
+
+static NORETURN COLD void sighand_cleanup_exit(int)
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem@*/
+;
+
+static void errwrite_action_start(void)
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem@*/
+;
+
+static void errwrite_action_end(int result)
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem@*/
 ;
 
 //////////////////////////////////////////////////////////////////////////////
@@ -75,14 +78,14 @@ NORETURN COLD void sighand(enum HandledSignals)
 **/
 /*@unchecked@*/
 const struct LibTTAr_VersionInfo ttaR_info = {
-	TTAr_VERSION_NUM,
-	TTAr_VERSION_NUM_MAJOR,
-	TTAr_VERSION_NUM_MINOR,
-	TTAr_VERSION_NUM_REVIS,
-	TTAr_VERSION_STR_EXTRA,
-	TTAr_VERSION_STR_DATE,
-	TTAr_COPYRIGHT_STR,
-	TTAr_LICENSE_STR
+	CLI_VERSION_NUM,
+	CLI_VERSION_NUM_MAJOR,
+	CLI_VERSION_NUM_MINOR,
+	CLI_VERSION_NUM_REVIS,
+	CLI_VERSION_STR_EXTRA,
+	CLI_VERSION_STR_DATE,
+	CLI_COPYRIGHT_STR,
+	CLI_LICENSE_STR
 };
 
 //--------------------------------------------------------------------------//
@@ -97,7 +100,7 @@ uint g_argc;
  * @brief copy of argv from main
 **/
 /*@checkmod@*/ /*@temp@*/
-char **g_argv;
+char *const *g_argv;
 
 /**@var g_nwarnings
  * @brief number of warnings and errors; exit status
@@ -140,7 +143,7 @@ char *g_rm_on_sigint = NULL;
  * @return program exit status; number of warnings and errors
 **/
 int
-main(int argc, /*@dependent@*/ char **argv)
+main(const int argc, char *const *const argv)
 /*@globals	fileSystem,
 		internalState,
 		g_argc,
@@ -152,26 +155,36 @@ main(int argc, /*@dependent@*/ char **argv)
 		g_argv
 @*/
 {
-	int r;
-
+	int r = EXIT_FAILURE;
+	struct sigaction sigact;
+	union {	int d; } t;
+#ifdef NDEBUG
+	(void) t.d;	// gcc
+#endif
 	if UNLIKELY ( argc == 1 ){
 		goto print_main_help;
 	}
 
-	// setup signals
-	if UNLIKELY (
-	     (signal((int) HS_ABRT, (void (*)(int)) sighand) == SIG_ERR)
-	    ||
-	     (signal((int) HS_HUP , (void (*)(int)) sighand) == SIG_ERR)
-	    ||
-	     (signal((int) HS_INT , (void (*)(int)) sighand) == SIG_ERR)
-	    ||
-	     (signal((int) HS_QUIT, (void (*)(int)) sighand) == SIG_ERR)
-	    ||
-	     (signal((int) HS_TERM, (void (*)(int)) sighand) == SIG_ERR)
-	){
-		error_sys_nf(errno, "signal", NULL);
-	}
+	// signals
+	memset(&sigact, 0x00, sizeof sigact);
+	sigact.sa_handler = sighand_cleanup_exit;
+	t.d = sigfillset(&sigact.sa_mask);
+	assert(t.d == 0);
+	//
+	t.d = sigaction(SIGABRT, &sigact, NULL);
+	assert(t.d == 0);
+	t.d = sigaction(SIGHUP , &sigact, NULL);
+	assert(t.d == 0);
+	t.d = sigaction(SIGINT , &sigact, NULL);
+	assert(t.d == 0);
+	t.d = sigaction(SIGQUIT, &sigact, NULL);
+	assert(t.d == 0);
+	t.d = sigaction(SIGTERM, &sigact, NULL);
+	assert(t.d == 0);
+
+	// atexit
+	t.d = atexit(atexit_cleanup);
+	assert(t.d == 0);
 
 	// these are saved for argument parsing in the modes
 	g_argc = (uint) argc;
@@ -188,7 +201,6 @@ main(int argc, /*@dependent@*/ char **argv)
 		error_tta_nf("bad mode '%s'", argv[1u]);
 print_main_help:
 		errprint_help_main();
-		r = EXIT_FAILURE;
 	} else{;}
 
 	return r;
@@ -196,63 +208,103 @@ print_main_help:
 
 //--------------------------------------------------------------------------//
 
-/**@fn sighand
- * @brief signal handler
+/**@fn atexit_cleanup
+ * @brief removes any incomplete file(s) for an early exit on error
+**/
+static void
+atexit_cleanup(void)
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem@*/
+{
+	union {	int d; } t;
+	if UNLIKELY ( g_rm_on_sigint != NULL ){
+		t.d = remove(g_rm_on_sigint);
+		if ( (t.d != 0) && (errno != EACCES) ){	// /dev/null
+			error_sys_nf(errno, "remove", g_rm_on_sigint);
+		}
+	}
+	return;
+}
+
+/**@fn sighand_cleanup_exit
+ * @brief signal handler that removes any incomplete file(s) then _exits
  *
  * @param signum signal number
  *
- * @note only async-signal-safe functions should be used ($ man signal-safe)
+ * @note only async-signal-safe functions should be used (man 7 signal-safety)
 **/
-NORETURN COLD void
-sighand(enum HandledSignals signum)
-/*@globals	fileSystem,
-		internalState
-@*/
-/*@modifies	fileSystem,
-		internalState
-@*/
+static NORETURN COLD void
+sighand_cleanup_exit(const int signum)
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem@*/
 {
-	const char intro0[] = "\n" T_B_DEFAULT;
-	const char intro1[] = ": " T_PURPLE;
-	const char *signame;
-	const char intro2[] = T_B_DEFAULT " ";
-	const char action[] = ". ";
-	const char outro[]  = T_PURPLE "!" T_RESET "\n";
-
-	// ignore any more signals
-	(void) signal((int) signum, SIG_IGN);
+	const char intro0[]       = "\n" T_B_DEFAULT;
+	const char intro1[]       = ": " T_PURPLE;
+	const char *const signame = strsignal(signum);
+	const char intro2[]       = T_DEFAULT " ";
+	const char outro[]        = T_PURPLE "!" T_RESET "\n";
+	//
+	union {	int d; } t;
 
 	(void) write(STDERR_FILENO, intro0, (sizeof intro0) - 1u);
 	(void) write(STDERR_FILENO, g_argv[0], strlen(g_argv[0]));
 	(void) write(STDERR_FILENO, intro1, (sizeof intro1) - 1u);
-	switch ( signum ){
-	case HS_ABRT:
-		signame = "SIGABRT";
-		break;
-	case HS_HUP:
-		signame = "SIGHUP";
-		break;
-	case HS_INT:
-		signame = "SIGINT";
-		break;
-	case HS_QUIT:
-		signame = "SIGQUIT";
-		break;
-	case HS_TERM:
-		signame = "SIGTERM";
-		break;
-	}
 	(void) write(STDERR_FILENO, signame, strlen(signame));
 	(void) write(STDERR_FILENO, intro2, (sizeof intro2) - 1u);
 
 	// remove any incomplete file(s)
 	if ( g_rm_on_sigint != NULL ){
-		(void) write(STDERR_FILENO, action, (sizeof action) - 1u);
-		(void) unlink(g_rm_on_sigint);
+		errwrite_action_start();
+		t.d = unlink(g_rm_on_sigint);
+		if ( (t.d != 0) && (errno == EACCES) ){	// /dev/null
+			t.d = 0;
+		}
+		errwrite_action_end(t.d);
 	}
 
 	(void) write(STDERR_FILENO, outro, (sizeof outro) - 1u);
-	_exit((int) signum);
+	_exit(signum);
+}
+
+/**@fn errwrite_action_start
+ * @brief writes a '?' to stderr
+**/
+static void
+errwrite_action_start(void)
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem@*/
+{
+	const char act_start[] = "?";
+
+	(void) write(STDERR_FILENO, act_start, (sizeof act_start) - 1u);
+	return;
+}
+
+/**@fn errwrite_action_start
+ * @brief overwrites action_start with the return status of the action
+ *
+ * @param result action return value
+**/
+static void
+errwrite_action_end(int result)
+/*@globals	fileSystem@*/
+/*@modifies	fileSystem@*/
+{
+	const char act_ok[]  = "\b. ";
+	const char act_err[] = "\b" T_RED "x" T_DEFAULT " ";
+	//
+	const char *str;
+	size_t size;
+
+	if ( result == 0 ){
+		str  = act_ok;
+		size = (sizeof act_ok) - 1u;
+	}
+	else {	str  = act_err;
+		size = (sizeof act_err) - 1u;
+	}
+	(void) write(STDERR_FILENO, str, size);
+	return;
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////

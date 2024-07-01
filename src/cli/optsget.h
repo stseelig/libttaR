@@ -36,8 +36,7 @@ struct OptDict {
 
 #undef of
 extern uint optargs_process(
-	struct OpenedFiles *const restrict of, uint,
-	const struct OptDict *const restrict
+	struct OpenedFiles *restrict of, uint, const struct OptDict *restrict
 )
 /*@globals	fileSystem,
 		internalState
@@ -48,7 +47,7 @@ extern uint optargs_process(
 @*/
 ;
 
-extern void optsget_argcheck(uint, char *, uint)
+extern void optsget_argcheck(uint, const char *restrict, uint)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;

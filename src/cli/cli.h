@@ -25,8 +25,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 INLINE CONST double timediff(
-	register const struct timespec *const restrict,
-	register const struct timespec *const restrict
+	const struct timespec *restrict, const struct timespec *restrict
 )
 /*@*/
 ;
@@ -34,16 +33,15 @@ INLINE CONST double timediff(
 //==========================================================================//
 
 extern void errprint_stats_precodec(
-	const struct FileStats *const restrict, const char *const restrict,
-	const char *const restrict, enum ProgramMode
+	const struct FileStats *restrict, const char *restrict,
+	const char *restrict, enum ProgramMode
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;
 
 extern void errprint_stats_postcodec(
-	const struct FileStats *const restrict,
-	const struct EncStats *const restrict
+	const struct FileStats *restrict, const struct EncStats *restrict
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/

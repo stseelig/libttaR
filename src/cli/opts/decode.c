@@ -38,7 +38,7 @@ static int opt_decode_format(uint, char *opt, enum OptMode)
 ;
 
 static int
-opt_decode_help(uint, char *,enum OptMode)
+opt_decode_help(uint, char *, enum OptMode)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;
@@ -77,7 +77,9 @@ const struct OptDict decode_optdict[] = {
  * @return number of args used (long), or number of char's read (short)
 **/
 static int
-opt_decode_format(uint optind, char *opt, enum OptMode mode)
+opt_decode_format(
+	const uint optind, char *const opt, const enum OptMode mode
+)
 /*@globals	fileSystem,
 		internalState,
 		g_flag
@@ -143,17 +145,12 @@ opt_decode_format(uint optind, char *opt, enum OptMode mode)
 **/
 NORETURN int
 opt_decode_help(
-	/*@unused@*/ uint optind, /*@unused@*/ char *opt,
-	/*@unused@*/ enum OptMode mode
+	UNUSED const uint optind, UNUSED char *const opt,
+	UNUSED const enum OptMode mode
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 {
-#ifndef S_SPLINT_S
-	(void) optind;
-	(void) opt;
-	(void) mode;
-#endif
 	errprint_help_mode_decode();
 	exit(EXIT_SUCCESS);
 }

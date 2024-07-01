@@ -21,20 +21,22 @@
 //////////////////////////////////////////////////////////////////////////////
 
 static void errprint_program_intro(
-	const struct LibTTAr_VersionInfo *, const struct LibTTAr_VersionInfo *
+	const struct LibTTAr_VersionInfo *restrict,
+	const struct LibTTAr_VersionInfo *restrict
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;
 
 static void errprint_ttaR_version(
-	const char *name, const struct LibTTAr_VersionInfo *info
+	const char *restrict name,
+	const struct LibTTAr_VersionInfo *restrict info
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;
 
-static void errprint_libstr_copyright(const char *)
+static void errprint_libstr_copyright(const char *restrict)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;
@@ -150,7 +152,7 @@ OPT_COMMON_THREADS
 /**@fn errprint_help_main
  * @brief print main's help to stderr
 **/
-void COLD
+COLD void
 errprint_help_main(void)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
@@ -163,7 +165,7 @@ errprint_help_main(void)
 /**@fn errprint_help_mode_encode
  * @brief print the mode encode's help to stderr
 **/
-void COLD
+COLD void
 errprint_help_mode_encode(void)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
@@ -178,7 +180,7 @@ errprint_help_mode_encode(void)
 /**@fn errprint_help_mode_decode
  * @brief print the mode decode's help to stderr
 **/
-void COLD
+COLD void
 errprint_help_mode_decode(void)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
@@ -200,8 +202,8 @@ errprint_help_mode_decode(void)
 **/
 static void
 errprint_program_intro(
-	const struct LibTTAr_VersionInfo *cli,
-	const struct LibTTAr_VersionInfo *lib
+	const struct LibTTAr_VersionInfo *const restrict cli,
+	const struct LibTTAr_VersionInfo *const restrict lib
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
@@ -225,7 +227,8 @@ errprint_program_intro(
 **/
 static void
 errprint_ttaR_version(
-	const char *name, const struct LibTTAr_VersionInfo *info
+	const char *const restrict name,
+	const struct LibTTAr_VersionInfo *const restrict info
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
@@ -250,7 +253,7 @@ errprint_ttaR_version(
  * @param str[in] the copyright string
 **/
 static void
-errprint_libstr_copyright(const char *str)
+errprint_libstr_copyright(const char *restrict str)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 {
@@ -262,7 +265,7 @@ errprint_libstr_copyright(const char *str)
 		if ( substr != NULL ){
 			diff = (ptrdiff_t) (substr - str);
 			(void) fprintf(stderr, "\t%.*s\n", (int) diff, str);
-			str = &substr[1u];
+			str  = &str[diff + 1u];
 		}
 		else { (void) fprintf(stderr, "\t%s\n", str); }
 	}

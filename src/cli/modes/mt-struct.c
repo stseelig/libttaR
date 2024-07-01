@@ -46,7 +46,7 @@ void
 encmt_state_init(
 	/*@out@*/ struct MTArg_EncIO *const restrict io,
 	/*@out@*/ struct MTArg_Encoder *const restrict encoder,
-	uint framequeue_len, size_t i32buf_len,
+	const uint framequeue_len, const size_t i32buf_len,
 	const FILE *const restrict outfile, const char *const outfile_name,
 	const FILE *const restrict infile, const char *const infile_name,
 	const struct SeekTable *const restrict seektable,
@@ -74,9 +74,7 @@ encmt_state_init(
 @*/
 {
 	uint i;
-	union {	size_t	z;
-		int	d;
-	} t;
+	union {	int d; } t;
 
 	// io->frames
 	io->frames.nmemb	= framequeue_len;
@@ -126,11 +124,10 @@ encmt_state_init(
 		}
 	}
 	for ( i = 0; i < framequeue_len; ++i ){
-		t.z = encbuf_init(
+		encbuf_init(
 			&io->frames.encbuf[i], i32buf_len,
 			TTABUF_LEN_DEFAULT, fstat->nchan, fstat->samplebytes
 		);
-		assert(t.z == i32buf_len * fstat->nchan);
 	}
 
 	// io->outfile
@@ -179,7 +176,8 @@ encmt_state_init(
 void
 encmt_state_free(
 	struct MTArg_EncIO *const restrict io,
-	struct MTArg_Encoder *const restrict encoder, uint framequeue_len
+	struct MTArg_Encoder *const restrict encoder,
+	const uint framequeue_len
 )
 /*@globals	internalState@*/
 /*@modifies	internalState,
@@ -199,23 +197,29 @@ encmt_state_free(
 @*/
 {
 	uint i;
-
+	union {	int d; } t;
+#ifdef NDEBUG
+	(void) t.d;	// gcc
+#endif
 	// io
-	(void) sem_destroy(io->frames.navailable);
+	t.d = sem_destroy(io->frames.navailable);
+	assert(t.d == 0);
 	free(io->frames.navailable);
 	for ( i = 0; i < framequeue_len; ++i ){
-		(void) sem_destroy(&io->frames.post_encoder[i]);
+		t.d = sem_destroy(&io->frames.post_encoder[i]);
+		assert(t.d == 0);
 	}
 	free(io->frames.post_encoder);
 	free(io->frames.ni32_perframe);
 	for ( i = 0; i < framequeue_len; ++i ){
-		encbuf_free(&io->frames.encbuf[i]);
+		codecbuf_free(&io->frames.encbuf[i]);
 	}
 	free(io->frames.encbuf);
 	free(io->frames.user);
 
 	// encoder
-	(void) pthread_spin_destroy(&encoder->frames.queue.lock);
+	t.d = pthread_spin_destroy(&encoder->frames.queue.lock);
+	assert(t.d == 0);
 
 	return;
 }
@@ -241,7 +245,7 @@ void
 decmt_state_init(
 	/*@out@*/ struct MTArg_DecIO *const restrict io,
 	/*@out@*/ struct MTArg_Decoder *const restrict decoder,
-	uint framequeue_len, size_t i32buf_len,
+	const uint framequeue_len, const size_t i32buf_len,
 	const FILE *const restrict outfile, const char *const outfile_name,
 	const FILE *const restrict infile, const char *const infile_name,
 	const struct SeekTable *const restrict seektable,
@@ -273,9 +277,7 @@ decmt_state_init(
 @*/
 {
 	uint i;
-	union {	size_t	z;
-		int	d;
-	} t;
+	union {	int d; } t;
 
 	// io->frames
 	io->frames.nmemb	= framequeue_len;
@@ -350,11 +352,10 @@ decmt_state_init(
 		}
 	}
 	for ( i = 0; i < framequeue_len; ++i ){
-		t.z = decbuf_init(
+		decbuf_init(
 			&io->frames.decbuf[i], i32buf_len,
-			TTABUF_LEN_DEFAULT, fstat->nchan
+			TTABUF_LEN_DEFAULT, fstat->nchan, fstat->samplebytes
 		);
-		assert(t.z == i32buf_len * fstat->nchan);
 	}
 
 	// io->outfile
@@ -406,7 +407,8 @@ decmt_state_init(
 void
 decmt_state_free(
 	struct MTArg_DecIO *const restrict io,
-	struct MTArg_Decoder *const restrict decoder, uint framequeue_len
+	struct MTArg_Decoder *const restrict decoder,
+	const uint framequeue_len
 )
 
 /*@globals	internalState@*/
@@ -431,18 +433,23 @@ decmt_state_free(
 @*/
 {
 	uint i;
-
+	union {	int d; } t;
+#ifdef NDEBUG
+	(void) t.d;	// gcc
+#endif
 	// io
-	(void) sem_destroy(io->frames.navailable);
+	t.d = sem_destroy(io->frames.navailable);
+	assert(t.d == 0);
 	free(io->frames.navailable);
 	for ( i = 0; i < framequeue_len; ++i ){
-		(void) sem_destroy(&io->frames.post_decoder[i]);
+		t.d = sem_destroy(&io->frames.post_decoder[i]);
+		assert(t.d == 0);
 	}
 	free(io->frames.post_decoder);
 	free(io->frames.ni32_perframe);
 	free(io->frames.nbytes_tta_perframe);
 	for ( i = 0; i < framequeue_len; ++i ){
-		decbuf_free(&io->frames.decbuf[i]);
+		codecbuf_free((struct EncBuf *) &io->frames.decbuf[i]);
 	}
 	free(io->frames.decbuf);
 	free(io->frames.crc_read);
@@ -451,7 +458,8 @@ decmt_state_free(
 	free(io->frames.nsamples_flat_2pad);
 
 	// decoder
-	(void) pthread_spin_destroy(&decoder->frames.queue.lock);
+	t.d = pthread_spin_destroy(&decoder->frames.queue.lock);
+	assert(t.d == 0);
 
 	return;
 }

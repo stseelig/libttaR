@@ -38,9 +38,9 @@
 #undef user
 #undef encbuf
 static void enc_frame_encode(
-	struct EncBuf *const restrict encbuf,
-	/*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
-	/*@out@*/ struct LibTTAr_CodecState_User *const restrict user_out,
+	struct EncBuf *restrict encbuf,
+	/*@reldef@*/ struct LibTTAr_CodecState_Priv *restrict priv,
+	/*@out@*/ struct LibTTAr_CodecState_User *restrict user_out,
 	enum TTASampleBytes, uint, size_t
 )
 /*@globals	fileSystem,
@@ -61,11 +61,10 @@ static void enc_frame_encode(
 #undef estat_out
 #undef outfile
 static void enc_frame_write(
-	struct EncBuf *const restrict,
-	struct SeekTable *const restrict seektable,
-	/*@in@*/ struct EncStats *const restrict estat_out,
-	struct LibTTAr_CodecState_User *const restrict,
-	FILE *const restrict outfile, const char *const restrict, uint
+	struct EncBuf *restrict, struct SeekTable *restrict seektable,
+	/*@in@*/ struct EncStats *restrict estat_out,
+	struct LibTTAr_CodecState_User *restrict,
+	FILE *restrict outfile, const char *restrict, uint
 )
 /*@globals	fileSystem,
 		internalState
@@ -86,7 +85,7 @@ static CONST size_t enc_readlen(
 
 #undef pcmbuf
 NOINLINE COLD uint enc_frame_zeropad(
-	u8 *const restrict pcmbuf, size_t, uint, enum TTASampleBytes, uint
+	u8 *restrict pcmbuf, size_t, uint, enum TTASampleBytes, uint
 )
 /*@modifies	*pcmbuf@*/
 ;
@@ -95,7 +94,7 @@ NOINLINE COLD uint enc_frame_zeropad(
 
 #undef arg
 /*@null@*/
-static HOT void *encmt_io(struct MTArg_EncIO *const restrict arg)
+static HOT void *encmt_io(struct MTArg_EncIO *restrict arg)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -114,7 +113,7 @@ static HOT void *encmt_io(struct MTArg_EncIO *const restrict arg)
 
 #undef arg
 /*@null@*/
-static HOT void *encmt_encoder(struct MTArg_Encoder *const restrict arg)
+static HOT void *encmt_encoder(struct MTArg_Encoder *restrict arg)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -177,12 +176,8 @@ encst_loop(
 		size_t	z;
 	} t;
 
-	// setup buffers
-	t.z = encbuf_init(
-		&encbuf, buflen, TTABUF_LEN_DEFAULT, nchan, samplebytes
-	);
-	assert(t.z == (size_t) (buflen * nchan));
-	//
+	// setup
+	encbuf_init(&encbuf, buflen, TTABUF_LEN_DEFAULT, nchan, samplebytes);
 	t.z = libttaR_codecstate_priv_size(nchan);
 	assert(t.z != 0);
 	priv = malloc(t.z);
@@ -195,8 +190,7 @@ encst_loop(
 	goto loop_entr;
 	do {
 		nmemb_read = fread(
-			encbuf.pcmbuf, (size_t) samplebytes, readlen,
-			infile
+			encbuf.pcmbuf, (size_t) samplebytes, readlen, infile
 		);
 		ni32_perframe             = nmemb_read;
 		nsamples_flat_read_total += nmemb_read;
@@ -207,7 +201,7 @@ encst_loop(
 				error_sys(errno, "fread", infile_name);
 			}
 			else {	warning_tta("%s: frame %zu: truncated file",
-					infile, nframes_read
+					infile_name, nframes_read
 				);
 			}
 			// forces readlen to 0
@@ -255,7 +249,7 @@ loop_entr:
 
 	// cleanup
 	free(priv);
-	encbuf_free(&encbuf);
+	codecbuf_free(&encbuf);
 
 	*estat_out = estat;
 	return;
@@ -288,7 +282,7 @@ encmt_loop(
 	const struct FileStats *const restrict fstat,
 	FILE *const restrict outfile, const char *const outfile_name,
 	FILE *const restrict infile, const char *const infile_name,
-	uint nthreads
+	const uint nthreads
 )
 /*@globals	fileSystem,
 		internalState
@@ -314,7 +308,7 @@ encmt_loop(
 
 	assert(nthreads >= 1u);
 
-	// init
+	// setup/init
 	memset(&estat, 0x00, sizeof estat);
 	encmt_fstat_init(&fstat_c, fstat);
 	encmt_state_init(
@@ -355,10 +349,12 @@ encmt_loop(
 
 	// join
 	for ( i = 0; i < nthreads - 1u; ++i ){
-		(void) pthread_join(thread_encoder[i], NULL);
+		t.d = pthread_join(thread_encoder[i], NULL);
+		assert(t.d == 0);
 	}
 	//
-	(void) pthread_join(thread_io, NULL);
+	t.d = pthread_join(thread_io, NULL);
+	assert(t.d == 0);
 
 	// cleanup
 	encmt_state_free(&state_io, &state_encoder, framequeue_len);
@@ -389,7 +385,8 @@ enc_frame_encode(
 	struct EncBuf *const restrict encbuf,
 	/*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
 	/*@out@*/ struct LibTTAr_CodecState_User *const restrict user_out,
-	enum TTASampleBytes samplebytes, uint nchan, size_t ni32_perframe
+	const enum TTASampleBytes samplebytes, const uint nchan,
+	const size_t ni32_perframe
 )
 /*@globals	fileSystem,
 		internalState
@@ -421,7 +418,7 @@ enc_frame_encode(
 	// encode i32 to tta
 	goto loop_entr;
 	do {
-		encbuf_adjust(encbuf, TTABUF_LEN_DEFAULT);
+		encbuf_adjust(encbuf, TTABUF_LEN_DEFAULT, nchan);
 		ni32_target = ni32_perframe - user.ni32_total;
 loop_entr:
 		t.d = libttaR_tta_encode(
@@ -462,7 +459,7 @@ enc_frame_write(
 	/*@in@*/ struct EncStats *const restrict estat_out,
 	struct LibTTAr_CodecState_User *const restrict user_in,
 	FILE *const restrict outfile, const char *const restrict outfile_name,
-	uint nchan
+	const uint nchan
 )
 /*@globals	fileSystem,
 		internalState
@@ -520,8 +517,9 @@ enc_frame_write(
 **/
 static CONST size_t
 enc_readlen(
-	size_t nsamples_perframe, size_t nsamples_flat_read,
-	size_t decpcm_size, enum TTASampleBytes samplebytes, uint nchan
+	const size_t nsamples_perframe, const size_t nsamples_flat_read,
+	const size_t decpcm_size, const enum TTASampleBytes samplebytes,
+	const uint nchan
 )
 /*@*/
 {
@@ -559,8 +557,8 @@ enc_readlen(
 **/
 NOINLINE COLD uint
 enc_frame_zeropad(
-	u8 *const restrict pcmbuf, size_t nmemb_read, uint diff,
-	enum TTASampleBytes samplebytes, uint nchan
+	u8 *const restrict pcmbuf, const size_t nmemb_read, const uint diff,
+	enum TTASampleBytes samplebytes, const uint nchan
 )
 /*@modifies	*pcmbuf@*/
 {
@@ -626,7 +624,9 @@ encmt_io(struct MTArg_EncIO *const restrict arg)
 	bool start_writing = false;
 	size_t nframes_read = 0;
 	uint i = 0, last;
-	union {	uint u; } t;
+	union {	int	d;
+		uint	u;
+	} t;
 
 	goto loop0_entr;
 	do {
@@ -665,7 +665,8 @@ encmt_io(struct MTArg_EncIO *const restrict arg)
 		}
 
 		// make frame available
-		(void) sem_post(nframes_avail);
+		t.d = sem_post(nframes_avail);
+		assert(t.d == 0);
 
 		++nframes_read;
 		i = (i + 1u < framequeue_len ? i + 1u : 0);
@@ -676,7 +677,8 @@ encmt_io(struct MTArg_EncIO *const restrict arg)
 		}
 
 		// wait for frame to finish encoding
-		(void) sem_wait(&post_encoder[i]);
+		t.d = sem_wait(&post_encoder[i]);
+		assert(t.d == 0);
 
 		// write tta to outfile
 		enc_frame_write(
@@ -701,12 +703,14 @@ loop0_read:
 	// write the remaining frames
 	if ( start_writing ){ goto loop1_not_tiny; }
 	else {	// unlock any uninitialized frames (tiny infile)
-		do {	(void) sem_post(nframes_avail);
+		do {	t.d = sem_post(nframes_avail);
+			assert(t.d == 0);
 			i = (i + 1u < framequeue_len ? i + 1u : 0);
 		} while ( i != 0 );
 	}
 	do {	// wait for frame to finish encoding
-		(void) sem_wait(&post_encoder[i]);
+		t.d = sem_wait(&post_encoder[i]);
+		assert(t.d == 0);
 
 		// write tta to outfile
 		enc_frame_write(
@@ -716,7 +720,8 @@ loop0_read:
 
 		// mark frame as done and make available
 		ni32_perframe[i] = 0;
-		(void) sem_post(nframes_avail);
+		t.d = sem_post(nframes_avail);
+		assert(t.d == 0);
 loop1_not_tiny:
 		i = (i + 1u < framequeue_len ? i + 1u : 0);
 	}
@@ -762,7 +767,9 @@ encmt_encoder(struct MTArg_Encoder *const restrict arg)
 
 	struct LibTTAr_CodecState_Priv *restrict priv;
 	uint i;
-	union {	size_t z; } t;
+	union {	int	d;
+		size_t	z;
+	} t;
 
 	// setup
 	t.z = libttaR_codecstate_priv_size(nchan);
@@ -782,15 +789,19 @@ encmt_encoder(struct MTArg_Encoder *const restrict arg)
 		);
 
 		// unlock frame
-		(void) sem_post(&post_encoder[i]);
+		t.d = sem_post(&post_encoder[i]);
+		assert(t.d == 0);
 loop_entr:
 		// wait for a frame to be available
-		(void) sem_wait(nframes_avail);
+		t.d = sem_wait(nframes_avail);
+		assert(t.d == 0);
 
 		// get frame id from encode queue
-		(void) pthread_spin_lock(&queue->lock);
+		t.d = pthread_spin_lock(&queue->lock);
+		assert(t.d == 0);
 		i = pdequeue(&queue->q);
-		(void) pthread_spin_unlock(&queue->lock);
+		t.d = pthread_spin_unlock(&queue->lock);
+		assert(t.d == 0);
 	}
 	while ( ni32_perframe[i] != 0 );
 

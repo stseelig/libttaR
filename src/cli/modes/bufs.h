@@ -28,7 +28,7 @@ struct EncBuf {
 	size_t	ttabuf_len;
 	/*@only@*/
 	i32	*i32buf;
-	/*@temp@*/
+	/*@only@*/
 	u8	*pcmbuf;
 	/*@only@*/
 	u8	*ttabuf;
@@ -38,9 +38,9 @@ struct DecBuf {
 	size_t	i32buf_len;
 	size_t	ttabuf_len;
 	/*@only@*/
-	u8	*pcmbuf;
-	/*@temp@*/
 	i32	*i32buf;
+	/*@only@*/
+	u8	*pcmbuf;
 	/*@only@*/
 	u8	*ttabuf;
 };
@@ -48,7 +48,7 @@ struct DecBuf {
 //////////////////////////////////////////////////////////////////////////////
 
 #undef eb
-extern size_t encbuf_init(
+extern void encbuf_init(
 	/*@out@*/ struct EncBuf *const restrict eb, size_t, size_t, uint,
 	enum TTASampleBytes
 )
@@ -60,12 +60,13 @@ extern size_t encbuf_init(
 		*eb
 @*/
 /*@allocates	eb->i32buf,
+		eb->pcmbuf,
 		eb->ttabuf
 @*/
 ;
 
 #undef eb
-extern HOT void encbuf_adjust(struct EncBuf *const restrict eb, size_t)
+extern HOT void encbuf_adjust(struct EncBuf *const restrict eb, size_t, uint)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -76,22 +77,12 @@ extern HOT void encbuf_adjust(struct EncBuf *const restrict eb, size_t)
 @*/
 ;
 
-#undef eb
-extern void encbuf_free(struct EncBuf *const restrict eb)
-/*@globals	internalState@*/
-/*@modifies	internalState,
-		*eb
-@*/
-/*@releases	eb->i32buf,
-		eb->ttabuf
-@*/
-;
-
 //--------------------------------------------------------------------------//
 
 #undef db
-extern size_t decbuf_init(
-	/*@out@*/ struct DecBuf *const restrict db, size_t, size_t, uint
+extern void decbuf_init(
+	/*@out@*/ struct DecBuf *const restrict db, size_t, size_t, uint,
+	enum TTASampleBytes
 )
 /*@globals	fileSystem,
 		internalState
@@ -101,13 +92,15 @@ extern size_t decbuf_init(
 		*db
 @*/
 /*@allocates	db->pcmbuf,
+		db->i32buf,
 		db->ttabuf
 @*/
 ;
 
 #undef db
 extern HOT void decbuf_check_adjust(
-	struct DecBuf *const restrict db, size_t, uint
+	struct DecBuf *const restrict db, size_t, uint,
+	enum TTASampleBytes
 )
 /*@globals	fileSystem,
 		internalState
@@ -119,14 +112,15 @@ extern HOT void decbuf_check_adjust(
 @*/
 ;
 
-#undef db
-extern void decbuf_free(struct DecBuf *const restrict db)
+//--------------------------------------------------------------------------//
+
+#undef cb
+extern void codecbuf_free(const struct EncBuf *const restrict cb)
 /*@globals	internalState@*/
-/*@modifies	internalState,
-		*db
-@*/
-/*@releases	db->pcmbuf,
-		db->ttabuf
+/*@modifies	internalState@*/
+/*@releases	cb->pcmbuf,
+		cb->i32buf,
+		cb->ttabuf
 @*/
 ;
 

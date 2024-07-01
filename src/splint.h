@@ -94,6 +94,7 @@ extern long long atoll(const char *) /*@*/;
 
 /*@-incondefs@*/
 /*@external@*/ /*@unused@*/
+/*@only@*/ /*@null@*/ /*@in@*/
 extern void *calloc(size_t, size_t)
 /*@globals	internalState@*/
 /*@modifies	internalState@*/
@@ -155,22 +156,21 @@ extern int getrlimit(int, /*@out@*/ struct rlimit *rlim)
 
 /*@-incondefs@*/
 /*@external@*/ /*@unused@*/
+/*@only@*/ /*@null@*/ /*@out@*/
 extern void *malloc(size_t)
 /*@globals	internalState@*/
 /*@modifies	internalState@*/
 ;
 /*@=incondefs@*/
 
-/*@temp@*/ /*@null@*/ /*@external@*/ /*@unused@*/
-extern void *memrchr(const void *, int, size_t)
-/*@*/
-;
-
-/*@only@*/ /*@null@*/ /*@partial@*/ /*@external@*/ /*@unused@*/
-extern void *reallocarray(/*@only@*/ /*@null@*/ void *, size_t, size_t)
+/*@-incondefs@*/
+/*@external@*/ /*@unused@*/
+/*@only@*/ /*@null@*/ /*@partial@*/
+extern void *realloc(/*@only@*/ /*@null@*/ void *, size_t)
 /*@globals	internalState@*/
 /*@modifies	internalState@*/
 ;
+/*@=incondefs@*/
 
 /*@external@*/ /*@unused@*/
 extern int setrlimit(int, /*@in@*/ struct rlimit *)
@@ -178,11 +178,24 @@ extern int setrlimit(int, /*@in@*/ struct rlimit *)
 /*@modifies	internalState@*/
 ;
 
+/*@-incondefs@*/
+#undef str
+/*@external@*/ /*@unused@*/
+/*@printflike@*/
+extern int snprintf(char *str, size_t, const char *, ...)
+/*@modifies	*str@*/
+;
+/*@=incondefs@*/
+
 #undef buf
-/*@temp@*/ /*@external@*/ /*@unused@*/
-extern char *strerror_r(int, /*@out@*/ char *buf, size_t)
+/*@external@*/ /*@unused@*/
+extern int strerror_r(int, /*@out@*/ char *buf, size_t)
 /*@modifies	*buf@*/
 ;
+
+/*@external@*/ /*@unused@*/
+/*@observer@*/
+extern char *strsignal(int sig) /*@*/;
 
 //==========================================================================//
 
@@ -206,7 +219,7 @@ extern int pthread_create(
 extern int pthread_join(pthread_t, /*@null@*/ void **retval)
 /*@globals	internalState@*/
 /*@modifies	internalState,
-		retval
+		*retval
 @*/
 ;
 /*@=protoparammatch@*/

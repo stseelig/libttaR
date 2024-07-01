@@ -42,7 +42,8 @@
 void
 prewrite_tta1_header_seektable(
 	FILE *const restrict outfile,
-	const struct SeekTable *const restrict st, const char *outfile_name
+	const struct SeekTable *const restrict st,
+	const char *const restrict outfile_name
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -87,7 +88,7 @@ prewrite_tta1_header_seektable(
 **/
 off_t
 write_tta1_header(
-	FILE *const restrict outfile, size_t nsamples_perchan_total,
+	FILE *const restrict outfile, const size_t nsamples_perchan_total,
 	const struct FileStats *const restrict fstat, const char *outfile_name
 )
 /*@globals	fileSystem@*/
@@ -136,7 +137,8 @@ write_tta1_header(
 void
 write_tta_seektable(
 	FILE *const restrict outfile,
-	const struct SeekTable *const restrict st, const char *outfile_name
+	const struct SeekTable *const restrict st,
+	const char *restrict outfile_name
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,

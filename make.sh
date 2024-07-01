@@ -76,12 +76,12 @@ readonly CFLAGS_COMMON;
 
 CFLAGS_CLI=;
 
-#CFLAGS_CLI="$CFLAGS_CLI -D_POSIX_C_SOURCE=200809";
-CFLAGS_CLI="$CFLAGS_CLI -D_GNU_SOURCE";	# reallocarray, memrchr, strchr
+CFLAGS_CLI="$CFLAGS_CLI -D_POSIX_C_SOURCE=200809L";
 CFLAGS_CLI="$CFLAGS_CLI -D_FILE_OFFSET_BITS=64";
 
-# -O3 is safe, but it can be slower
+# -Os is recommended; -O3 is safe, but it can be slower
 CFLAGS_CLI="$CFLAGS_CLI -Os";
+# floats are only used for printf-ing
 CFLAGS_CLI="$CFLAGS_CLI -ffast-math";
 
 readonly CFLAGS_CLI;
@@ -90,22 +90,20 @@ readonly CFLAGS_CLI;
 
 CFLAGS_LIB=;
 
-# -O3 is safe, but it can be slower
+# -O2 is recommended; -O3 is safe, but it can be slower
 CFLAGS_LIB="$CFLAGS_LIB -O2";
 
 CFLAGS_LIB="$CFLAGS_LIB -fPIC";
 
 # uncomment to disable the unrolled codecs
-#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_DISABLE_UNROLLED_1CH";
-#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_DISABLE_UNROLLED_2CH";
+#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_OPT_DISABLE_UNROLLED_1CH";
+#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_OPT_DISABLE_UNROLLED_2CH";
 
 # uncomment to disable the multichannel/general codec
-#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_DISABLE_MCH";
+#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_OPT_DISABLE_MCH";
 
-# try uncommenting some of these if your cpu is an old piece of shit
-#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_NO_TZCNT";     # rice.h:rice_unary_get
-#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_CMOV_SHIFTER"; # rice.h:lsmask32
-#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_MEM_XOR";      # crc32.h:crc32_cont
+# try uncommenting if your cpu is a slow POS
+#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_OPT_PREFER_LOOKUP_TABLES";
 
 readonly CFLAGS_LIB;
 

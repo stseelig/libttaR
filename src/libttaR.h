@@ -2,7 +2,7 @@
 #define LIBTTAr_H
 /* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// libttaR.h - 1.1                                                          //
+// libttaR.h - 1.2                                                          //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
@@ -62,24 +62,15 @@ enum TTASampleBytes {
 #define TTA_SAMPLEBYTES_MAX	((unsigned int) TTASAMPLEBYTES_3)
 #define TTA_SAMPLEBITS_MAX	((unsigned int) (8u*TTA_SAMPLEBYTES_MAX))
 
-/* seconds per TTA1 frame */
-#define TTA1_FRAME_TIME		((double) 1.04489795918367346939)
-
 #define TTA_CRC32_INIT		((uint32_t) 0xFFFFFFFFu)
-
-/* perchannel safety margin
-  >
-   the max nbytes_tta that could be read/written for 1 sample
-*/
-#define TTABUF_SAFETY_MARGIN	((size_t) 5004u)
 
 /* ######################################################################## */
 
 struct LibTTAr_VersionInfo {
 	unsigned int	 version;
-	unsigned int	 version_major;
-	unsigned int 	 version_minor;
-	unsigned int	 version_revis;
+	unsigned int	 version_major;	/* API change               */
+	unsigned int 	 version_minor;	/* bugfix or improvement    */
+	unsigned int	 version_revis;	/* inbetween minor versions */
 	/*@observer@*/
 	const char	*version_extra;
 	/*@observer@*/
@@ -189,15 +180,14 @@ extern LIBTTAr_CONST size_t libttaR_codecstate_priv_size(unsigned int nchan)
 /*@*/
 ;
 
+#undef samplebytes
 #undef nchan
 /*@external@*/ /*@unused@*/
-extern LIBTTAr_CONST size_t libttaR_ttabuf_safety_margin(unsigned int nchan)
+extern LIBTTAr_CONST size_t libttaR_ttabuf_safety_margin(
+	enum TTASampleBytes samplebytes, unsigned int nchan
+)
 /*@*/
 ;
-
-#define libttaR_ttabuf_safety_margin(nchan) ( \
-	(size_t) (TTABUF_SAFETY_MARGIN * (nchan)) \
-)
 
 #undef samplerate
 /*@external@*/ /*@unused@*/
@@ -205,8 +195,8 @@ extern LIBTTAr_CONST size_t libttaR_nsamples_perframe_tta1(size_t samplerate)
 /*@*/
 ;
 
-#define libttaR_nsamples_perframe_tta1(samplerate) ( \
-	(size_t) (TTA1_FRAME_TIME * (samplerate)) \
+#define libttaR_nsamples_perframe_tta1(samplerate) ((size_t) \
+	((256u * (samplerate)) / 245u) \
 )
 
 #undef nchan

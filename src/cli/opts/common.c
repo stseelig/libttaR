@@ -35,17 +35,12 @@
 **/
 int
 opt_common_single_threaded(
-	/*@unused@*/ uint optind, /*@unused@*/ char *opt,
-	/*@unused@*/ enum OptMode mode
+	UNUSED const uint optind, UNUSED char *const opt,
+	UNUSED const enum OptMode mode
 )
 /*@globals	g_flag@*/
 /*@modifies	g_flag.threadmode@*/
 {
-#ifndef S_SPLINT_S
-	(void) optind;
-	(void) opt;
-	(void) mode;
-#endif
 	g_flag.threadmode = THREADMODE_SINGLE;
 	return 0;
 }
@@ -61,17 +56,12 @@ opt_common_single_threaded(
 **/
 int
 opt_common_multi_threaded(
-	/*@unused@*/ uint optind, /*@unused@*/ char *opt,
-	/*@unused@*/ enum OptMode mode
+	UNUSED const uint optind, UNUSED char *const opt,
+	UNUSED const enum OptMode mode
 )
 /*@globals	g_flag@*/
 /*@modifies	g_flag.threadmode@*/
 {
-#ifndef S_SPLINT_S
-	(void) optind;
-	(void) opt;
-	(void) mode;
-#endif
 	g_flag.threadmode = THREADMODE_MULTI;
 	return 0;
 }
@@ -87,17 +77,12 @@ opt_common_multi_threaded(
 **/
 int
 opt_common_delete_src(
-	/*@unused@*/ uint optind, /*@unused@*/ char *opt,
-	/*@unused@*/ enum OptMode mode
+	UNUSED const uint optind, UNUSED char *const opt,
+	UNUSED const enum OptMode mode
 )
 /*@globals	g_flag@*/
 /*@modifies	g_flag.delete_src@*/
 {
-#ifndef S_SPLINT_S
-	(void) optind;
-	(void) opt;
-	(void) mode;
-#endif
 	g_flag.delete_src = true;
 	return 0;
 }
@@ -112,7 +97,9 @@ opt_common_delete_src(
  * @return number of args used (long), or number of char's read (short)
 **/
 int
-opt_common_threads(uint optind, char *opt, enum OptMode mode)
+opt_common_threads(
+	const uint optind, char *const opt, const enum OptMode mode
+)
 /*@globals	fileSystem,
 		internalState,
 		g_flag,
@@ -182,7 +169,9 @@ opt_common_threads(uint optind, char *opt, enum OptMode mode)
  * @return number of args used (long), or number of char's read (short)
 **/
 int
-opt_common_outfile(uint optind, char *opt, enum OptMode mode)
+opt_common_outfile(
+	const uint optind, char *const opt, const enum OptMode mode
+)
 /*@globals	fileSystem,
 		internalState,
 		g_flag
@@ -240,17 +229,12 @@ opt_common_outfile(uint optind, char *opt, enum OptMode mode)
 **/
 int
 opt_common_quiet(
-	/*@unused@*/ uint optind, /*@unused@*/ char *opt,
-	/*@unused@*/ enum OptMode mode
+	UNUSED const uint optind, UNUSED char *const opt,
+	UNUSED const enum OptMode mode
 )
 /*@globals	g_flag@*/
 /*@modifies	g_flag.quiet@*/
 {
-#ifndef S_SPLINT_S
-	(void) optind;
-	(void) opt;
-	(void) mode;
-#endif
 	g_flag.quiet = true;
 	return 0;
 }

@@ -105,15 +105,14 @@ HIDDEN const u32 crc32_table[] = {
  * @return the CRC
  *
  * @note read the manpage for more info
- *
- *     This function is obviously not as fast as Intel's slicing method. It is
- *   meant for TTA's header and seektable. Given that those are rather small
- *   and calculating their CRCs is an insignificant part of a program's
+ * @note This function is obviously not as fast as Intel's slicing method. It
+ *   is meant for TTA's header and seektable. Given that those are rather
+ *   small and calculating their CRCs is an insignificant part of a program's
  *   runtime, size is more important. Frame CRC calculation is inlined into
  *   the rice coder.
 **/
 PURE u32
-libttaR_crc32(const u8 *const restrict buf, size_t size)
+libttaR_crc32(const u8 *const restrict buf, const size_t size)
 /*@*/
 {
 	u32 crc = CRC32_INIT;

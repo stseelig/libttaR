@@ -1,13 +1,13 @@
 '\# t
 .\#     Title: libttaR_misc
 .\#    Author: Shane Seelig
-.\#      Date: 2024-06-03
-.\#    Source: libttaR 1.1
+.\#      Date: 2024-06-27
+.\#    Source: libttaR 1.2
 .\#  Language: English
 .\#
 .\############################################################################
 
-.TH "LIBTTAr_MISC" "3" "2024\-06\-01" "libttaR 1.1" \
+.TH "LIBTTAr_MISC" "3" "2024\-07\-01" "libttaR 1.2" \
 "LibTTAr Programmer's Manual"
 
 .\############################################################################
@@ -24,7 +24,11 @@ libttaR miscellaneous functions and objects
 .B #include <libttaR.h>
 
 .BI "size_t libttaR_codecstate_priv_size(unsigned int " nchan ");
-.BI "size_t libttaR_ttabuf_safety_margin(unsigned int " nchan ");
+.BI "size_t libttaR_ttabuf_safety_margin(
+.RS 8
+.BI "enum TTASamplebytes " samplebytes ", unsigned int " nchan "
+.RE
+.BI );
 .BI "size_t libttaR_nsamples_perframe_tta1(size_t " samplerate ");
 .BI "bool libttaR_test_nchan(unsigned int " nchan ");
 
@@ -40,8 +44,8 @@ calculates the size of a private state struct with \fInchan\fR audio channels
 (for passing to an allocator).
 
 .BR libttaR_ttabuf_safety_margin ()
-calculates a safety-margin size for the TTA buffer in order to prevent a
-possible buffer overrun.
+calculates a safety-margin size for padding the TTA buffer in order to prevent
+a possible buffer overrun.
 The calculated size is greater than the maximum number of TTA bytes that could
 be encoded for one PCM sample with \fInchan\fR channels.
 When decoding, the padding is needed in case the TTA data is corrupted or
@@ -62,9 +66,9 @@ is a read-only object containing the library's version information.
 .nf
 struct LibTTAr_VersionInfo {
     unsigned int       version;
-    unsigned int       version_major;
-    unsigned int       version_minor;
-    unsigned int       version_revis;
+    unsigned int       version_major;   // API change
+    unsigned int       version_minor;   // bugfix or improvement
+    unsigned int       version_revis;	// inbetween minor versions
     const char        *version_extra;
     const char        *version_date;
     const char        *copyright;
@@ -81,6 +85,10 @@ struct LibTTAr_VersionInfo {
 .RS 8
 The number of audio channels in the PCM.
 .RE
+
+\fIsamplebytes\fR
+.RS 8
+The number of bytes per samples in the originally sized PCM.
 
 \fIsamplerate\fR
 .RS 8
@@ -115,7 +123,7 @@ true or false
 
 .SH "ERRORS"
 
-0 if (\fIargument\fR == 0)
+0 if bad parameters
 
 .\############################################################################
 
@@ -127,10 +135,8 @@ All are MT-Safe.
 
 .SH "NOTES"
 
-.BR libttaR_ttabuf_safety_margin ()
-and
 .BR libttaR_nsamples_perframe_tta1 ()
-are macros.
+is a macro.
 
 .\############################################################################
 

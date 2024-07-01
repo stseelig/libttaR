@@ -113,7 +113,8 @@ rawpcm_statcopy(/*@out@*/ struct FileStats *const restrict fstat)
 // --rawpcm=format,samplerate,nchan
 static int
 opt_encode_rawpcm(
-	/*@unused@*/ uint optind, char *opt, /*@unused@*/ enum OptMode mode
+	UNUSED const uint optind, char *const opt,
+	UNUSED const enum OptMode mode
 )
 /*@globals	fileSystem,
 		internalState
@@ -123,11 +124,6 @@ opt_encode_rawpcm(
 		*opt
 @*/
 {
-#ifndef S_SPLINT_S
-	(void) optind;
-	(void) mode;
-#endif
-
 	char *subopt;
 	union {	longlong ll; } t;
 
@@ -208,17 +204,12 @@ opt_encode_rawpcm(
 **/
 NORETURN int
 opt_encode_help(
-	/*@unused@*/ uint optind, /*@unused@*/ char *opt,
-	/*@unused@*/ enum OptMode mode
+	UNUSED const uint optind, UNUSED char *const opt,
+	UNUSED const enum OptMode mode
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 {
-#ifndef S_SPLINT_S
-	(void) optind;
-	(void) opt;
-	(void) mode;
-#endif
 	errprint_help_mode_encode();
 	exit(EXIT_SUCCESS);
 }

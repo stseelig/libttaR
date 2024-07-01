@@ -35,7 +35,9 @@ struct OpenedFiles {
 //////////////////////////////////////////////////////////////////////////////
 
 /*@dependent@*/ /*@null@*/
-extern FILE *fopen_check(const char *, const char *, enum Fatality)
+extern FILE *fopen_check(
+	const char *restrict, const char *restrict, enum Fatality
+)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -63,8 +65,12 @@ extern int openedfiles_add(
 #undef of
 extern void
 openedfiles_close_free(struct OpenedFiles *const restrict of)
-/*@globals	fileSystem@*/
-/*@modifies	*of@*/
+/*@globals	fileSystem,
+		internalState
+@*/
+/*@modifies	fileSystem,
+		internalState
+@*/
 /*@releases	of->file,
 		of->file[]
 @*/

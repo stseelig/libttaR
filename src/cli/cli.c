@@ -21,25 +21,25 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-static void errprint_stats_infile(const char *const restrict)
+static void errprint_stats_infile(const char *restrict)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;
 
-static void errprint_stats_outfile(const char *const restrict)
+static void errprint_stats_outfile(const char *restrict)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;
 
 static void errprint_stats_format(
-	const struct FileStats *const restrict, enum ProgramMode
+	const struct FileStats *restrict, enum ProgramMode
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;
 
 #if 0
-static void errprint_stats_frame(const struct FileStats *const restrict)
+static void errprint_stats_frame(const struct FileStats *restrict)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;
@@ -67,7 +67,7 @@ static CONST const char *decfmt_name(enum DecFormat) /*@*/;
 static CONST const char *encfmt_name(enum EncFormat) /*@*/;
 
 static CONST double calc_time_pcm(
-	size_t, const struct FileStats *const restrict
+	size_t, const struct FileStats *restrict
 )
 /*@*/
 ;
@@ -103,7 +103,7 @@ void
 errprint_stats_precodec(
 	const struct FileStats *const restrict fstat,
 	const char *const restrict infile_name,
-	const char *const restrict outfile_name, enum ProgramMode mode
+	const char *const restrict outfile_name, const enum ProgramMode mode
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
@@ -148,7 +148,9 @@ errprint_stats_postcodec(
  * @param mode encode or decode
 **/
 void
-errprint_runtime(double runtime, size_t nfiles, enum ProgramMode mode)
+errprint_runtime(
+	const double runtime, const size_t nfiles, const enum ProgramMode mode
+)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 {
@@ -231,7 +233,8 @@ errprint_stats_outfile(const char *const restrict name)
 **/
 static void
 errprint_stats_format(
-	const struct FileStats *const restrict fstat, enum ProgramMode mode
+	const struct FileStats *const restrict fstat,
+	const enum ProgramMode mode
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
@@ -321,7 +324,9 @@ errprint_stats_frame(const struct FileStats *const restrict fstat)
  * @param nbytes_pcm size of the PCM
 **/
 static void
-errprint_stats_pcm(double pcmtime, size_t nframes, size_t nbytes_pcm)
+errprint_stats_pcm(
+	const double pcmtime, const size_t nframes, const size_t nbytes_pcm
+)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 {
@@ -349,7 +354,9 @@ errprint_stats_pcm(double pcmtime, size_t nframes, size_t nbytes_pcm)
  * @param nbytes_tta size of the TTA
 **/
 static void
-errprint_stats_tta(double pcmtime, size_t nbytes_pcm, size_t nbytes_tta)
+errprint_stats_tta(
+	const double pcmtime, const size_t nbytes_pcm, const size_t nbytes_tta
+)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 {
@@ -376,7 +383,9 @@ errprint_stats_tta(double pcmtime, size_t nbytes_pcm, size_t nbytes_tta)
  * @param nbytes_pcm size of the PCM
 **/
 static void
-errprint_stats_codectime(double pcmtime, double codectime, size_t nbytes_pcm)
+errprint_stats_codectime(
+	const double pcmtime, const double codectime, const size_t nbytes_pcm
+)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 {
@@ -405,7 +414,7 @@ errprint_stats_codectime(double pcmtime, double codectime, size_t nbytes_pcm)
 **/
 /*@observer@*/
 static CONST const char *
-decfmt_name(enum DecFormat fmt)
+decfmt_name(const enum DecFormat fmt)
 /*@*/
 {
 	/*@observer@*/
@@ -422,7 +431,7 @@ decfmt_name(enum DecFormat fmt)
 **/
 /*@observer@*/
 static CONST const char *
-encfmt_name(enum EncFormat fmt)
+encfmt_name(const enum EncFormat fmt)
 /*@*/
 {
 	/*@observer@*/
@@ -439,7 +448,9 @@ encfmt_name(enum EncFormat fmt)
  * @return the length in seconds
 **/
 static CONST double
-calc_time_pcm(size_t nsamples, const struct FileStats *const restrict fstat)
+calc_time_pcm(
+	const size_t nsamples, const struct FileStats *const restrict fstat
+)
 /*@*/
 {
 	double size;
@@ -454,7 +465,7 @@ calc_time_pcm(size_t nsamples, const struct FileStats *const restrict fstat)
  * @param size the size to format
 **/
 static void
-errprint_size(size_t size)
+errprint_size(const size_t size)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 {
@@ -487,7 +498,7 @@ errprint_size(size_t size)
  * @param sec number of seconds
 **/
 static void
-errprint_time(double sec)
+errprint_time(const double sec)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 {
@@ -520,7 +531,7 @@ errprint_time(double sec)
  * @param mask the channel mask
 **/
 static void
-errprint_chanmask_wav(uint nchan, u32 mask)
+errprint_chanmask_wav(const uint nchan, const u32 mask)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 {

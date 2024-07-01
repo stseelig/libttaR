@@ -29,7 +29,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 NOINLINE COLD void print_error_tta(
-	const enum Fatality fatality, const char *const, va_list args
+	enum Fatality fatality, const char *, va_list args
 )
 /*@globals	fileSystem,
 		g_nwarnings
@@ -49,7 +49,8 @@ NOINLINE COLD void print_error_tta(
  *
  * @note g_nwarnings is the return value of the program
 **/
-static int inc_nwarnings(void)
+static int
+inc_nwarnings(void)
 /*@globals	g_nwarnings@*/
 /*@modifies	g_nwarnings@*/
 {
@@ -68,9 +69,9 @@ static int inc_nwarnings(void)
  * @param name[in] function name
  * @param extra[in] any extra info, probably a filename
 **/
-COLD NORETURN void
+NORETURN COLD void
 error_sys(
-	int errnum, const char *const name,
+	const int errnum, const char *const name,
 	/*@null@*/ const char *const extra
 )
 /*@globals	fileSystem,
@@ -93,7 +94,7 @@ error_sys(
 **/
 COLD void
 error_sys_nf(
-	int errnum, const char *const name,
+	const int errnum, const char *const name,
 	/*@null@*/ const char *const extra
 )
 /*@globals	fileSystem,
@@ -112,11 +113,12 @@ error_sys_nf(
  * @param errnum error number
  * @param name[in] function name
  * @param extra[in] any extra info, probably a filename
- * @param fatality fatal or non-fatal
+ * @param fatality whether the error is fatal or non-fatal
 **/
+/*@maynotreturn@*/
 COLD void
 print_error_sys(
-	int errnum, const char *const name,
+	const int errnum, const char *const name,
 	/*@null@*/ const char *const extra, const enum Fatality fatality
 )
 /*@globals	fileSystem,
@@ -129,17 +131,23 @@ print_error_sys(
 	char buf[128u];
 	union {	int d; } t;
 
+	// XSI-compliant version returns an int
+	t.d = strerror_r(errnum, buf, sizeof buf);
+	if ( t.d != 0 ){
+		buf[0] = '\0';
+	}
+
 	flockfile(stdout);
 	flockfile(stderr);
 	//
 	(void) fprintf(stderr, T_B_DEFAULT "%s: ", g_argv[0]);
-	(void) fputs(T_B_RED "error:" T_B_DEFAULT " ", stderr);
+	(void) fputs(T_RED "error:" T_DEFAULT " ", stderr);
 	(void) fprintf(stderr, "%s: (%d) ", name, errnum);
-	(void) fputs(strerror_r(errnum, buf, sizeof buf), stderr);
+	(void) fputs(buf, stderr);
 	if ( extra != NULL ){
 		(void) fprintf(stderr, ": %s", extra);
 	}
-	(void) fputs(" " T_B_RED "!" T_RESET "\n", stderr);
+	(void) fputs(" " T_RED "!" T_RESET "\n", stderr);
 	//
 	funlockfile(stdout);
 	funlockfile(stderr);
@@ -159,7 +167,9 @@ print_error_sys(
  * @param format[in] formatted error string
  * @param ...[in] args for 'format'
 **/
-COLD NORETURN void error_tta(const char *const format, ...)
+/*@printflike@*/
+NORETURN COLD void
+error_tta(const char *const format, ...)
 /*@globals	fileSystem,
 		g_nwarnings
 @*/
@@ -179,7 +189,9 @@ COLD NORETURN void error_tta(const char *const format, ...)
  * @param format[in] formatted error string
  * @param ...[in] args for 'format'
 **/
-COLD void error_tta_nf(const char *const format, ...)
+/*@printflike@*/
+COLD void
+error_tta_nf(const char *const format, ...)
 /*@globals	fileSystem,
 		g_nwarnings
 @*/
@@ -197,10 +209,11 @@ COLD void error_tta_nf(const char *const format, ...)
 /**@fn print_error_tta
  * @brief print a non-fatal program error
  *
- * @param fatality fatal or non-fatal
+ * @param fatality whether the error is fatal or non-fatal
  * @param format[in] formatted error string
  * @param args[in] args for 'format'
 **/
+/*@maynotreturn@*/
 NOINLINE COLD void
 print_error_tta(
 	const enum Fatality fatality, const char *const format, va_list args
@@ -219,9 +232,9 @@ print_error_tta(
 	flockfile(stderr);
 	//
 	(void) fprintf(stderr, T_B_DEFAULT "%s: ", g_argv[0]);
-	(void) fputs(T_B_RED "error:" T_B_DEFAULT " ", stderr);
+	(void) fputs(T_RED "error:" T_DEFAULT " ", stderr);
 	(void) vfprintf(stderr, format, args);
-	(void) fputs(" " T_B_RED "!" T_RESET "\n", stderr);
+	(void) fputs(" " T_RED "!" T_RESET "\n", stderr);
 	//
 	funlockfile(stdout);
 	funlockfile(stderr);
@@ -239,6 +252,7 @@ print_error_tta(
  * @param format[in] formatted error string
  * @param ...[in] args for 'format'
 **/
+/*@printflike@*/
 COLD void
 warning_tta(const char *const format, ...)
 /*@globals	fileSystem,
@@ -256,9 +270,9 @@ warning_tta(const char *const format, ...)
 	flockfile(stderr);
 	//
 	(void) fprintf(stderr, T_B_DEFAULT "%s: ", g_argv[0]);
-	(void) fputs(T_B_YELLOW "warning:" T_B_DEFAULT " ", stderr);
+	(void) fputs(T_YELLOW "warning:" T_DEFAULT " ", stderr);
 	(void) vfprintf(stderr, format, args);
-	(void) fputs(" " T_B_YELLOW "!" T_RESET "\n", stderr);
+	(void) fputs(" " T_YELLOW "!" T_RESET "\n", stderr);
 	//
 	funlockfile(stdout);
 	funlockfile(stderr);
@@ -284,7 +298,7 @@ warning_tta(const char *const format, ...)
 **/
 COLD void
 error_filecheck(
-	enum FileCheck fc, int errnum,
+	const enum FileCheck fc, const int errnum,
 	const struct FileStats *const restrict fstat,
 	const char *const restrict filename
 )
@@ -333,7 +347,7 @@ error_filecheck(
 		break;
 	case FILECHECK_UNSUPPORTED_RESOLUTION:
 		error_tta_nf("%s: unsupported resolution: "
-			"%"PRIu16"-ch, %u-bits, %"PRIu32"-Hz",
+			"%"PRIu16"-ch, %"PRIu16"-bits, %"PRIu32"-Hz",
 			filename, fstat->nchan, fstat->samplebits,
 			fstat->samplerate
 		);

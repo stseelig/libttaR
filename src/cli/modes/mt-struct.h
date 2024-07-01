@@ -187,8 +187,8 @@ struct MTArg_Decoder {
 
 #undef fstat_c
 INLINE void encmt_fstat_init(
-	/*@out@*/ register struct FileStats_EncMT *const restrict fstat_c,
-	register const struct FileStats *const restrict
+	/*@out@*/ register struct FileStats_EncMT *restrict fstat_c,
+	register const struct FileStats *restrict
 )
 /*@modifies	*fstat_c@*/
 ;
@@ -196,13 +196,12 @@ INLINE void encmt_fstat_init(
 #undef io
 #undef encoder
 extern void encmt_state_init(
-	/*@out@*/ struct MTArg_EncIO *const restrict io,
-	/*@out@*/ struct MTArg_Encoder *const restrict encoder,
-	uint, size_t, const FILE *const restrict, const char *const,
-	const FILE *const restrict, const char *const,
-	const struct SeekTable *const restrict,
-	const struct EncStats *const restrict,
-	const struct FileStats_EncMT *const restrict
+	/*@out@*/ struct MTArg_EncIO *restrict io,
+	/*@out@*/ struct MTArg_Encoder *restrict encoder,
+	uint, size_t, const FILE *restrict, const char *,
+	const FILE *restrict, const char *, const struct SeekTable *restrict,
+	const struct EncStats *restrict,
+	const struct FileStats_EncMT *restrict
 )
 /*@globals	fileSystem,
 		internalState
@@ -228,8 +227,8 @@ extern void encmt_state_init(
 #undef io
 #undef encoder
 extern void encmt_state_free(
-	struct MTArg_EncIO *const restrict io,
-	struct MTArg_Encoder *const restrict encoder, uint
+	struct MTArg_EncIO *restrict io,
+	struct MTArg_Encoder *restrict encoder, uint
 )
 /*@globals	internalState@*/
 /*@modifies	internalState,
@@ -253,8 +252,8 @@ extern void encmt_state_free(
 
 #undef fstat_c
 INLINE void decmt_fstat_init(
-	/*@out@*/ register struct FileStats_DecMT *const restrict fstat_c,
-	register const struct FileStats *const restrict
+	/*@out@*/ register struct FileStats_DecMT *restrict fstat_c,
+	register const struct FileStats *restrict
 )
 /*@modifies	*fstat_c@*/
 ;
@@ -262,13 +261,12 @@ INLINE void decmt_fstat_init(
 #undef io
 #undef decoder
 extern void decmt_state_init(
-	/*@out@*/ struct MTArg_DecIO *const restrict io,
-	/*@out@*/ struct MTArg_Decoder *const restrict decoder,
-	uint, size_t, const FILE *const restrict, const char *const,
-	const FILE *const restrict, const char *const,
-	const struct SeekTable *const restrict,
-	const struct DecStats *const restrict,
-	const struct FileStats_DecMT *const restrict
+	/*@out@*/ struct MTArg_DecIO *restrict io,
+	/*@out@*/ struct MTArg_Decoder *restrict decoder,
+	uint, size_t, const FILE *restrict, const char *,
+	const FILE *restrict, const char *, const struct SeekTable *restrict,
+	const struct DecStats *restrict,
+	const struct FileStats_DecMT *restrict
 )
 /*@globals	fileSystem,
 		internalState
@@ -298,8 +296,8 @@ extern void decmt_state_init(
 #undef io
 #undef decoder
 extern void decmt_state_free(
-	struct MTArg_DecIO *const restrict io,
-	struct MTArg_Decoder *const restrict decoder, uint
+	struct MTArg_DecIO *restrict io,
+	struct MTArg_Decoder *restrict decoder, uint
 )
 
 /*@globals	internalState@*/
@@ -335,8 +333,8 @@ extern void decmt_state_free(
 **/
 INLINE void
 encmt_fstat_init(
-	/*@out@*/ register struct FileStats_EncMT *const restrict fstat_c,
-	register const struct FileStats *const restrict fstat
+	/*@out@*/ register struct FileStats_EncMT *restrict fstat_c,
+	register const struct FileStats *restrict fstat
 )
 /*@modifies	*fstat_c@*/
 {
@@ -356,8 +354,8 @@ encmt_fstat_init(
 **/
 INLINE void
 decmt_fstat_init(
-	/*@out@*/ register struct FileStats_DecMT *const restrict fstat_c,
-	register const struct FileStats *const restrict fstat
+	/*@out@*/ register struct FileStats_DecMT *restrict fstat_c,
+	register const struct FileStats *restrict fstat
 )
 /*@modifies	*fstat_c@*/
 {

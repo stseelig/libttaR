@@ -39,11 +39,11 @@
 #undef user_out
 #undef nsamples_flat_2pad
 static int dec_frame_decode(
-	struct DecBuf *const restrict decbuf,
-	/*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
-	/*@out@*/ struct LibTTAr_CodecState_User *const restrict user_out,
+	struct DecBuf *restrict decbuf,
+	/*@reldef@*/ struct LibTTAr_CodecState_Priv *restrict priv,
+	/*@out@*/ struct LibTTAr_CodecState_User *restrict user_out,
 	enum TTASampleBytes, uint, size_t, size_t,
-	/*@out@*/ size_t *const restrict nsamples_flat_2pad
+	/*@out@*/ size_t *restrict nsamples_flat_2pad
 )
 /*@modifies	*decbuf->i32buf,
 		*decbuf->pcmbuf,
@@ -57,11 +57,11 @@ static int dec_frame_decode(
 #undef dstat_out
 #undef outfile
 static void dec_frame_write(
-	struct DecBuf *const restrict decbuf,
-	/*@in@*/ struct DecStats *const restrict dstat_out,
-	struct LibTTAr_CodecState_User *const restrict,
-	const char *const restrict, FILE *const restrict outfile,
-	const char *const restrict, enum TTASampleBytes, uint, u32, ichar,
+	struct DecBuf *restrict decbuf,
+	/*@in@*/ struct DecStats *restrict dstat_out,
+	struct LibTTAr_CodecState_User *restrict,
+	const char *restrict, FILE *restrict outfile,
+	const char *restrict, enum TTASampleBytes, uint, u32, ichar,
 	size_t, size_t
 )
 /*@globals	fileSystem@*/
@@ -76,7 +76,7 @@ static CONST size_t dec_ni32_perframe(size_t, size_t, size_t, uint) /*@*/;
 
 #undef pcmbuf
 NOINLINE COLD void dec_frame_zeropad(
-	u8 *const restrict pcmbuf, size_t, size_t, enum TTASampleBytes
+	u8 *restrict pcmbuf, size_t, size_t, enum TTASampleBytes
 )
 /*@modifies	*pcmbuf@*/
 ;
@@ -85,7 +85,7 @@ NOINLINE COLD void dec_frame_zeropad(
 
 #undef arg
 /*@null@*/
-static HOT void *decmt_io(struct MTArg_DecIO *const restrict arg)
+static HOT void *decmt_io(struct MTArg_DecIO *restrict arg)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -105,7 +105,7 @@ static HOT void *decmt_io(struct MTArg_DecIO *const restrict arg)
 
 #undef arg
 /*@null@*/
-static HOT void *decmt_decoder(struct MTArg_Decoder *const restrict arg)
+static HOT void *decmt_decoder(struct MTArg_Decoder *restrict arg)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -172,10 +172,8 @@ decst_loop(
 		int	d;
 	} t;
 
-	// setup buffers
-	t.z = decbuf_init(&decbuf, buflen, TTABUF_LEN_DEFAULT, nchan);
-	assert(t.z == (size_t) (buflen * nchan));
-	//
+	// setup
+	decbuf_init(&decbuf, buflen, TTABUF_LEN_DEFAULT, nchan, samplebytes);
 	t.z = libttaR_codecstate_priv_size(nchan);
 	assert(t.z != 0);
 	priv = malloc(t.z);
@@ -209,7 +207,9 @@ decst_loop(
 		nsamples_perchan_dec_total += ni32_perframe / nchan;
 
 		// read tta from infile
-		decbuf_check_adjust(&decbuf, framesize_tta, nchan);
+		decbuf_check_adjust(
+			&decbuf, framesize_tta, nchan, samplebytes
+		);
 		nbytes_read = fread(
 			decbuf.ttabuf, (size_t) 1u, framesize_tta, infile
 		);
@@ -263,7 +263,7 @@ loop_entr:
 
 	// cleanup
 	free(priv);
-	decbuf_free(&decbuf);
+	codecbuf_free((struct EncBuf *) &decbuf);
 
 	*dstat_out = dstat;
 	return;
@@ -281,7 +281,7 @@ loop_entr:
  * @param infile_name[in] the name of the source file (warnings/errors)
  * @param nthreads the number of encoder threads to use
  *
- * @note see encmt_loop in mode_encode_loop.c for info on the threads layout
+ * @see encmt_loop
 **/
 void
 decmt_loop(
@@ -290,7 +290,7 @@ decmt_loop(
 	const struct FileStats *const restrict fstat,
 	FILE *const restrict outfile, const char *const outfile_name,
 	FILE *const restrict infile, const char *const infile_name,
-	uint nthreads
+	const uint nthreads
 )
 /*@globals	fileSystem,
 		internalState
@@ -315,7 +315,7 @@ decmt_loop(
 
 	assert(nthreads >= 1u);
 
-	// init
+	// setup/init
 	memset(&dstat, 0x00, sizeof dstat);
 	decmt_fstat_init(&fstat_c, fstat);
 	decmt_state_init(
@@ -356,10 +356,12 @@ decmt_loop(
 
 	// join
 	for ( i = 0; i < nthreads - 1u; ++i ){
-		(void) pthread_join(thread_decoder[i], NULL);
+		t.d = pthread_join(thread_decoder[i], NULL);
+		assert(t.d == 0);
 	}
 	//
-	(void) pthread_join(thread_io, NULL);
+	t.d = pthread_join(thread_io, NULL);
+	assert(t.d == 0);
 
 	// cleanup
 	decmt_state_free(&state_io, &state_decoder, framequeue_len);
@@ -392,8 +394,8 @@ dec_frame_decode(
 	struct DecBuf *const restrict decbuf,
 	/*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
 	/*@out@*/ struct LibTTAr_CodecState_User *const restrict user_out,
-	enum TTASampleBytes samplebytes, uint nchan, size_t ni32_perframe,
-	size_t nbytes_tta_perframe,
+	const enum TTASampleBytes samplebytes, const uint nchan,
+	size_t ni32_perframe, const size_t nbytes_tta_perframe,
 	/*@out@*/ size_t *const restrict nsamples_flat_2pad
 )
 /*@modifies	*decbuf->i32buf,
@@ -476,9 +478,9 @@ dec_frame_write(
 	struct LibTTAr_CodecState_User *const restrict user_in,
 	const char *const restrict infile_name,
 	FILE *const restrict outfile, const char *const restrict outfile_name,
-	enum TTASampleBytes samplebytes, uint nchan,
-	u32 crc_read /*little-endian*/, ichar dec_retval,
-	size_t nsamples_flat_2pad, size_t nbytes_tta_perframe
+	const enum TTASampleBytes samplebytes, const uint nchan,
+	const u32 crc_read /*little-endian*/, const ichar dec_retval,
+	const size_t nsamples_flat_2pad, const size_t nbytes_tta_perframe
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -552,8 +554,8 @@ dec_frame_write(
 **/
 static CONST size_t
 dec_ni32_perframe(
-	size_t nsamples_dec, size_t nsamples_enc, size_t nsamples_perframe,
-	uint nchan
+	const size_t nsamples_dec, const size_t nsamples_enc,
+	const size_t nsamples_perframe, const uint nchan
 )
 /*@*/
 {
@@ -573,8 +575,8 @@ dec_ni32_perframe(
 **/
 NOINLINE COLD void
 dec_frame_zeropad(
-	u8 *const restrict pcmbuf, size_t pcmbuf_nsamples_flat,
-	size_t nsamples_flat_2pad, enum TTASampleBytes samplebytes
+	u8 *const restrict pcmbuf, const size_t pcmbuf_nsamples_flat,
+	const size_t nsamples_flat_2pad, const enum TTASampleBytes samplebytes
 )
 /*@modifies	*pcmbuf@*/
 {
@@ -651,7 +653,8 @@ decmt_io(struct MTArg_DecIO *const restrict arg)
 	bool start_writing = false;
 	size_t nframes_target = seektable->nmemb, nframes_read = 0;
 	uint i = 0, last;
-	union {	uint	u;
+	union {	int	d;
+		uint	u;
 		size_t	z;
 	} t;
 
@@ -680,7 +683,9 @@ decmt_io(struct MTArg_DecIO *const restrict arg)
 		nsamples_perchan_dec_total += ni32_perframe[i] / nchan;
 
 		// read tta from infile
-		decbuf_check_adjust(&decbuf[i], framesize_tta, nchan);
+		decbuf_check_adjust(
+			&decbuf[i], framesize_tta, nchan, samplebytes
+		);
 		nbytes_read = fread(
 			decbuf[i].ttabuf, (size_t) 1u, framesize_tta,
 			infile_fh
@@ -715,7 +720,8 @@ loop0_truncated:
 		}
 
 		// make frame available
-		(void) sem_post(nframes_avail);
+		t.d = sem_post(nframes_avail);
+		assert(t.d == 0);
 
 		++nframes_read;
 		i = (i + 1u < framequeue_len ? i + 1u : 0);
@@ -726,7 +732,8 @@ loop0_truncated:
 		}
 
 		// wait for frame to finish decoding
-		(void) sem_wait(&post_decoder[i]);
+		t.d = sem_wait(&post_decoder[i]);
+		assert(t.d == 0);
 
 		// write pcm to outfile
 		dec_frame_write(
@@ -748,12 +755,14 @@ loop0_read:
 	// write the remaining frames
 	if ( start_writing ){ goto loop1_not_tiny; }
 	else {	// unlock any uninitialized frames (tiny infile)
-		do {	(void) sem_post(nframes_avail);
+		do {	t.d = sem_post(nframes_avail);
+			assert(t.d == 0);
 			i = (i + 1u < framequeue_len ? i + 1u : 0);
 		} while ( i != 0 );
 	}
 	do {	// wait for frame to finish encoding
-		(void) sem_wait(&post_decoder[i]);
+		t.d = sem_wait(&post_decoder[i]);
+		assert(t.d == 0);
 
 		// write tta to outfile
 		dec_frame_write(
@@ -765,7 +774,8 @@ loop0_read:
 
 		// mark frame as done and make available
 		nbytes_tta_perframe[i] = 0;
-		(void) sem_post(nframes_avail);
+		t.d = sem_post(nframes_avail);
+		assert(t.d == 0);
 loop1_not_tiny:
 		i = (i + 1u < framequeue_len ? i + 1u : 0);
 	}
@@ -819,7 +829,9 @@ decmt_decoder(struct MTArg_Decoder *const restrict arg)
 
 	struct LibTTAr_CodecState_Priv *restrict priv;
 	uint i;
-	union {	size_t z; } t;
+	union {	int	d;
+		size_t	z;
+	} t;
 
 	// setup
 	t.z = libttaR_codecstate_priv_size(nchan);
@@ -840,15 +852,19 @@ decmt_decoder(struct MTArg_Decoder *const restrict arg)
 		);
 
 		// unlock frame
-		(void) sem_post(&post_decoder[i]);
+		t.d = sem_post(&post_decoder[i]);
+		assert(t.d == 0);
 loop_entr:
 		// wait for a frame to be available
-		(void) sem_wait(nframes_avail);
+		t.d = sem_wait(nframes_avail);
+		assert(t.d == 0);
 
 		// get frame id from decode queue
-		(void) pthread_spin_lock(&queue->lock);
+		t.d = pthread_spin_lock(&queue->lock);
+		assert(t.d == 0);
 		i = pdequeue(&queue->q);
-		(void) pthread_spin_unlock(&queue->lock);
+		t.d = pthread_spin_unlock(&queue->lock);
+		assert(t.d == 0);
 	}
 	while ( nbytes_tta_perframe[i] != 0 );
 

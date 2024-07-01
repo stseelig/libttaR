@@ -35,11 +35,10 @@
 #undef outfile
 #undef infile
 void HOT decst_loop(
-	const struct SeekTable *const restrict,
-	/*@out@*/ struct DecStats *const restrict dstat_out,
-	const struct FileStats *const restrict,
-	FILE *const restrict outfile, const char *const,
-	FILE *const restrict infile, const char *const
+	const struct SeekTable *restrict,
+	/*@out@*/ struct DecStats *restrict dstat_out,
+	const struct FileStats *restrict, FILE *restrict outfile,
+	const char *, FILE *restrict infile, const char *
 )
 /*@globals	fileSystem,
 		internalState
@@ -56,11 +55,10 @@ void HOT decst_loop(
 #undef outfile
 #undef infile
 void decmt_loop(
-	const struct SeekTable *const restrict,
-	/*@out@*/ struct DecStats *const restrict dstat_out,
-	const struct FileStats *const restrict,
-	FILE *const restrict outfile, const char *const,
-	FILE *const restrict infile, const char *const, uint
+	const struct SeekTable *restrict,
+	/*@out@*/ struct DecStats *restrict dstat_out,
+	const struct FileStats *restrict, FILE *restrict outfile,
+	const char *, FILE *restrict infile, const char *, uint
 )
 /*@globals	fileSystem,
 		internalState
@@ -75,7 +73,7 @@ void decmt_loop(
 
 //////////////////////////////////////////////////////////////////////////////
 
-static void dec_loop(struct OpenedFilesMember *const restrict)
+static void dec_loop(struct OpenedFilesMember *restrict)
 /*@globals	fileSystem,
 		internalState,
 		g_rm_on_sigint
@@ -96,7 +94,7 @@ static void dec_loop(struct OpenedFilesMember *const restrict)
  * @return the number of warnings/errors
 **/
 int
-mode_decode(uint optind)
+mode_decode(const uint optind)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -114,7 +112,8 @@ mode_decode(uint optind)
 
 	memset(&openedfiles, 0x00, sizeof openedfiles);
 
-	(void) clock_gettime(CLOCK_MONOTONIC, &ts_start);
+	t.d = clock_gettime(CLOCK_MONOTONIC, &ts_start);
+	assert(t.d == 0);
 
 	// process opts/args
 	nerrors_file = optargs_process(
@@ -134,8 +133,7 @@ mode_decode(uint optind)
 	    &&
 	     (g_flag.outfile != NULL) && (! g_flag.outfile_is_dir)
 	){
-		error_tta_nf("multiple infiles, but outfile not a directory");
-		++nerrors_file;
+		warning_tta("multiple infiles, but outfile not a directory");
 	}
 	else if UNLIKELY ( openedfiles.nmemb == 0 ){
 		warning_tta("nothing to do");
@@ -155,7 +153,8 @@ mode_decode(uint optind)
 
 		dec_loop(openedfiles.file[i]);
 
-		(void) fclose(openedfiles.file[i]->infile);
+		t.d = fclose(openedfiles.file[i]->infile);
+		assert(t.d == 0);
 		openedfiles.file[i]->infile = NULL;
 
 		if ( g_flag.delete_src ){
@@ -171,7 +170,8 @@ mode_decode(uint optind)
 
 	// print multifile stats
 	if ( (! g_flag.quiet) && (openedfiles.nmemb > (size_t) 1u) ){
-		(void) clock_gettime(CLOCK_MONOTONIC, &ts_stop);
+		t.d = clock_gettime(CLOCK_MONOTONIC, &ts_stop);
+		assert(t.d == 0);
 		errprint_runtime(
 			timediff(&ts_start, &ts_stop), openedfiles.nmemb,
 			MODE_DECODE
@@ -285,7 +285,8 @@ dec_loop(struct OpenedFilesMember *const restrict ofm)
 	// already there for TTA1
 
 	if ( ! g_flag.quiet ){
-		(void) clock_gettime(CLOCK_MONOTONIC, &ts_start);
+		t.d = clock_gettime(CLOCK_MONOTONIC, &ts_start);
+		assert(t.d == 0);
 	}
 
 	// decode
@@ -351,7 +352,8 @@ encode_multi:
 	g_rm_on_sigint = NULL;
 
 	if ( ! g_flag.quiet ){
-		(void) clock_gettime(CLOCK_MONOTONIC, &ts_stop);
+		t.d = clock_gettime(CLOCK_MONOTONIC, &ts_stop);
+		assert(t.d == 0);
 		dstat.decodetime += timediff(&ts_start, &ts_stop);
 	}
 

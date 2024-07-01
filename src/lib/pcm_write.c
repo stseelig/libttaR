@@ -23,41 +23,31 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #undef dest
-NOINLINE size_t pcm_write_u8(
-	/*@out@*/ u8 *const dest, const i32 *const, size_t
-)
+NOINLINE size_t pcm_write_u8(/*@out@*/ u8 *dest, const i32 *, size_t)
 /*@modifies	*dest@*/
 ;
 
 #undef dest
-NOINLINE size_t pcm_write_i16le(
-	/*@out@*/ u8 *const dest, const i32 *const, size_t
-)
+NOINLINE size_t pcm_write_i16le(/*@out@*/ u8 *dest, const i32 *, size_t)
 /*@modifies	*dest@*/
 ;
 
 #undef dest
-NOINLINE size_t pcm_write_i24le(
-	/*@out@*/ u8 *const dest, const i32 *const, size_t
-)
+NOINLINE size_t pcm_write_i24le(/*@out@*/ u8 *dest, const i32 *, size_t)
 /*@modifies	*dest@*/
 ;
 
 //--------------------------------------------------------------------------//
 
-ALWAYS_INLINE CONST u8 i32h_to_u8(register i32) /*@*/;
+ALWAYS_INLINE CONST u8 i32h_to_u8(i32) /*@*/;
 
 #undef dest
-ALWAYS_INLINE void write_i32h_to_i16le(
-	/*@out@*/ register u8 *const restrict dest, register i32
-)
+ALWAYS_INLINE void write_i32h_to_i16le(/*@out@*/ u8 *restrict dest, i32)
 /*@modifies	*dest@*/
 ;
 
 #undef dest
-ALWAYS_INLINE void write_i32h_to_i24le(
-	/*@out@*/ register u8 *const restrict dest, register i32
-)
+ALWAYS_INLINE void write_i32h_to_i24le(/*@out@*/ u8 *restrict dest, i32)
 /*@modifies	*dest@*/
 ;
 
@@ -78,8 +68,8 @@ ALWAYS_INLINE void write_i32h_to_i24le(
 **/
 size_t
 libttaR_pcm_write(
-	/*@out@*/ u8 *const dest, const i32 *const src, size_t nsamples,
-	enum TTASampleBytes samplebytes
+	/*@out@*/ u8 *const dest, const i32 *const src, const size_t nsamples,
+	const enum TTASampleBytes samplebytes
 )
 /*@modifies	*dest@*/
 {
@@ -91,6 +81,7 @@ libttaR_pcm_write(
 	case TTASAMPLEBYTES_3:
 		return pcm_write_i24le(dest, src, nsamples);
 	}
+	/*@notreached@*/
 	return 0;
 }
 
@@ -106,7 +97,9 @@ libttaR_pcm_write(
  * @return 'nsamples'
 **/
 NOINLINE size_t
-pcm_write_u8(/*@out@*/ u8 *const dest, const i32 *const src, size_t nsamples)
+pcm_write_u8(
+	/*@out@*/ u8 *const dest, const i32 *const src, const size_t nsamples
+)
 /*@modifies	*dest@*/
 {
 	size_t i;
@@ -127,7 +120,7 @@ pcm_write_u8(/*@out@*/ u8 *const dest, const i32 *const src, size_t nsamples)
 **/
 NOINLINE size_t
 pcm_write_i16le(
-	/*@out@*/ u8 *const dest, const i32 *const src, size_t nsamples
+	/*@out@*/ u8 *const dest, const i32 *const src, const size_t nsamples
 )
 /*@modifies	*dest@*/
 {
@@ -149,7 +142,7 @@ pcm_write_i16le(
 **/
 NOINLINE size_t
 pcm_write_i24le(
-	/*@out@*/ u8 *const dest, const i32 *const src, size_t nsamples
+	/*@out@*/ u8 *const dest, const i32 *const src, const size_t nsamples
 )
 /*@modifies	*dest@*/
 {
@@ -170,7 +163,7 @@ pcm_write_i24le(
  * @return i32 sample
 **/
 ALWAYS_INLINE CONST u8
-i32h_to_u8(register i32 x)
+i32h_to_u8(register const i32 x)
 /*@*/
 {
 	return (u8) (x + 0x80u);
@@ -184,7 +177,7 @@ i32h_to_u8(register i32 x)
 **/
 ALWAYS_INLINE void
 write_i32h_to_i16le(
-	/*@out@*/ register u8 *const restrict dest, register i32 x
+	/*@out@*/ register u8 *const restrict dest, register const i32 x
 )
 /*@modifies	*dest@*/
 {
@@ -201,7 +194,7 @@ write_i32h_to_i16le(
 **/
 ALWAYS_INLINE void
 write_i32h_to_i24le(
-	/*@out@*/ register u8 *const restrict dest, register i32 x
+	/*@out@*/ register u8 *const restrict dest, register const i32 x
 )
 /*@modifies	*dest@*/
 {

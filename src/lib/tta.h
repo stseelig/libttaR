@@ -45,20 +45,17 @@ enum TTASampleBytes {
 	TTASAMPLEBYTES_2 = 2u,
 	TTASAMPLEBYTES_3 = 3u
 };
-#define TTA_SAMPLEBYTES_MAX	((unsigned int) TTASAMPLEBYTES_3)
+#define TTA_SAMPLEBYTES_MAX	((uint) TTASAMPLEBYTES_3)
 #define TTA_SAMPLEBITS_MAX	((uint) (8u*TTA_SAMPLEBYTES_MAX))
 
-// max unary output
-//	u8    : 16u
-//	i16le : 16u
-//	i24le : 4096u
-#define TTABUF_SAFETY_MARGIN_UNARY	((size_t) 4096u)
-// max binary output
-#define TTABUF_SAFETY_MARGIN_BINARY	((size_t) 3u)
-// only needed for encode
-#define TTABUF_SAFETY_MARGIN_CACHEFLUSH	((size_t) 4u)
+// max unary r/w size:		read	write
+//	8/16-bit:		  18u	  16u
+//	  24-bit:		4098u	4096u
+// max binary r/w size:		   4u	   3u
+// max cacheflush w size: 		   4u
 // rounded up to the nearest (power of 2) + (power of 2)
-#define TTABUF_SAFETY_MARGIN_TOTAL	((size_t) 5004u)
+#define TTABUF_SAFETY_MARGIN_1_2	((size_t)   24u)
+#define TTABUF_SAFETY_MARGIN_3		((size_t) 4104u)
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -72,8 +69,8 @@ enum TTAMode {
 struct Filter {
 	i32	error;
 	i32	qm[8u];
-	i32	dx[9u];
-	i32	dl[9u];
+	i32	dx[9u];	// the extra value is for a memmove trick
+	i32	dl[9u];	// ~
 };
 
 struct Codec {
@@ -85,30 +82,29 @@ struct Codec {
 //////////////////////////////////////////////////////////////////////////////
 
 #undef codec
-INLINE void codec_init(
-	/*@out@*/ register struct Codec *const restrict codec , register uint
-)
+INLINE void codec_init(/*@out@*/ struct Codec *restrict codec , uint)
 /*@modifies	*codec@*/
 ;
 
 //--------------------------------------------------------------------------//
 
-INLINE CONST u8 tta_predict_k(register enum TTASampleBytes) /*@*/;
-INLINE CONST i32 tta_filter_round(register enum TTASampleBytes) /*@*/;
-INLINE CONST u8 tta_filter_k(register enum TTASampleBytes) /*@*/;
+INLINE CONST size_t tta_safety_margin_perchan(enum TTASampleBytes) /*@*/;
+INLINE CONST u32 tta_unary_lax_limit(enum TTASampleBytes) /*@*/;
+INLINE CONST u8 tta_predict_k(enum TTASampleBytes) /*@*/;
+INLINE CONST i32 tta_filter_round(enum TTASampleBytes) /*@*/;
+INLINE CONST u8 tta_filter_k(enum TTASampleBytes) /*@*/;
 
 //--------------------------------------------------------------------------//
 
-ALWAYS_INLINE CONST i32 tta_predict1(register i32, register u8) /*@*/;
-ALWAYS_INLINE CONST i32 tta_postfilter_enc(register i32) /*@*/;
-ALWAYS_INLINE CONST i32 tta_prefilter_dec(register i32) /*@*/;
+INLINE CONST i32 tta_predict1(i32, u8) /*@*/;
+INLINE CONST i32 tta_postfilter_enc(i32) /*@*/;
+INLINE CONST i32 tta_prefilter_dec(i32) /*@*/;
 
 //--------------------------------------------------------------------------//
 
 #undef filter
 ALWAYS_INLINE i32 tta_filter(
-	register struct Filter *const restrict filter, register i32,
-	register u8, register i32, const enum TTAMode
+	struct Filter *restrict filter, i32, u8, i32, enum TTAMode
 )
 /*@modifies	*filter@*/
 ;
@@ -124,7 +120,7 @@ ALWAYS_INLINE i32 tta_filter(
 INLINE void
 codec_init(
 	/*@out@*/ register struct Codec *const restrict codec,
-	register uint nchan
+	register const uint nchan
 )
 /*@modifies	*codec@*/
 {
@@ -139,6 +135,54 @@ codec_init(
 
 //--------------------------------------------------------------------------//
 
+/**@fn tta_safety_margin_perchan
+ * @brief per channel safety margin for the TTA buffer
+ *
+ * @param samplebytes number of bytes per PCM sample
+ *
+ * @return per channel safety margin
+**/
+INLINE CONST size_t
+tta_safety_margin_perchan(register const enum TTASampleBytes samplebytes)
+/*@*/
+{
+	register size_t r;
+	switch ( samplebytes ){
+	case TTASAMPLEBYTES_1:
+	case TTASAMPLEBYTES_2:
+		r = TTABUF_SAFETY_MARGIN_1_2;
+		break;
+	case TTASAMPLEBYTES_3:
+		r = TTABUF_SAFETY_MARGIN_3;
+		break;
+	}
+	return r;
+}
+
+/**@fn tta_unary_lax_limit
+ * @brief max number (plus 8u) of 1-bits in a unary code
+ *
+ * @param samplebytes number of bytes per PCM sample
+ *
+ * @return max number (plus 8u) of 1-bits in a unary code
+**/
+INLINE CONST u32
+tta_unary_lax_limit(register const enum TTASampleBytes samplebytes)
+/*@*/
+{
+	register u32 r;
+	switch ( samplebytes ){
+	case TTASAMPLEBYTES_1:
+	case TTASAMPLEBYTES_2:
+		r = UNARY_LAX_LIMIT_1_2;
+		break;
+	case TTASAMPLEBYTES_3:
+		r = UNARY_LAX_LIMIT_3;
+		break;
+	}
+	return r;
+}
+
 /**@fn tta_predict_k
  * @brief arg for tta_predict1
  *
@@ -147,7 +191,7 @@ codec_init(
  * @return arg 'k' for tta_predict1
 **/
 INLINE CONST u8
-tta_predict_k(register enum TTASampleBytes samplebytes)
+tta_predict_k(register const enum TTASampleBytes samplebytes)
 /*@*/
 {
 	register u8 r;
@@ -168,10 +212,10 @@ tta_predict_k(register enum TTASampleBytes samplebytes)
  *
  * @param samplebytes number of bytes per PCM sample
  *
- * @return arg 'round' for tta_filter
+ * @return arg 'sum' for tta_filter
 **/
 INLINE CONST i32
-tta_filter_round(register enum TTASampleBytes samplebytes)
+tta_filter_round(register const enum TTASampleBytes samplebytes)
 /*@*/
 {
 	register i32 r;
@@ -195,7 +239,7 @@ tta_filter_round(register enum TTASampleBytes samplebytes)
  * @return arg 'k' for tta_filter
 **/
 INLINE CONST u8
-tta_filter_k(register enum TTASampleBytes samplebytes)
+tta_filter_k(register const enum TTASampleBytes samplebytes)
 /*@*/
 {
 	register u8 r;
@@ -222,7 +266,7 @@ tta_filter_k(register enum TTASampleBytes samplebytes)
  * @return predicted value
 **/
 ALWAYS_INLINE CONST i32
-tta_predict1(register i32 x, register u8 k)
+tta_predict1(register const i32 x, register const u8 k)
 /*@*/
 {
 	return (i32) (((((u64fast) x) << k) - x) >> k);
@@ -236,10 +280,10 @@ tta_predict1(register i32 x, register u8 k)
  * @return interleaved value
  *
  * @note https://en.wikipedia.org/wiki/Golomb_coding#Overview#\
- * Use%20with%20signed%20integers
+ *     Use%20with%20signed%20integers
 **/
 ALWAYS_INLINE CONST i32
-tta_postfilter_enc(register i32 x)
+tta_postfilter_enc(register const i32 x)
 /*@*/
 {
 	return (x > 0 ? asl32(x, (u8) 1u) - 1 : asl32(-x, (u8) 1u));
@@ -252,15 +296,14 @@ tta_postfilter_enc(register i32 x)
  *
  * @return deinterleaved value
  *
- * @note https://en.wikipedia.org/wiki/Golomb_coding#Overview#\
- * Use%20with%20signed%20integers
+ * @see tta_postfilter_enc
 **/
 ALWAYS_INLINE CONST i32
-tta_prefilter_dec(register i32 x)
+tta_prefilter_dec(register const i32 x)
 /*@*/
 {
 	return ((((u32) x) & 0x1u) != 0
-		? asr32(++x, (u8) 1u) : asr32(-x, (u8) 1u)
+		? asr32(x + 1, (u8) 1u) : asr32(-x, (u8) 1u)
 	);
 }
 
@@ -270,7 +313,7 @@ tta_prefilter_dec(register i32 x)
  * @brief adaptive hybrid filter
  *
  * @param filter[in out] the filter data for the current channel
- * @param round intial sum
+ * @param sum intial sum / round
  * @param k amount to shift the 'sum' by before add/subtract-ing from 'value'
  * @param value the input value to filter
  * @param mode encode or decode
@@ -279,8 +322,8 @@ tta_prefilter_dec(register i32 x)
 **/
 ALWAYS_INLINE i32
 tta_filter(
-	register struct Filter *const restrict filter, register i32 round,
-	register u8 k, register i32 value, const enum TTAMode mode
+	register struct Filter *const restrict filter, register i32 sum,
+	register const u8 k, register i32 value, const enum TTAMode mode
 )
 /*@modifies	*filter@*/
 {
@@ -288,7 +331,6 @@ tta_filter(
 	register i32 *const restrict m = filter->dx;
 	register i32 *const restrict b = filter->dl;
 
-	register i32 sum = round;
 	register uint i;
 
 	// there is a compiler quirk where putting the ==0 branch !first slows

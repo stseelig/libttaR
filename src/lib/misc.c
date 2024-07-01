@@ -42,14 +42,14 @@ struct LibTTAr_VersionInfo {
 **/
 /*@unchecked@*/ /*@unused@*/
 const struct LibTTAr_VersionInfo libttaR_info = {
-	LIBTTAr_VERSION_NUM,
-	LIBTTAr_VERSION_NUM_MAJOR,
-	LIBTTAr_VERSION_NUM_MINOR,
-	LIBTTAr_VERSION_NUM_REVIS,
-	LIBTTAr_VERSION_STR_EXTRA,
-	LIBTTAr_VERSION_STR_DATE,
-	LIBTTAr_COPYRIGHT_STR,
-	LIBTTAr_LICENSE_STR
+	LIB_VERSION_NUM,
+	LIB_VERSION_NUM_MAJOR,
+	LIB_VERSION_NUM_MINOR,
+	LIB_VERSION_NUM_REVIS,
+	LIB_VERSION_STR_EXTRA,
+	LIB_VERSION_STR_DATE,
+	LIB_COPYRIGHT_STR,
+	LIB_LICENSE_STR
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -65,18 +65,41 @@ const struct LibTTAr_VersionInfo libttaR_info = {
  * @note read the manpage for more info
 **/
 CONST size_t
-libttaR_codecstate_priv_size(uint nchan)
+libttaR_codecstate_priv_size(const uint nchan)
 /*@*/
 {
-	size_t r = 0;
-
 	if ( nchan == 0 ){
-		return r;
+		return 0;
 	}
+	return (sizeof(struct LibTTAr_CodecState_Priv)
+	     + ((size_t) (nchan * sizeof(struct Codec)))
+	);
+}
 
-	r  = sizeof(struct LibTTAr_CodecState_Priv);
-	r += (size_t) (nchan * sizeof(struct Codec));
-	return r;
+/**@fn libttaR_ttabuf_safety_margin_size
+ * @brief calculates the size of safety margin for the TTA buffer
+ *
+ * @param samplebytes number of bytes per PCM sample
+ * @param nchan number of audio channels
+ *
+ * @return size of safety margin
+ * @retval 0 error
+ *
+ * @note read the manpage for more info
+**/
+CONST size_t
+libttaR_ttabuf_safety_margin(
+	const enum TTASampleBytes samplebytes, const uint nchan
+)
+/*@*/
+{
+	if ( ((uint) samplebytes == 0)
+	    ||
+	     ((uint) samplebytes > TTA_SAMPLEBYTES_MAX)
+	){
+		return 0;
+	}
+	return (size_t) (tta_safety_margin_perchan(samplebytes) * nchan);
 }
 
 /**@fn libttaR_test_nchan
@@ -88,37 +111,38 @@ libttaR_codecstate_priv_size(uint nchan)
  * @return true or false
  *
  * @note read the manpage for more info
+ * @note affected by:
+ *     LIBTTAr_OPT_DISABLE_UNROLLED_1CH,
+ *     LIBTTAr_OPT_DISABLE_UNROLLED_2CH,
+ *     LIBTTAr_OPT_DISABLE_MCH
 **/
 CONST bool
-libttaR_test_nchan(uint nchan)
+libttaR_test_nchan(const uint nchan)
 /*@*/
 {
 	bool r = false;
-
 	switch ( nchan ){
+#ifndef LIBTTAr_OPT_DISABLE_MCH
 	case 0:
 		break;
-	case 1u:
-#ifndef LIBTTAr_DISABLE_MCH
-		r = true;
-#elif !defined(LIBTTAr_DISABLE_UNROLLED_1CH)
-		r = true;
-#endif
-		break;
-	case 2u:
-#ifndef LIBTTAr_DISABLE_MCH
-		r = true;
-#elif !defined(LIBTTAr_DISABLE_UNROLLED_2CH)
-		r = true;
-#endif
-		break;
 	default:
-#ifndef LIBTTAr_DISABLE_MCH
 		r = true;
-#endif
 		break;
+#else
+#ifndef LIBTTAr_OPT_DISABLE_UNROLLED_1CH
+	case 1u:
+		r = true;
+		break;
+#endif
+#ifndef LIBTTAr_OPT_DISABLE_UNROLLED_2CH
+	case 2u:
+		r = true;
+		break;
+#endif
+	default:
+		break;
+#endif
 	}
-
 	return r;
 }
 
