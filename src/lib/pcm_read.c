@@ -73,6 +73,7 @@ libttaR_pcm_read(
 	case TTASAMPLEBYTES_3:
 		return pcm_read_i24le(dest, src, nsamples);
 	}
+	/*@notreached@*/
 	return 0;
 }
 

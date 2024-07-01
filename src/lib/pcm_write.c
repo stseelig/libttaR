@@ -81,6 +81,7 @@ libttaR_pcm_write(
 	case TTASAMPLEBYTES_3:
 		return pcm_write_i24le(dest, src, nsamples);
 	}
+	/*@notreached@*/
 	return 0;
 }
 
