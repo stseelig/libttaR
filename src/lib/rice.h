@@ -32,8 +32,8 @@ enum ShiftMaskMode {
 //	8/16-bit :   16u bytes + 7u bits + terminator
 //	  24-bit : 4096u bytes + 7u bits + terminator
 // the limit has an extra byte to make dealing with invalid data faster/easier
-#define UNARY_LIMIT_1_2		((u32) (8u *   18u))
-#define UNARY_LIMIT_3		((u32) (8u * 4098u))
+#define UNARY_LIMIT_1_2		((u32) ((8u *   18u) - 1u))
+#define UNARY_LIMIT_3		((u32) ((8u * 4098u) - 1u))
 
 //////////////////////////////////////////////////////////////////////////////
 
