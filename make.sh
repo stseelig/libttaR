@@ -102,8 +102,7 @@ CFLAGS_LIB="$CFLAGS_LIB -fPIC";
 # uncomment to disable the multichannel/general codec
 #CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_OPT_DISABLE_MCH";
 
-# try uncommenting some of these if your cpu is an old piece of shit
-#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_OPT_NO_TZCNT";     # rice.h:rice_unary_read
+# try uncommenting if your cpu is an old POS
 #CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_OPT_CMOV_SHIFTER"; # rice.h:lsmask32
 
 readonly CFLAGS_LIB;

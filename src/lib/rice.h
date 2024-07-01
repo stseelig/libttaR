@@ -615,15 +615,9 @@ rice_decode(
  * @note max read size:
  *     8/16-bit :   18u
  *       24-bit : 4098u
- * @note the 'limit' has an extra byte of margin, so we can assume that if it
- *   is surpased, then the data is definitely invalid (corrupted or
- *   malicious). this could be easily caused by an overly long string of 0xFF
- *   bytes in the input.
- *       the TZCNT/NO_TZCNT versions may have different output. "correcting"
- *   any variables to make decoding invalid data deterministic seems
- *   pointless, because the data is garbage anyway, and because it could
- *   really slow decoding even for completely valid data.
- * @note affected by LIBTTAr_OPT_NO_TZCNT
+ * @note the 'limit' has an extra byte of margin, so if it is surpased, then
+ *   the data is definitely invalid (corrupted or malicious). this could be
+ *   easily caused by an overly long string of 0xFF bytes in the input.
 **/
 ALWAYS_INLINE size_t
 rice_unary_read(
@@ -640,45 +634,21 @@ rice_unary_read(
 {
 	register u8 nbits;
 
-	// reverted to 0, becasuse UINT32_MAX was ruining the safety check
-	*unary = 0;
-
-#ifndef LIBTTAr_OPT_NO_TZCNT
-	// this loop is slightly better than the lookup-table one, as long as
-	//   tbcnt32 is an instruction (tzcnt/ctz). otherwise a bit slower
-	goto loop_entr;
-	do {	*cache  = rice_crc32(src[r++], crc);
-		*count  = (u8) 8u;
-loop_entr:
-		nbits   = (u8) tbcnt32(*cache);
-		*unary += nbits;
-		if UNLIKELY ( *unary > limit ){
-			nbits = 0;
-			goto malformed;
-		}
-	} while UNLIKELY_P ( nbits == *count, 0.25 );
-#else
-	while UNLIKELY_P (
-		(*cache ^ lsmask32(*count, SMM_TABLE)) == 0, 0.25
-	){
-		if UNLIKELY ( *unary > limit - 8u ){
-			nbits = 0;
-			goto malformed;
-		}
-		*unary += *count;
-		*cache  = rice_crc32(src[r++], crc);
-		*count  = (u8) 8u;
+	nbits  = (u8) tbcnt32(*cache);
+	*unary = nbits;
+	if UNLIKELY_P ( nbits == *count, 0.25 ){
+		*count = (u8) 8u;
+		do {	*cache  = rice_crc32(src[r++], crc);
+			nbits   = (u8) tbcnt32(*cache);
+			*unary += nbits;
+			if UNLIKELY ( *unary > limit ){
+				nbits = 0;	// prevents *count underflow
+				break;
+			}
+		} while UNLIKELY ( nbits == *count );
 	}
-	nbits    = (u8) tbcnt32(*cache);
-	*unary  += nbits;
-#endif
-malformed:
-	// it is important that 'nbits' not underflow '*count' as that would
-	//   cause an out-of-bounds read of lsmask32_table in rice_binary_read
-	// (*cache < 0xFFu) && (nbits <= 7u)
-	nbits   += 1u;
-	*cache >>= nbits;
-	*count  -= nbits;
+	*cache >>= nbits + 1u;
+	*count  -= nbits + 1u;
 	return r;
 }
 
