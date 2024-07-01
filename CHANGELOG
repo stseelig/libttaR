@@ -7,7 +7,7 @@
     with an additional parameter. This is to make a program using the library
     more memory efficient with 8/16-bit audio.
 	- libttaR_nsamples_perframe_tta1 macro uses integer math
-	- removed some compile option symbols
+	- added and removed some compile option symbols
 	- added another safety check to the decoder
 	- decoder performance improvements (despite the new check)
 

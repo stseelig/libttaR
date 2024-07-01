@@ -28,6 +28,16 @@ enum ShiftMaskMode {
 	SMM_TABLE
 };
 
+#ifndef LIBTTAr_OPT_PREFER_LOOKUP_TABLES
+#define SMM_ENC		SMM_SHIFT
+#else
+#define SMM_ENC		SMM_TABLE
+#endif
+
+#define SMM_DEC		SMM_TABLE
+
+//--------------------------------------------------------------------------//
+
 // max unary size:
 //	8/16-bit :   16u bytes + 7u bits + terminator
 //	  24-bit : 4096u bytes + 7u bits + terminator
@@ -252,7 +262,7 @@ shift32p4_bit(register const u8 k, const enum ShiftMaskMode mode)
 	case SMM_CONST:
 	case SMM_SHIFT:
 		r = (u32) (k != 0
-			? (k < (u8) 28u ? 0x10u << (u8) k : 0xFFFFFFFFu) : 0
+			? (k < (u8) 28u ? 0x10u << k : 0xFFFFFFFFu) : 0
 		);
 		break;
 	case SMM_TABLE:
@@ -271,8 +281,6 @@ shift32p4_bit(register const u8 k, const enum ShiftMaskMode mode)
  * @return a mask with 'k' low bits set
  *
  * @pre 0 <= 'k' <= 27u
- *
- * @note affected by LIBTTAr_OPT_CMOV_SHIFTER
 **/
 ALWAYS_INLINE CONST u32
 lsmask32(register const u8 k, const enum ShiftMaskMode mode)
@@ -282,12 +290,7 @@ lsmask32(register const u8 k, const enum ShiftMaskMode mode)
 	switch ( mode ){
 	case SMM_CONST:
 	case SMM_SHIFT:
-#ifndef LIBTTAr_OPT_CMOV_SHIFTER
-		r = (u32) (0x1u << k) - 1u;
-#else
-		// can be faster on older x86
-		r = (u32) (k != 0 ? 0xFFFFFFFFu >> ((u8) 32u - k) : 0);
-#endif
+		r = (u32) ((0x1u << k) - 1u);
 		break;
 	case SMM_TABLE:
 		r = lsmask32_table[k];
@@ -362,6 +365,7 @@ rice_crc32(register const u8 x, register u32 *const restrict crc)
  * @note max write size (unary + binary):
  *     8/16-bit :   19u
  *       24-bit : 4099u
+ * @note affected by LIBTTAr_OPT_PREFER_LOOKUP_TABLES
 **/
 ALWAYS_INLINE size_t
 rice_encode(
@@ -400,7 +404,7 @@ rice_encode(
 
 	r = rice_unary_write(dest, unary, r, cache, count, crc);
 	if LIKELY ( kx != 0 ){
-		binary = value & lsmask32(kx, SMM_SHIFT);
+		binary = value & lsmask32(kx, SMM_ENC);
 		r = rice_binary_write(dest, binary, r, kx, cache, count, crc);
 	}
 
@@ -458,6 +462,7 @@ rice_encode_cacheflush(
  * @note max write size:
  *	 8/16-bit :   16u
  *	   24-bit : 4096u
+ * @note affected by LIBTTAr_OPT_PREFER_LOOKUP_TABLES
 **/
 ALWAYS_INLINE size_t
 rice_unary_write(
@@ -483,7 +488,7 @@ loop_entr:
 		}
 	} while UNLIKELY ( unary > (u32) 23u );
 
-	*cache |= lsmask32((u8) unary, SMM_SHIFT) << *count;
+	*cache |= lsmask32((u8) unary, SMM_ENC) << *count;
 	*count += unary + 1u;
 	return r;
 }
@@ -686,8 +691,8 @@ rice_binary_read(
 		*cache |= rice_crc32(src[r++], crc) << *count;
 		*count += 8u;
 	}
-	*binary = *cache & lsmask32(k, SMM_TABLE);
-	*cache  = (*cache >> k) & lsmask32(*count - k, SMM_TABLE);
+	*binary = *cache & lsmask32(k, SMM_DEC);
+	*cache  = (*cache >> k) & lsmask32(*count - k, SMM_DEC);
 	*count -= k;
 	return r;
 }
