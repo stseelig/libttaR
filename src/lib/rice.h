@@ -31,8 +31,9 @@ enum ShiftMaskMode {
 // max unary size:
 //	8/16-bit :   16u bytes + 7u bits + terminator
 //	  24-bit : 4096u bytes + 7u bits + terminator
-#define UNARY_LIMIT_1_2		((u32) (8u *   17u))
-#define UNARY_LIMIT_3		((u32) (8u * 4097u))
+// the limit has an extra byte to make dealing with invalid data faster/easier
+#define UNARY_LIMIT_1_2		((u32) (8u *   18u))
+#define UNARY_LIMIT_3		((u32) (8u * 4098u))
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -384,14 +385,14 @@ rice_encode(
 
 	register u32 unary = 0, binary;
 	register  u8 kx;
-	register union { u32 u_32; } t;
+	register u32 depth1_trigger;
 
 	kx = *k0;
 	rice_cmpsum(sum0, k0, value);
 
-	t.u_32 = shift32_bit(kx);
-	if LIKELY_P ( value >= t.u_32, 0.575 ){
-		value -= t.u_32;
+	depth1_trigger = shift32_bit(kx);
+	if LIKELY_P ( value >= depth1_trigger, 0.575 ){
+		value -= depth1_trigger;
 		kx     = *k1;
 		rice_cmpsum(sum1, k1, value);
 		unary  = (value >> kx) + 1u;
@@ -614,6 +615,14 @@ rice_decode(
  * @note max read size:
  *     8/16-bit :   18u
  *       24-bit : 4098u
+ * @note the 'limit' has an extra byte of margin, so we can assume that if is
+ *   surpased, then the data is definitely invalid (corrupted or malicious).
+ *   this could be easily caused by an overly long string of 0xFF bytes in the
+ *   input.
+ *       the TZCNT/NO_TZCNT versions may have different output. "correcting"
+ *   any variables to make decoding invalid data deterministic seems
+ *   pointless, because the data is garbage anyway, and because it could
+ *   really slow decoding even for completely valid data.
  * @note affected by LIBTTAr_OPT_NO_TZCNT
 **/
 ALWAYS_INLINE size_t
@@ -629,7 +638,7 @@ rice_unary_read(
 		*crc
 @*/
 {
-	register union { u8 u_8; } t;
+	register u8 nbits;
 
 	// reverted to 0, becasuse UINT32_MAX was ruining the safety check
 	*unary = 0;
@@ -641,34 +650,36 @@ rice_unary_read(
 	do {	*cache  = rice_crc32(src[r++], crc);
 		*count  = (u8) 8u;
 loop_entr:
-		t.u_8 = (u8) tbcnt32(*cache);
-		*unary += t.u_8;
-		if UNLIKELY ( *unary > limit ){ goto max_unary; }
-	} while UNLIKELY_P ( t.u_8 == *count, 0.25 );
+		nbits   = (u8) tbcnt32(*cache);
+		*unary += nbits;
+		if UNLIKELY ( *unary > limit ){
+			nbits = 0;
+			goto malformed;
+		}
+	} while UNLIKELY_P ( nbits == *count, 0.25 );
 #else
 	while UNLIKELY_P (
 		(*cache ^ lsmask32(*count, SMM_TABLE)) == 0, 0.25
 	){
-		if UNLIKELY ( *unary > limit - 8u ){ goto max_unary; }
+		if UNLIKELY ( *unary > limit - 8u ){
+			nbits = 0;
+			goto malformed;
+		}
 		*unary += *count;
 		*cache  = rice_crc32(src[r++], crc);
 		*count  = (u8) 8u;
 	}
-	t.u_8 = (u8) tbcnt32(*cache);
-	*unary  += t.u_8;
+	nbits    = (u8) tbcnt32(*cache);
+	*unary  += nbits;
 #endif
-loop_end:
-	// (*cache < 0xFFu) && (t.u_8 <= 7u)
-	*cache >>= t.u_8 + 1u;
-	*count  -= t.u_8 + 1u;
+malformed:
+	// it is important that 'nbits' not underflow '*count' as that would
+	//   cause an out-of-bounds read of lsmask32_table in rice_binary_read
+	// (*cache < 0xFFu) && (nbits <= 7u)
+	nbits   += 1u;
+	*cache >>= nbits;
+	*count  -= nbits;
 	return r;
-
-max_unary:
-	// when here, the 0th bit of the cache should be a 0
-	// without this, an out-of-bounds read could happen in binary_read if
-	//   the data if malformed
-	t.u_8 = 0;	// assuming not malformed
-	goto loop_end;
 }
 
 /**@fn rice_binary_read
