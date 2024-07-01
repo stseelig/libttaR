@@ -389,7 +389,7 @@ rice_encode(
 
 	register u32 unary = 0, binary;
 	register  u8 kx;
-	register u32 depth1_trigger;
+	register u32 depth1_trigger;	// no const
 
 	kx = *k0;
 	rice_cmpsum(sum0, k0, value);
