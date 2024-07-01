@@ -249,6 +249,8 @@ libttaR_tta_encode(
  * @param nchan number of audio channels
  *
  * @return number of bytes written to 'dest'
+ *
+ * @note affected by LIBTTAr_OPT_DISABLE_UNROLLED_1CH
 **/
 static size_t
 tta_encode_mch(

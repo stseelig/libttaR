@@ -41,9 +41,9 @@ enum ShiftMaskMode {
 // max unary size:
 //	8/16-bit :   16u bytes + 7u bits + terminator
 //	  24-bit : 4096u bytes + 7u bits + terminator
-// the limit has an extra byte to make dealing with invalid data faster/easier
-#define UNARY_LIMIT_1_2		((u32) ((8u *   18u) - 1u))
-#define UNARY_LIMIT_3		((u32) ((8u * 4098u) - 1u))
+// the lax_limit has an extra byte to make handling invalid data faster/easier
+#define UNARY_LAX_LIMIT_1_2		((u32) ((8u *   18u) - 1u))
+#define UNARY_LAX_LIMIT_3		((u32) ((8u * 4098u) - 1u))
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -542,7 +542,7 @@ rice_binary_write(
  * @param rice[in out] the rice code data for the current channel
  * @param bitcache[in out] the bitcache data
  * @param crc[in out] the current CRC
- * @param unary_limit limit for the unary code
+ * @param unary_lax_limit limit for the unary code
  *
  * @return number of bytes read from 'src' + 'r'
  *
@@ -557,7 +557,7 @@ rice_decode(
 	register const u8 *const restrict src, register size_t r,
 	register struct Rice *const restrict rice,
 	register struct BitCache *const restrict bitcache,
-	register u32 *const restrict crc, register const u32 unary_limit
+	register u32 *const restrict crc, register const u32 unary_lax_limit
 )
 /*@modifies	*value,
 		*rice,
@@ -576,7 +576,9 @@ rice_decode(
 	register  u8 kx;
 	register bool depth1;
 
-	r = rice_unary_read(&unary, src, r, cache, count, crc, unary_limit);
+	r = rice_unary_read(
+		&unary, src, r, cache, count, crc, unary_lax_limit
+	);
 	if LIKELY_P ( unary != 0, 0.575 ){
 		unary -= 1u;
 		kx     = *k1;
@@ -611,25 +613,23 @@ rice_decode(
  * @param cache[in out] the bitcache
  * @param count[in out] number of active bits in the 'cache'
  * @param crc[in out] the current CRC
- * @param limit limit for the unary code
+ * @param lax_limit limit for the unary code. has an extra byte of margin, so
+ *   if it is surpased, then the data is definitely invalid (corrupt or
+ *   malicious). this would be caused by an overly long string of 0xFFu bytes
+ *   in the source
  *
  * @return number of bytes read from 'src' + 'r'
- *
- * @pre 0 <= '*count' <= 7u
  *
  * @note max read size:
  *     8/16-bit :   18u
  *       24-bit : 4098u
- * @note the 'limit' has an extra byte of margin, so if it is surpased, then
- *   the data is definitely invalid (corrupted or malicious). this could be
- *   easily caused by an overly long string of 0xFF bytes in the input.
 **/
 ALWAYS_INLINE size_t
 rice_unary_read(
 	/*@out@*/ register u32 *const restrict unary,
 	register const u8 *const restrict src, register size_t r,
 	register u32 *const restrict cache, register u8 *const restrict count,
-	register u32 *const restrict crc, register const u32 limit
+	register u32 *const restrict crc, register const u32 lax_limit
 )
 /*@modifies	*unary,
 		*cache,
@@ -642,15 +642,15 @@ rice_unary_read(
 	nbits  = (u8) tbcnt32(*cache);
 	*unary = nbits;
 	if UNLIKELY_P ( nbits == *count, 0.25 ){
-		*count = (u8) 8u;
 		do {	*cache  = rice_crc32(src[r++], crc);
 			nbits   = (u8) tbcnt32(*cache);
 			*unary += nbits;
-			if UNLIKELY ( *unary > limit ){
+			if UNLIKELY ( *unary > lax_limit ){
 				nbits = 0;	// prevents *count underflow
 				break;
 			}
-		} while UNLIKELY ( nbits == *count );
+		} while UNLIKELY ( nbits == (u8) 8u );
+		*count = (u8) 8u;
 	}
 	*cache >>= nbits + 1u;
 	*count  -= nbits + 1u;
@@ -670,8 +670,7 @@ rice_unary_read(
  *
  * @return number of bytes read from 'src' + 'r'
  *
- * @note max read size: 4u
- * @note max read size normally is 3u, but might be 4u with malformed data
+ * @note max read size: 4u (normally 3u, but might be 4u with malformed data)
 **/
 ALWAYS_INLINE size_t
 rice_binary_read(
@@ -687,7 +686,7 @@ rice_binary_read(
 @*/
 {
 	while LIKELY_P ( *count < k, 0.9 ){
-		// a check like in the unary decoder should be unnecessary
+		// a check like in the unary reader is unnecessary
 		*cache |= rice_crc32(src[r++], crc) << *count;
 		*count += 8u;
 	}

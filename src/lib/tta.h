@@ -89,7 +89,7 @@ INLINE void codec_init(/*@out@*/ struct Codec *restrict codec , uint)
 //--------------------------------------------------------------------------//
 
 INLINE CONST size_t tta_safety_margin_perchan(enum TTASampleBytes) /*@*/;
-INLINE CONST u32 tta_unary_limit(enum TTASampleBytes) /*@*/;
+INLINE CONST u32 tta_unary_lax_limit(enum TTASampleBytes) /*@*/;
 INLINE CONST u8 tta_predict_k(enum TTASampleBytes) /*@*/;
 INLINE CONST i32 tta_filter_round(enum TTASampleBytes) /*@*/;
 INLINE CONST u8 tta_filter_k(enum TTASampleBytes) /*@*/;
@@ -159,25 +159,25 @@ tta_safety_margin_perchan(register const enum TTASampleBytes samplebytes)
 	return r;
 }
 
-/**@fn tta_unary_limit
- * @brief max number of bits in a unary code
+/**@fn tta_unary_lax_limit
+ * @brief max number (plus 8u) of 1-bits in a unary code
  *
  * @param samplebytes number of bytes per PCM sample
  *
- * @return max number of bits in a unary code
+ * @return max number (plus 8u) of 1-bits in a unary code
 **/
 INLINE CONST u32
-tta_unary_limit(register const enum TTASampleBytes samplebytes)
+tta_unary_lax_limit(register const enum TTASampleBytes samplebytes)
 /*@*/
 {
 	register u32 r;
 	switch ( samplebytes ){
 	case TTASAMPLEBYTES_1:
 	case TTASAMPLEBYTES_2:
-		r = UNARY_LIMIT_1_2;
+		r = UNARY_LAX_LIMIT_1_2;
 		break;
 	case TTASAMPLEBYTES_3:
-		r = UNARY_LIMIT_3;
+		r = UNARY_LAX_LIMIT_3;
 		break;
 	}
 	return r;
