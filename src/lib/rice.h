@@ -615,10 +615,10 @@ rice_decode(
  * @note max read size:
  *     8/16-bit :   18u
  *       24-bit : 4098u
- * @note the 'limit' has an extra byte of margin, so we can assume that if is
- *   surpased, then the data is definitely invalid (corrupted or malicious).
- *   this could be easily caused by an overly long string of 0xFF bytes in the
- *   input.
+ * @note the 'limit' has an extra byte of margin, so we can assume that if it
+ *   is surpased, then the data is definitely invalid (corrupted or
+ *   malicious). this could be easily caused by an overly long string of 0xFF
+ *   bytes in the input.
  *       the TZCNT/NO_TZCNT versions may have different output. "correcting"
  *   any variables to make decoding invalid data deterministic seems
  *   pointless, because the data is garbage anyway, and because it could
