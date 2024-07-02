@@ -125,7 +125,7 @@ pcm_write_i16le(
 /*@modifies	*dest@*/
 {
 	size_t i, j;
-	for ( i = 0, j = 0; i < nsamples; ++i, j += (size_t) 2u ){
+	for ( i = 0, j = 0; i < nsamples; ++i, j += 2u ){
 		write_i32h_to_i16le(&dest[j], src[i]);
 	}
 	return i;
@@ -147,7 +147,7 @@ pcm_write_i24le(
 /*@modifies	*dest@*/
 {
 	size_t i, j;
-	for ( i = 0, j = 0; i < nsamples; ++i, j += (size_t) 3u ){
+	for ( i = 0, j = 0; i < nsamples; ++i, j += 3u ){
 		write_i32h_to_i24le(&dest[j], src[i]);
 	}
 	return i;

@@ -117,7 +117,7 @@ pcm_read_i16le(
 /*@modifies	*dest@*/
 {
 	size_t i, j;
-	for ( i = 0, j = 0; i < nsamples; ++i, j += (size_t) 2u ){
+	for ( i = 0, j = 0; i < nsamples; ++i, j += 2u ){
 		dest[i] = read_i16le_to_i32h(&src[j]);
 	}
 	return i;
@@ -139,7 +139,7 @@ pcm_read_i24le(
 /*@modifies	*dest@*/
 {
 	size_t i, j;
-	for ( i = 0, j = 0; i < nsamples; ++i, j += (size_t) 3u ){
+	for ( i = 0, j = 0; i < nsamples; ++i, j += 3u ){
 		dest[i] = read_i24le_to_i32h(&src[j]);
 	}
 	return i;
