@@ -640,7 +640,6 @@ rice_unary_read(
 	nbits  = (u8) tbcnt32(*cache);
 	*unary = nbits;
 	if UNLIKELY_P ( nbits == *count, 0.25 ){
-		*count = (u8) 8u;
 		do {	*cache  = rice_crc32(src[r++], crc);
 			nbits   = (u8) tbcnt32(*cache);
 			*unary += nbits;
@@ -649,6 +648,7 @@ rice_unary_read(
 				break;
 			}
 		} while UNLIKELY ( nbits == (u8) 8u );
+		*count = (u8) 8u;
 	}
 	*cache >>= nbits + 1u;
 	*count  -= nbits + 1u;
