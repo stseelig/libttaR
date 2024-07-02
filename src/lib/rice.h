@@ -389,14 +389,12 @@ rice_encode(
 
 	register u32 unary = 0, binary;
 	register  u8 kx;
-	register u32 depth1_trigger;	// no const
 
 	kx = *k0;
 	rice_cmpsum(sum0, k0, value);
 
-	depth1_trigger = shift32_bit(kx);
-	if LIKELY_P ( value >= depth1_trigger, 0.575 ){
-		value -= depth1_trigger;
+	if LIKELY_P ( value >= shift32_bit(kx), 0.575 ){
+		value -= shift32_bit(kx);
 		kx     = *k1;
 		rice_cmpsum(sum1, k1, value);
 		unary  = (value >> kx) + 1u;
