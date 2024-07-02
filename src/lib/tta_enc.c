@@ -275,7 +275,7 @@ tta_encode_mch(
 	size_t i;
 	uint j;
 
-	for ( i = 0; i < ni32_target; i += (size_t) nchan ){
+	for ( i = 0; i < ni32_target; i += nchan ){
 		if ( r > write_soft_limit ){ break; }
 #ifdef LIBTTAr_OPT_DISABLE_UNROLLED_1CH
 		prev = 0;	// for mono
