@@ -133,7 +133,7 @@ libttaR_tta_decode(
 @*/
 {
 	int r = LIBTTAr_RET_AGAIN;
-	size_t nbytes_tta_dec;
+	size_t nbytes_dec;
 	const  u8 predict_k    = tta_predict_k(samplebytes);
 	const i32 filter_round = tta_filter_round(samplebytes);
 	const  u8 filter_k     = tta_filter_k(samplebytes);
@@ -191,7 +191,7 @@ libttaR_tta_decode(
 	switch ( nchan ){
 #ifndef LIBTTAr_OPT_DISABLE_UNROLLED_1CH
 	case 1u:
-		nbytes_tta_dec = tta_decode_1ch(
+		nbytes_dec = tta_decode_1ch(
 			dest, src, &user->crc, &user->ni32, &priv->bitcache,
 			priv->codec, ni32_target, read_soft_limit, predict_k,
 			filter_round, filter_k, unary_lax_limit, nchan
@@ -200,7 +200,7 @@ libttaR_tta_decode(
 #endif
 #ifndef LIBTTAr_OPT_DISABLE_UNROLLED_2CH
 	case 2u:
-		nbytes_tta_dec = tta_decode_2ch(
+		nbytes_dec = tta_decode_2ch(
 			dest, src, &user->crc, &user->ni32, &priv->bitcache,
 			priv->codec, ni32_target, read_soft_limit, predict_k,
 			filter_round, filter_k, unary_lax_limit, nchan
@@ -209,7 +209,7 @@ libttaR_tta_decode(
 #endif
 	default:
 #ifndef LIBTTAr_OPT_DISABLE_MCH
-		nbytes_tta_dec = tta_decode_mch(
+		nbytes_dec = tta_decode_mch(
 			dest, src, &user->crc, &user->ni32, &priv->bitcache,
 			priv->codec, ni32_target, read_soft_limit, predict_k,
 			filter_round, filter_k, unary_lax_limit, nchan
@@ -228,8 +228,8 @@ libttaR_tta_decode(
 
 	// post-decode
 	user->ni32_total       += user->ni32;
-	user->nbytes_tta	= nbytes_tta_dec;
-	user->nbytes_tta_total += nbytes_tta_dec;
+	user->nbytes_tta	= nbytes_dec;
+	user->nbytes_tta_total += nbytes_dec;
 	if ( (user->ni32_total == ni32_perframe)
 	    ||
 	     (user->nbytes_tta_total > nbytes_tta_perframe)
@@ -287,23 +287,24 @@ tta_decode_mch(
 		*codec
 @*/
 {
-	size_t r = 0;
+	size_t nbytes_dec = 0;
 	u32 crc = *crc_out;
 	i32 curr, prev;
 	size_t i;
 	uint j;
 
 	for ( i = 0; i < ni32_target; i += nchan ){
-		if ( r > read_soft_limit ){ break; }
+		if ( nbytes_dec > read_soft_limit ){ break; }
 #ifdef LIBTTAr_OPT_DISABLE_UNROLLED_1CH
 		prev = 0;	// for mono
 #endif
 		for ( j = 0; true; ++j ){
 
 			// decode
-			r = rice_decode(
-				(u32 *) &curr, src, r, &codec[j].rice,
-				bitcache, &crc, unary_lax_limit
+			nbytes_dec = rice_decode(
+				(u32 *) &curr, src, nbytes_dec,
+				&codec[j].rice, bitcache, &crc,
+				unary_lax_limit
 			);
 
 			// filter
@@ -335,7 +336,7 @@ tta_decode_mch(
 
 	*crc_out  = crc;
 	*ni32_out = i;
-	return r;
+	return nbytes_dec;
 }
 #endif
 
@@ -377,18 +378,18 @@ tta_decode_1ch(
 		*codec
 @*/
 {
-	size_t r = 0;
+	size_t nbytes_dec = 0;
 	u32 crc = *crc_out;
 	i32 curr;
 	size_t i;
 
 	for ( i = 0; i < ni32_target; ++i ){
-		if ( r > read_soft_limit ){ break; }
+		if ( nbytes_dec > read_soft_limit ){ break; }
 
 		// decode
-		r = rice_decode(
-			(u32 *) &curr, src, r, &codec->rice, bitcache, &crc,
-			unary_lax_limit
+		nbytes_dec = rice_decode(
+			(u32 *) &curr, src, nbytes_dec, &codec->rice,
+			bitcache, &crc, unary_lax_limit
 		);
 
 		// filter
@@ -407,7 +408,7 @@ tta_decode_1ch(
 
 	*crc_out  = crc;
 	*ni32_out = i;
-	return r;
+	return nbytes_dec;
 }
 #endif
 
@@ -449,18 +450,18 @@ tta_decode_2ch(
 		*codec
 @*/
 {
-	size_t r = 0;
+	size_t nbytes_dec = 0;
 	u32 crc = *crc_out;
 	i32 curr, prev;
 	size_t i;
 
 	for ( i = 0; i < ni32_target; i += (size_t) 2u ){
-		if ( r > read_soft_limit ){ break; }
+		if ( nbytes_dec > read_soft_limit ){ break; }
 
 	// 0	// decode
-		r = rice_decode(
-			(u32 *) &curr, src, r, &codec[0u].rice, bitcache,
-			&crc, unary_lax_limit
+		nbytes_dec = rice_decode(
+			(u32 *) &curr, src, nbytes_dec, &codec[0u].rice,
+			bitcache, &crc, unary_lax_limit
 		);
 
 		// filter
@@ -478,9 +479,9 @@ tta_decode_2ch(
 		prev = curr;
 
 	// 1	// decode
-		r = rice_decode(
-			(u32 *) &curr, src, r, &codec[1u].rice, bitcache,
-			&crc, unary_lax_limit
+		nbytes_dec = rice_decode(
+			(u32 *) &curr, src, nbytes_dec, &codec[1u].rice,
+			bitcache, &crc, unary_lax_limit
 		);
 
 		// filter
@@ -501,7 +502,7 @@ tta_decode_2ch(
 
 	*crc_out  = crc;
 	*ni32_out = i;
-	return r;
+	return nbytes_dec;
 }
 #endif
 

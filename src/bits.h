@@ -12,7 +12,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include <limits.h>
-#include <stdbool.h>	// true, false
+#include <stdbool.h>
 #include <stdint.h>
 #include <string.h>	// memmove, memset
 
@@ -76,15 +76,15 @@
 #endif
 
 #if HAS_BUILTIN(__builtin_expect_with_probability)
-#define LIKELY_P(cond, prob)	( \
+#define PROBABLE(cond, prob)	( \
 	__builtin_expect_with_probability(!!(cond), true, (prob)) \
 )
-#define UNLIKELY_P(cond, prob)	( \
+#define IMPROBABLE(cond, prob)	( \
 	__builtin_expect_with_probability(!!(cond), false, (prob)) \
 )
 #else
-#define LIKELY_P(cond, prob)	(cond)
-#define UNLIKELY_P(cond, prob)	(cond)
+#define PROBABLE(cond, prob)	(cond)
+#define IMPROBABLE(cond, prob)	(cond)
 #endif
 
 //--------------------------------------------------------------------------//
@@ -158,9 +158,9 @@ ALWAYS_INLINE CONST uint tbcnt32(u32) /*@*/;
 
 //--------------------------------------------------------------------------//
 
-#define HAS_ASR(type) ( \
+#define HAS_ASR(type) ((bool)\
 	/*@-shiftimplementation@*/ \
-	((type) (((type) (-1)) >> 1u)) == ((type) (-1)) \
+	(((type) (((type) (-1)) >> 1u)) == ((type) (-1))) \
 	/*@=shiftimplementation@*/ \
 )
 
@@ -404,7 +404,7 @@ ALWAYS_INLINE CONST i32
 asr32(register const i32 x, register const u8 k)
 /*@*/
 {
-	if ( (! HAS_ASR(i32)) && (x < 0) ){
+	if ( !HAS_ASR(i32) && (x < 0) ){
 		return (i32) ~((~((u32) x)) >> k);
 	}
 	else {	/*@-shiftimplementation@*/

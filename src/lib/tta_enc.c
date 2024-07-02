@@ -128,7 +128,7 @@ libttaR_tta_encode(
 @*/
 {
 	int r = LIBTTAr_RET_AGAIN;
-	size_t nbytes_tta_enc;
+	size_t nbytes_enc;
 	const  u8 predict_k    = tta_predict_k(samplebytes);
 	const i32 filter_round = tta_filter_round(samplebytes);
 	const  u8 filter_k     = tta_filter_k(samplebytes);
@@ -178,7 +178,7 @@ libttaR_tta_encode(
 	switch ( nchan ){
 #ifndef LIBTTAr_OPT_DISABLE_UNROLLED_1CH
 	case 1u:
-		nbytes_tta_enc = tta_encode_1ch(
+		nbytes_enc = tta_encode_1ch(
 			dest, src, &user->crc, &user->ni32, &priv->bitcache,
 			priv->codec, ni32_target, write_soft_limit, predict_k,
 			filter_round, filter_k, nchan
@@ -187,7 +187,7 @@ libttaR_tta_encode(
 #endif
 #ifndef LIBTTAr_OPT_DISABLE_UNROLLED_2CH
 	case 2u:
-		nbytes_tta_enc = tta_encode_2ch(
+		nbytes_enc = tta_encode_2ch(
 			dest, src, &user->crc, &user->ni32, &priv->bitcache,
 			priv->codec, ni32_target, write_soft_limit, predict_k,
 			filter_round, filter_k, nchan
@@ -196,7 +196,7 @@ libttaR_tta_encode(
 #endif
 	default:
 #ifndef LIBTTAr_OPT_DISABLE_MCH
-		nbytes_tta_enc = tta_encode_mch(
+		nbytes_enc = tta_encode_mch(
 			dest, src, &user->crc, &user->ni32, &priv->bitcache,
 			priv->codec, ni32_target, write_soft_limit, predict_k,
 			filter_round, filter_k, nchan
@@ -216,14 +216,14 @@ libttaR_tta_encode(
 	// post-encode
 	user->ni32_total       += user->ni32;
 	if ( user->ni32_total == ni32_perframe ){
-		nbytes_tta_enc  = rice_encode_cacheflush(
-			dest, nbytes_tta_enc, &priv->bitcache, &user->crc
+		nbytes_enc      = rice_encode_cacheflush(
+			dest, nbytes_enc, &priv->bitcache, &user->crc
 		);
 		user->crc       = crc32_end(user->crc);
 		r = LIBTTAr_RET_DONE;
 	}
-	user->nbytes_tta	= nbytes_tta_enc;
-	user->nbytes_tta_total += nbytes_tta_enc;
+	user->nbytes_tta	= nbytes_enc;
+	user->nbytes_tta_total += nbytes_enc;
 
 	user->ncalls_codec     += 1u;
 	return r;
@@ -269,14 +269,14 @@ tta_encode_mch(
 		*codec
 @*/
 {
-	size_t r = 0;
+	size_t nbytes_enc = 0;
 	u32 crc = *crc_out;
 	i32 curr, prev;
 	size_t i;
 	uint j;
 
 	for ( i = 0; i < ni32_target; i += nchan ){
-		if ( r > write_soft_limit ){ break; }
+		if ( nbytes_enc > write_soft_limit ){ break; }
 #ifdef LIBTTAr_OPT_DISABLE_UNROLLED_1CH
 		prev = 0;	// for mono
 #endif
@@ -304,16 +304,16 @@ tta_encode_mch(
 			curr = tta_postfilter_enc(curr);
 
 			// encode
-			r = rice_encode(
-				dest, (u32) curr, r, &codec[j].rice, bitcache,
-				&crc
+			nbytes_enc = rice_encode(
+				dest, (u32) curr, nbytes_enc, &codec[j].rice,
+				bitcache, &crc
 			);
 		}
 	}
 
 	*crc_out  = crc;
 	*ni32_out = i;
-	return r;
+	return nbytes_enc;
 }
 #endif
 
@@ -352,13 +352,13 @@ tta_encode_1ch(
 		*codec
 @*/
 {
-	size_t r = 0;
+	size_t nbytes_enc = 0;
 	u32 crc = *crc_out;
 	i32 curr, prev;
 	size_t i;
 
 	for ( i = 0; i < ni32_target; ++i ){
-		if ( r > write_soft_limit ){ break; }
+		if ( nbytes_enc > write_soft_limit ){ break; }
 
 		// get
 		curr = src[i];
@@ -375,14 +375,15 @@ tta_encode_1ch(
 		curr = tta_postfilter_enc(curr);
 
 		// encode
-		r = rice_encode(
-			dest, (u32) curr, r, &codec->rice, bitcache, &crc
+		nbytes_enc = rice_encode(
+			dest, (u32) curr, nbytes_enc, &codec->rice, bitcache,
+			&crc
 		);
 	}
 
 	*crc_out  = crc;
 	*ni32_out = i;
-	return r;
+	return nbytes_enc;
 }
 #endif
 
@@ -421,13 +422,13 @@ tta_encode_2ch(
 		*codec
 @*/
 {
-	size_t r = 0;
+	size_t nbytes_enc = 0;
 	u32 crc = *crc_out;
 	i32 curr, prev, next;
 	size_t i;
 
 	for ( i = 0; i < ni32_target; i += (size_t) 2u ){
-		if ( r > write_soft_limit ){ break; }
+		if ( nbytes_enc > write_soft_limit ){ break; }
 
 	// 0	// correlate
 		next = src[i + 1u];
@@ -446,8 +447,9 @@ tta_encode_2ch(
 		curr = tta_postfilter_enc(curr);
 
 		// encode
-		r = rice_encode(
-			dest, (u32) curr, r, &codec[0u].rice, bitcache, &crc
+		nbytes_enc = rice_encode(
+			dest, (u32) curr, nbytes_enc, &codec[0u].rice,
+			bitcache, &crc
 		);
 
 	// 1	// correlate
@@ -466,14 +468,15 @@ tta_encode_2ch(
 		curr = tta_postfilter_enc(curr);
 
 		// encode
-		r = rice_encode(
-			dest, (u32) curr, r, &codec[1u].rice, bitcache, &crc
+		nbytes_enc = rice_encode(
+			dest, (u32) curr, nbytes_enc, &codec[1u].rice,
+			bitcache, &crc
 		);
 	}
 
 	*crc_out  = crc;
 	*ni32_out = i;
-	return r;
+	return nbytes_enc;
 }
 #endif
 
