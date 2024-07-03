@@ -80,7 +80,7 @@
 	__builtin_expect_with_probability(!!(cond), true, (prob)) \
 )
 #define IMPROBABLE(cond, prob)	( \
-	__builtin_expect_with_probability(!!(cond), false, (prob)) \
+	__builtin_expect_with_probability(!!(cond), false, 1.0 - (prob)) \
 )
 #else
 #define PROBABLE(cond, prob)	(cond)

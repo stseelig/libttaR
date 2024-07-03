@@ -702,8 +702,8 @@ rice_read_unary(
 		} while UNLIKELY ( nbits == (u8) 8u );
 		*count = (u8) 8u;
 	}
-	*cache >>= nbits + 1u;
-	*count  -= nbits + 1u;
+	*cache >>= nbits + 1u;	// + terminator
+	*count  -= nbits + 1u;	// ~
 	return nbytes_dec;
 }
 
