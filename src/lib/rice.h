@@ -12,6 +12,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
+#include <limits.h>
 #include <stdbool.h>
 #include <stddef.h>	// size_t
 
@@ -64,6 +65,11 @@ extern HIDDEN const u32 shift32p4_bit_table[];
 /*@unchecked@*/ /*@unused@*/
 extern HIDDEN const u32 lsmask32_table[];
 
+#ifdef LIBTTAr_PREFER_LOOKUP_TABLES
+/*@unchecked@*/ /*@unused@*/
+extern HIDDEN const  u8 tbcnt8_table[];
+#endif
+
 //////////////////////////////////////////////////////////////////////////////
 
 #undef rice
@@ -76,6 +82,13 @@ INLINE void rice_init(/*@out@*/ struct Rice *restrict rice, u8, u8)
 ALWAYS_INLINE CONST u32 shift32_bit(u8) /*@*/;
 ALWAYS_INLINE CONST u32 shift32p4_bit(u8, enum ShiftMaskMode) /*@*/;
 ALWAYS_INLINE CONST u32 lsmask32(u8, enum ShiftMaskMode) /*@*/;
+
+#ifndef LIBTTAr_PREFER_LOOKUP_TABLES
+ALWAYS_INLINE CONST uint tzcnt32(u32) /*@*/;
+ALWAYS_INLINE CONST uint tbcnt32(u32) /*@*/;
+#else
+ALWAYS_INLINE CONST u8 tbcnt8(u8) /*@*/;
+#endif
 
 //--------------------------------------------------------------------------//
 
@@ -314,6 +327,103 @@ lsmask32(register const u8 k, const enum ShiftMaskMode mode)
 	}
 	return r;
 }
+
+//==========================================================================//
+
+#ifndef LIBTTAr_PREFER_LOOKUP_TABLES
+#define TBCNT(x) 	((u8) tbcnt32((x)))
+#else
+#define TBCNT(x) 	(tbcnt8((u8) (x)))
+#endif
+
+//--------------------------------------------------------------------------//
+
+#ifndef LIBTTAr_PREFER_LOOKUP_TABLES
+#ifndef S_SPLINT_S	// splint preproc bugs
+#if UINT_MAX == UINT32_MAX
+#define BUILTIN_TZCNT32			__builtin_ctz
+#elif ULONG_MAX == UINT32_MAX
+#define BUILTIN_TZCNT32			__builtin_ctzl
+#else
+#define BUILTIN_TZCNT32			nil
+#endif
+
+#if UINT_MAX == UINT64_MAX
+#define BUILTIN_TZCNT64			__builtin_ctz
+#elif ULONG_MAX == UINT64_MAX
+#define BUILTIN_TZCNT64			__builtin_ctzl
+#elif ULONG_LONG_MAX == UINT64_MAX
+#define BUILTIN_TZCNT64			__builtin_ctzll
+#else
+#define BUILTIN_TZCNT64			nil
+#endif
+#endif
+
+/**@fn tzcnt32
+ * @brief trailing zero count 32-bit
+ *
+ * @param x value to count
+ *
+ * @return number of trailing zeroes
+ *
+ * @note undefined for 0
+**/
+ALWAYS_INLINE CONST uint
+tzcnt32(register const u32 x)
+/*@*/
+{
+#if HAS_BUILTIN(BUILTIN_TZCNT32)
+	return (uint) BUILTIN_TZCNT32(x);
+#elif HAS_BUILTIN(BUILTIN_TZCNT64)
+	return (uint) BUILTIN_TZCNT64((u64) x);
+#else
+	// https://graphics.stanford.edu/~seander/bithacks.html
+	register uint r = 0;
+	if ( (x & 0x1u) == 0 ){
+		r = 1u;
+		if ( (x & 0xFFFFu) == 0 ){ r |= 16u, x >>= 16u; }
+		if ( (x & 0x00FFu) == 0 ){ r |=  8u, x >>=  8u; }
+		if ( (x & 0x000Fu) == 0 ){ r |=  4u, x >>=  4u; }
+		if ( (x & 0x0003u) == 0 ){ r |=  2u, x >>=  2u; }
+		r -=  x & 0x0001u;
+	}
+	return r;
+#endif
+}
+
+/**@fn tbcnt32
+ * @brief trailing bit count 32-bit
+ *
+ * @param x value to count
+ *
+ * @return number of trailing bits
+ *
+ * @note undefined for UINT32_MAX
+**/
+ALWAYS_INLINE CONST uint
+tbcnt32(register const u32 x)
+/*@*/
+{
+	return tzcnt32(~x);
+}
+
+#else	// defined(LIBTTAr_PREFER_LOOKUP_TABLES)
+/**@fn tbcnt8
+ * @brief trailing bit count 8-bit
+ *
+ * @param x value to count
+ *
+ * @return number of trailing bits
+ *
+ * @note defined for all values
+**/
+ALWAYS_INLINE CONST u8
+tbcnt8(register const u8 x)
+/*@*/
+{
+	return tbcnt8_table[x];
+}
+#endif
 
 //==========================================================================//
 
@@ -673,6 +783,7 @@ rice_decode(
  * @note max read size:
  *     8/16-bit :   18u
  *       24-bit : 4098u
+ * @note affected by LIBTTAr_OPT_PREFER_LOOKUP_TABLES
 **/
 ALWAYS_INLINE size_t
 rice_read_unary(
@@ -689,11 +800,11 @@ rice_read_unary(
 {
 	register u8 nbits;
 
-	nbits  = (u8) tbcnt32(*cache);
+	nbits  = TBCNT(*cache);
 	*unary = nbits;
 	if IMPROBABLE ( nbits == *count, 0.25 ){
 		do {	*cache  = rice_crc32(src[nbytes_dec++], crc);
-			nbits   = (u8) tbcnt32(*cache);
+			nbits   = TBCNT(*cache);
 			*unary += nbits;
 			if UNLIKELY ( *unary > lax_limit ){
 				nbits = 0;	// prevents *count underflow

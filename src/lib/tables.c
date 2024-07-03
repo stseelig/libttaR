@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// codec/crc32.c                                                            //
+// codec/tables.c                                                           //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
@@ -9,22 +9,71 @@
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
-//                                                                          //
-//      width   : 32                                                        //
-//      endian  : little                                                    //
-//      poly    : 0xEDB88320u                                               //
-//      xor-in  : 0xFFFFFFFFu                                               //
-//      xor-out : 0xFFFFFFFFu                                               //
-//                                                                          //
-//////////////////////////////////////////////////////////////////////////////
-
-#include <stddef.h>	// size_t
 
 #include "../bits.h"
 
-#include "crc32.h"
-
 //////////////////////////////////////////////////////////////////////////////
+
+/*@unchecked@*/
+HIDDEN const u32 shift32p4_bit_table[] = {
+(u32) 0x00000000u, (u32) 0x00000020u, (u32) 0x00000040u, (u32) 0x00000080u,
+(u32) 0x00000100u, (u32) 0x00000200u, (u32) 0x00000400u, (u32) 0x00000800u,
+(u32) 0x00001000u, (u32) 0x00002000u, (u32) 0x00004000u, (u32) 0x00008000u,
+(u32) 0x00010000u, (u32) 0x00020000u, (u32) 0x00040000u, (u32) 0x00080000u,
+(u32) 0x00100000u, (u32) 0x00200000u, (u32) 0x00400000u, (u32) 0x00800000u,
+(u32) 0x01000000u, (u32) 0x02000000u, (u32) 0x04000000u, (u32) 0x08000000u,
+(u32) 0x10000000u, (u32) 0x20000000u, (u32) 0x40000000u, (u32) 0x80000000u,
+(u32) 0xFFFFFFFFu
+};
+
+/*@unchecked@*/
+HIDDEN const u32 lsmask32_table[] = {
+(u32) 0x00000000u, (u32) 0x00000001u, (u32) 0x00000003u, (u32) 0x00000007u,
+(u32) 0x0000000Fu, (u32) 0x0000001Fu, (u32) 0x0000003Fu, (u32) 0x0000007Fu,
+(u32) 0x000000FFu, (u32) 0x000001FFu, (u32) 0x000003FFu, (u32) 0x000007FFu,
+(u32) 0x00000FFFu, (u32) 0x00001FFFu, (u32) 0x00003FFFu, (u32) 0x00007FFFu,
+(u32) 0x0000FFFFu, (u32) 0x0001FFFFu, (u32) 0x0003FFFFu, (u32) 0x0007FFFFu,
+(u32) 0x000FFFFFu, (u32) 0x001FFFFFu, (u32) 0x003FFFFFu, (u32) 0x007FFFFFu,
+(u32) 0x00FFFFFFu, (u32) 0x01FFFFFFu, (u32) 0x03FFFFFFu, (u32) 0x07FFFFFFu
+};
+
+#ifdef LIBTTAr_PREFER_LOOKUP_TABLES
+/*@unchecked@*/
+HIDDEN const u8 tbcnt8_table[] = {
+(u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 3u,
+(u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 4u, // 0F
+(u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 3u,
+(u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 5u, // 1F
+(u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 3u,
+(u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 4u, // 2F
+(u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 3u,
+(u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 6u, // 3F
+(u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 3u,
+(u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 4u, // 4F
+(u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 3u,
+(u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 5u, // 5F
+(u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 3u,
+(u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 4u, // 6F
+(u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 3u,
+(u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 7u, // 7F
+(u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 3u,
+(u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 4u, // 8F
+(u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 3u,
+(u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 5u, // 9F
+(u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 3u,
+(u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 4u, // AF
+(u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 3u,
+(u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 6u, // BF
+(u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 3u,
+(u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 4u, // CF
+(u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 3u,
+(u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 5u, // DF
+(u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 3u,
+(u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 4u, // EF
+(u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 3u,
+(u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 8u, // FF
+};
+#endif
 
 /*@unchecked@*/
 HIDDEN const u32 crc32_table[] = {
@@ -93,35 +142,5 @@ HIDDEN const u32 crc32_table[] = {
 (u32) 0xB3667A2Eu, (u32) 0xC4614AB8u, (u32) 0x5D681B02u, (u32) 0x2A6F2B94u,
 (u32) 0xB40BBE37u, (u32) 0xC30C8EA1u, (u32) 0x5A05DF1Bu, (u32) 0x2D02EF8Du
 };
-
-//////////////////////////////////////////////////////////////////////////////
-
-/**@fn libttaR_crc32
- * @brief calculate a TTA CRC
- *
- * @param buf[in] the input buffer
- * @param size size of the buffer
- *
- * @return the CRC
- *
- * @note read the manpage for more info
- * @note This function is obviously not as fast as Intel's slicing method. It
- *   is meant for TTA's header and seektable. Given that those are rather
- *   small and calculating their CRCs is an insignificant part of a program's
- *   runtime, size is more important. Frame CRC calculation is inlined into
- *   the rice coder.
-**/
-PURE u32
-libttaR_crc32(const u8 *const restrict buf, const size_t size)
-/*@*/
-{
-	u32 crc = CRC32_INIT;
-	size_t i;
-
-	for ( i = 0; i < size; ++i ){
-		crc = crc32_cont(buf[i], crc);
-	}
-	return crc32_end(crc);
-}
 
 // EOF ///////////////////////////////////////////////////////////////////////

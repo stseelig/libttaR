@@ -15,6 +15,7 @@
 #include "../bits.h"
 #include "../version.h"
 
+#include "crc32.h"
 #include "state.h"
 #include "tta.h"
 
@@ -53,6 +54,83 @@ const struct LibTTAr_VersionInfo libttaR_info = {
 };
 
 //////////////////////////////////////////////////////////////////////////////
+
+/**@fn libttaR_test_nchan
+ * @brief tests whether libttaR was configured to support 'nchan' audio
+ *   channels
+ *
+ * @param nchan number of audio channels
+ *
+ * @return true or false
+ *
+ * @note read the manpage for more info
+ * @note affected by:
+ *     LIBTTAr_OPT_DISABLE_UNROLLED_1CH,
+ *     LIBTTAr_OPT_DISABLE_UNROLLED_2CH,
+ *     LIBTTAr_OPT_DISABLE_MCH
+**/
+CONST bool
+libttaR_test_nchan(const uint nchan)
+/*@*/
+{
+	bool r = false;
+	switch ( nchan ){
+#ifndef LIBTTAr_OPT_DISABLE_MCH
+	case 0:
+		break;
+	default:
+		r = true;
+		break;
+#else
+#ifndef LIBTTAr_OPT_DISABLE_UNROLLED_1CH
+	case 1u:
+		r = true;
+		break;
+#endif
+#ifndef LIBTTAr_OPT_DISABLE_UNROLLED_2CH
+	case 2u:
+		r = true;
+		break;
+#endif
+	default:
+		break;
+#endif
+	}
+	return r;
+}
+
+/**@fn libttaR_crc32
+ * @brief calculate a TTA Cyclic Redundancy Code
+ *
+ * @param buf[in] the input buffer
+ * @param size size of the buffer
+ *
+ * @return the CRC
+ *
+ * @note read the manpage for more info
+ * @note width   : 32
+ *       endian  : little
+ *       poly    : 0xEDB88320u
+ *       xor-in  : 0xFFFFFFFFu
+ *       xor-out : 0xFFFFFFFFu
+ * @note This function is obviously not as fast as Intel's slicing method. It
+ *   is meant for TTA's header and seektable. Given that those are rather
+ *   small and calculating their CRCs is an insignificant part of a program's
+ *   runtime, size is more important. Frame CRC calculation is inlined into
+ *   the rice coder.
+**/
+PURE u32
+libttaR_crc32(const u8 *const restrict buf, const size_t size)
+/*@*/
+{
+	u32 crc = CRC32_INIT;
+	size_t i;
+
+	for ( i = 0; i < size; ++i ){
+		crc = crc32_cont(buf[i], crc);
+	}
+	return crc32_end(crc);
+}
 
 /**@fn libttaR_codecstate_priv_size
  * @brief calculates the size of the private state struct
@@ -100,50 +178,6 @@ libttaR_ttabuf_safety_margin(
 		return 0;
 	}
 	return (size_t) (tta_safety_margin_perchan(samplebytes) * nchan);
-}
-
-/**@fn libttaR_test_nchan
- * @brief tests whether libttaR was configured to support 'nchan' audio
- *   channels
- *
- * @param nchan number of audio channels
- *
- * @return true or false
- *
- * @note read the manpage for more info
- * @note affected by:
- *     LIBTTAr_OPT_DISABLE_UNROLLED_1CH,
- *     LIBTTAr_OPT_DISABLE_UNROLLED_2CH,
- *     LIBTTAr_OPT_DISABLE_MCH
-**/
-CONST bool
-libttaR_test_nchan(const uint nchan)
-/*@*/
-{
-	bool r = false;
-	switch ( nchan ){
-#ifndef LIBTTAr_OPT_DISABLE_MCH
-	case 0:
-		break;
-	default:
-		r = true;
-		break;
-#else
-#ifndef LIBTTAr_OPT_DISABLE_UNROLLED_1CH
-	case 1u:
-		r = true;
-		break;
-#endif
-#ifndef LIBTTAr_OPT_DISABLE_UNROLLED_2CH
-	case 2u:
-		r = true;
-		break;
-#endif
-	default:
-		break;
-#endif
-	}
-	return r;
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////

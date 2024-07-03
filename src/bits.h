@@ -11,7 +11,6 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
-#include <limits.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>	// memmove, memset
@@ -33,9 +32,6 @@
 
 #undef asl32
 #undef asr32
-
-#undef tzcnt32
-#undef tbcnt32
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -147,9 +143,6 @@ ALWAYS_INLINE CONST u64 letoh64(u64) /*@*/;
 ALWAYS_INLINE CONST i32 asl32(i32, u8) /*@*/;
 ALWAYS_INLINE CONST i32 asr32(i32, u8) /*@*/;
 
-ALWAYS_INLINE CONST uint tzcnt32(u32) /*@*/;
-ALWAYS_INLINE CONST uint tbcnt32(u32) /*@*/;
-
 //////////////////////////////////////////////////////////////////////////////
 
 #define BUILTIN_BSWAP16			__builtin_bswap16
@@ -163,30 +156,6 @@ ALWAYS_INLINE CONST uint tbcnt32(u32) /*@*/;
 	(((type) (((type) (-1)) >> 1u)) == ((type) (-1))) \
 	/*@=shiftimplementation@*/ \
 )
-
-//--------------------------------------------------------------------------//
-
-#ifndef S_SPLINT_S	// splint preproc bugs
-
-#if UINT_MAX == UINT32_MAX
-#define BUILTIN_TZCNT32			__builtin_ctz
-#elif ULONG_MAX == UINT32_MAX
-#define BUILTIN_TZCNT32			__builtin_ctzl
-#else
-#define BUILTIN_TZCNT32			nil
-#endif
-
-#if UINT_MAX == UINT64_MAX
-#define BUILTIN_TZCNT64			__builtin_ctz
-#elif ULONG_MAX == UINT64_MAX
-#define BUILTIN_TZCNT64			__builtin_ctzl
-#elif ULONG_LONG_MAX == UINT64_MAX
-#define BUILTIN_TZCNT64			__builtin_ctzll
-#else
-#define BUILTIN_TZCNT64			nil
-#endif
-
-#endif
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -411,56 +380,6 @@ asr32(register const i32 x, register const u8 k)
 		return (i32) (x >> k);
 		/*@=shiftimplementation@*/
 	}
-}
-
-//==========================================================================//
-
-/**@fn tzcnt32
- * @brief trailing zero count 32-bit
- *
- * @param x value to count
- *
- * @return number of trailing zeroes
- *
- * @note undefined for 0
-**/
-ALWAYS_INLINE CONST uint
-tzcnt32(register const u32 x)
-/*@*/
-{
-#if HAS_BUILTIN(BUILTIN_TZCNT32)
-	return (uint) BUILTIN_TZCNT32(x);
-#elif HAS_BUILTIN(BUILTIN_TZCNT64)
-	return (uint) BUILTIN_TZCNT64((u64) x);
-#else
-	// https://graphics.stanford.edu/~seander/bithacks.html
-	register uint r = 0;
-	if ( (x & 0x1u) == 0 ){
-		r = 1u;
-		if ( (x & 0xFFFFu) == 0 ){ r |= 16u, x >>= 16u; }
-		if ( (x & 0x00FFu) == 0 ){ r |=  8u, x >>=  8u; }
-		if ( (x & 0x000Fu) == 0 ){ r |=  4u, x >>=  4u; }
-		if ( (x & 0x0003u) == 0 ){ r |=  2u, x >>=  2u; }
-		r -=  x & 0x0001u;
-	}
-	return r;
-#endif
-}
-
-/**@fn tbcnt32
- * @brief trailing bit count 32-bit
- *
- * @param x value to count
- *
- * @return number of trailing bits
- *
- * @note undefined for UINT32_MAX
-**/
-ALWAYS_INLINE CONST uint
-tbcnt32(register const u32 x)
-/*@*/
-{
-	return tzcnt32(~x);
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////
