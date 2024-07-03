@@ -61,13 +61,13 @@ struct BitCache {
 //////////////////////////////////////////////////////////////////////////////
 
 /*@unchecked@*/ /*@unused@*/
-extern HIDDEN const u32 shift32p4_bit_table[];
+extern HIDDEN const u32 shift32p4_bit_table[29u];
 /*@unchecked@*/ /*@unused@*/
-extern HIDDEN const u32 lsmask32_table[];
+extern HIDDEN const u32 lsmask32_table[28u];
 
 #ifdef LIBTTAr_PREFER_LOOKUP_TABLES
 /*@unchecked@*/ /*@unused@*/
-extern HIDDEN const  u8 tbcnt8_table[];
+extern HIDDEN const  u8 tbcnt8_table[256u];
 #endif
 
 //////////////////////////////////////////////////////////////////////////////

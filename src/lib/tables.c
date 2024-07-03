@@ -15,7 +15,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 /*@unchecked@*/
-HIDDEN const u32 shift32p4_bit_table[] = {
+HIDDEN const u32 shift32p4_bit_table[29u] = {
 (u32) 0x00000000u, (u32) 0x00000020u, (u32) 0x00000040u, (u32) 0x00000080u,
 (u32) 0x00000100u, (u32) 0x00000200u, (u32) 0x00000400u, (u32) 0x00000800u,
 (u32) 0x00001000u, (u32) 0x00002000u, (u32) 0x00004000u, (u32) 0x00008000u,
@@ -27,7 +27,7 @@ HIDDEN const u32 shift32p4_bit_table[] = {
 };
 
 /*@unchecked@*/
-HIDDEN const u32 lsmask32_table[] = {
+HIDDEN const u32 lsmask32_table[28u] = {
 (u32) 0x00000000u, (u32) 0x00000001u, (u32) 0x00000003u, (u32) 0x00000007u,
 (u32) 0x0000000Fu, (u32) 0x0000001Fu, (u32) 0x0000003Fu, (u32) 0x0000007Fu,
 (u32) 0x000000FFu, (u32) 0x000001FFu, (u32) 0x000003FFu, (u32) 0x000007FFu,
@@ -39,7 +39,7 @@ HIDDEN const u32 lsmask32_table[] = {
 
 #ifdef LIBTTAr_PREFER_LOOKUP_TABLES
 /*@unchecked@*/
-HIDDEN const u8 tbcnt8_table[] = {
+HIDDEN const u8 tbcnt8_table[256u] = {
 (u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 3u,
 (u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 4u,	// 0F
 (u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 3u,
@@ -76,7 +76,7 @@ HIDDEN const u8 tbcnt8_table[] = {
 #endif
 
 /*@unchecked@*/
-HIDDEN const u32 crc32_table[] = {
+HIDDEN const u32 crc32_table[256u] = {
 (u32) 0x00000000u, (u32) 0x77073096u, (u32) 0xEE0E612Cu, (u32) 0x990951BAu,
 (u32) 0x076DC419u, (u32) 0x706AF48Fu, (u32) 0xE963A535u, (u32) 0x9E6495A3u,
 (u32) 0x0EDB8832u, (u32) 0x79DCB8A4u, (u32) 0xE0D5E91Eu, (u32) 0x97D2D988u,
