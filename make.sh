@@ -90,8 +90,8 @@ readonly CFLAGS_CLI;
 
 CFLAGS_LIB=;
 
-# -O2 is recommended; -O3 is safe, but it can be slower
-CFLAGS_LIB="$CFLAGS_LIB -O2";
+# -O3 is recommended;
+CFLAGS_LIB="$CFLAGS_LIB -O3";
 
 CFLAGS_LIB="$CFLAGS_LIB -fPIC";
 

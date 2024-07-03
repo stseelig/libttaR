@@ -3,7 +3,8 @@
 
 next:-------------------------------------------------------------------------
 
-	- performance improvements
+	- a little refactoring
+	- possible performance improvements
 
 1.2.0 (2024-07-01):===========================================================
 
