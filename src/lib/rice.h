@@ -834,6 +834,7 @@ rice_read_unary(
  *
  * @return number of bytes read from 'src' + 'nbytes_dec'
  *
+ * @pre  0 <= '*count' <= 8u
  * @post 0 <= '*count' <= 8u
  *
  * @note max read size: 4u (normally 3u, but might be 4u with malformed data)
