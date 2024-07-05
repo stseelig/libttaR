@@ -28,7 +28,7 @@ LIBTTAr_OPT_PREFER_LOOKUP_TABLES\
 	makes some operations use lookup tables (for weak CPUs like a Celeron)
 
 ## Basic Usage
-$ ttaR encode file.(wav|w64)
+$ ttaR encode file.(wav|w64)\
 $ ttaR decode file.tta
 
 Read the man page (./man/ttaR.1) for a full list of the options.
