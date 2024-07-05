@@ -32,6 +32,9 @@ static size_t tta_decode_mch(
 	u32 *restrict crc_out, /*@out@*/ size_t *restrict ni32_out,
 	struct BitCache *restrict bitcache, struct Codec *restrict codec,
 	size_t, size_t, u8, i32, u8, u32, uint
+#ifndef NDEBUG
+	, enum TTASampleBytes
+#endif
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -53,6 +56,9 @@ static size_t tta_decode_1ch(
 	u32 *restrict crc_out, /*@out@*/ size_t *restrict ni32_out,
 	struct BitCache *restrict bitcache, struct Codec *restrict codec,
 	size_t, size_t, u8, i32, u8, u32, uint
+#ifndef NDEBUG
+	, enum TTASampleBytes
+#endif
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -74,6 +80,9 @@ static size_t tta_decode_2ch(
 	u32 *restrict crc_out, /*@out@*/ size_t *restrict ni32_out,
 	struct BitCache *restrict bitcache, struct Codec *restrict codec,
 	size_t, size_t, u8, i32, u8, u32, uint
+#ifndef NDEBUG
+	, enum TTASampleBytes
+#endif
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -195,6 +204,9 @@ libttaR_tta_decode(
 			dest, src, &user->crc, &user->ni32, &priv->bitcache,
 			priv->codec, ni32_target, read_soft_limit, predict_k,
 			filter_round, filter_k, unary_lax_limit, nchan
+#ifndef NDEBUG
+			, samplebytes
+#endif
 		);
 		break;
 #endif
@@ -204,6 +216,9 @@ libttaR_tta_decode(
 			dest, src, &user->crc, &user->ni32, &priv->bitcache,
 			priv->codec, ni32_target, read_soft_limit, predict_k,
 			filter_round, filter_k, unary_lax_limit, nchan
+#ifndef NDEBUG
+			, samplebytes
+#endif
 		);
 		break;
 #endif
@@ -213,6 +228,9 @@ libttaR_tta_decode(
 			dest, src, &user->crc, &user->ni32, &priv->bitcache,
 			priv->codec, ni32_target, read_soft_limit, predict_k,
 			filter_round, filter_k, unary_lax_limit, nchan
+#ifndef NDEBUG
+			, samplebytes
+#endif
 		);
 		break;
 #else
@@ -279,6 +297,9 @@ tta_decode_mch(
 	const size_t read_soft_limit, const u8 predict_k,
 	const i32 filter_round, const u8 filter_k, const u32 unary_lax_limit,
 	const uint nchan
+#ifndef NDEBUG
+	, enum TTASampleBytes samplebytes
+#endif
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -292,20 +313,29 @@ tta_decode_mch(
 	i32 curr, prev;
 	size_t i;
 	uint j;
-
+#ifndef NDEBUG
+	size_t nbytes_before;
+#endif
 	for ( i = 0; i < ni32_target; i += nchan ){
 		if ( nbytes_dec > read_soft_limit ){ break; }
 #ifdef LIBTTAr_OPT_DISABLE_UNROLLED_1CH
-		prev = 0;	// for mono
+		prev = 0;
 #endif
 		for ( j = 0; true; ++j ){
 
 			// decode
+#ifndef NDEBUG
+			nbytes_before = nbytes_dec;
+#endif
 			nbytes_dec = rice_decode(
 				(u32 *) &curr, src, nbytes_dec,
 				&codec[j].rice, bitcache, &crc,
 				unary_lax_limit
 			);
+			assert(nbytes_dec - nbytes_before <= (
+				samplebytes != 3u
+				? RICE_DEC_MAX_1_2 : RICE_DEC_MAX_3
+			));
 
 			// filter
 			curr = tta_prefilter_dec(curr);
@@ -333,7 +363,6 @@ tta_decode_mch(
 			}
 		}
 	}
-
 	*crc_out  = crc;
 	*ni32_out = i;
 	return nbytes_dec;
@@ -370,6 +399,9 @@ tta_decode_1ch(
 	const size_t read_soft_limit, const u8 predict_k,
 	const i32 filter_round, const u8 filter_k, const u32 unary_lax_limit,
 	UNUSED const uint nchan
+#ifndef NDEBUG
+	, enum TTASampleBytes samplebytes
+#endif
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -382,15 +414,23 @@ tta_decode_1ch(
 	u32 crc = *crc_out;
 	i32 curr;
 	size_t i;
-
+#ifndef NDEBUG
+	size_t nbytes_before;
+#endif
 	for ( i = 0; i < ni32_target; ++i ){
 		if ( nbytes_dec > read_soft_limit ){ break; }
 
 		// decode
+#ifndef NDEBUG
+		nbytes_before = nbytes_dec;
+#endif
 		nbytes_dec = rice_decode(
 			(u32 *) &curr, src, nbytes_dec, &codec->rice,
 			bitcache, &crc, unary_lax_limit
 		);
+		assert(nbytes_dec - nbytes_before <= (samplebytes != 3u
+			? RICE_DEC_MAX_1_2 : RICE_DEC_MAX_3
+		));
 
 		// filter
 		curr = tta_prefilter_dec(curr);
@@ -405,7 +445,6 @@ tta_decode_1ch(
 		// put
 		dest[i] = curr;
 	}
-
 	*crc_out  = crc;
 	*ni32_out = i;
 	return nbytes_dec;
@@ -442,6 +481,9 @@ tta_decode_2ch(
 	const size_t read_soft_limit, const u8 predict_k,
 	const i32 filter_round, const u8 filter_k, const u32 unary_lax_limit,
 	UNUSED const uint nchan
+#ifndef NDEBUG
+	, enum TTASampleBytes samplebytes
+#endif
 )
 /*@modifies	*dest,
 		*crc_out,
@@ -454,15 +496,23 @@ tta_decode_2ch(
 	u32 crc = *crc_out;
 	i32 curr, prev;
 	size_t i;
-
+#ifndef NDEBUG
+	size_t nbytes_before;
+#endif
 	for ( i = 0; i < ni32_target; i += (size_t) 2u ){
 		if ( nbytes_dec > read_soft_limit ){ break; }
 
 	// 0	// decode
+#ifndef NDEBUG
+		nbytes_before = nbytes_dec;
+#endif
 		nbytes_dec = rice_decode(
 			(u32 *) &curr, src, nbytes_dec, &codec[0u].rice,
 			bitcache, &crc, unary_lax_limit
 		);
+		assert(nbytes_dec - nbytes_before <= (samplebytes != 3u
+			? RICE_DEC_MAX_1_2 : RICE_DEC_MAX_3
+		));
 
 		// filter
 		curr = tta_prefilter_dec(curr);
@@ -479,10 +529,16 @@ tta_decode_2ch(
 		prev = curr;
 
 	// 1	// decode
+#ifndef NDEBUG
+		nbytes_before = nbytes_dec;
+#endif
 		nbytes_dec = rice_decode(
 			(u32 *) &curr, src, nbytes_dec, &codec[1u].rice,
 			bitcache, &crc, unary_lax_limit
 		);
+		assert(nbytes_dec - nbytes_before <= (samplebytes != 3u
+			? RICE_DEC_MAX_1_2 : RICE_DEC_MAX_3
+		));
 
 		// filter
 		curr = tta_prefilter_dec(curr);
@@ -499,7 +555,6 @@ tta_decode_2ch(
 		dest[i + 1u] = (curr += prev / 2);
 		dest[i]	     = curr - prev;
 	}
-
 	*crc_out  = crc;
 	*ni32_out = i;
 	return nbytes_dec;

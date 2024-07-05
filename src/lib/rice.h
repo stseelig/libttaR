@@ -12,6 +12,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
+#include <assert.h>
 #include <limits.h>
 #include <stdbool.h>
 #include <stddef.h>	// size_t
@@ -39,12 +40,18 @@ enum ShiftMaskMode {
 
 //--------------------------------------------------------------------------//
 
+// max unary + binary r/w size for one value
+#define RICE_ENC_MAX_1_2	((size_t)   19u)
+#define RICE_ENC_MAX_3		((size_t) 4099u)
+#define RICE_DEC_MAX_1_2	((size_t)   21u)
+#define RICE_DEC_MAX_3		((size_t) 4101u)
+
 // max unary size:
 //	8/16-bit :   16u bytes + 7u bits + terminator
 //	  24-bit : 4096u bytes + 7u bits + terminator
 // the lax_limit has an extra byte to make handling invalid data faster/easier
-#define UNARY_LAX_LIMIT_1_2		((u32) ((8u *   18u) - 1u))
-#define UNARY_LAX_LIMIT_3		((u32) ((8u * 4098u) - 1u))
+#define UNARY_LAX_LIMIT_1_2	((u32) ((8u *   18u) - 1u))
+#define UNARY_LAX_LIMIT_3	((u32) ((8u * 4098u) - 1u))
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -65,7 +72,7 @@ extern HIDDEN const u32 shift32p4_bit_table[26u];
 /*@unchecked@*/ /*@unused@*/
 extern HIDDEN const u32 lsmask32_table[25u];
 
-#ifdef LIBTTAr_PREFER_LOOKUP_TABLES
+#ifdef LIBTTAr_OPT_PREFER_LOOKUP_TABLES
 /*@unchecked@*/ /*@unused@*/
 extern HIDDEN const  u8 tbcnt8_table[256u];
 #endif
@@ -83,7 +90,7 @@ ALWAYS_INLINE CONST u32 shift32_bit(u8) /*@*/;
 ALWAYS_INLINE CONST u32 shift32p4_bit(u8, enum ShiftMaskMode) /*@*/;
 ALWAYS_INLINE CONST u32 lsmask32(u8, enum ShiftMaskMode) /*@*/;
 
-#ifndef LIBTTAr_PREFER_LOOKUP_TABLES
+#ifndef LIBTTAr_OPT_PREFER_LOOKUP_TABLES
 ALWAYS_INLINE CONST uint tzcnt32(u32) /*@*/;
 ALWAYS_INLINE CONST uint tbcnt32(u32) /*@*/;
 #else
@@ -269,6 +276,8 @@ ALWAYS_INLINE CONST u32
 shift32_bit(register const u8 k)
 /*@*/
 {
+	assert(k <= (u8) 31u);
+
 	return (u32) (0x1u << k);
 }
 
@@ -286,6 +295,8 @@ ALWAYS_INLINE CONST u32
 shift32p4_bit(register const u8 k, const enum ShiftMaskMode mode)
 /*@*/
 {
+	assert(k <= (u8) 25u);
+
 	register u32 r;
 	switch ( mode ){
 	case SMM_CONST:
@@ -315,6 +326,8 @@ ALWAYS_INLINE CONST u32
 lsmask32(register const u8 k, const enum ShiftMaskMode mode)
 /*@*/
 {
+	assert(k <= (u8) 24u);
+
 	register u32 r;
 	switch ( mode ){
 	case SMM_CONST:
@@ -330,7 +343,7 @@ lsmask32(register const u8 k, const enum ShiftMaskMode mode)
 
 //==========================================================================//
 
-#ifndef LIBTTAr_PREFER_LOOKUP_TABLES
+#ifndef LIBTTAr_OPT_PREFER_LOOKUP_TABLES
 #define TBCNT(cache) 	((u8) tbcnt32((cache)))
 #else
 #define TBCNT(cache) 	(tbcnt8((u8) (cache)))
@@ -338,7 +351,7 @@ lsmask32(register const u8 k, const enum ShiftMaskMode mode)
 
 //--------------------------------------------------------------------------//
 
-#ifndef LIBTTAr_PREFER_LOOKUP_TABLES
+#ifndef LIBTTAr_OPT_PREFER_LOOKUP_TABLES
 #ifndef S_SPLINT_S	// splint preproc bugs
 #if UINT_MAX == UINT32_MAX
 #define BUILTIN_TZCNT32			__builtin_ctz
@@ -404,10 +417,12 @@ ALWAYS_INLINE CONST uint
 tbcnt32(register const u32 x)
 /*@*/
 {
+	assert(x != UINT32_MAX);
+
 	return tzcnt32(~x);
 }
 
-#else	// defined(LIBTTAr_PREFER_LOOKUP_TABLES)
+#else	// defined(LIBTTAr_OPT_PREFER_LOOKUP_TABLES)
 /**@fn tbcnt8
  * @brief trailing bit count 8-bit
  *
@@ -434,8 +449,8 @@ tbcnt8(register const u8 x)
  * @param k[in out] rice->k[]
  * @param value input value to code
  *
- * @pre  k <= 24u
- * @post k <= 24u
+ * @pre  *k <= 24u
+ * @post *k <= 24u
 **/
 ALWAYS_INLINE void
 rice_cmpsum(
@@ -446,6 +461,8 @@ rice_cmpsum(
 		*k
 @*/
 {
+	assert(*k <= (u8) 24u);
+
 	*sum += value - (*sum >> 4u);
 	if UNLIKELY ( *sum < shift32p4_bit(*k, SMM_TABLE) ){
 		*k -= 1u;
@@ -453,6 +470,8 @@ rice_cmpsum(
 	else if UNLIKELY ( *sum > shift32p4_bit(*k + 1u, SMM_TABLE) ){
 		*k += 1u;
 	} else{;}
+
+	assert(*k <= (u8) 24u);
 	return;
 }
 
@@ -662,7 +681,7 @@ rice_write_binary(
  *
  * @return number of bytes written to 'dest' + 'nbytes_enc'
  *
- * @note max write size: 4u (only for cacheflush, otherwise 3u)
+ * @note max write size: 4u
 **/
 ALWAYS_INLINE size_t
 rice_write_cache(
@@ -801,6 +820,8 @@ rice_read_unary(
 {
 	register u8 nbits;
 
+	assert(*count <= (u8) 8u);
+
 	nbits  = TBCNT(*cache);
 	*unary = nbits;
 	if IMPROBABLE ( nbits == *count, 0.25 ){
@@ -816,6 +837,8 @@ rice_read_unary(
 	}
 	*cache >>= nbits + 1u;	// + terminator
 	*count  -= nbits + 1u;	// ~
+
+	assert(*count <= (u8) 7u);
 	return nbytes_dec;
 }
 
@@ -850,6 +873,8 @@ rice_read_binary(
 		*crc
 @*/
 {
+	assert(*count <= (u8) 8u);
+
 	while PROBABLE ( *count < k, 0.9 ){
 		// a check like in the unary reader is unnecessary
 		*cache |= rice_crc32(src[nbytes_dec++], crc) << *count;
@@ -858,6 +883,8 @@ rice_read_binary(
 	*binary = *cache & lsmask32(k, SMM_DEC);
 	*cache  = (*cache >> k) & lsmask32(*count - k, SMM_DEC);
 	*count -= k;
+
+	assert(*count <= (u8) 8u);
 	return nbytes_dec;
 }
 
