@@ -90,10 +90,10 @@ readonly CFLAGS_CLI;
 
 CFLAGS_LIB=;
 
+CFLAGS_LIB="$CFLAGS_LIB -fPIC";
+
 # -O3 is recommended;
 CFLAGS_LIB="$CFLAGS_LIB -O3";
-
-CFLAGS_LIB="$CFLAGS_LIB -fPIC";
 
 # uncomment to disable the unrolled codecs
 #CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_OPT_DISABLE_UNROLLED_1CH";

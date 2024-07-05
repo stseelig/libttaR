@@ -13,7 +13,7 @@ I recommend compiling with clang.
 
 ### Defines
 NDEBUG\
-	turns off debug assertions (!!!the library has assertions too!!!)
+	turns off debug assertions
 
 LIBTTAr_OPT_DISABLE_UNROLLED_1CH\
 	disables the unrolled mono loop
@@ -41,7 +41,7 @@ completely rewritten.
 The library is just a collection of functions for reading from one buffer and
 writing to another with some support functions to calculate values.
 It does not allocate, print, nor make any other syscall.
-(Though it can abort if NDEBUG is not defined!)
+(Though it can abort, but should not, if NDEBUG is not defined.)
 It does not even need libc as long as your compiler has a builtin memset and
 memmove (ie, not gcc).
 So fairly bare-bones as far as codec libraries go.
