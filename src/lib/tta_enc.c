@@ -33,7 +33,7 @@ static size_t tta_encode_mch(
 	struct BitCache *restrict bitcache, struct Codec *restrict codec,
 	size_t, size_t, u8, i32, u8, uint
 #ifndef NDEBUG
-	, enum TTASampleBytes
+	, size_t
 #endif
 )
 /*@modifies	*dest,
@@ -57,7 +57,7 @@ static size_t tta_encode_1ch(
 	struct BitCache *restrict bitcache, struct Codec *restrict codec,
 	size_t, size_t, u8, i32, u8, uint
 #ifndef NDEBUG
-	, enum TTASampleBytes
+	, size_t
 #endif
 )
 /*@modifies	*dest,
@@ -81,7 +81,7 @@ static size_t tta_encode_2ch(
 	struct BitCache *restrict bitcache, struct Codec *restrict codec,
 	size_t, size_t, u8, i32, u8, uint
 #ifndef NDEBUG
-	, enum TTASampleBytes
+	, size_t
 #endif
 )
 /*@modifies	*dest,
@@ -146,7 +146,11 @@ libttaR_tta_encode(
 		tta_safety_margin_perchan(samplebytes) * nchan
 	);
 	const size_t write_soft_limit = dest_len - safety_margin;
-
+#ifndef NDEBUG
+	const size_t enc_max   = (samplebytes != TTASAMPLEBYTES_3
+		? RICE_ENC_MAX_1_2 : RICE_ENC_MAX_3
+	);
+#endif
 	// initial state setup
 	// inlining this instead of having it as its own library function is
 	//   only slower if ni32_target is small and many calls are made for
@@ -193,7 +197,7 @@ libttaR_tta_encode(
 			priv->codec, ni32_target, write_soft_limit, predict_k,
 			filter_round, filter_k, nchan
 #ifndef NDEBUG
-			, samplebytes
+			, enc_max
 #endif
 		);
 		break;
@@ -205,7 +209,7 @@ libttaR_tta_encode(
 			priv->codec, ni32_target, write_soft_limit, predict_k,
 			filter_round, filter_k, nchan
 #ifndef NDEBUG
-			, samplebytes
+			, enc_max
 #endif
 		);
 		break;
@@ -217,7 +221,7 @@ libttaR_tta_encode(
 			priv->codec, ni32_target, write_soft_limit, predict_k,
 			filter_round, filter_k, nchan
 #ifndef NDEBUG
-			, samplebytes
+			, enc_max
 #endif
 		);
 		break;
@@ -281,7 +285,7 @@ tta_encode_mch(
 	const size_t write_soft_limit, const u8 predict_k,
 	const i32 filter_round, const u8 filter_k, const uint nchan
 #ifndef NDEBUG
-	, enum TTASampleBytes samplebytes
+	, const size_t enc_max
 #endif
 )
 /*@modifies	*dest,
@@ -297,7 +301,7 @@ tta_encode_mch(
 	size_t i;
 	uint j;
 #ifndef NDEBUG
-	size_t nbytes_before;
+	size_t nbytes_old;
 #endif
 	for ( i = 0; i < ni32_target; i += nchan ){
 		if ( nbytes_enc > write_soft_limit ){ break; }
@@ -329,16 +333,13 @@ tta_encode_mch(
 
 			// encode
 #ifndef NDEBUG
-			nbytes_before = nbytes_enc;
+			nbytes_old = nbytes_enc;
 #endif
 			nbytes_enc = rice_encode(
 				dest, (u32) curr, nbytes_enc, &codec[j].rice,
 				bitcache, &crc
 			);
-			assert(nbytes_enc - nbytes_before <= (
-				samplebytes != 3u
-				? RICE_ENC_MAX_1_2 : RICE_ENC_MAX_3
-			));
+			assert(nbytes_enc - nbytes_old <= enc_max);
 		}
 	}
 	*crc_out  = crc;
@@ -375,7 +376,7 @@ tta_encode_1ch(
 	const size_t write_soft_limit, const u8 predict_k,
 	const i32 filter_round, const u8 filter_k, UNUSED const uint nchan
 #ifndef NDEBUG
-	, enum TTASampleBytes samplebytes
+	, const size_t enc_max
 #endif
 )
 /*@modifies	*dest,
@@ -390,7 +391,7 @@ tta_encode_1ch(
 	i32 curr, prev;
 	size_t i;
 #ifndef NDEBUG
-	size_t nbytes_before;
+	size_t nbytes_old;
 #endif
 	for ( i = 0; i < ni32_target; ++i ){
 		if ( nbytes_enc > write_soft_limit ){ break; }
@@ -411,15 +412,13 @@ tta_encode_1ch(
 
 		// encode
 #ifndef NDEBUG
-		nbytes_before = nbytes_enc;
+		nbytes_old = nbytes_enc;
 #endif
 		nbytes_enc = rice_encode(
 			dest, (u32) curr, nbytes_enc, &codec->rice, bitcache,
 			&crc
 		);
-		assert(nbytes_enc - nbytes_before <= (samplebytes != 3u
-			? RICE_ENC_MAX_1_2 : RICE_ENC_MAX_3
-		));
+		assert(nbytes_enc - nbytes_old <= enc_max);
 	}
 	*crc_out  = crc;
 	*ni32_out = i;
@@ -455,7 +454,7 @@ tta_encode_2ch(
 	const size_t write_soft_limit, const u8 predict_k,
 	const i32 filter_round, const u8 filter_k, UNUSED const uint nchan
 #ifndef NDEBUG
-	, enum TTASampleBytes samplebytes
+	, const size_t enc_max
 #endif
 )
 /*@modifies	*dest,
@@ -470,7 +469,7 @@ tta_encode_2ch(
 	i32 curr, prev, next;
 	size_t i;
 #ifndef NDEBUG
-	size_t nbytes_before;
+	size_t nbytes_old;
 #endif
 	for ( i = 0; i < ni32_target; i += (size_t) 2u ){
 		if ( nbytes_enc > write_soft_limit ){ break; }
@@ -493,15 +492,13 @@ tta_encode_2ch(
 
 		// encode
 #ifndef NDEBUG
-		nbytes_before = nbytes_enc;
+		nbytes_old = nbytes_enc;
 #endif
 		nbytes_enc = rice_encode(
 			dest, (u32) curr, nbytes_enc, &codec[0u].rice,
 			bitcache, &crc
 		);
-		assert(nbytes_enc - nbytes_before <= (samplebytes != 3u
-			? RICE_ENC_MAX_1_2 : RICE_ENC_MAX_3
-		));
+		assert(nbytes_enc - nbytes_old <= enc_max);
 
 	// 1	// correlate
 		curr = next - (prev / 2);
@@ -520,15 +517,13 @@ tta_encode_2ch(
 
 		// encode
 #ifndef NDEBUG
-		nbytes_before = nbytes_enc;
+		nbytes_old = nbytes_enc;
 #endif
 		nbytes_enc = rice_encode(
 			dest, (u32) curr, nbytes_enc, &codec[1u].rice,
 			bitcache, &crc
 		);
-		assert(nbytes_enc - nbytes_before <= (samplebytes != 3u
-			? RICE_ENC_MAX_1_2 : RICE_ENC_MAX_3
-		));
+		assert(nbytes_enc - nbytes_old <= enc_max);
 	}
 	*crc_out  = crc;
 	*ni32_out = i;
