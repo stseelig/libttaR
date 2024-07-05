@@ -61,9 +61,9 @@ struct BitCache {
 //////////////////////////////////////////////////////////////////////////////
 
 /*@unchecked@*/ /*@unused@*/
-extern HIDDEN const u32 shift32p4_bit_table[29u];
+extern HIDDEN const u32 shift32p4_bit_table[26u];
 /*@unchecked@*/ /*@unused@*/
-extern HIDDEN const u32 lsmask32_table[28u];
+extern HIDDEN const u32 lsmask32_table[25u];
 
 #ifdef LIBTTAr_PREFER_LOOKUP_TABLES
 /*@unchecked@*/ /*@unused@*/
@@ -263,7 +263,7 @@ rice_init(
  *
  * @return a 32-bit mask with only the 'k'th bit set
  *
- * @pre 0 <= 'k' <= 31u
+ * @pre k <= 31u
 **/
 ALWAYS_INLINE CONST u32
 shift32_bit(register const u8 k)
@@ -280,7 +280,7 @@ shift32_bit(register const u8 k)
  *
  * @return a mask with only the ('k' + 4u)th bit set, 0, or 0xFFFFFFFFu
  *
- * @pre 0 <= 'k' <= 28u
+ * @pre k <= 25u
 **/
 ALWAYS_INLINE CONST u32
 shift32p4_bit(register const u8 k, const enum ShiftMaskMode mode)
@@ -291,7 +291,7 @@ shift32p4_bit(register const u8 k, const enum ShiftMaskMode mode)
 	case SMM_CONST:
 	case SMM_SHIFT:
 		r = (u32) (k != 0
-			? (k < (u8) 28u ? 0x10u << k : 0xFFFFFFFFu) : 0
+			? (k < (u8) 25u ? 0x10u << k : 0xFFFFFFFFu) : 0
 		);
 		break;
 	case SMM_TABLE:
@@ -309,7 +309,7 @@ shift32p4_bit(register const u8 k, const enum ShiftMaskMode mode)
  *
  * @return a mask with 'k' low bits set
  *
- * @pre 0 <= 'k' <= 27u
+ * @pre k <= 24u
 **/
 ALWAYS_INLINE CONST u32
 lsmask32(register const u8 k, const enum ShiftMaskMode mode)
@@ -331,9 +331,9 @@ lsmask32(register const u8 k, const enum ShiftMaskMode mode)
 //==========================================================================//
 
 #ifndef LIBTTAr_PREFER_LOOKUP_TABLES
-#define TBCNT(x) 	((u8) tbcnt32((x)))
+#define TBCNT(cache) 	((u8) tbcnt32((cache)))
 #else
-#define TBCNT(x) 	(tbcnt8((u8) (x)))
+#define TBCNT(cache) 	(tbcnt8((u8) (cache)))
 #endif
 
 //--------------------------------------------------------------------------//
@@ -366,7 +366,7 @@ lsmask32(register const u8 k, const enum ShiftMaskMode mode)
  *
  * @return number of trailing zeroes
  *
- * @note undefined for 0
+ * @pre x != 0
 **/
 ALWAYS_INLINE CONST uint
 tzcnt32(register const u32 x)
@@ -398,7 +398,7 @@ tzcnt32(register const u32 x)
  *
  * @return number of trailing bits
  *
- * @note undefined for UINT32_MAX
+ * @pre x != UINT32_MAX
 **/
 ALWAYS_INLINE CONST uint
 tbcnt32(register const u32 x)
@@ -434,10 +434,8 @@ tbcnt8(register const u8 x)
  * @param k[in out] rice->k[]
  * @param value input value to code
  *
- * @pre  0 <= 'k' <= 27u
- * @post 0 <= 'k' <= 27u
- *
- * @note in practice, 'k' maxes out at 24u
+ * @pre  k <= 24u
+ * @post k <= 24u
 **/
 ALWAYS_INLINE void
 rice_cmpsum(
@@ -664,7 +662,7 @@ rice_write_binary(
  *
  * @return number of bytes written to 'dest' + 'nbytes_enc'
  *
- * @note max write size: 4u
+ * @note max write size: 4u (only for cacheflush, otherwise 3u)
 **/
 ALWAYS_INLINE size_t
 rice_write_cache(
@@ -702,8 +700,8 @@ rice_write_cache(
  * @return number of bytes read from 'src' + 'nbytes_dec'
  *
  * @note max read size (unary + binary):
- *     8/16-bit :   22u
- *       24-bit : 4102u
+ *     8/16-bit :   21u
+ *       24-bit : 4101u
  * @see rice_read_binary
 **/
 ALWAYS_INLINE size_t
@@ -780,8 +778,8 @@ rice_decode(
  *
  * @return number of bytes read from 'src' + 'nbytes_dec'
  *
- * @pre  0 <= '*count' <= 8u
- * @post 0 <= '*count' <= 7u
+ * @pre  *count <= 8u	// 7u in practice
+ * @post *count <= 7u
  *
  * @note max read size:
  *     8/16-bit :   18u
@@ -834,10 +832,10 @@ rice_read_unary(
  *
  * @return number of bytes read from 'src' + 'nbytes_dec'
  *
- * @pre  0 <= '*count' <= 7u
- * @post 0 <= '*count' <= 7u
+ * @pre  *count <= 8u	// 7u in practice
+ * @post *count <= 8u	// ~
  *
- * @note max read size: 4u (normally 3u, but might be 4u with malformed data)
+ * @note max read size: 3u
 **/
 ALWAYS_INLINE size_t
 rice_read_binary(

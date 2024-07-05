@@ -51,7 +51,7 @@ enum TTASampleBytes {
 // max unary r/w size:		read	write
 //	8/16-bit:		  18u	  16u
 //	  24-bit:		4098u	4096u
-// max binary r/w size:		   4u	   3u
+// max binary r/w size:		   3u	   3u
 // max cacheflush w size: 		   4u
 // rounded up to the nearest (power of 2) + (power of 2)
 #define TTABUF_SAFETY_MARGIN_1_2	((size_t)   24u)

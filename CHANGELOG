@@ -1,8 +1,13 @@
 
 # libttaR ####################################################################
 
+next:-------------------------------------------------------------------------
+
+	- trimmed some lookup tables
+
 1.2.1 (2024-07-03):-----------------------------------------------------------
 
+	- tbcnt table for LIBTTAr_OPT_PREFER_LOOKUP_TABLES
 	- a little refactoring
 	- possible performance improvements
 
