@@ -10,6 +10,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
+#include <assert.h>
 #include <stdbool.h>	// true
 #include <stddef.h>	// size_t
 
