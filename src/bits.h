@@ -15,8 +15,6 @@
 #include <stdint.h>
 #include <string.h>	// memmove, memset
 
-#include "splint.h"
-
 //////////////////////////////////////////////////////////////////////////////
 
 #undef bswap16
@@ -64,8 +62,8 @@
 // these should always be A/B tested; not always beneficial
 
 #if HAS_BUILTIN(__builtin_expect)
-#define LIKELY(cond)		(__builtin_expect(!!(cond), true))
-#define UNLIKELY(cond)		(__builtin_expect(!!(cond), false))
+#define LIKELY(cond)		(__builtin_expect((cond), true))
+#define UNLIKELY(cond)		(__builtin_expect((cond), false))
 #else
 #define LIKELY(cond)		(cond)
 #define UNLIKELY(cond)		(cond)
@@ -73,10 +71,10 @@
 
 #if HAS_BUILTIN(__builtin_expect_with_probability)
 #define PROBABLE(cond, prob)	( \
-	__builtin_expect_with_probability(!!(cond), true, (prob)) \
+	__builtin_expect_with_probability((cond), true, (prob)) \
 )
 #define IMPROBABLE(cond, prob)	( \
-	__builtin_expect_with_probability(!!(cond), false, 1.0 - (prob)) \
+	__builtin_expect_with_probability((cond), false, 1.0 - (prob)) \
 )
 #else
 #define PROBABLE(cond, prob)	(cond)

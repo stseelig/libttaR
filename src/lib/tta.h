@@ -16,7 +16,7 @@
 
 #include "../bits.h"
 
-#include "rice.h"	// struct Rice, shift32_bit
+#include "common.h"
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -40,14 +40,6 @@ enum LibTTAr_RetVal {
 	LIBTTAr_RET_MISCONFIG	 = -1
 };
 
-enum TTASampleBytes {
-	TTASAMPLEBYTES_1 = 1u,
-	TTASAMPLEBYTES_2 = 2u,
-	TTASAMPLEBYTES_3 = 3u
-};
-#define TTA_SAMPLEBYTES_MAX	((uint) TTASAMPLEBYTES_3)
-#define TTA_SAMPLEBITS_MAX	((uint) (8u*TTA_SAMPLEBYTES_MAX))
-
 // max unary r/w size:		read	write
 //	8/16-bit:		  18u	  16u
 //	  24-bit:		4098u	4096u
@@ -57,8 +49,6 @@ enum TTASampleBytes {
 #define TTABUF_SAFETY_MARGIN_1_2	((size_t)   24u)
 #define TTABUF_SAFETY_MARGIN_3		((size_t) 4104u)
 
-//////////////////////////////////////////////////////////////////////////////
-
 enum TTAMode {
 	TTA_ENC,
 	TTA_DEC
@@ -66,33 +56,10 @@ enum TTAMode {
 
 //////////////////////////////////////////////////////////////////////////////
 
-struct Filter {
-	i32	error;
-	i32	qm[8u];
-	i32	dx[9u];	// the extra value is for a memmove trick
-	i32	dl[9u];	// ~
-};
-
-struct Codec {
-	struct Filter	filter;
-	struct Rice	rice;
-	i32		prev;
-};
-
-//////////////////////////////////////////////////////////////////////////////
-
-#undef codec
-INLINE void codec_init(/*@out@*/ struct Codec *restrict codec , uint)
-/*@modifies	*codec@*/
-;
-
-//--------------------------------------------------------------------------//
-
-INLINE CONST size_t tta_safety_margin_perchan(enum TTASampleBytes) /*@*/;
-INLINE CONST u32 tta_unary_lax_limit(enum TTASampleBytes) /*@*/;
-INLINE CONST u8 tta_predict_k(enum TTASampleBytes) /*@*/;
-INLINE CONST i32 tta_filter_round(enum TTASampleBytes) /*@*/;
-INLINE CONST u8 tta_filter_k(enum TTASampleBytes) /*@*/;
+INLINE CONST size_t get_safety_margin_perchan(enum TTASampleBytes) /*@*/;
+INLINE CONST u8 get_predict_k(enum TTASampleBytes) /*@*/;
+INLINE CONST i32 get_filter_round(enum TTASampleBytes) /*@*/;
+INLINE CONST u8 get_filter_k(enum TTASampleBytes) /*@*/;
 
 //--------------------------------------------------------------------------//
 
@@ -111,31 +78,7 @@ ALWAYS_INLINE i32 tta_filter(
 
 //////////////////////////////////////////////////////////////////////////////
 
-/**@fn codec_init
- * @brief initializes an array of 'struct Codec'
- *
- * @param codec[out] the struct array to initialize
- * @param nchan number of audio channels
-**/
-INLINE void
-codec_init(
-	/*@out@*/ register struct Codec *const restrict codec,
-	register const uint nchan
-)
-/*@modifies	*codec@*/
-{
-	register uint i;
-	for ( i = 0; i < nchan; ++i ){
-		MEMSET(&codec[i].filter, 0x00, sizeof codec[i].filter);
-		rice_init(&codec[i].rice, (u8) 10u, (u8) 10u);
-		codec[i].prev = 0;
-	}
-	return;
-}
-
-//--------------------------------------------------------------------------//
-
-/**@fn tta_safety_margin_perchan
+/**@fn get_safety_margin_perchan
  * @brief per channel safety margin for the TTA buffer
  *
  * @param samplebytes number of bytes per PCM sample
@@ -143,7 +86,7 @@ codec_init(
  * @return per channel safety margin
 **/
 INLINE CONST size_t
-tta_safety_margin_perchan(register const enum TTASampleBytes samplebytes)
+get_safety_margin_perchan(register const enum TTASampleBytes samplebytes)
 /*@*/
 {
 	register size_t r;
@@ -159,31 +102,7 @@ tta_safety_margin_perchan(register const enum TTASampleBytes samplebytes)
 	return r;
 }
 
-/**@fn tta_unary_lax_limit
- * @brief max number (plus 8u) of 1-bits in a unary code
- *
- * @param samplebytes number of bytes per PCM sample
- *
- * @return max number (plus 8u) of 1-bits in a unary code
-**/
-INLINE CONST u32
-tta_unary_lax_limit(register const enum TTASampleBytes samplebytes)
-/*@*/
-{
-	register u32 r;
-	switch ( samplebytes ){
-	case TTASAMPLEBYTES_1:
-	case TTASAMPLEBYTES_2:
-		r = UNARY_LAX_LIMIT_1_2;
-		break;
-	case TTASAMPLEBYTES_3:
-		r = UNARY_LAX_LIMIT_3;
-		break;
-	}
-	return r;
-}
-
-/**@fn tta_predict_k
+/**@fn get_predict_k
  * @brief arg for tta_predict1
  *
  * @param samplebytes number of bytes per PCM sample
@@ -191,7 +110,7 @@ tta_unary_lax_limit(register const enum TTASampleBytes samplebytes)
  * @return arg 'k' for tta_predict1
 **/
 INLINE CONST u8
-tta_predict_k(register const enum TTASampleBytes samplebytes)
+get_predict_k(register const enum TTASampleBytes samplebytes)
 /*@*/
 {
 	register u8 r;
@@ -207,7 +126,7 @@ tta_predict_k(register const enum TTASampleBytes samplebytes)
 	return r;
 }
 
-/**@fn tta_filter_round
+/**@fn get_filter_round
  * @brief arg for tta_filter
  *
  * @param samplebytes number of bytes per PCM sample
@@ -215,23 +134,23 @@ tta_predict_k(register const enum TTASampleBytes samplebytes)
  * @return arg 'sum' for tta_filter
 **/
 INLINE CONST i32
-tta_filter_round(register const enum TTASampleBytes samplebytes)
+get_filter_round(register const enum TTASampleBytes samplebytes)
 /*@*/
 {
 	register i32 r;
 	switch ( samplebytes ){
 	case TTASAMPLEBYTES_1:
 	case TTASAMPLEBYTES_3:
-		r = (i32) shift32_bit((u8) 9u);
+		r = (i32) 0x00000200;
 		break;
 	case TTASAMPLEBYTES_2:
-		r = (i32) shift32_bit((u8) 8u);
+		r = (i32) 0x00000100;
 		break;
 	}
 	return r;
 }
 
-/**@fn tta_filter_k
+/**@fn get_filter_k
  * @brief arg for tta_filter
  *
  * @param samplebytes number of bytes per PCM sample
@@ -239,7 +158,7 @@ tta_filter_round(register const enum TTASampleBytes samplebytes)
  * @return arg 'k' for tta_filter
 **/
 INLINE CONST u8
-tta_filter_k(register const enum TTASampleBytes samplebytes)
+get_filter_k(register const enum TTASampleBytes samplebytes)
 /*@*/
 {
 	register u8 r;

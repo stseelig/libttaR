@@ -20,6 +20,7 @@
 #include "../bits.h"
 #include "../splint.h"
 
+#include "common.h"
 #include "crc32.h"
 
 //////////////////////////////////////////////////////////////////////////////
@@ -40,12 +41,6 @@ enum ShiftMaskMode {
 
 //--------------------------------------------------------------------------//
 
-// max unary + binary r/w size for one value
-#define RICE_ENC_MAX_1_2	((size_t)   19u)
-#define RICE_ENC_MAX_3		((size_t) 4099u)
-#define RICE_DEC_MAX_1_2	((size_t)   21u)
-#define RICE_DEC_MAX_3		((size_t) 4101u)
-
 // max unary size:
 //	8/16-bit :   16u bytes + 7u bits + terminator
 //	  24-bit : 4096u bytes + 7u bits + terminator
@@ -53,17 +48,11 @@ enum ShiftMaskMode {
 #define UNARY_LAX_LIMIT_1_2	((u32) ((8u *   18u) - 1u))
 #define UNARY_LAX_LIMIT_3	((u32) ((8u * 4098u) - 1u))
 
-//////////////////////////////////////////////////////////////////////////////
-
-struct Rice {
-	u32	sum[2u];
-	u8	k[2u];
-};
-
-struct BitCache {
-	u32	cache;
-	u8	count;
-};
+// max unary + binary r/w size for one value
+#define RICE_ENC_MAX_1_2	((size_t)   19u)
+#define RICE_ENC_MAX_3		((size_t) 4099u)
+#define RICE_DEC_MAX_1_2	((size_t)   21u)
+#define RICE_DEC_MAX_3		((size_t) 4101u)
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -79,10 +68,12 @@ extern HIDDEN const  u8 tbcnt8_table[256u];
 
 //////////////////////////////////////////////////////////////////////////////
 
-#undef rice
-INLINE void rice_init(/*@out@*/ struct Rice *restrict rice, u8, u8)
-/*@modifies	*rice@*/
-;
+INLINE CONST u32 get_unary_lax_limit(enum TTASampleBytes) /*@*/;
+
+#ifndef NDEBUG
+INLINE CONST size_t get_rice_enc_max(enum TTASampleBytes) /*@*/;
+INLINE CONST size_t get_rice_dec_max(enum TTASampleBytes) /*@*/;
+#endif
 
 //--------------------------------------------------------------------------//
 
@@ -240,26 +231,79 @@ ALWAYS_INLINE size_t rice_read_binary(
 
 //////////////////////////////////////////////////////////////////////////////
 
-/**@fn rice_init
- * @brief initializes a 'struct Rice'
+/**@fn get_unary_lax_limit
+ * @brief max number (plus 8u) of 1-bits in a unary code
  *
- * @param rice[out] struct to initialize
- * @param k0 initial value for rice->k[0u]
- * @param k1 initial value for rice->k[1u]
+ * @param samplebytes number of bytes per PCM sample
+ *
+ * @return max number (plus 8u) of 1-bits in a unary code
 **/
-INLINE void
-rice_init(
-	/*@out@*/ register struct Rice *const restrict rice,
-	register const u8 k0, register const u8 k1
-)
-/*@modifies	*rice@*/
+INLINE CONST u32
+get_unary_lax_limit(register const enum TTASampleBytes samplebytes)
+/*@*/
 {
-	rice->sum[0u] = shift32p4_bit(k0, SMM_CONST);
-	rice->sum[1u] = shift32p4_bit(k1, SMM_CONST);
-	rice->k[0u]   = k0;
-	rice->k[1u]   = k1;
-	return;
+	register u32 r;
+	switch ( samplebytes ){
+	case TTASAMPLEBYTES_1:
+	case TTASAMPLEBYTES_2:
+		r = UNARY_LAX_LIMIT_1_2;
+		break;
+	case TTASAMPLEBYTES_3:
+		r = UNARY_LAX_LIMIT_3;
+		break;
+	}
+	return r;
 }
+
+#ifndef NDEBUG
+/**@fn get_rice_enc_max
+ * @brief max number of bytes rice_encode could write
+ *
+ * @param samplebytes number of bytes per PCM sample
+ *
+ * @return max number of bytes rice_encode could write
+**/
+INLINE CONST size_t
+get_rice_enc_max(register const enum TTASampleBytes samplebytes)
+/*@*/
+{
+	register size_t r;
+	switch ( samplebytes ){
+	case TTASAMPLEBYTES_1:
+	case TTASAMPLEBYTES_2:
+		r = RICE_ENC_MAX_1_2;
+		break;
+	case TTASAMPLEBYTES_3:
+		r = RICE_ENC_MAX_3;
+		break;
+	}
+	return r;
+}
+
+/**@fn get_rice_dec_max
+ * @brief max number of bytes rice_decode could read
+ *
+ * @param samplebytes number of bytes per PCM sample
+ *
+ * @return max number of bytes rice_decode could read
+**/
+INLINE CONST size_t
+get_rice_dec_max(register const enum TTASampleBytes samplebytes)
+/*@*/
+{
+	register size_t r;
+	switch ( samplebytes ){
+	case TTASAMPLEBYTES_1:
+	case TTASAMPLEBYTES_2:
+		r = RICE_DEC_MAX_1_2;
+		break;
+	case TTASAMPLEBYTES_3:
+		r = RICE_DEC_MAX_3;
+		break;
+	}
+	return r;
+}
+#endif
 
 //==========================================================================//
 

@@ -15,8 +15,8 @@
 
 #include "../bits.h"
 
+#include "common.h"
 #include "rice.h"
-#include "state.h"
 #include "tta.h"
 
 //////////////////////////////////////////////////////////////////////////////
@@ -139,17 +139,15 @@ libttaR_tta_encode(
 {
 	int r = LIBTTAr_RET_AGAIN;
 	size_t nbytes_enc;
-	const  u8 predict_k    = tta_predict_k(samplebytes);
-	const i32 filter_round = tta_filter_round(samplebytes);
-	const  u8 filter_k     = tta_filter_k(samplebytes);
+	const  u8 predict_k    = get_predict_k(samplebytes);
+	const i32 filter_round = get_filter_round(samplebytes);
+	const  u8 filter_k     = get_filter_k(samplebytes);
 	const size_t safety_margin    = (size_t) (
-		tta_safety_margin_perchan(samplebytes) * nchan
+		get_safety_margin_perchan(samplebytes) * nchan
 	);
 	const size_t write_soft_limit = dest_len - safety_margin;
 #ifndef NDEBUG
-	const size_t enc_max   = (samplebytes != TTASAMPLEBYTES_3
-		? RICE_ENC_MAX_1_2 : RICE_ENC_MAX_3
-	);
+	const size_t rice_enc_max     = get_rice_enc_max(samplebytes);
 #endif
 	// initial state setup
 	// inlining this instead of having it as its own library function is
@@ -197,7 +195,7 @@ libttaR_tta_encode(
 			priv->codec, ni32_target, write_soft_limit, predict_k,
 			filter_round, filter_k, nchan
 #ifndef NDEBUG
-			, enc_max
+			, rice_enc_max
 #endif
 		);
 		break;
@@ -209,7 +207,7 @@ libttaR_tta_encode(
 			priv->codec, ni32_target, write_soft_limit, predict_k,
 			filter_round, filter_k, nchan
 #ifndef NDEBUG
-			, enc_max
+			, rice_enc_max
 #endif
 		);
 		break;
@@ -221,7 +219,7 @@ libttaR_tta_encode(
 			priv->codec, ni32_target, write_soft_limit, predict_k,
 			filter_round, filter_k, nchan
 #ifndef NDEBUG
-			, enc_max
+			, rice_enc_max
 #endif
 		);
 		break;
@@ -285,7 +283,7 @@ tta_encode_mch(
 	const size_t write_soft_limit, const u8 predict_k,
 	const i32 filter_round, const u8 filter_k, const uint nchan
 #ifndef NDEBUG
-	, const size_t enc_max
+	, const size_t rice_enc_max
 #endif
 )
 /*@modifies	*dest,
@@ -339,7 +337,7 @@ tta_encode_mch(
 				dest, (u32) curr, nbytes_enc, &codec[j].rice,
 				bitcache, &crc
 			);
-			assert(nbytes_enc - nbytes_old <= enc_max);
+			assert(nbytes_enc - nbytes_old <= rice_enc_max);
 		}
 	}
 	*crc_out  = crc;
@@ -376,7 +374,7 @@ tta_encode_1ch(
 	const size_t write_soft_limit, const u8 predict_k,
 	const i32 filter_round, const u8 filter_k, UNUSED const uint nchan
 #ifndef NDEBUG
-	, const size_t enc_max
+	, const size_t rice_enc_max
 #endif
 )
 /*@modifies	*dest,
@@ -418,7 +416,7 @@ tta_encode_1ch(
 			dest, (u32) curr, nbytes_enc, &codec->rice, bitcache,
 			&crc
 		);
-		assert(nbytes_enc - nbytes_old <= enc_max);
+		assert(nbytes_enc - nbytes_old <= rice_enc_max);
 	}
 	*crc_out  = crc;
 	*ni32_out = i;
@@ -454,7 +452,7 @@ tta_encode_2ch(
 	const size_t write_soft_limit, const u8 predict_k,
 	const i32 filter_round, const u8 filter_k, UNUSED const uint nchan
 #ifndef NDEBUG
-	, const size_t enc_max
+	, const size_t rice_enc_max
 #endif
 )
 /*@modifies	*dest,
@@ -498,7 +496,7 @@ tta_encode_2ch(
 			dest, (u32) curr, nbytes_enc, &codec[0u].rice,
 			bitcache, &crc
 		);
-		assert(nbytes_enc - nbytes_old <= enc_max);
+		assert(nbytes_enc - nbytes_old <= rice_enc_max);
 
 	// 1	// correlate
 		curr = next - (prev / 2);
@@ -523,7 +521,7 @@ tta_encode_2ch(
 			dest, (u32) curr, nbytes_enc, &codec[1u].rice,
 			bitcache, &crc
 		);
-		assert(nbytes_enc - nbytes_old <= enc_max);
+		assert(nbytes_enc - nbytes_old <= rice_enc_max);
 	}
 	*crc_out  = crc;
 	*ni32_out = i;

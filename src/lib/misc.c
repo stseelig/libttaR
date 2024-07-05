@@ -15,8 +15,8 @@
 #include "../bits.h"
 #include "../version.h"
 
+#include "common.h"
 #include "crc32.h"
-#include "state.h"
 #include "tta.h"
 
 //////////////////////////////////////////////////////////////////////////////
@@ -177,7 +177,7 @@ libttaR_ttabuf_safety_margin(
 	){
 		return 0;
 	}
-	return (size_t) (tta_safety_margin_perchan(samplebytes) * nchan);
+	return (size_t) (get_safety_margin_perchan(samplebytes) * nchan);
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////
