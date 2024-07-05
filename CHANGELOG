@@ -7,6 +7,7 @@ next:-------------------------------------------------------------------------
 	- trimmed some lookup tables
 	- replaced the tbcnt32 backup bithack with a lookup table
 	- a little refactoring
+	- possible performance improvements
 
 1.2.1 (2024-07-03):-----------------------------------------------------------
 
