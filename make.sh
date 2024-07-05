@@ -102,7 +102,7 @@ CFLAGS_LIB="$CFLAGS_LIB -fPIC";
 # uncomment to disable the multichannel/general codec
 #CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_OPT_DISABLE_MCH";
 
-# try uncommenting if your cpu is a slow POS
+# try uncommenting if your CPU is a slow POS
 #CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_OPT_PREFER_LOOKUP_TABLES";
 
 readonly CFLAGS_LIB;
