@@ -148,9 +148,7 @@ libttaR_tta_decode(
 	const i32 filter_round = get_filter_round(samplebytes);
 	const  u8 filter_k     = get_filter_k(samplebytes);
 	const u32 unary_lax_limit    = get_unary_lax_limit(samplebytes);
-	const size_t safety_margin   = (size_t) (
-		get_safety_margin_perchan(samplebytes) * nchan
-	);
+	const size_t safety_margin   = get_safety_margin(samplebytes, nchan);
 	const size_t read_soft_limit = (nbytes_tta_target < safety_margin
 		? src_len - safety_margin : nbytes_tta_target
 	);

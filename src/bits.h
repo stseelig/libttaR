@@ -11,9 +11,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
-#include <stdbool.h>
 #include <stdint.h>
-#include <string.h>	// memmove, memset
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -27,9 +25,6 @@
 #undef htole32
 #undef letoh64
 #undef htole64
-
-#undef asl32
-#undef asr32
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -91,22 +86,6 @@
 #define UNREACHABLE		; /*@notreached@*/
 #endif
 
-//--------------------------------------------------------------------------//
-
-// -nolibc for library; a decent compiler should do this anyway
-
-#if HAS_BUILTIN(__builtin_memmove)
-#define MEMMOVE(dest, src, n)	((void) __builtin_memmove((dest), (src), (n)))
-#else
-#define MEMMOVE(dest, src, n)	((void) memmove((dest), (src), (n)))
-#endif
-
-#if HAS_BUILTIN(__builtin_memset)
-#define MEMSET(s, c, n)		(__builtin_memset((s), (c), (n)))
-#else
-#define MEMSET(s, c, n)		(memset((s), (c), (n)))
-#endif
-
 //////////////////////////////////////////////////////////////////////////////
 
 typedef unsigned char	uchar;
@@ -138,22 +117,11 @@ ALWAYS_INLINE CONST u32 letoh32(u32) /*@*/;
 ALWAYS_INLINE CONST u64 htole64(u64) /*@*/;
 ALWAYS_INLINE CONST u64 letoh64(u64) /*@*/;
 
-ALWAYS_INLINE CONST i32 asl32(i32, u8) /*@*/;
-ALWAYS_INLINE CONST i32 asr32(i32, u8) /*@*/;
-
 //////////////////////////////////////////////////////////////////////////////
 
 #define BUILTIN_BSWAP16			__builtin_bswap16
 #define BUILTIN_BSWAP32			__builtin_bswap32
 #define BUILTIN_BSWAP64			__builtin_bswap64
-
-//--------------------------------------------------------------------------//
-
-#define HAS_ASR(type) ((bool)\
-	/*@-shiftimplementation@*/ \
-	(((type) (((type) (-1)) >> 1u)) == ((type) (-1))) \
-	/*@=shiftimplementation@*/ \
-)
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -338,46 +306,6 @@ letoh64(register const u64 x)
 /*@*/
 {
 	return htole64(x);
-}
-
-//==========================================================================//
-
-// shifting signed integers is naughty (implementation defined)
-
-/**@fn asl32
- * @brief arithmetic shift left 32-bit
- *
- * @param x value to shift
- * @param k amount to shift
- *
- * @return shifted value
-**/
-ALWAYS_INLINE CONST i32
-asl32(register const i32 x, register const u8 k)
-/*@*/
-{
-	return (i32) (((u32) x) << k);
-}
-
-/**@fn asr32
- * @brief arithmetic shift right 32-bit
- *
- * @param x value to shift
- * @param k amount to shift
- *
- * @return shifted value
-**/
-ALWAYS_INLINE CONST i32
-asr32(register const i32 x, register const u8 k)
-/*@*/
-{
-	if ( !HAS_ASR(i32) && (x < 0) ){
-		return (i32) ~((~((u32) x)) >> k);
-	}
-	else {	/*@-shiftimplementation@*/
-		return (i32) (x >> k);
-		/*@=shiftimplementation@*/
-	}
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////

@@ -12,6 +12,8 @@
 
 #include "../bits.h"
 
+#include "common.h"
+
 //////////////////////////////////////////////////////////////////////////////
 
 /*@unchecked@*/
@@ -36,7 +38,7 @@ HIDDEN const u32 lsmask32_table[25u] = {
 (u32) 0x00FFFFFFu
 };
 
-#ifdef LIBTTAr_OPT_PREFER_LOOKUP_TABLES
+#if TBCNT8_TEST
 /*@unchecked@*/
 HIDDEN const u8 tbcnt8_table[256u] = {
 (u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 3u,

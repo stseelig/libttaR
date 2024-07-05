@@ -108,7 +108,7 @@ libttaR_test_nchan(const uint nchan)
  * @return the CRC
  *
  * @note read the manpage for more info
- * @note width   : 32
+ * @note width   : 32-bit
  *       endian  : little
  *       poly    : 0xEDB88320u
  *       xor-in  : 0xFFFFFFFFu
@@ -177,7 +177,7 @@ libttaR_ttabuf_safety_margin(
 	){
 		return 0;
 	}
-	return (size_t) (get_safety_margin_perchan(samplebytes) * nchan);
+	return get_safety_margin(samplebytes, nchan);
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////

@@ -5,6 +5,7 @@ next:-------------------------------------------------------------------------
 
 	- debug assertions
 	- trimmed some lookup tables
+	- replaced the tbcnt32 backup bithack with a lookup table
 	- a little refactoring
 
 1.2.1 (2024-07-03):-----------------------------------------------------------

@@ -12,7 +12,9 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
+#include <limits.h>
 #include <stddef.h>	// size_t
+#include <string.h>	// memmove, memset
 
 #include "../bits.h"
 
@@ -25,6 +27,47 @@ enum TTASampleBytes {
 };
 #define TTA_SAMPLEBYTES_MAX	((uint) TTASAMPLEBYTES_3)
 #define TTA_SAMPLEBITS_MAX	((uint) (8u*TTA_SAMPLEBYTES_MAX))
+
+//==========================================================================//
+
+#ifndef S_SPLINT_S	// splint preproc bugs
+#if UINT_MAX == UINT32_MAX
+#define BUILTIN_TZCNT32			__builtin_ctz
+#elif ULONG_MAX == UINT32_MAX
+#define BUILTIN_TZCNT32			__builtin_ctzl
+#else
+#define BUILTIN_TZCNT32			nil
+#endif
+
+#if UINT_MAX == UINT64_MAX
+#define BUILTIN_TZCNT64			__builtin_ctz
+#elif ULONG_MAX == UINT64_MAX
+#define BUILTIN_TZCNT64			__builtin_ctzl
+#elif ULONG_LONG_MAX == UINT64_MAX
+#define BUILTIN_TZCNT64			__builtin_ctzll
+#else
+#define BUILTIN_TZCNT64			nil
+#endif
+#endif	// S_SPLINT_S
+
+#define TBCNT8_TEST	LIBTTAr_OPT_PREFER_LOOKUP_TABLES \
+ || (!HAS_BUILTIN(BUILTIN_TZCNT32) && !HAS_BUILTIN(BUILTIN_TZCNT64))
+
+//////////////////////////////////////////////////////////////////////////////
+
+// -nolibc; a decent compiler should do this anyway
+
+#if HAS_BUILTIN(__builtin_memmove)
+#define MEMMOVE(dest, src, n)	((void) __builtin_memmove((dest), (src), (n)))
+#else
+#define MEMMOVE(dest, src, n)	((void) memmove((dest), (src), (n)))
+#endif
+
+#if HAS_BUILTIN(__builtin_memset)
+#define MEMSET(s, c, n)		(__builtin_memset((s), (c), (n)))
+#else
+#define MEMSET(s, c, n)		(memset((s), (c), (n)))
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 

@@ -12,6 +12,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
+#include <stdbool.h>	// typecast
 #include <stddef.h>	// size_t
 
 #include "../bits.h"
@@ -56,10 +57,15 @@ enum TTAMode {
 
 //////////////////////////////////////////////////////////////////////////////
 
-INLINE CONST size_t get_safety_margin_perchan(enum TTASampleBytes) /*@*/;
+INLINE CONST size_t get_safety_margin(enum TTASampleBytes, uint) /*@*/;
 INLINE CONST u8 get_predict_k(enum TTASampleBytes) /*@*/;
 INLINE CONST i32 get_filter_round(enum TTASampleBytes) /*@*/;
 INLINE CONST u8 get_filter_k(enum TTASampleBytes) /*@*/;
+
+//--------------------------------------------------------------------------//
+
+ALWAYS_INLINE CONST i32 asl32(i32, u8) /*@*/;
+ALWAYS_INLINE CONST i32 asr32(i32, u8) /*@*/;
 
 //--------------------------------------------------------------------------//
 
@@ -78,15 +84,18 @@ ALWAYS_INLINE i32 tta_filter(
 
 //////////////////////////////////////////////////////////////////////////////
 
-/**@fn get_safety_margin_perchan
- * @brief per channel safety margin for the TTA buffer
+/**@fn get_safety_margin
+ * @brief safety margin for the TTA buffer
  *
  * @param samplebytes number of bytes per PCM sample
  *
- * @return per channel safety margin
+ * @return safety margin
 **/
 INLINE CONST size_t
-get_safety_margin_perchan(register const enum TTASampleBytes samplebytes)
+get_safety_margin(
+	register const enum TTASampleBytes samplebytes,
+	register const uint nchan
+)
 /*@*/
 {
 	register size_t r;
@@ -99,7 +108,7 @@ get_safety_margin_perchan(register const enum TTASampleBytes samplebytes)
 		r = TTABUF_SAFETY_MARGIN_3;
 		break;
 	}
-	return r;
+	return (size_t) (r * nchan);
 }
 
 /**@fn get_predict_k
@@ -172,6 +181,48 @@ get_filter_k(register const enum TTASampleBytes samplebytes)
 		break;
 	}
 	return r;
+}
+
+//==========================================================================//
+
+// shifting signed integers is naughty (implementation defined)
+
+/**@fn asl32
+ * @brief arithmetic shift left 32-bit
+ *
+ * @param x value to shift
+ * @param k amount to shift
+ *
+ * @return shifted value
+**/
+ALWAYS_INLINE CONST i32
+asl32(register const i32 x, register const u8 k)
+/*@*/
+{
+	return (i32) (((u32) x) << k);
+}
+
+/**@fn asr32
+ * @brief arithmetic shift right 32-bit
+ *
+ * @param x value to shift
+ * @param k amount to shift
+ *
+ * @return shifted value
+**/
+ALWAYS_INLINE CONST i32
+asr32(register const i32 x, register const u8 k)
+/*@*/
+{
+	/*@-shiftimplementation@*/
+	if ( (x < 0) && ((i32) (((i32) -1) >> 1u) != (i32) -1) ){
+	/*@=shiftimplementation@*/
+		return (i32) ~((~((u32) x)) >> k);
+	}
+	else {	/*@-shiftimplementation@*/
+		return (i32) (x >> k);
+		/*@=shiftimplementation@*/
+	}
 }
 
 //==========================================================================//
