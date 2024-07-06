@@ -17,6 +17,7 @@
 #include <string.h>	// memmove, memset
 
 #include "../bits.h"
+#include "../splint.h"
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -48,12 +49,12 @@ enum TTASampleBytes {
 #else
 #define BUILTIN_TZCNT64			nil
 #endif
-#endif	// S_SPLINT_S
+#endif // S_SPLINT_S
 
 #define TBCNT8_TEST	LIBTTAr_OPT_PREFER_LOOKUP_TABLES \
- || (!HAS_BUILTIN(BUILTIN_TZCNT32) && !HAS_BUILTIN(BUILTIN_TZCNT64))
+ || ((! HAS_BUILTIN(BUILTIN_TZCNT32)) && (! HAS_BUILTIN(BUILTIN_TZCNT64)))
 
-//////////////////////////////////////////////////////////////////////////////
+//==========================================================================//
 
 // -nolibc; a decent compiler should do this anyway
 
@@ -119,8 +120,8 @@ INLINE void
 rice_init(/*@out@*/ register struct Rice *const restrict rice)
 /*@modifies	*rice@*/
 {
-	rice->sum[0u] = (u32) 0x00004000u;
-	rice->sum[1u] = (u32) 0x00004000u;
+	rice->sum[0u] = (u32) 0x00004000u;	// shift32p4_bit((u8) 10u)
+	rice->sum[1u] = (u32) 0x00004000u;	// ~
 	rice->k[0u]   = (u8) 10u;
 	rice->k[1u]   = (u8) 10u;
 	return;

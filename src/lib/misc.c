@@ -22,10 +22,10 @@
 //////////////////////////////////////////////////////////////////////////////
 
 struct LibTTAr_VersionInfo {
-	unsigned int	 version;
-	unsigned int	 version_major;
-	unsigned int 	 version_minor;
-	unsigned int	 version_revis;
+	uint		 version;
+	uint		 version_major;
+	uint	 	 version_minor;
+	uint		 version_revis;
 	/*@observer@*/
 	const char	*version_extra;
 	/*@observer@*/

@@ -13,7 +13,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include <assert.h>
-#include <limits.h>	// tbcnt32 assert
+#include <limits.h>	// tbcnt8_32 assert
 #include <stdbool.h>
 #include <stddef.h>	// size_t
 
