@@ -84,7 +84,7 @@ ALWAYS_INLINE CONST u32 lsmask32(u8, enum ShiftMaskMode) /*@*/;
 //--------------------------------------------------------------------------//
 
 #ifndef LIBTTAr_OPT_PREFER_LOOKUP_TABLES
-ALWAYS_INLINE CONST uint tbcnt32(u32) /*@*/;
+ALWAYS_INLINE CONST uint tbcnt8_32(u32) /*@*/;
 #endif
 
 #if TBCNT8_TEST
@@ -391,16 +391,16 @@ lsmask32(register const u8 k, const enum ShiftMaskMode mode)
 //==========================================================================//
 
 #ifndef LIBTTAr_OPT_PREFER_LOOKUP_TABLES
-#define TBCNT(cache) 	((u8) tbcnt32((cache)))
+#define TBCNT8(cache) 	((u8) tbcnt8_32((cache)))
 #else
-#define TBCNT(cache) 	(tbcnt8((u8) (cache)))
+#define TBCNT8(cache) 	(tbcnt8((u8) (cache)))
 #endif
 
 //--------------------------------------------------------------------------//
 
 #ifndef LIBTTAr_OPT_PREFER_LOOKUP_TABLES
-/**@fn tbcnt32
- * @brief trailing bit count 32-bit
+/**@fn tbcnt8_32
+ * @brief trailing bit count 8-bit (32-bit version)
  *
  * @param x value to count
  *
@@ -409,7 +409,7 @@ lsmask32(register const u8 k, const enum ShiftMaskMode mode)
  * @pre x != UINT32_MAX
 **/
 ALWAYS_INLINE CONST uint
-tbcnt32(register const u32 x)
+tbcnt8_32(register const u32 x)
 /*@*/
 {
 	assert(x != UINT32_MAX);
@@ -824,11 +824,11 @@ rice_read_unary(
 
 	assert(*count <= (u8) 8u);
 
-	nbits  = TBCNT(*cache);
+	nbits  = TBCNT8(*cache);
 	*unary = nbits;
 	if IMPROBABLE ( nbits == *count, 0.25 ){
 		do {	*cache  = rice_crc32(src[nbytes_dec++], crc);
-			nbits   = TBCNT(*cache);
+			nbits   = TBCNT8(*cache);
 			*unary += nbits;
 			if UNLIKELY ( *unary > lax_limit ){
 				nbits = 0;	// prevents *count underflow

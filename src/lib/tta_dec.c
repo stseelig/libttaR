@@ -254,12 +254,10 @@ libttaR_tta_decode(
 	     (user->nbytes_tta_total > nbytes_tta_perframe)
 	){
 		user->crc       = crc32_end(user->crc);
-		if ( user->nbytes_tta_total != nbytes_tta_perframe ){
-			r = LIBTTAr_RET_DECFAIL;
-		}
-		else {	r = LIBTTAr_RET_DONE; }
+		r = (user->nbytes_tta_total == nbytes_tta_perframe
+			? LIBTTAr_RET_DONE : LIBTTAr_RET_DECFAIL
+		);
 	}
-
 	user->ncalls_codec     += 1u;
 	return r;
 }

@@ -177,7 +177,7 @@ get_filter_k(register const enum TTASampleBytes samplebytes)
 		r = (u8) 10u;
 		break;
 	case TTASAMPLEBYTES_2:
-		r = (u8) 9u;
+		r = (u8)  9u;
 		break;
 	}
 	return r;
@@ -307,7 +307,7 @@ tta_filter(
 	//   everything down considerably. it adds an branch or two to reduce
 	//   code size a bit, but that is just slower. logically, the ==0
 	//   branch should be last, because it is the least likely to happen
-	//   (but not enough for UNLIKELY; main exception being silence)
+	//   (main exception being silence)
 	// for-loops SIMD better than unrolled
 	if ( filter->error == 0 ){
 		for ( i = 0; i < 8u; ++i ){

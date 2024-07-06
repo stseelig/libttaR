@@ -243,7 +243,6 @@ libttaR_tta_encode(
 	}
 	user->nbytes_tta	= nbytes_enc;
 	user->nbytes_tta_total += nbytes_enc;
-
 	user->ncalls_codec     += 1u;
 	return r;
 }
