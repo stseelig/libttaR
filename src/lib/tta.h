@@ -12,7 +12,6 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
-#include <stdbool.h>	// typecast
 #include <stddef.h>	// size_t
 
 #include "../bits.h"
