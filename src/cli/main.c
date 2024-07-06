@@ -240,6 +240,7 @@ sighand_cleanup_exit(const int signum)
 {
 	const char intro0[]       = "\n" T_B_DEFAULT;
 	const char intro1[]       = ": " T_PURPLE;
+	// strsignal may not be async-signal-safe, but we are just _exit-ing
 	const char *const signame = strsignal(signum);
 	const char intro2[]       = T_DEFAULT " ";
 	const char outro[]        = T_PURPLE "!" T_RESET "\n";
