@@ -149,10 +149,10 @@ get_filter_round(register const enum TTASampleBytes samplebytes)
 	switch ( samplebytes ){
 	case TTASAMPLEBYTES_1:
 	case TTASAMPLEBYTES_3:
-		r = (i32) 0x00000200;
+		r = (i32) 0x00000200;	// binexp32(filter_k - 1u)
 		break;
 	case TTASAMPLEBYTES_2:
-		r = (i32) 0x00000100;
+		r = (i32) 0x00000100;	// ~
 		break;
 	}
 	return r;

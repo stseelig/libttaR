@@ -39,7 +39,7 @@
 #define CONST		__attribute__((const))
 
 #define NORETURN	/*@noreturn@*/ __attribute__((noreturn))
-#define UNUSED		/*@unused@*/ __attribute__((unused))
+#define UNUSED		/*@unused@*/   __attribute__((unused))
 
 #define PACKED		__attribute__((packed))
 #define HIDDEN		__attribute__((visibility("hidden")))
@@ -119,9 +119,9 @@ ALWAYS_INLINE CONST u64 letoh64(u64) /*@*/;
 
 //////////////////////////////////////////////////////////////////////////////
 
-#define BUILTIN_BSWAP16			__builtin_bswap16
-#define BUILTIN_BSWAP32			__builtin_bswap32
-#define BUILTIN_BSWAP64			__builtin_bswap64
+#define BUILTIN_BSWAP16		__builtin_bswap16
+#define BUILTIN_BSWAP32		__builtin_bswap32
+#define BUILTIN_BSWAP64		__builtin_bswap64
 
 //////////////////////////////////////////////////////////////////////////////
 

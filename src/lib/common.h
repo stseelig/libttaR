@@ -120,7 +120,7 @@ INLINE void
 rice_init(/*@out@*/ register struct Rice *const restrict rice)
 /*@modifies	*rice@*/
 {
-	rice->sum[0u] = (u32) 0x00004000u;	// shift32p4_bit((u8) 10u)
+	rice->sum[0u] = (u32) 0x00004000u;	// binexp32p4((u8) 10u)
 	rice->sum[1u] = (u32) 0x00004000u;	// ~
 	rice->k[0u]   = (u8) 10u;
 	rice->k[1u]   = (u8) 10u;

@@ -57,7 +57,7 @@ enum ShiftMaskMode {
 //////////////////////////////////////////////////////////////////////////////
 
 /*@unchecked@*/ /*@unused@*/
-extern HIDDEN const u32 shift32p4_bit_table[26u];
+extern HIDDEN const u32 binexp32p4_table[26u];
 /*@unchecked@*/ /*@unused@*/
 extern HIDDEN const u32 lsmask32_table[25u];
 
@@ -77,8 +77,8 @@ INLINE CONST size_t get_rice_dec_max(enum TTASampleBytes) /*@*/;
 
 //--------------------------------------------------------------------------//
 
-ALWAYS_INLINE CONST u32 shift32_bit(u8) /*@*/;
-ALWAYS_INLINE CONST u32 shift32p4_bit(u8, enum ShiftMaskMode) /*@*/;
+ALWAYS_INLINE CONST u32 binexp32(u8) /*@*/;
+ALWAYS_INLINE CONST u32 binexp32p4(u8, enum ShiftMaskMode) /*@*/;
 ALWAYS_INLINE CONST u32 lsmask32(u8, enum ShiftMaskMode) /*@*/;
 
 //--------------------------------------------------------------------------//
@@ -95,7 +95,7 @@ ALWAYS_INLINE CONST u8 tbcnt8(u8) /*@*/;
 
 #undef sum
 #undef k
-ALWAYS_INLINE void rice_cmpsum(u32 *restrict sum, u8 *restrict k, u32)
+ALWAYS_INLINE void rice_update(u32 *restrict sum, u8 *restrict k, u32)
 /*@modifies	*sum,
 		*k
 @*/
@@ -310,17 +310,17 @@ get_rice_dec_max(register const enum TTASampleBytes samplebytes)
 
 //==========================================================================//
 
-/**@fn shift32_bit
- * @brief shift the 0th bit 32-bit 'k' places left
+/**@fn binexp32
+ * @brief binary exponentiation 32-bit (2**'k')
  *
  * @param k bit number
  *
  * @return a 32-bit mask with only the 'k'th bit set
  *
- * @pre k <= 31u
+ * @pre k <= (u8) 31u	// 24u in practice
 **/
 ALWAYS_INLINE CONST u32
-shift32_bit(register const u8 k)
+binexp32(register const u8 k)
 /*@*/
 {
 	assert(k <= (u8) 31u);
@@ -328,18 +328,22 @@ shift32_bit(register const u8 k)
 	return (u32) (0x1u << k);
 }
 
-/**@fn shift32p4_bit
- * @brief shift the 0th bit 32-bit 'k' + 4u places left
+/**@fn binexp32p4
+ * @brief binary exponetiation 32-bit + 4-lshift (2**('k' + 4u))
  *
  * @param k bit number - 4u
  * @param mode constant, shift, or lookup table
  *
  * @return a mask with only the ('k' + 4u)th bit set, 0, or 0xFFFFFFFFu
  *
- * @pre k <= 25u
+ * @note special cases (for rice_update):
+ *        0u => 0x00000000u: floors rice.k[] to  0u
+ *       25u => 0xFFFFFFFFu:   caps rice.k[] to 24u
+ *
+ * @pre k <= (u8) 25u
 **/
 ALWAYS_INLINE CONST u32
-shift32p4_bit(register const u8 k, const enum ShiftMaskMode mode)
+binexp32p4(register const u8 k, const enum ShiftMaskMode mode)
 /*@*/
 {
 	assert(k <= (u8) 25u);
@@ -353,7 +357,7 @@ shift32p4_bit(register const u8 k, const enum ShiftMaskMode mode)
 		);
 		break;
 	case SMM_TABLE:
-		r = shift32p4_bit_table[k];
+		r = binexp32p4_table[k];
 		break;
 	}
 	return r;
@@ -367,7 +371,7 @@ shift32p4_bit(register const u8 k, const enum ShiftMaskMode mode)
  *
  * @return a mask with 'k' low bits set
  *
- * @pre k <= 24u
+ * @pre k <= (u8) 24u
 **/
 ALWAYS_INLINE CONST u32
 lsmask32(register const u8 k, const enum ShiftMaskMode mode)
@@ -444,18 +448,18 @@ tbcnt8(register const u8 x)
 
 //==========================================================================//
 
-/**@fn rice_cmpsum
+/**@fn rice_update
  * @brief update the rice struct data
  *
  * @param sum[in out] rice->sum[]
  * @param k[in out] rice->k[]
  * @param value input value to code
  *
- * @pre  *k <= 24u
- * @post *k <= 24u
+ * @pre  *k <= (u8) 24u
+ * @post *k <= (u8) 24u
 **/
 ALWAYS_INLINE void
-rice_cmpsum(
+rice_update(
 	register u32 *const restrict sum, register u8 *const restrict k,
 	register const u32 value
 )
@@ -466,10 +470,10 @@ rice_cmpsum(
 	assert(*k <= (u8) 24u);
 
 	*sum += value - (*sum >> 4u);
-	if UNLIKELY ( *sum < shift32p4_bit(*k, SMM_TABLE) ){
+	if UNLIKELY ( *sum < binexp32p4(*k, SMM_TABLE) ){
 		*k -= 1u;
 	}
-	else if UNLIKELY ( *sum > shift32p4_bit(*k + 1u, SMM_TABLE) ){
+	else if UNLIKELY ( *sum > binexp32p4(*k + 1u, SMM_TABLE) ){
 		*k += 1u;
 	} else{;}
 
@@ -537,11 +541,11 @@ rice_encode(
 
 	// value + state
 	kx = *k0;
-	rice_cmpsum(sum0, k0, value);
-	if PROBABLE ( value >= shift32_bit(kx), 0.575 ){
-		value -= shift32_bit(kx);
+	rice_update(sum0, k0, value);
+	if PROBABLE ( value >= binexp32(kx), 0.575 ){
+		value -= binexp32(kx);
 		kx     = *k1;
-		rice_cmpsum(sum1, k1, value);
+		rice_update(sum1, k1, value);
 		unary  = (value >> kx) + 1u;
 	}
 
@@ -773,10 +777,10 @@ rice_decode(
 	// value + state
 	*value = (unary << kx) + binary;
 	if PROBABLE ( depth1, 0.575 ){
-		rice_cmpsum(sum1, k1, *value);
-		*value += shift32_bit(*k0);
+		rice_update(sum1, k1, *value);
+		*value += binexp32(*k0);
 	}
-	rice_cmpsum(sum0, k0, *value);
+	rice_update(sum0, k0, *value);
 
 	return nbytes_dec;
 }
@@ -799,8 +803,8 @@ rice_decode(
  *
  * @return number of bytes read from 'src' + 'nbytes_dec'
  *
- * @pre  *count <= 8u	// 7u in practice
- * @post *count <= 7u
+ * @pre  *count <= (u8) 8u	// 7u in practice
+ * @post *count <= (u8) 7u
  *
  * @note max read size:
  *     8/16-bit :   18u
@@ -857,8 +861,8 @@ rice_read_unary(
  *
  * @return number of bytes read from 'src' + 'nbytes_dec'
  *
- * @pre  *count <= 8u	// 7u in practice
- * @post *count <= 8u	// ~
+ * @pre  *count <= (u8) 8u	// 7u in practice
+ * @post *count <= (u8) 8u	// ~
  *
  * @note max read size: 3u
 **/
