@@ -74,20 +74,6 @@ readonly CFLAGS_COMMON;
 
 #----------------------------------------------------------------------------#
 
-CFLAGS_CLI=;
-
-CFLAGS_CLI="$CFLAGS_CLI -D_POSIX_C_SOURCE=200809L";
-CFLAGS_CLI="$CFLAGS_CLI -D_FILE_OFFSET_BITS=64";
-
-# -Os is recommended; -O3 is safe, but it can be slower
-CFLAGS_CLI="$CFLAGS_CLI -Os";
-# floats are only used for printf-ing
-CFLAGS_CLI="$CFLAGS_CLI -ffast-math";
-
-readonly CFLAGS_CLI;
-
-#----------------------------------------------------------------------------#
-
 CFLAGS_LIB=;
 
 CFLAGS_LIB="$CFLAGS_LIB -fPIC";
@@ -107,10 +93,35 @@ CFLAGS_LIB="$CFLAGS_LIB -O3";
 
 readonly CFLAGS_LIB;
 
+#----------------------------------------------------------------------------#
+
+CFLAGS_CLI=;
+
+CFLAGS_CLI="$CFLAGS_CLI -D_POSIX_C_SOURCE=200809L";
+CFLAGS_CLI="$CFLAGS_CLI -D_FILE_OFFSET_BITS=64";
+
+# -Os is recommended; -O3 is safe, but it can be slower
+CFLAGS_CLI="$CFLAGS_CLI -Os";
+# floats are only used for printf-ing
+CFLAGS_CLI="$CFLAGS_CLI -ffast-math";
+
+readonly CFLAGS_CLI;
+
 #============================================================================#
 
 LDFLAGS_COMMON=;
 readonly LDFLAGS_COMMON;
+
+#----------------------------------------------------------------------------#
+
+LDFLAGS_LIB=;
+LDFLAGS_LIB="$LDFLAGS_LIB -shared";
+# library only uses memmove & memset from libc, but those should be builtin
+LDFLAGS_LIB="$LDFLAGS_LIB -nolibc";
+readonly LDFLAGS_LIB;
+
+LDFLAGS_LIB_END=;
+readonly LDFLAGS_LIB_END;
 
 #----------------------------------------------------------------------------#
 
@@ -123,17 +134,6 @@ LDFLAGS_CLI_END="$LDFLAGS_CLI_END -L$BUILD/";
 LDFLAGS_CLI_END="$LDFLAGS_CLI_END -l$LIB_BASE";
 LDFLAGS_CLI_END="$LDFLAGS_CLI_END -lpthread";
 readonly LD_FLAGS_CLI_END;
-
-#----------------------------------------------------------------------------#
-
-LDFLAGS_LIB=;
-LDFLAGS_LIB="$LDFLAGS_LIB -shared";
-# library only uses memmove & memset from libc, but those should be builtin
-LDFLAGS_LIB="$LDFLAGS_LIB -nolibc";
-readonly LDFLAGS_LIB;
-
-LDFLAGS_LIB_END=;
-readonly LDFLAGS_LIB_END;
 
 #============================================================================#
 
