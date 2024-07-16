@@ -203,6 +203,14 @@ The number of uncoded int32_t per TTA frame.
 The number of encoded bytes in the current TTA frame.
 .RE
 
+.\#--------------------------------------------------------------------------#
+
+.SS Warning
+*\fIpriv\fR, *\fIuser\fR, \fInchan\fR, \fIni32_perframe\fR, and
+\fInbytes_tta_perframe\fR
+should not be modified between consecutive calls for the same frame,
+unless you know what you are doing.
+
 .\############################################################################
 
 .SH "RETURN VALUE"
