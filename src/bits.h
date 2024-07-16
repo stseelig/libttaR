@@ -41,7 +41,7 @@
 #if HAS_ATTRIBUTE(always_inline)
 #define ALWAYS_INLINE		INLINE __attribute__((always_inline))
 #else
-#define ALWAY_INLINE		INLINE
+#define ALWAYS_INLINE		INLINE
 #endif
 
 #if HAS_ATTRIBUTE(noinline)
