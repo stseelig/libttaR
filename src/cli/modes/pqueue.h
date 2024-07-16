@@ -11,8 +11,8 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-//      replaced an actual queue with a pseudo-queue, because the id's are  //
-// always sequential                                                        //
+//      replaced an actual queue with a pseudo-queue (stripped down ring    //
+// buffer), because the id's are always sequential                          //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
@@ -33,7 +33,7 @@ struct PQueue {
  * @brief initializes a pseudo-queue struct
  *
  * @param q[out] the queue
- * @param limit the maximum queue length + 1u
+ * @param limit the maximum queue length
 **/
 INLINE void
 pqueue_init(
@@ -51,7 +51,24 @@ pqueue_init(
 	return;
 }
 
-/**@fn pdequeue
+/**@fn pqueue_next
+ * @brief get the next queue id
+ *
+ * @param curr the current queue id
+ * @param limit the maximum queue length
+ *
+ * @return the next queue id
+ *
+ * @note an enqueue/push does not make much sense
+**/
+ALWAYS_INLINE CONST uint
+pqueue_next(register uint curr, register uint limit)
+/*@*/
+{
+	return (curr + 1u < limit ? curr + 1u : 0);
+}
+
+/**@fn pqueue_pop
  * @brief pseudo-dequeue
  *
  * @param q[in out] the queue
@@ -59,11 +76,11 @@ pqueue_init(
  * @return the next queue id
 **/
 ALWAYS_INLINE uint
-pdequeue(register struct PQueue *const restrict q)
+pqueue_pop(register struct PQueue *const restrict q)
 /*@modifies	q->next@*/
 {
 	register const uint r = q->next;
-	q->next = (r + 1u != q->limit ? r + 1u : 0);
+	q->next = pqueue_next(q->next, q->limit);
 	return r;
 }
 

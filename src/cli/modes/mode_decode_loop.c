@@ -724,7 +724,7 @@ loop0_truncated:
 		assert(t.d == 0);
 
 		++nframes_read;
-		i = (i + 1u < framequeue_len ? i + 1u : 0);
+		i = pqueue_next(i, framequeue_len);
 		// all frame ttabuf's are filled before writing out any PCM
 		if ( ! start_writing ){
 			if ( i != 0 ){	goto loop0_read; }
@@ -757,7 +757,7 @@ loop0_read:
 	else {	// unlock any uninitialized frames (tiny infile)
 		do {	t.d = sem_post(nframes_avail);
 			assert(t.d == 0);
-			i = (i + 1u < framequeue_len ? i + 1u : 0);
+			i = pqueue_next(i, framequeue_len);
 		} while ( i != 0 );
 	}
 	do {	// wait for frame to finish encoding
@@ -777,7 +777,7 @@ loop0_read:
 		t.d = sem_post(nframes_avail);
 		assert(t.d == 0);
 loop1_not_tiny:
-		i = (i + 1u < framequeue_len ? i + 1u : 0);
+		i = pqueue_next(i, framequeue_len);
 	}
 	while ( i != last );
 
@@ -862,7 +862,7 @@ loop_entr:
 		// get frame id from decode queue
 		t.d = pthread_spin_lock(&queue->lock);
 		assert(t.d == 0);
-		i = pdequeue(&queue->q);
+		i = pqueue_pop(&queue->q);
 		t.d = pthread_spin_unlock(&queue->lock);
 		assert(t.d == 0);
 	}
