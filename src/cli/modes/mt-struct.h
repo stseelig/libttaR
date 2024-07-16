@@ -20,6 +20,7 @@
 
 #include "bufs.h"
 #include "pqueue.h"
+#include "threads.h"
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -45,8 +46,8 @@ struct FileStats_DecMT {
 //==========================================================================//
 
 struct MTPQueue {
-	pthread_spinlock_t	lock;
-	struct PQueue		q;
+	spinlock_p	lock;
+	struct PQueue	q;
 };
 
 //--------------------------------------------------------------------------//
@@ -54,11 +55,11 @@ struct MTPQueue {
 struct MTArg_EncIO_Frames {
 	uint				nmemb;
 	/*@owned@*/
-	sem_t				*navailable;
+	semaphore_p			*navailable;
 
 	// parallel arrays
 	/*@owned@*/
-	sem_t				*post_encoder;
+	semaphore_p			*post_encoder;
 	/*@owned@*/
 	size_t				*ni32_perframe;
 	/*@owned@*/
@@ -69,13 +70,13 @@ struct MTArg_EncIO_Frames {
 
 struct MTArg_Encoder_Frames {
 	/*@dependent@*/
-	sem_t				*navailable;
+	semaphore_p			*navailable;
 
 	struct MTPQueue			queue;
 
 	// parallel arrays
 	/*@dependent@*/
-	sem_t				*post_encoder;
+	semaphore_p			*post_encoder;
 	/*@dependent@*/
 	const size_t			*ni32_perframe;
 	/*@dependent@*/
@@ -89,11 +90,11 @@ struct MTArg_Encoder_Frames {
 struct MTArg_DecIO_Frames {
 	uint				nmemb;
 	/*@owned@*/
-	sem_t				*navailable;
+	semaphore_p			*navailable;
 
 	// parallel arrays
 	/*@owned@*/
-	sem_t				*post_decoder;
+	semaphore_p			*post_decoder;
 	/*@owned@*/
 	size_t				*ni32_perframe;
 	/*@owned@*/
@@ -112,13 +113,13 @@ struct MTArg_DecIO_Frames {
 
 struct MTArg_Decoder_Frames {
 	/*@dependent@*/
-	sem_t				*navailable;
+	semaphore_p			*navailable;
 
 	struct MTPQueue			queue;
 
 	// parallel arrays
 	/*@dependent@*/
-	sem_t				*post_decoder;
+	semaphore_p			*post_decoder;
 	/*@dependent@*/
 	size_t				*ni32_perframe;
 	/*@dependent@*/

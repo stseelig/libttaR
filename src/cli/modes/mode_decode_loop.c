@@ -16,9 +16,6 @@
 #include <stdlib.h>
 #include <string.h>	// memset
 
-#include <pthread.h>
-#include <semaphore.h>
-
 #include "../../bits.h"
 #include "../../libttaR.h"
 #include "../../splint.h"
@@ -31,6 +28,7 @@
 #include "bufs.h"
 #include "mt-struct.h"
 #include "pqueue.h"
+#include "threads.h"
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -304,14 +302,13 @@ decmt_loop(
 {
 	struct MTArg_DecIO state_io;
 	struct MTArg_Decoder state_decoder;
-	pthread_t thread_io;
-	pthread_t *thread_decoder = NULL;
+	thread_p thread_io;
+	thread_p *thread_decoder = NULL;
 	struct FileStats_DecMT fstat_c;
 	struct DecStats dstat;
 	const size_t samplebuf_len = fstat->buflen;
 	const uint framequeue_len = FRAMEQUEUE_LEN(nthreads);
 	uint i;
-	union {	int d; } t;
 
 	assert(nthreads >= 1u);
 
@@ -323,7 +320,6 @@ decmt_loop(
 		outfile, outfile_name, infile, infile_name, seektable, &dstat,
 		&fstat_c
 	);
-	//
 	if ( nthreads > 1u ){
 		thread_decoder = calloc(
 			(size_t) (nthreads - 1u), sizeof *thread_decoder
@@ -335,33 +331,20 @@ decmt_loop(
 	}
 
 	// create
-	t.d = pthread_create(
-		&thread_io, NULL, (void *(*)(void *)) decmt_io, &state_io
-	);
-	if UNLIKELY ( t.d != 0 ){
-		error_sys(t.d, "pthread_create", NULL);
-	}
-	//
+	thread_create(&thread_io, (void *(*)(void *)) decmt_io, &state_io);
 	for ( i = 0; i < nthreads - 1u; ++i ){
-		t.d = pthread_create(
-			&thread_decoder[i], NULL,
-			(void *(*)(void *)) decmt_decoder, &state_decoder
+		thread_create(
+			&thread_decoder[i], (void *(*)(void *)) decmt_decoder,
+			&state_decoder
 		);
-		if UNLIKELY ( t.d != 0 ){
-			error_sys(t.d, "pthread_create", NULL);
-		}
 	}
-	//
 	(void) decmt_decoder(&state_decoder);
 
 	// join
 	for ( i = 0; i < nthreads - 1u; ++i ){
-		t.d = pthread_join(thread_decoder[i], NULL);
-		assert(t.d == 0);
+		thread_join(&thread_decoder[i]);
 	}
-	//
-	t.d = pthread_join(thread_io, NULL);
-	assert(t.d == 0);
+	thread_join(&thread_io);
 
 	// cleanup
 	decmt_state_free(&state_io, &state_decoder, framequeue_len);
@@ -532,7 +515,7 @@ dec_frame_write(
 	}
 
 	// update dstat
-	dstat.nframes          += (size_t) 1u;
+	dstat.nframes          += 1u;
 	dstat.nsamples_flat    += user.ni32_total;
 	dstat.nsamples_perchan += (size_t) (user.ni32_total / nchan);
 	dstat.nbytes_decoded   += user.nbytes_tta_total;
@@ -622,8 +605,8 @@ decmt_io(struct MTArg_DecIO *const restrict arg)
 	const struct FileStats_DecMT *const restrict fstat =  arg->fstat;
 	const struct SeekTable *const restrict seektable   =  arg->seektable;
 	//
-	sem_t         *const restrict nframes_avail = frames->navailable;
-	sem_t         *const restrict post_decoder  = frames->post_decoder;
+	semaphore_p   *const restrict nframes_avail = frames->navailable;
+	semaphore_p   *const restrict post_decoder  = frames->post_decoder;
 	size_t        *const restrict ni32_perframe = frames->ni32_perframe;
 	size_t        *const restrict nbytes_tta_perframe  = (
 		frames->nbytes_tta_perframe
@@ -653,8 +636,7 @@ decmt_io(struct MTArg_DecIO *const restrict arg)
 	bool start_writing = false;
 	size_t nframes_target = seektable->nmemb, nframes_read = 0;
 	uint i = 0, last;
-	union {	int	d;
-		uint	u;
+	union {	uint	u;
 		size_t	z;
 	} t;
 
@@ -720,8 +702,7 @@ loop0_truncated:
 		}
 
 		// make frame available
-		t.d = sem_post(nframes_avail);
-		assert(t.d == 0);
+		semaphore_post(nframes_avail);
 
 		++nframes_read;
 		i = pqueue_next(i, framequeue_len);
@@ -732,8 +713,7 @@ loop0_truncated:
 		}
 
 		// wait for frame to finish decoding
-		t.d = sem_wait(&post_decoder[i]);
-		assert(t.d == 0);
+		semaphore_wait(&post_decoder[i]);
 
 		// write pcm to outfile
 		dec_frame_write(
@@ -755,14 +735,12 @@ loop0_read:
 	// write the remaining frames
 	if ( start_writing ){ goto loop1_not_tiny; }
 	else {	// unlock any uninitialized frames (tiny infile)
-		do {	t.d = sem_post(nframes_avail);
-			assert(t.d == 0);
+		do {	semaphore_post(nframes_avail);
 			i = pqueue_next(i, framequeue_len);
 		} while ( i != 0 );
 	}
 	do {	// wait for frame to finish encoding
-		t.d = sem_wait(&post_decoder[i]);
-		assert(t.d == 0);
+		semaphore_wait(&post_decoder[i]);
 
 		// write tta to outfile
 		dec_frame_write(
@@ -774,8 +752,7 @@ loop0_read:
 
 		// mark frame as done and make available
 		nbytes_tta_perframe[i] = 0;
-		t.d = sem_post(nframes_avail);
-		assert(t.d == 0);
+		semaphore_post(nframes_avail);
 loop1_not_tiny:
 		i = pqueue_next(i, framequeue_len);
 	}
@@ -810,9 +787,9 @@ decmt_decoder(struct MTArg_Decoder *const restrict arg)
 	struct MTArg_Decoder_Frames  *const restrict frames = &arg->frames;
 	const struct FileStats_DecMT *const restrict fstat  =  arg->fstat;
 	//
-	sem_t        *const restrict nframes_avail =  frames->navailable;
+	semaphore_p  *const restrict nframes_avail =  frames->navailable;
 	struct MTPQueue *const restrict queue      = &frames->queue;
-	sem_t        *const restrict post_decoder  =  frames->post_decoder;
+	semaphore_p  *const restrict post_decoder  =  frames->post_decoder;
 	const size_t *const restrict ni32_perframe =  frames->ni32_perframe;
 	const size_t *const restrict nbytes_tta_perframe    = (
 		frames->nbytes_tta_perframe
@@ -852,19 +829,15 @@ decmt_decoder(struct MTArg_Decoder *const restrict arg)
 		);
 
 		// unlock frame
-		t.d = sem_post(&post_decoder[i]);
-		assert(t.d == 0);
+		semaphore_post(&post_decoder[i]);
 loop_entr:
 		// wait for a frame to be available
-		t.d = sem_wait(nframes_avail);
-		assert(t.d == 0);
+		semaphore_wait(nframes_avail);
 
 		// get frame id from decode queue
-		t.d = pthread_spin_lock(&queue->lock);
-		assert(t.d == 0);
+		spinlock_lock(&queue->lock);
 		i = pqueue_pop(&queue->q);
-		t.d = pthread_spin_unlock(&queue->lock);
-		assert(t.d == 0);
+		spinlock_unlock(&queue->lock);
 	}
 	while ( nbytes_tta_perframe[i] != 0 );
 

@@ -13,9 +13,6 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#include <pthread.h>
-#include <semaphore.h>
-
 #include "../../bits.h"
 #include "../../libttaR.h"	// sizeof *user
 
@@ -24,6 +21,7 @@
 
 #include "mt-struct.h"
 #include "pqueue.h"
+#include "threads.h"
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -74,7 +72,6 @@ encmt_state_init(
 @*/
 {
 	uint i;
-	union {	int d; } t;
 
 	// io->frames
 	io->frames.nmemb	= framequeue_len;
@@ -84,10 +81,7 @@ encmt_state_init(
 		error_sys(errno, "malloc", NULL);
 	}
 	assert(io->frames.navailable != NULL);
-	t.d = sem_init(io->frames.navailable, 0, 0);
-	if UNLIKELY ( t.d != 0 ){
-		error_sys(errno, "sem_init", NULL);
-	}
+	semaphore_init(io->frames.navailable, 0);
 	//
 	io->frames.post_encoder		= calloc(
 		(size_t) framequeue_len, sizeof *io->frames.post_encoder
@@ -118,10 +112,7 @@ encmt_state_init(
 	assert(io->frames.user		!= NULL);
 	//
 	for ( i = 0; i < framequeue_len; ++i ){
-		t.d = sem_init(&io->frames.post_encoder[i], 0, 0);
-		if UNLIKELY ( t.d != 0 ){
-			error_sys(errno, "sem_init", NULL);
-		}
+		semaphore_init(&io->frames.post_encoder[i], 0);
 	}
 	for ( i = 0; i < framequeue_len; ++i ){
 		encbuf_init(
@@ -146,12 +137,7 @@ encmt_state_init(
 	// encoder->frames
 	encoder->frames.navailable	= io->frames.navailable;
 	//
-	t.d = pthread_spin_init(
-		&encoder->frames.queue.lock, PTHREAD_PROCESS_PRIVATE
-	);
-	if UNLIKELY ( t.d != 0 ){
-		error_sys(t.d, "pthread_spin_init", NULL);
-	}
+	spinlock_init(&encoder->frames.queue.lock);
 	pqueue_init(&encoder->frames.queue.q, framequeue_len);
 	//
 	encoder->frames.post_encoder	= io->frames.post_encoder;
@@ -197,17 +183,12 @@ encmt_state_free(
 @*/
 {
 	uint i;
-	union {	int d; } t;
-#ifdef NDEBUG
-	(void) t.d;	// gcc
-#endif
+
 	// io
-	t.d = sem_destroy(io->frames.navailable);
-	assert(t.d == 0);
+	semaphore_destroy(io->frames.navailable);
 	free(io->frames.navailable);
 	for ( i = 0; i < framequeue_len; ++i ){
-		t.d = sem_destroy(&io->frames.post_encoder[i]);
-		assert(t.d == 0);
+		semaphore_destroy(&io->frames.post_encoder[i]);
 	}
 	free(io->frames.post_encoder);
 	free(io->frames.ni32_perframe);
@@ -218,8 +199,7 @@ encmt_state_free(
 	free(io->frames.user);
 
 	// encoder
-	t.d = pthread_spin_destroy(&encoder->frames.queue.lock);
-	assert(t.d == 0);
+	spinlock_destroy(&encoder->frames.queue.lock);
 
 	return;
 }
@@ -277,7 +257,6 @@ decmt_state_init(
 @*/
 {
 	uint i;
-	union {	int d; } t;
 
 	// io->frames
 	io->frames.nmemb	= framequeue_len;
@@ -287,10 +266,7 @@ decmt_state_init(
 		error_sys(errno, "malloc", NULL);
 	}
 	assert(io->frames.navailable != NULL);
-	t.d = sem_init(io->frames.navailable, 0, 0);
-	if UNLIKELY ( t.d != 0 ){
-		error_sys(errno, "sem_init", NULL);
-	}
+	semaphore_init(io->frames.navailable, 0);
 	//
 	io->frames.post_decoder		= calloc(
 		(size_t) framequeue_len, sizeof *io->frames.post_decoder
@@ -346,10 +322,7 @@ decmt_state_init(
 	assert(io->frames.nsamples_flat_2pad	!= NULL);
 	//
 	for ( i = 0; i < framequeue_len; ++i ){
-		t.d = sem_init(&io->frames.post_decoder[i], 0, 0);
-		if UNLIKELY ( t.d != 0 ){
-			error_sys(errno, "sem_init", NULL);
-		}
+		semaphore_init(&io->frames.post_decoder[i], 0);
 	}
 	for ( i = 0; i < framequeue_len; ++i ){
 		decbuf_init(
@@ -374,12 +347,7 @@ decmt_state_init(
 	// decoder->frames
 	decoder->frames.navailable          =  io->frames.navailable;
 	//
-	t.d = pthread_spin_init(
-		&decoder->frames.queue.lock, PTHREAD_PROCESS_PRIVATE
-	);
-	if UNLIKELY ( t.d != 0 ){
-		error_sys(t.d, "pthread_spin_init", NULL);
-	}
+	spinlock_init(&decoder->frames.queue.lock);
 	pqueue_init(&decoder->frames.queue.q, framequeue_len);
 	//
 	decoder->frames.post_decoder        = io->frames.post_decoder;
@@ -433,17 +401,12 @@ decmt_state_free(
 @*/
 {
 	uint i;
-	union {	int d; } t;
-#ifdef NDEBUG
-	(void) t.d;	// gcc
-#endif
+
 	// io
-	t.d = sem_destroy(io->frames.navailable);
-	assert(t.d == 0);
+	semaphore_destroy(io->frames.navailable);
 	free(io->frames.navailable);
 	for ( i = 0; i < framequeue_len; ++i ){
-		t.d = sem_destroy(&io->frames.post_decoder[i]);
-		assert(t.d == 0);
+		semaphore_destroy(&io->frames.post_decoder[i]);
 	}
 	free(io->frames.post_decoder);
 	free(io->frames.ni32_perframe);
@@ -458,8 +421,7 @@ decmt_state_free(
 	free(io->frames.nsamples_flat_2pad);
 
 	// decoder
-	t.d = pthread_spin_destroy(&decoder->frames.queue.lock);
-	assert(t.d == 0);
+	spinlock_destroy(&decoder->frames.queue.lock);
 
 	return;
 }
