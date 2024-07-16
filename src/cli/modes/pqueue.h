@@ -11,8 +11,10 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-//      replaced an actual queue with a pseudo-queue (stripped down ring    //
-// buffer), because the id's are always sequential                          //
+//      these functions are for keeping track of the index for a set of     //
+// parallel arrays that are used like a ring buffer. at one point, I was    //
+// using an actual queue, but the id's were always sequentially ordered, so //
+// I replaced the actual queue these pseudo-queue functions, hence pqueue   //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
@@ -58,8 +60,6 @@ pqueue_init(
  * @param limit the maximum queue length
  *
  * @return the next queue id
- *
- * @note an enqueue/push does not make much sense
 **/
 ALWAYS_INLINE CONST uint
 pqueue_next(register uint curr, register uint limit)
@@ -74,6 +74,8 @@ pqueue_next(register uint curr, register uint limit)
  * @param q[in out] the queue
  *
  * @return the next queue id
+ *
+ * @note guarded by a spinlock
 **/
 ALWAYS_INLINE uint
 pqueue_pop(register struct PQueue *const restrict q)
