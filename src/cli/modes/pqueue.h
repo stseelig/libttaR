@@ -12,7 +12,7 @@
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
 //      these functions are for keeping track of the index for a set of     //
-// parallel arrays that are used like a ring buffer. at one point, I was    //
+// parallel arrays that is used like a ring buffer. at one point, I was     //
 // using an actual queue, but the id's were always sequentially ordered, so //
 // I replaced the actual queue these pseudo-queue functions, hence pqueue   //
 //                                                                          //
