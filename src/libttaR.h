@@ -23,11 +23,24 @@
 /* //////////////////////////////////////////////////////////////////////// */
 
 #ifdef __GNUC__
+
+#if __has_attribute(pure)
 #define LIBTTAr_PURE		__attribute__((pure))
-#define LIBTTAr_CONST		__attribute__((const))
 #else
 #define LIBTTAr_PURE
+#endif
+
+#if __has_attribute(const)
+#define LIBTTAr_CONST		__attribute__((const))
+#else
 #define LIBTTAr_CONST
+#endif
+
+#else // !defined(__GNUC__)
+
+#define LIBTTAr_PURE
+#define LIBTTAr_CONST
+
 #endif
 
 /* //////////////////////////////////////////////////////////////////////// */

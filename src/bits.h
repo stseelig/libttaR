@@ -28,28 +28,88 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-#define INLINE		/*@unused@*/ static inline
-#define ALWAYS_INLINE	INLINE __attribute__((always_inline))
-#define NOINLINE	static __attribute__((noinline))
+#ifdef __has_attribute
+#define HAS_ATTRIBUTE(x)	__has_attribute(x)
+#else
+#define HAS_ATTRIBUTE(x)	0
+#endif
 
-#define HOT		__attribute__((hot))
-#define COLD		__attribute__((cold))
+//--------------------------------------------------------------------------//
 
-#define PURE		__attribute__((pure))
-#define CONST		__attribute__((const))
+#define INLINE			/*@unused@*/ static inline
 
-#define NORETURN	/*@noreturn@*/ __attribute__((noreturn))
-#define UNUSED		/*@unused@*/   __attribute__((unused))
+#if HAS_ATTRIBUTE(always_inline)
+#define ALWAYS_INLINE		INLINE __attribute__((always_inline))
+#else
+#define ALWAY_INLINE		INLINE
+#endif
 
-#define PACKED		__attribute__((packed))
-#define HIDDEN		__attribute__((visibility("hidden")))
+#if HAS_ATTRIBUTE(noinline)
+#define NOINLINE		static __attribute__((noinline))
+#else
+#define NOINLINE		static
+#endif
+
+#if HAS_ATTRIBUTE(hot)
+#define HOT			__attribute__((hot))
+#else
+#define HOT
+#endif
+
+#if HAS_ATTRIBUTE(cold)
+#define COLD			__attribute__((cold))
+#else
+#define COLD
+#endif
+
+#if HAS_ATTRIBUTE(pure)
+#define PURE			__attribute__((pure))
+#else
+#define PURE
+#endif
+
+#if HAS_ATTRIBUTE(const)
+#define CONST			__attribute__((const))
+#else
+#define CONST
+#endif
+
+#if HAS_ATTRIBUTE(noreturn)
+#define NORETURN		/*@noreturn@*/ __attribute__((noreturn))
+#else
+#define NORETURN		/*@noreturn@*/
+#endif
+
+#if HAS_ATTRIBUTE(unused)
+#define UNUSED			/*@unused@*/   __attribute__((unused))
+#else
+#define UNUSED			/*@unused@*/
+#endif
+
+#if HAS_ATTRIBUTE(counted_by)
+#define COUNTED_BY(x)		__attribute__((counted_by(x)))
+#else
+#define COUNTED_BY(x)
+#endif
+
+#if HAS_ATTRIBUTE(packed)
+#define PACKED			__attribute__((packed))
+#else
+#error "compiler does not support the attribute 'packed'"
+#endif
+
+#if HAS_ATTRIBUTE(visibility)
+#define HIDDEN			__attribute__((visibility("hidden")))
+#else
+#define HIDDEN
+#endif
 
 //==========================================================================//
 
 #ifdef __has_builtin
-#define HAS_BUILTIN(x)	__has_builtin(x)
+#define HAS_BUILTIN(x)		__has_builtin(x)
 #else
-#define HAS_BUILTIN(x)	0
+#define HAS_BUILTIN(x)		0
 #endif
 
 //--------------------------------------------------------------------------//
