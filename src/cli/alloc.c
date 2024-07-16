@@ -83,6 +83,9 @@ HOT void *
 realloc_check(
 	/*@only@*/ /*@null@*/ /*@out@*/ void *const ptr, const size_t size
 )
+/*@globals	fileSystem,
+		internalState
+@*/
 /*@modifies	fileSystem,
 		internalState,
 		*ptr
