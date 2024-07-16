@@ -37,7 +37,7 @@ enum TTASampleBytes {
 #elif ULONG_MAX == UINT32_MAX
 #define BUILTIN_TZCNT32			__builtin_ctzl
 #else
-#define BUILTIN_TZCNT32			nil
+#define BUILTIN_TZCNT32			0
 #endif
 
 #if UINT_MAX == UINT64_MAX
@@ -47,7 +47,7 @@ enum TTASampleBytes {
 #elif ULONG_LONG_MAX == UINT64_MAX
 #define BUILTIN_TZCNT64			__builtin_ctzll
 #else
-#define BUILTIN_TZCNT64			nil
+#define BUILTIN_TZCNT64			0
 #endif
 #endif // S_SPLINT_S
 
@@ -61,12 +61,15 @@ enum TTASampleBytes {
 #if HAS_BUILTIN(__builtin_memmove)
 #define MEMMOVE(dest, src, n)	((void) __builtin_memmove((dest), (src), (n)))
 #else
+// gcc will not reach here, even though it does not have a builtin memmove
+#pragma message "compiler does not have a builtin 'memmove'"
 #define MEMMOVE(dest, src, n)	((void) memmove((dest), (src), (n)))
 #endif
 
 #if HAS_BUILTIN(__builtin_memset)
 #define MEMSET(s, c, n)		(__builtin_memset((s), (c), (n)))
 #else
+#pragma message "compiler does not have a builtin 'memset'"
 #define MEMSET(s, c, n)		(memset((s), (c), (n)))
 #endif
 
@@ -95,9 +98,12 @@ struct Codec {
 	i32		prev;
 };
 
+// just adding a length field is way too much of a performance hit. actually
+//   checking is even worse. I just put a warning in the manpage instead
 struct LibTTAr_CodecState_Priv {
 	struct BitCache	bitcache;
-	struct Codec 	codec[];
+	//uint		nchan;
+	struct Codec 	codec[];// COUNTED_BY(nchan);
 };
 
 struct LibTTAr_CodecState_User {
@@ -164,6 +170,7 @@ state_priv_init(
 /*@modifies	*priv@*/
 {
 	MEMSET(&priv->bitcache, 0x00, sizeof priv->bitcache);
+	//priv->nchan = nchan;
 	codec_init((struct Codec *) &priv->codec, nchan);
 	return;
 }
