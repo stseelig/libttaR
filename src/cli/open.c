@@ -9,7 +9,6 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
-#include <assert.h>
 #include <errno.h>
 #include <inttypes.h>
 #include <stdbool.h>
@@ -22,6 +21,7 @@
 
 #include "../libttaR.h"
 
+#include "alloc.h"
 #include "debug.h"
 #include "main.h"
 #include "open.h"
@@ -203,19 +203,10 @@ openedfiles_add(
 	struct OpenedFilesMember **added;
 
 	++(of->nmemb);
-	of->file = realloc(of->file, of->nmemb * (sizeof *of->file));
-	if UNLIKELY ( of->file == NULL ){
-		error_sys(errno, "realloc", NULL);
-	}
-	assert(of->file != NULL);
+	of->file = realloc_check(of->file, of->nmemb * (sizeof *of->file));
 
 	 added = &of->file[of->nmemb - 1u];
-	*added = calloc((size_t) 1u, sizeof **added);
-	if UNLIKELY ( *added == NULL ){
-		error_sys(errno, "calloc", NULL);
-	}
-	assert(*added != NULL);
-	assert(of->file[of->nmemb - 1u] != NULL);
+	*added = calloc_check((size_t) 1u, sizeof **added);
 
 	(*added)->infile = fopen_check(name, "r", NONFATAL);
 	if ( (*added)->infile == NULL ){
@@ -515,11 +506,7 @@ outfile_name_fmt(
 	}
 	else {	base_len = (size_t) (fxdot - infile_name); }
 
-	r = malloc(dir_len + base_len + suffix_len + 1u);
-	if UNLIKELY ( r == NULL ){
-		error_sys(errno, "malloc", NULL);
-	}
-	assert(r != NULL);
+	r = malloc_check(dir_len + base_len + suffix_len + 1u);
 
 	if ( outfile_dir != NULL ){
 		(void) memcpy(r, outfile_dir, dir_len);

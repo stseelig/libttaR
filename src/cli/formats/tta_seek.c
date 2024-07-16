@@ -20,6 +20,7 @@
 
 #include "../../bits.h"
 
+#include "../alloc.h"
 #include "../debug.h"
 #include "../formats.h"
 
@@ -47,10 +48,7 @@ seektable_init(
 	st->off   = 0;
 	st->nmemb = 0;
 	st->limit = (nframes != 0 ? nframes : SEEKTABLE_INIT_DEFAULT);
-	st->table = calloc(st->limit, sizeof *(st->table));
-	if UNLIKELY ( st->table == NULL ){
-		error_sys(errno, "calloc", NULL);
-	}
+	st->table = calloc_check(st->limit, sizeof *(st->table));
 	return;
 }
 
@@ -78,12 +76,9 @@ seektable_add(
 {
 	if ( st->nmemb == st->limit ){
 		st->limit += SEEKTABLE_INIT_DEFAULT;
-		st->table  = realloc(
+		st->table  = realloc_check(
 			st->table, st->limit * (sizeof *(st->table))
 		);
-		if UNLIKELY ( st->table == NULL ){
-			error_sys(errno, "realloc", NULL);
-		}
 	}
 	assert(st->table != NULL);
 

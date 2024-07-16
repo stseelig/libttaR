@@ -10,13 +10,13 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include <assert.h>
-#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "../../bits.h"
 #include "../../libttaR.h"
 
+#include "../alloc.h"
 #include "../debug.h"
 
 #include "bufs.h"
@@ -53,7 +53,6 @@ encbuf_init(
 	const size_t safety_margin = libttaR_ttabuf_safety_margin(
 		samplebytes, nchan
 	);
-
 	assert(safety_margin != 0);
 
 	eb->i32buf_len = ni32_len;
@@ -61,24 +60,9 @@ encbuf_init(
 	eb->ttabuf_len = (ttabuf_len * nchan) + safety_margin;
 	assert(eb->ttabuf_len != 0);
 
-	eb->i32buf = calloc(eb->i32buf_len, sizeof *eb->i32buf);
-	if UNLIKELY ( eb->i32buf == NULL ){
-		error_sys(errno, "calloc", NULL);
-	}
-	assert(eb->i32buf != NULL);
-
-	eb->pcmbuf = calloc(eb->i32buf_len, (size_t) samplebytes);
-	if UNLIKELY ( eb->pcmbuf == NULL ){
-		error_sys(errno, "calloc", NULL);
-	}
-	assert(eb->pcmbuf != NULL);
-
-	eb->ttabuf = malloc(eb->ttabuf_len);
-	if UNLIKELY ( eb->ttabuf == NULL ){
-		error_sys(errno, "malloc", NULL);
-	}
-	assert(eb->ttabuf != NULL);
-
+	eb->i32buf = calloc_check(eb->i32buf_len, sizeof *eb->i32buf);
+	eb->pcmbuf = calloc_check(eb->i32buf_len, (size_t) samplebytes);
+	eb->ttabuf = malloc_check(eb->ttabuf_len);
 	return;
 }
 
@@ -108,13 +92,7 @@ encbuf_adjust(
 	// the safety-margin should have already been added by here
 	eb->ttabuf_len += (add_len * nchan);
 	assert(eb->ttabuf_len != 0);
-
-	eb->ttabuf = realloc(eb->ttabuf, eb->ttabuf_len);
-	if UNLIKELY ( eb->ttabuf == NULL ){
-		error_sys(errno, "realloc", NULL);
-	}
-	assert(eb->ttabuf != NULL);
-
+	eb->ttabuf = realloc_check(eb->ttabuf, eb->ttabuf_len);
 	return;
 }
 
@@ -150,7 +128,6 @@ decbuf_init(
 	const size_t safety_margin = libttaR_ttabuf_safety_margin(
 		samplebytes, nchan
 	);
-
 	assert(safety_margin != 0);
 
 	db->i32buf_len = ni32_len;
@@ -158,24 +135,9 @@ decbuf_init(
 	db->ttabuf_len = (ttabuf_len * nchan) + safety_margin;
 	assert(db->ttabuf_len != 0);
 
-	db->i32buf = calloc(ni32_len, sizeof *db->i32buf);
-	if UNLIKELY ( db->i32buf == NULL ){
-		error_sys(errno, "calloc", NULL);
-	}
-	assert(db->i32buf != NULL);
-
-	db->pcmbuf = calloc(ni32_len, (size_t) samplebytes);
-	if UNLIKELY ( db->pcmbuf == NULL ){
-		error_sys(errno, "calloc", NULL);
-	}
-	assert(db->pcmbuf != NULL);
-
-	db->ttabuf = malloc(db->ttabuf_len);
-	if UNLIKELY ( db->ttabuf == NULL ){
-		error_sys(errno, "malloc", NULL);
-	}
-	assert(db->ttabuf != NULL);
-
+	db->i32buf = calloc_check(ni32_len, sizeof *db->i32buf);
+	db->pcmbuf = calloc_check(ni32_len, (size_t) samplebytes);
+	db->ttabuf = malloc_check(db->ttabuf_len);
 	return;
 }
 
@@ -206,7 +168,6 @@ decbuf_check_adjust(
 	const size_t safety_margin = libttaR_ttabuf_safety_margin(
 		samplebytes, nchan
 	);
-
 	assert(safety_margin != 0);
 
 	// the safety-margin needs to be re-applied here
@@ -215,10 +176,7 @@ decbuf_check_adjust(
 
 	if ( newsize > db->ttabuf_len ){
 		db->ttabuf_len = newsize;
-		db->ttabuf     = realloc(db->ttabuf, newsize);
-		if UNLIKELY ( db->ttabuf == NULL ){
-			error_sys(errno, "realloc", NULL);
-		}
+		db->ttabuf     = realloc_check(db->ttabuf, newsize);
 	}
 	assert(db->ttabuf != NULL);
 

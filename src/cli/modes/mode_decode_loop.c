@@ -20,6 +20,7 @@
 #include "../../libttaR.h"
 #include "../../splint.h"
 
+#include "../alloc.h"
 #include "../cli.h"
 #include "../debug.h"
 #include "../formats.h"
@@ -174,11 +175,7 @@ decst_loop(
 	decbuf_init(&decbuf, buflen, TTABUF_LEN_DEFAULT, nchan, samplebytes);
 	t.z = libttaR_codecstate_priv_size(nchan);
 	assert(t.z != 0);
-	priv = malloc(t.z);
-	if UNLIKELY ( priv == NULL ){
-		error_sys(errno, "malloc", NULL);
-	}
-	assert(priv != NULL);
+	priv = malloc_check(t.z);
 
 	memset(&dstat, 0x00, sizeof dstat);
 	goto loop_entr;
@@ -321,13 +318,9 @@ decmt_loop(
 		&fstat_c
 	);
 	if ( nthreads > 1u ){
-		thread_decoder = calloc(
+		thread_decoder = calloc_check(
 			(size_t) (nthreads - 1u), sizeof *thread_decoder
 		);
-		if UNLIKELY ( thread_decoder == NULL ){
-			error_sys(errno, "calloc", NULL);
-		}
-		assert(thread_decoder != NULL);
 	}
 
 	// create
@@ -813,11 +806,7 @@ decmt_decoder(struct MTArg_Decoder *const restrict arg)
 	// setup
 	t.z = libttaR_codecstate_priv_size(nchan);
 	assert(t.z != 0);
-	priv = malloc(t.z);
-	if UNLIKELY ( priv == NULL ){
-		error_sys(errno, "malloc", NULL);
-	}
-	assert(priv != NULL);
+	priv = malloc_check(t.z);
 
 	goto loop_entr;
 	do {

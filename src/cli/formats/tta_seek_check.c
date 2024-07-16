@@ -21,6 +21,7 @@
 #include "../../bits.h"
 #include "../../libttaR.h"	// crc32
 
+#include "../alloc.h"
 #include "../debug.h"
 #include "../formats.h"
 
@@ -56,11 +57,7 @@ filecheck_tta_seektable(
 	} t;
 
 	st->nmemb = nframes;
-	st->table = calloc(st->nmemb, sizeof *st->table);
-	if UNLIKELY ( st->table == NULL ){
-		error_sys(errno, "calloc", NULL);
-	}
-	assert(st->table != NULL);
+	st->table = calloc_check(st->nmemb, sizeof *st->table);
 
 	t.z = fread(st->table, sizeof *st->table, st->nmemb, file);
 	if ( t.z != st->nmemb ){

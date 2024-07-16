@@ -162,31 +162,32 @@ readonly L_C03='lib/tables';
 readonly L_C04='lib/tta_dec';
 readonly L_C05='lib/tta_enc';
 
-readonly P_C00='cli/cli';
-readonly P_C01='cli/debug';
-readonly P_C02='cli/formats/guid';
-readonly P_C03='cli/formats/metatags_skip';
-readonly P_C04='cli/formats/tta1_check';
-readonly P_C05='cli/formats/tta_seek';
-readonly P_C06='cli/formats/tta_seek_check';
-readonly P_C07='cli/formats/tta_write';
-readonly P_C08='cli/formats/w64_check';
-readonly P_C09='cli/formats/w64_write';
-readonly P_C10='cli/formats/wav_check';
-readonly P_C11='cli/formats/wav_write';
-readonly P_C12='cli/help';
-readonly P_C13='cli/main';
-readonly P_C14='cli/open';
-readonly P_C15='cli/opts/common';
-readonly P_C16='cli/opts/decode';
-readonly P_C17='cli/opts/encode';
-readonly P_C18='cli/optsget';
-readonly P_C19='cli/modes/bufs';
-readonly P_C20='cli/modes/mode_decode';
-readonly P_C21='cli/modes/mode_decode_loop';
-readonly P_C22='cli/modes/mode_encode';
-readonly P_C23='cli/modes/mode_encode_loop';
-readonly P_C24='cli/modes/mt-struct';
+readonly P_C00='cli/alloc';
+readonly P_C01='cli/cli';
+readonly P_C02='cli/debug';
+readonly P_C03='cli/formats/guid';
+readonly P_C04='cli/formats/metatags_skip';
+readonly P_C05='cli/formats/tta1_check';
+readonly P_C06='cli/formats/tta_seek';
+readonly P_C07='cli/formats/tta_seek_check';
+readonly P_C08='cli/formats/tta_write';
+readonly P_C09='cli/formats/w64_check';
+readonly P_C10='cli/formats/w64_write';
+readonly P_C11='cli/formats/wav_check';
+readonly P_C12='cli/formats/wav_write';
+readonly P_C13='cli/help';
+readonly P_C14='cli/main';
+readonly P_C15='cli/open';
+readonly P_C16='cli/opts/common';
+readonly P_C17='cli/opts/decode';
+readonly P_C18='cli/opts/encode';
+readonly P_C19='cli/optsget';
+readonly P_C20='cli/modes/bufs';
+readonly P_C21='cli/modes/mode_decode';
+readonly P_C22='cli/modes/mode_decode_loop';
+readonly P_C23='cli/modes/mode_encode';
+readonly P_C24='cli/modes/mode_encode_loop';
+readonly P_C25='cli/modes/mt-struct';
 
 #----------------------------------------------------------------------------#
 
@@ -222,6 +223,7 @@ readonly P_O21="$OBJ/$P_C21.o";
 readonly P_O22="$OBJ/$P_C22.o";
 readonly P_O23="$OBJ/$P_C23.o";
 readonly P_O24="$OBJ/$P_C24.o";
+readonly P_O25="$OBJ/$P_C25.o";
 
 ##############################################################################
 
@@ -441,7 +443,7 @@ _cc_mp	"$CFLAGS_COMMON $CFLAGS_CLI" \
 	"$P_C00" "$P_C01" "$P_C02" "$P_C03" "$P_C04" "$P_C05" "$P_C06" \
 	"$P_C07" "$P_C08" "$P_C09" "$P_C10" "$P_C11" "$P_C12" "$P_C13" \
 	"$P_C14" "$P_C15" "$P_C16" "$P_C17" "$P_C18" "$P_C19" "$P_C20" \
-	"$P_C21" "$P_C22" "$P_C23" "$P_C24";
+	"$P_C21" "$P_C22" "$P_C23" "$P_C24" "$P_C25";
 wait;
 
 _ld "$LDFLAGS_LIB" "$LDFLAGS_LIB_END" "$BUILD/$LIBRARY" \
@@ -450,7 +452,7 @@ _ld "$LDFLAGS_CLI" "$LDFLAGS_CLI_END" "$BUILD/$PROGRAM" \
 	"$P_O00" "$P_O01" "$P_O02" "$P_O03" "$P_O04" "$P_O05" "$P_O06" \
 	"$P_O07" "$P_O08" "$P_O09" "$P_O10" "$P_O11" "$P_O12" "$P_O13" \
 	"$P_O14" "$P_O15" "$P_O16" "$P_O17" "$P_O18" "$P_O19" "$P_O20" \
-	"$P_O21" "$P_O22" "$P_O23" "$P_O24";
+	"$P_O21" "$P_O22" "$P_O23" "$P_O24" "$P_O25";
 
 if [ -n "$STRIP" ] && [ $STRIP -ne 0 ]; then
 	_strip "$BUILD/$PROGRAM";

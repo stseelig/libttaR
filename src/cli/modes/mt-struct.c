@@ -9,13 +9,12 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
-#include <assert.h>
-#include <errno.h>
 #include <stdlib.h>
 
 #include "../../bits.h"
 #include "../../libttaR.h"	// sizeof *user
 
+#include "../alloc.h"
 #include "../debug.h"
 #include "../formats.h"
 
@@ -76,40 +75,21 @@ encmt_state_init(
 	// io->frames
 	io->frames.nmemb	= framequeue_len;
 	//
-	io->frames.navailable	= malloc(sizeof *io->frames.navailable);
-	if UNLIKELY ( io->frames.navailable == NULL ){
-		error_sys(errno, "malloc", NULL);
-	}
-	assert(io->frames.navailable != NULL);
+	io->frames.navailable	= malloc_check(sizeof *io->frames.navailable);
 	semaphore_init(io->frames.navailable, 0);
 	//
-	io->frames.post_encoder		= calloc(
+	io->frames.post_encoder		= calloc_check(
 		(size_t) framequeue_len, sizeof *io->frames.post_encoder
 	);
-	io->frames.ni32_perframe	= calloc(
+	io->frames.ni32_perframe	= calloc_check(
 		(size_t) framequeue_len, sizeof *io->frames.ni32_perframe
 	);
-	io->frames.encbuf		= calloc(
+	io->frames.encbuf		= calloc_check(
 		(size_t) framequeue_len, sizeof *io->frames.encbuf
 	);
-	io->frames.user			= calloc(
+	io->frames.user			= calloc_check(
 		(size_t) framequeue_len, sizeof *io->frames.user
 	);
-	if UNLIKELY (
-	        (io->frames.post_encoder	== NULL)
-	       ||
-	        (io->frames.ni32_perframe	== NULL)
-	       ||
-	        (io->frames.encbuf		== NULL)
-	       ||
-	        (io->frames.user		== NULL)
-	){
-		error_sys(errno, "calloc", NULL);
-	}
-	assert(io->frames.post_encoder	!= NULL);
-	assert(io->frames.ni32_perframe	!= NULL);
-	assert(io->frames.encbuf	!= NULL);
-	assert(io->frames.user		!= NULL);
 	//
 	for ( i = 0; i < framequeue_len; ++i ){
 		semaphore_init(&io->frames.post_encoder[i], 0);
@@ -261,65 +241,34 @@ decmt_state_init(
 	// io->frames
 	io->frames.nmemb	= framequeue_len;
 	//
-	io->frames.navailable	= malloc(sizeof *io->frames.navailable);
-	if UNLIKELY ( io->frames.navailable == NULL ){
-		error_sys(errno, "malloc", NULL);
-	}
-	assert(io->frames.navailable != NULL);
+	io->frames.navailable	= malloc_check(sizeof *io->frames.navailable);
 	semaphore_init(io->frames.navailable, 0);
 	//
-	io->frames.post_decoder		= calloc(
+	io->frames.post_decoder		= calloc_check(
 		(size_t) framequeue_len, sizeof *io->frames.post_decoder
 	);
-	io->frames.ni32_perframe	= calloc(
+	io->frames.ni32_perframe	= calloc_check(
 		(size_t) framequeue_len, sizeof *io->frames.ni32_perframe
 	);
-	io->frames.nbytes_tta_perframe	= calloc(
+	io->frames.nbytes_tta_perframe	= calloc_check(
 		(size_t) framequeue_len,
 		sizeof *io->frames.nbytes_tta_perframe
 	);
-	io->frames.decbuf		= calloc(
+	io->frames.decbuf		= calloc_check(
 		(size_t) framequeue_len, sizeof *io->frames.decbuf
 	);
-	io->frames.crc_read		= calloc(
+	io->frames.crc_read		= calloc_check(
 		(size_t) framequeue_len, sizeof *io->frames.crc_read
 	);
-	io->frames.user			= calloc(
+	io->frames.user			= calloc_check(
 		(size_t) framequeue_len, sizeof *io->frames.user
 	);
-	io->frames.dec_retval		= calloc(
+	io->frames.dec_retval		= calloc_check(
 		(size_t) framequeue_len, sizeof *io->frames.dec_retval
 	);
-	io->frames.nsamples_flat_2pad	= calloc(
+	io->frames.nsamples_flat_2pad	= calloc_check(
 		(size_t) framequeue_len, sizeof *io->frames.nsamples_flat_2pad
 	);
-	if UNLIKELY (
-	        (io->frames.post_decoder	== NULL)
-	       ||
-	        (io->frames.ni32_perframe	== NULL)
-	       ||
-	        (io->frames.nbytes_tta_perframe	== NULL)
-	       ||
-	        (io->frames.decbuf		== NULL)
-	       ||
-	        (io->frames.crc_read		== NULL)
-	       ||
-	        (io->frames.user		== NULL)
-	       ||
-	        (io->frames.dec_retval		== NULL)
-	       ||
-	        (io->frames.nsamples_flat_2pad	== NULL)
-	){
-		error_sys(errno, "calloc", NULL);
-	}
-	assert(io->frames.post_decoder		!= NULL);
-	assert(io->frames.ni32_perframe		!= NULL);
-	assert(io->frames.nbytes_tta_perframe	!= NULL);
-	assert(io->frames.decbuf		!= NULL);
-	assert(io->frames.crc_read		!= NULL);
-	assert(io->frames.user			!= NULL);
-	assert(io->frames.dec_retval		!= NULL);
-	assert(io->frames.nsamples_flat_2pad	!= NULL);
 	//
 	for ( i = 0; i < framequeue_len; ++i ){
 		semaphore_init(&io->frames.post_decoder[i], 0);

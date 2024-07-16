@@ -164,11 +164,14 @@ extern void *malloc(size_t)
 /*@=incondefs@*/
 
 /*@-incondefs@*/
+#undef ptr
 /*@external@*/ /*@unused@*/
 /*@only@*/ /*@null@*/ /*@partial@*/
-extern void *realloc(/*@only@*/ /*@null@*/ void *, size_t)
+extern void *realloc(/*@only@*/ /*@null@*/ /*@out@*/ void *ptr, size_t)
 /*@globals	internalState@*/
-/*@modifies	internalState@*/
+/*@modifies	internalState,
+		*ptr
+@*/
 ;
 /*@=incondefs@*/
 

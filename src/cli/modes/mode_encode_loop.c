@@ -20,6 +20,7 @@
 #include "../../libttaR.h"
 #include "../../splint.h"
 
+#include "../alloc.h"
 #include "../cli.h"
 #include "../debug.h"
 #include "../formats.h"
@@ -178,11 +179,7 @@ encst_loop(
 	encbuf_init(&encbuf, buflen, TTABUF_LEN_DEFAULT, nchan, samplebytes);
 	t.z = libttaR_codecstate_priv_size(nchan);
 	assert(t.z != 0);
-	priv = malloc(t.z);
-	if UNLIKELY ( priv == NULL ){
-		error_sys(errno, "malloc", NULL);
-	}
-	assert(priv != NULL);
+	priv = malloc_check(t.z);
 
 	memset(&estat, 0x00, sizeof estat);
 	goto loop_entr;
@@ -314,13 +311,9 @@ encmt_loop(
 		&fstat_c
 	);
 	if ( nthreads > 1u ){
-		thread_encoder = calloc(
+		thread_encoder = calloc_check(
 			(size_t) (nthreads - 1u), sizeof *thread_encoder
 		);
-		if UNLIKELY ( thread_encoder == NULL ){
-			error_sys(errno, "calloc", NULL);
-		}
-		assert(thread_encoder != NULL);
 	}
 
 	// create
@@ -748,11 +741,7 @@ encmt_encoder(struct MTArg_Encoder *const restrict arg)
 	// setup
 	t.z = libttaR_codecstate_priv_size(nchan);
 	assert(t.z != 0);
-	priv = malloc(t.z);
-	if UNLIKELY ( priv == NULL ){
-		error_sys(errno, "malloc", NULL);
-	}
-	assert(priv != NULL);
+	priv = malloc_check(t.z);
 
 	goto loop_entr;
 	do {

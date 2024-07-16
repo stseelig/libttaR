@@ -48,8 +48,11 @@ thread_create(
 	void *(*const start_routine) (void *),
 	/*@null@*/ void *const restrict arg
 )
-/*@globals	internalState@*/
-/*@modifies	internalState,
+/*@globals	fileSystem,
+		internalState
+@*/
+/*@modifies	fileSystem,
+		internalState,
 		*thread
 @*/
 {
@@ -88,8 +91,11 @@ thread_join(const thread_p *const restrict thread)
 **/
 ALWAYS_INLINE void
 semaphore_init(/*@out@*/ semaphore_p *const restrict sem, const uint value)
-/*@globals	internalState@*/
-/*@modifies	internalState,
+/*@globals	fileSystem,
+		internalState
+@*/
+/*@modifies	fileSystem,
+		internalState,
 		*sem
 @*/
 {
@@ -169,8 +175,11 @@ semaphore_wait(semaphore_p *const restrict sem)
 **/
 ALWAYS_INLINE void
 spinlock_init(/*@out@*/ spinlock_p *const restrict lock)
-/*@globals	internalState@*/
-/*@modifies	internalState,
+/*@globals	fileSystem,
+		internalState
+@*/
+/*@modifies	fileSystem,
+		internalState,
 		*lock
 @*/
 {
