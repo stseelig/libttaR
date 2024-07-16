@@ -203,7 +203,7 @@ extern char *strsignal(int sig) /*@*/;
 #undef thread
 /*@external@*/ /*@unused@*/
 extern int pthread_create(
-	pthread_t *thread, /*@null@*/ const pthread_attr_t *,
+	/*@out@*/ pthread_t *thread, /*@null@*/ const pthread_attr_t *,
 	void *(*) (void *), /*@null@*/ void *
 )
 /*@globals	internalState@*/
@@ -238,7 +238,7 @@ extern int pthread_spin_destroy(pthread_spinlock_t *lock)
 /*@-protoparammatch@*/
 #undef lock
 /*@external@*/ /*@unused@*/
-extern int pthread_spin_init(pthread_spinlock_t *lock, int)
+extern int pthread_spin_init(/*@out@*/ pthread_spinlock_t *lock, int)
 /*@globals	internalState@*/
 /*@modifies	internalState,
 		*lock
@@ -282,7 +282,7 @@ extern int sem_destroy(sem_t *sem)
 /*@-protoparammatch@*/
 #undef sem
 /*@external@*/ /*@unused@*/
-extern int sem_init(sem_t *sem, int, unsigned int)
+extern int sem_init(/*@out@*/ sem_t *sem, int, unsigned int)
 /*@globals	internalState@*/
 /*@modifies	internalState,
 		*sem
