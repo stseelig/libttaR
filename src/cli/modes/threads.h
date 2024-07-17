@@ -39,7 +39,7 @@ typedef pthread_spinlock_t	spinlock_p;
  *
  * @param thread[out] the thread
  * @param start_routine the function the thread will run
- * @param arg the argument for the thread function
+ * @param arg[in] the argument for the thread function
 **/
 INLINE void
 thread_create(
