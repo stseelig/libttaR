@@ -12,7 +12,6 @@
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
 //      error checking or asserting threading function wrappers             //
-//      intended to make potential porting easier                           //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
@@ -36,13 +35,13 @@ typedef pthread_spinlock_t	spinlock_p;
 //////////////////////////////////////////////////////////////////////////////
 
 /**@fn thread_create
- * @brief create a thread
+ * @brief create a thread + error check
  *
  * @param thread[out] the thread
  * @param start_routine the function the thread will run
  * @param arg the argument for the thread function
 **/
-ALWAYS_INLINE void
+INLINE void
 thread_create(
 	/*@out@*/ thread_p *const restrict thread,
 	void *(*const start_routine) (void *),
@@ -68,7 +67,7 @@ thread_create(
  *
  * @param thread[in] the thread
 **/
-ALWAYS_INLINE void
+INLINE void
 thread_join(const thread_p *const restrict thread)
 /*@globals	internalState@*/
 /*@modifies	internalState@*/
@@ -84,12 +83,12 @@ thread_join(const thread_p *const restrict thread)
 //==========================================================================//
 
 /**@fn semaphore_init
- * @brief initialize a semaphore
+ * @brief initialize a semaphore + error check
  *
  * @param sem[out] the semaphore
  * @param value initial value for the semaphore
 **/
-ALWAYS_INLINE void
+INLINE void
 semaphore_init(/*@out@*/ semaphore_p *const restrict sem, const uint value)
 /*@globals	fileSystem,
 		internalState
@@ -111,7 +110,7 @@ semaphore_init(/*@out@*/ semaphore_p *const restrict sem, const uint value)
  *
  * @param sem[in] the semaphore
 **/
-ALWAYS_INLINE void
+INLINE void
 semaphore_destroy(semaphore_p *const restrict sem)
 /*@globals	internalState@*/
 /*@modifies	internalState,
@@ -169,11 +168,11 @@ semaphore_wait(semaphore_p *const restrict sem)
 //==========================================================================//
 
 /**@fn spinlock_init
- * @brief initialize a spinlock
+ * @brief initialize a spinlock + error check
  *
  * @param lock[out] the spinlock
 **/
-ALWAYS_INLINE void
+INLINE void
 spinlock_init(/*@out@*/ spinlock_p *const restrict lock)
 /*@globals	fileSystem,
 		internalState
@@ -195,7 +194,7 @@ spinlock_init(/*@out@*/ spinlock_p *const restrict lock)
  *
  * @param lock[in] the spinlock
 **/
-ALWAYS_INLINE void
+INLINE void
 spinlock_destroy(spinlock_p *const restrict lock)
 /*@globals	internalState@*/
 /*@modifies	internalState,
