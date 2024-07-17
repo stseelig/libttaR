@@ -178,8 +178,6 @@ decbuf_check_adjust(
 		db->ttabuf_len = newsize;
 		db->ttabuf     = realloc_check(db->ttabuf, newsize);
 	}
-	assert(db->ttabuf != NULL);
-
 	return;
 }
 
