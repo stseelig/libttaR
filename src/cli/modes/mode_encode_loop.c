@@ -382,9 +382,7 @@ enc_frame_encode(
 	union {	size_t	z;
 		int	d;
 	} t;
-#ifdef NDEBUG
-	(void) t.d;	// gcc
-#endif
+
 	// convert pcm to i32
 	t.z = libttaR_pcm_read(
 		encbuf->i32buf, encbuf->pcmbuf, ni32_target, samplebytes
