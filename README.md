@@ -11,6 +11,9 @@ edit then run ./make.sh
 
 I recommend compiling with clang.
 
+### Platforms
+The library is platform agnostic, but the program uses a lot of POSIX stuff.
+
 ### Defines
 NDEBUG\
 	turns off debug assertions
