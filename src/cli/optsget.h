@@ -29,25 +29,28 @@ struct OptDict {
 	char	 *longopt;
 	int	  shortopt;	// -1: none
 	/*@null@*/
-	int	(*fn)(uint, char *, enum OptMode);
+	int	(*fn)(uint, uint, uint, char *const *, enum OptMode);
 };
 
 //////////////////////////////////////////////////////////////////////////////
 
 #undef of
+#undef argv
 extern uint optargs_process(
-	struct OpenedFiles *restrict of, uint, const struct OptDict *restrict
+	struct OpenedFiles *restrict of, uint, uint, char *const *argv,
+	const struct OptDict *restrict
 )
 /*@globals	fileSystem,
 		internalState
 @*/
 /*@modifies	fileSystem,
 		internalState,
-		*of
+		*of,
+		**argv
 @*/
 ;
 
-extern void optsget_argcheck(uint, const char *restrict, uint)
+extern void optsget_argcheck(uint, uint, uint, const char *restrict)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;

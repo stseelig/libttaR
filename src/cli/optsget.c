@@ -36,33 +36,45 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-static int optsget(uint, const struct OptDict *restrict)
+#undef argv
+static int optsget(
+	uint, uint, char *const *argv, const struct OptDict *restrict
+)
 /*@globals	fileSystem,
 		internalState
 @*/
 /*@modifies	fileSystem,
-		internalState
+		internalState,
+		**argv
 @*/
 ;
 
+#undef argv
 /*@-globuse@*/	// called function pointers
-static int shortoptsget(uint, const struct OptDict *restrict)
+static int shortoptsget(
+	uint, uint, char *const *argv, const struct OptDict *restrict
+)
 /*@globals	fileSystem,
 		internalState
 @*/
 /*@modifies	fileSystem,
-		internalState
+		internalState,
+		**argv
 @*/
 ;
 /*@=globuse@*/
 
+#undef argv
 /*@-globuse@*/	// called function pointers
-static int longoptget(uint, const struct OptDict *restrict)
+static int longoptget(
+	uint, uint, char *const *argv, const struct OptDict *restrict
+)
 /*@globals	fileSystem,
 		internalState
 @*/
 /*@modifies	fileSystem,
-		internalState
+		internalState,
+		**argv
 @*/
 ;
 /*@=globuse@*/
@@ -73,32 +85,35 @@ static int longoptget(uint, const struct OptDict *restrict)
  * @brief open files and/or process the command line arguments
  *
  * @param of[in out] the opened files struct array
- * @param optind index for g_argv
+ * @param optind index of 'argv'
+ * @param argc the argument count from main()
+ * @param argv[in out] the argument vector from main()
  * @param optdict[in] the option dictionary
  *
  * @return 0 on success, else number of errors
 **/
 uint
 optargs_process(
-	struct OpenedFiles *const restrict of, uint optind,
-	const struct OptDict *const restrict optdict
+	struct OpenedFiles *const restrict of, uint optind, const uint argc,
+	char *const *const argv, const struct OptDict *const restrict optdict
 )
 /*@globals	fileSystem,
 		internalState
 @*/
 /*@modifies	fileSystem,
 		internalState,
-		*of
+		*of,
+		**argv
 @*/
 {
 	uint r = 0;
 	bool endopts = false;
 	union {	int d; } t;
 
-	while ( optind < g_argc ){
-		if ( (! endopts) && (g_argv[optind][0] == '-') ){
+	while ( optind < argc ){
+		if ( (! endopts) && (argv[optind][0] == '-') ){
 			// opt
-			t.d = optsget(optind, optdict);
+			t.d = optsget(optind, argc, argv, optdict);
 			if ( t.d < 0 ){
 				endopts = true;
 				t.d = -t.d;
@@ -107,7 +122,7 @@ optargs_process(
 		}
 		else {	// filename
 			r += (uint) (
-				(bool) openedfiles_add(of, g_argv[optind])
+				(bool) openedfiles_add(of, argv[optind])
 			);
 			++optind;
 		}
@@ -118,18 +133,24 @@ optargs_process(
 /**@fn optsget
  * @brief process the command line arguments
  *
- * @param optind index for g_argv
+ * @param optind index of 'argv'
+ * @param argc the argument count from main()
+ * @param argv[in out] the argument vector from main()
  * @param optdict[in] the option dictionary
  *
  * @return number of args used; negative number used on stop processing opts
 **/
 static int
-optsget(const uint optind, const struct OptDict *const restrict optdict)
+optsget(
+	const uint optind, const uint argc, char *const *const argv,
+	const struct OptDict *const restrict optdict
+)
 /*@globals	fileSystem,
 		internalState
 @*/
 /*@modifies	fileSystem,
-		internalState
+		internalState,
+		**argv
 @*/
 {
 	char *arg;
@@ -138,13 +159,13 @@ optsget(const uint optind, const struct OptDict *const restrict optdict)
 		int	d;
 	} t;
 
-	for ( i = 0; optind + i < g_argc; ++i ){
-		arg = g_argv[optind + i];
+	for ( i = 0; optind + i < argc; ++i ){
+		arg = argv[optind + i];
 		if ( arg[0] != '-' ){	// return at first non-opt
 			break;
 		}
 		else if ( (arg[0] == '-') && (arg[1u] != '-') ){
-			t.d = shortoptsget(optind + i, optdict);
+			t.d = shortoptsget(optind + i, argc, argv, optdict);
 			if UNLIKELY ( t.d < 0 ){
 				error_tta("bad shortopt: -%c", (char) -t.d);
 			}
@@ -155,7 +176,7 @@ optsget(const uint optind, const struct OptDict *const restrict optdict)
 				++i;
 				return -i;
 			}
-			t.d = longoptget(optind + i, optdict);
+			t.d = longoptget(optind + i, argc, argv, optdict);
 			if UNLIKELY ( t.d < 0 ){
 				t.s = strtok(arg, "=");
 				assert(t.s != NULL);
@@ -172,7 +193,9 @@ optsget(const uint optind, const struct OptDict *const restrict optdict)
 /**@fn shortoptsget
  * @brief process an entire string of short ("-xyz") command line arguments
  *
- * @param optind index for g_argv
+ * @param optind index of 'argv'
+ * @param argc the argument count from main()
+ * @param argv[in out] the argument vector from main()
  * @param optdict[in] the option dictionary
  *
  * @return number of args used, or if a bad opt, the bad opt negated
@@ -182,15 +205,19 @@ optsget(const uint optind, const struct OptDict *const restrict optdict)
  *    <0: number of args used
 **/
 static int
-shortoptsget(const uint optind, const struct OptDict *const restrict optdict)
+shortoptsget(
+	const uint optind, const uint argc, char *const *const argv,
+	const struct OptDict *const restrict optdict
+)
 /*@globals	fileSystem,
 		internalState
 @*/
 /*@modifies	fileSystem,
-		internalState
+		internalState,
+		**argv
 @*/
 {
-	const char *const opt = &g_argv[optind][1u];
+	const char *const opt = &argv[optind][1u];
 	uint i, j;
 	union {	int d; } t;
 
@@ -198,7 +225,7 @@ shortoptsget(const uint optind, const struct OptDict *const restrict optdict)
 		for ( j = 0; optdict[j].shortopt != 0; ++j ){
 			if ( (int) opt[i] == optdict[j].shortopt ){
 				t.d = optdict[j].fn(
-					optind, &g_argv[optind][i + 1u],
+					optind, i + 1u, argc, argv,
 					OPTMODE_SHORT
 				);
 				if ( t.d < 0 ){ return -t.d; }	// args used
@@ -216,22 +243,28 @@ cont_outer_loop:
 /**@fn longoptsget
  * @brief process the long ("--xyz") command line arguments
  *
- * @param optind index for g_argv
+ * @param optind index of 'argv'
+ * @param argc the argument count from main()
+ * @param argv[in out] the argument vector from main()
  * @param optdict[in] the option dictionary
  *
  * @return number of args used, or -1 on bad opt
 **/
 static int
-longoptget(const uint optind, const struct OptDict *const restrict optdict)
+longoptget(
+	const uint optind, const uint argc, char *const *const argv,
+	const struct OptDict *const restrict optdict
+)
 /*@globals	fileSystem,
 		internalState
 @*/
 /*@modifies	fileSystem,
-		internalState
+		internalState,
+		**argv
 @*/
 {
 	int r = -1;
-	const char *const opt = &g_argv[optind][2u];
+	const char *const opt = &argv[optind][2u];
 	const char *subopt;
 	size_t size = SIZE_MAX;
 	uint i;
@@ -244,32 +277,33 @@ longoptget(const uint optind, const struct OptDict *const restrict optdict)
 	for ( i = 0; optdict[i].longopt != NULL; ++i ){
 		if ( strncmp(opt, optdict[i].longopt, size) == 0 ){
 			r = optdict[i].fn(
-				optind, g_argv[optind], OPTMODE_LONG
+				optind, 0, argc, argv, OPTMODE_LONG
 			);
 			break;
 		}
 	}
-
 	return r;
 }
 
 //==========================================================================//
 
 /**@fn optsget_argcheck
- * @brief checks that g_argv is long enough for the current opt
+ * @brief checks that 'argv' is long enough for the current 'opt'
  *
- * @param optind the index of g_argv
- * @param opt[in] the opt to check (for error message)
- * @param nargs the number of arguments the opt has
+ * @param optind the index of 'argv'
+ * @param argc the argument count from main()
+ * @param nargs the number of arguments the 'opt' has
+ * @param opt[in] the option to check (for error message)
 **/
 void
 optsget_argcheck(
-	const uint optind, const char *const restrict opt, const uint nargs
+	const uint optind, const uint argc, const uint nargs,
+	const char *const restrict opt
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 {
-	if UNLIKELY ( optind + nargs >= g_argc ){
+	if UNLIKELY ( optind + nargs >= argc ){
 		error_tta("opt '%s' missing %u arg%s",
 			opt, nargs, nargs > 1u ? "s" : ""
 		);

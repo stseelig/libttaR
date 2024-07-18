@@ -35,7 +35,7 @@ enum ThreadMode {
 
 struct GlobalFlags {
 	/*@dependent@*/ /*@null@*/
-	char		*outfile;	// from g_argv
+	char		*outfile;	// from argv
 	bool		outfile_is_dir;
 	bool		quiet;
 	bool		delete_src;
@@ -52,11 +52,8 @@ extern const struct LibTTAr_VersionInfo ttaR_info;
 //--------------------------------------------------------------------------//
 
 #ifndef TTA_MAIN_C
-/*@checkmod@*/
-extern const uint g_argc;
-
 /*@checkmod@*/ /*@temp@*/
-extern char *const *const g_argv;
+extern const char *const g_progname;
 #endif
 
 /*@checkmod@*/

@@ -89,12 +89,14 @@ static void dec_loop(struct OpenedFilesMember *restrict)
 /**@fn mode_decode
  * @brief mode for decoding TTA
  *
- * @param optind argv index
+ * @param optind the index of 'argv'
+ * @param argc the argument count from main()
+ * @param argv[in out] the argument vector from main()
  *
  * @return the number of warnings/errors
 **/
 int
-mode_decode(const uint optind)
+mode_decode(const uint optind, const uint argc, char *const *argv)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -117,7 +119,7 @@ mode_decode(const uint optind)
 
 	// process opts/args
 	nerrors_file = optargs_process(
-		&openedfiles, optind, decode_optdict
+		&openedfiles, optind, argc, argv, decode_optdict
 	);
 
 	// get file stats

@@ -139,7 +139,7 @@ print_error_sys(
 	flockfile(stdout);
 	flockfile(stderr);
 	//
-	(void) fprintf(stderr, T_B_DEFAULT "%s: ", g_argv[0]);
+	(void) fprintf(stderr, T_B_DEFAULT "%s: ", g_progname);
 	(void) fputs(T_RED "error:" T_DEFAULT " ", stderr);
 	(void) fprintf(stderr, "%s: (%d) ", name, errnum);
 	(void) fputs(buf, stderr);
@@ -230,7 +230,7 @@ print_error_tta(
 	flockfile(stdout);
 	flockfile(stderr);
 	//
-	(void) fprintf(stderr, T_B_DEFAULT "%s: ", g_argv[0]);
+	(void) fprintf(stderr, T_B_DEFAULT "%s: ", g_progname);
 	(void) fputs(T_RED "error:" T_DEFAULT " ", stderr);
 	(void) vfprintf(stderr, format, args);
 	(void) fputs(" " T_RED "!" T_RESET "\n", stderr);
@@ -268,7 +268,7 @@ warning_tta(const char *const format, ...)
 	flockfile(stdout);
 	flockfile(stderr);
 	//
-	(void) fprintf(stderr, T_B_DEFAULT "%s: ", g_argv[0]);
+	(void) fprintf(stderr, T_B_DEFAULT "%s: ", g_progname);
 	(void) fputs(T_YELLOW "warning:" T_DEFAULT " ", stderr);
 	(void) vfprintf(stderr, format, args);
 	(void) fputs(" " T_YELLOW "!" T_RESET "\n", stderr);

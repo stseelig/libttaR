@@ -93,17 +93,20 @@ static void enc_loop(const struct OpenedFilesMember *restrict)
 /**@fn mode_encode
  * @brief mode for encoding TTA
  *
- * @param optind argv index
+ * @param optind the index of 'argv'
+ * @param argc the argument count from main()
+ * @param argv[in out] the argument vector from main()
  *
  * @return the number of warnings/errors
 **/
 int
-mode_encode(const uint optind)
+mode_encode(const uint optind, const uint argc, char *const *argv)
 /*@globals	fileSystem,
 		internalState
 @*/
 /*@modifies	fileSystem,
-		internalState
+		internalState,
+		**argv
 @*/
 {
 	struct OpenedFiles openedfiles;
@@ -121,7 +124,7 @@ mode_encode(const uint optind)
 
 	// process opts/args
 	nerrors_file += optargs_process(
-		&openedfiles, optind, encode_optdict
+		&openedfiles, optind, argc, argv, encode_optdict
 	);
 
 	// get file stats
@@ -236,7 +239,7 @@ enc_loop(const struct OpenedFilesMember *const restrict ofm)
 	case xENCFMT_TTA1:
 		// seektable at start of file, size calculated in advance
 		t.z  = (fstat->decpcm_size + fstat->buflen) / fstat->buflen;
-		t.z -= (size_t) 1u;
+		t.z -= 1u;
 		t.z  = (size_t) (t.z + fstat->samplebytes);
 		t.z /= (size_t) fstat->samplebytes;
 		seektable_init( &seektable, t.z);

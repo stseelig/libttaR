@@ -22,23 +22,27 @@
 #include "../opts.h"
 #include "../optsget.h"
 
+#include "common.h"
+
 //////////////////////////////////////////////////////////////////////////////
 
-#undef opt
-static int opt_decode_format(uint, char *opt, enum OptMode)
+#undef argv
+static int opt_decode_format(
+	uint, uint, uint, char *const *argv, enum OptMode
+)
 /*@globals	fileSystem,
-		internalState,
 		g_flag
 @*/
 /*@modifies	fileSystem,
-		internalState,
 		g_flag.decfmt,
-		opt
+		**argv
 @*/
 ;
 
 static int
-opt_decode_help(uint, char *, enum OptMode)
+opt_decode_help(
+	uint, uint, uint, char *const *, enum OptMode
+)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;
@@ -62,7 +66,7 @@ const struct OptDict decode_optdict[] = {
 	{ "single-threaded"	, 'S'	, opt_common_single_threaded	},
 	{ "threads"		, 't'	, opt_common_threads		},
 
-	{ NULL , 0 , NULL }
+	{ NULL, 0, NULL }
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -70,37 +74,39 @@ const struct OptDict decode_optdict[] = {
 /**@fn opt_decode_format
  * @brief sets the destination file format
  *
- * @param optind the index of g_argv
- * @param opt[in] the name of the opt (for errors)
+ * @param optind0 the index of  'argv'
+ * @param optind1 the index of *'argv'
+ * @param argc the argument count from main()
+ * @param argv[in out] the argument vector from main()
  * @param mode short or long
  *
  * @return number of args used (long), or number of char's read (short)
 **/
 static int
 opt_decode_format(
-	const uint optind, char *const opt, const enum OptMode mode
+	const uint optind0, const uint optind1, const uint argc,
+	char *const *argv, const enum OptMode mode
 )
 /*@globals	fileSystem,
-		internalState,
 		g_flag
 @*/
 /*@modifies	fileSystem,
-		internalState,
 		g_flag.decfmt,
-		opt
+		**argv
 @*/
 {
 	int r;
 	/*@observer@*/
 	const char *const decfmt_name[] = DECFMT_NAME_ARRAY;
+	char *const opt = &argv[optind0][optind1];
 	char *subopt;
 	uint i;
 
 	switch ( mode ){
 	case OPTMODE_SHORT:
 		if ( opt[1u] == '\0' ){
-			optsget_argcheck(optind, opt, 1u);
-			subopt = g_argv[optind + 1u];
+			optsget_argcheck(optind0, argc, 1u, opt);
+			subopt = argv[optind0 + 1u];
 			r = -1;
 		}
 		else {	subopt = &opt[1u];
@@ -137,15 +143,18 @@ opt_decode_format(
 /**@fn opt_decode_help
  * @brief print the mode_decode help to stderr and exit
  *
- * @param optind unused
- * @param opt[in] unused
+ * @param optind0 unused
+ * @param optind1 unused
+ * @param argc unused
+ * @param argv unused
  * @param mode unused
  *
  * @return does not return
 **/
-NORETURN int
+NORETURN COLD int
 opt_decode_help(
-	UNUSED const uint optind, UNUSED char *const opt,
+	UNUSED const uint optind0, UNUSED const uint optind1,
+	UNUSED const uint argc, UNUSED char *const *argv,
 	UNUSED const enum OptMode mode
 )
 /*@globals	fileSystem@*/

@@ -31,21 +31,25 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-extern int mode_encode(uint)
+#undef argv
+extern int mode_encode(uint, uint, char *const *argv)
 /*@globals	fileSystem,
 		internalState
 @*/
 /*@modifies	fileSystem,
-		internalState
+		internalState,
+		**argv
 @*/
 ;
 
-extern int mode_decode(uint)
+#undef argv
+extern int mode_decode(uint, uint, char *const *argv)
 /*@globals	fileSystem,
 		internalState
 @*/
 /*@modifies	fileSystem,
-		internalState
+		internalState,
+		**argv
 @*/
 ;
 
@@ -90,17 +94,11 @@ const struct LibTTAr_VersionInfo ttaR_info = {
 
 //--------------------------------------------------------------------------//
 
-/**@var g_argc
- * @brief copy of argc from main
-**/
-/*@checkmod@*/
-uint g_argc;
-
-/**@var g_argv
- * @brief copy of argv from main
+/**@var g_progname
+ * @brief name of the program
 **/
 /*@checkmod@*/ /*@temp@*/
-char *const *g_argv;
+char *g_progname;
 
 /**@var g_nwarnings
  * @brief number of warnings and errors; exit status
@@ -138,21 +136,18 @@ char *g_rm_on_sigint = NULL;
  * @brief read a book
  *
  * @param argc argument count
- * @param argv[in] argument vector
+ * @param argv[in out] argument vector
  *
  * @return program exit status; number of warnings and errors
 **/
 int
 main(const int argc, char *const *const argv)
 /*@globals	fileSystem,
-		internalState,
-		g_argc,
-		g_argv
+		internalState
 @*/
 /*@modifies	fileSystem,
 		internalState,
-		g_argc,
-		g_argv
+		**argv
 @*/
 {
 	int r = EXIT_FAILURE;
@@ -186,16 +181,15 @@ main(const int argc, char *const *const argv)
 	t.d = atexit(atexit_cleanup);
 	assert(t.d == 0);
 
-	// these are saved for argument parsing in the modes
-	g_argc = (uint) argc;
-	g_argv = argv;
+	// saved for warning/error printing
+	g_progname = argv[0];
 
 	// enter a mode
 	if ( strcmp(argv[1u], "encode") == 0 ){
-		r = mode_encode(2u);
+		r = mode_encode(2u, (uint) argc, argv);
 	}
 	else if ( strcmp(argv[1u], "decode") == 0 ){
-		r = mode_decode(2u);
+		r = mode_decode(2u, (uint) argc, argv);
 	}
 	else if UNLIKELY ( true ) {
 		error_tta_nf("bad mode '%s'", argv[1u]);
@@ -248,7 +242,7 @@ sighand_cleanup_exit(const int signum)
 	union {	int d; } t;
 
 	(void) write(STDERR_FILENO, intro0, (sizeof intro0) - 1u);
-	(void) write(STDERR_FILENO, g_argv[0], strlen(g_argv[0]));
+	(void) write(STDERR_FILENO, g_progname, strlen(g_progname));
 	(void) write(STDERR_FILENO, intro1, (sizeof intro1) - 1u);
 	(void) write(STDERR_FILENO, signame, strlen(signame));
 	(void) write(STDERR_FILENO, intro2, (sizeof intro2) - 1u);

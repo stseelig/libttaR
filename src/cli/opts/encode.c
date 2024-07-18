@@ -23,20 +23,23 @@
 #include "../opts.h"
 #include "../optsget.h"
 
+#include "common.h"
+
 //////////////////////////////////////////////////////////////////////////////
 
-#undef opt
-static int opt_encode_rawpcm(uint, char *opt, enum OptMode)
-/*@globals	fileSystem,
-		internalState
-@*/
+#undef argv
+static int opt_encode_rawpcm(
+	uint, uint, uint, char *const *argv, enum OptMode
+)
+/*@globals	fileSystem@*/
 /*@modifies	fileSystem,
-		internalState,
-		*opt
+		**argv
 @*/
 ;
 
-static int opt_encode_help(uint, char *, enum OptMode)
+static int opt_encode_help(
+	uint, uint, uint, char *const *, enum OptMode
+)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;
@@ -60,7 +63,7 @@ const struct OptDict encode_optdict[] = {
 	{ "single-threaded"	, 'S'	, opt_common_single_threaded	},
 	{ "threads"		, 't'	, opt_common_threads		},
 
-	{ NULL , 0 , NULL }
+	{ NULL, 0, NULL }
 };
 
 //==========================================================================//
@@ -102,8 +105,10 @@ rawpcm_statcopy(/*@out@*/ struct FileStats *const restrict fstat)
 /**@fn opt_encode_rawpcm
  * @brief set raw PCM encoding
  *
- * @param optind the index of g_argv
- * @param opt[in] the name of the opt (for errors)
+ * @param optind0 the index of  'argv'
+ * @param optind1 the index of *'argv'
+ * @param argc unused
+ * @param argv[in out] the argument vector from main()
  * @param mode unused
  *
  * @return 0
@@ -113,17 +118,15 @@ rawpcm_statcopy(/*@out@*/ struct FileStats *const restrict fstat)
 // --rawpcm=format,samplerate,nchan
 static int
 opt_encode_rawpcm(
-	UNUSED const uint optind, char *const opt,
-	UNUSED const enum OptMode mode
+	const uint optind0, const uint optind1, UNUSED const uint argc,
+	char *const *argv, UNUSED const enum OptMode mode
 )
-/*@globals	fileSystem,
-		internalState
-@*/
+/*@globals	fileSystem@*/
 /*@modifies	fileSystem,
-		internalState,
-		*opt
+		**argv
 @*/
 {
+	char *const opt = &argv[optind0][optind1];
 	char *subopt;
 	union {	longlong ll; } t;
 
@@ -196,15 +199,18 @@ opt_encode_rawpcm(
 /**@fn opt_encode_help
  * @brief print the mode_encode help to stderr and exit
  *
- * @param optind unused
- * @param opt[in] unused
+ * @param optind0 unused
+ * @param optind1 unused
+ * @param argc unused
+ * @param argv unused
  * @param mode unused
  *
  * @return does not return
 **/
-NORETURN int
+NORETURN COLD int
 opt_encode_help(
-	UNUSED const uint optind, UNUSED char *const opt,
+	UNUSED const uint optind0, UNUSED const uint optind1,
+	UNUSED const uint argc, UNUSED char *const *argv,
 	UNUSED const enum OptMode mode
 )
 /*@globals	fileSystem@*/

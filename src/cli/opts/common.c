@@ -24,18 +24,46 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
+
+/**@fn opt_common_quiet
+ * @brief sets only warnings and errors will to be printed
+ *
+ * @param optind0 unused
+ * @param optind1 unused
+ * @param argc unused
+ * @param argv unused
+ * @param mode unused
+ *
+ * @return 0
+**/
+int
+opt_common_quiet(
+	UNUSED const uint optind0, UNUSED const uint optind1,
+	UNUSED const uint argc, UNUSED char *const *argv,
+	UNUSED const enum OptMode mode
+)
+/*@globals	g_flag@*/
+/*@modifies	g_flag.quiet@*/
+{
+	g_flag.quiet = true;
+	return 0;
+}
+
 /**@fn opt_common_single_threaded
  * @brief enables single-threaded coding
  *
- * @param optind unused
- * @param opt[in] unused
+ * @param optind0 unused
+ * @param optind1 unused
+ * @param argc unused
+ * @param argv unused
  * @param mode unused
  *
  * @return 0
 **/
 int
 opt_common_single_threaded(
-	UNUSED const uint optind, UNUSED char *const opt,
+	UNUSED const uint optind0, UNUSED const uint optind1,
+	UNUSED const uint argc, UNUSED char *const *argv,
 	UNUSED const enum OptMode mode
 )
 /*@globals	g_flag@*/
@@ -48,15 +76,18 @@ opt_common_single_threaded(
 /**@fn opt_common_multi_threaded
  * @brief enables multi-threaded coding
  *
- * @param optind unused
- * @param opt[in] unused
+ * @param optind0 unused
+ * @param optind1 unused
+ * @param argc unused
+ * @param argv unused
  * @param mode unused
  *
  * @return 0
 **/
 int
 opt_common_multi_threaded(
-	UNUSED const uint optind, UNUSED char *const opt,
+	UNUSED const uint optind0, UNUSED const uint optind1,
+	UNUSED const uint argc, UNUSED char *const *argv,
 	UNUSED const enum OptMode mode
 )
 /*@globals	g_flag@*/
@@ -69,15 +100,18 @@ opt_common_multi_threaded(
 /**@fn opt_common_delete_src
  * @brief enables the delete source files flag
  *
- * @param optind unused
- * @param opt[in] unused
+ * @param optind0 unused
+ * @param optind1 unused
+ * @param argc unused
+ * @param argv unused
  * @param mode unused
  *
  * @return 0
 **/
 int
 opt_common_delete_src(
-	UNUSED const uint optind, UNUSED char *const opt,
+	UNUSED const uint optind0, UNUSED const uint optind1,
+	UNUSED const uint argc, UNUSED char *const *argv,
 	UNUSED const enum OptMode mode
 )
 /*@globals	g_flag@*/
@@ -90,29 +124,31 @@ opt_common_delete_src(
 /**@fn opt_common_threads
  * @brief sets the number of coder threads to use
  *
- * @param optind the index of g_argv
- * @param opt[in] the name of the opt (for errors)
+ * @param optind0 the index of  'argv'
+ * @param optind1 the index of *'argv'
+ * @param argc the argument count from main()
+ * @param argv[in out] the argument vector from main()
  * @param mode short or long
  *
  * @return number of args used (long), or number of char's read (short)
 **/
 int
 opt_common_threads(
-	const uint optind, char *const opt, const enum OptMode mode
+	const uint optind0, const uint optind1, const uint argc,
+	char *const *argv, const enum OptMode mode
 )
 /*@globals	fileSystem,
-		internalState,
 		g_flag,
 		g_nthreads
 @*/
 /*@modifies	fileSystem,
-		internalState,
 		g_flag.threadmode,
 		g_nthreads,
-		*opt
+		**argv
 @*/
 {
 	int r;
+	char *const opt = &argv[optind0][optind1];
 	char *subopt;
 	size_t i;
 	union {	int	d;
@@ -122,8 +158,8 @@ opt_common_threads(
 	switch ( mode ){
 	case OPTMODE_SHORT:
 		if ( opt[1u] == '\0' ){
-			optsget_argcheck(optind, opt, 1u);
-			subopt = g_argv[optind + 1u];
+			optsget_argcheck(optind0, argc, 1u, opt);
+			subopt = argv[optind0 + 1u];
 			r = -1;
 		}
 		else {	subopt = &opt[1u];
@@ -162,35 +198,37 @@ opt_common_threads(
 /**@fn opt_common_outfile
  * @brief sets the destination filename or directory
  *
- * @param optind the index of g_argv
- * @param opt[in] the name of the opt (for errors)
+ * @param optind0 the index of  'argv'
+ * @param optind1 the index of *'argv'
+ * @param argc the argument count from main()
+ * @param argv[in out] the argument vector from main()
  * @param mode short or long
  *
  * @return number of args used (long), or number of char's read (short)
 **/
 int
 opt_common_outfile(
-	const uint optind, char *const opt, const enum OptMode mode
+	const uint optind0, const uint optind1, const uint argc,
+	char *const *argv, const enum OptMode mode
 )
 /*@globals	fileSystem,
-		internalState,
 		g_flag
 @*/
 /*@modifies	fileSystem,
-		internalState,
 		g_flag.outfile,
 		g_flag.outfile_is_dir,
-		*opt
+		**argv
 @*/
 {
 	int r;
+	char *const opt = &argv[optind0][optind1];
 	char *subopt;
 
 	switch ( mode ){
 	case OPTMODE_SHORT:
 		if ( opt[1u] == '\0' ){
-			optsget_argcheck(optind, opt, 1u);
-			subopt = g_argv[optind + 1u];
+			optsget_argcheck(optind0, argc, 1u, opt);
+			subopt = argv[optind0 + 1u];
 			r = -1;
 		}
 		else {	subopt = &opt[1u];
@@ -216,27 +254,6 @@ opt_common_outfile(
 
 	g_flag.outfile = subopt;
 	return r;
-}
-
-/**@fn opt_common_quiet
- * @brief sets only warnings and errors will to be printed
- *
- * @param optind unused
- * @param opt[in] unused
- * @param mode unused
- *
- * @return 0
-**/
-int
-opt_common_quiet(
-	UNUSED const uint optind, UNUSED char *const opt,
-	UNUSED const enum OptMode mode
-)
-/*@globals	g_flag@*/
-/*@modifies	g_flag.quiet@*/
-{
-	g_flag.quiet = true;
-	return 0;
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////
