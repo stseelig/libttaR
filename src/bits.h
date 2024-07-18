@@ -95,7 +95,11 @@
 #if HAS_ATTRIBUTE(packed)
 #define PACKED			__attribute__((packed))
 #else
+#ifndef S_SPLINT_S
 #error "compiler does not support the attribute 'packed'"
+#else
+#define PACKED
+#endif
 #endif
 
 #if HAS_ATTRIBUTE(visibility)

@@ -27,6 +27,7 @@
 #include <string.h>
 
 #include "../bits.h"
+#include "../splint.h"
 
 #include "debug.h"
 #include "main.h"
@@ -242,7 +243,7 @@ longoptget(const uint optind, const struct OptDict *const restrict optdict)
 
 	for ( i = 0; optdict[i].longopt != NULL; ++i ){
 		if ( strncmp(opt, optdict[i].longopt, size) == 0 ){
-			r = (int) optdict[i].fn(
+			r = optdict[i].fn(
 				optind, g_argv[optind], OPTMODE_LONG
 			);
 			break;
