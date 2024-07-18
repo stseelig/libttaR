@@ -190,7 +190,7 @@ shortoptsget(const uint optind, const struct OptDict *const restrict optdict)
 		internalState
 @*/
 {
-	const char *const restrict opt = &g_argv[optind][1u];
+	const char *const opt = &g_argv[optind][1u];
 	uint i, j;
 	union {	int d; } t;
 
