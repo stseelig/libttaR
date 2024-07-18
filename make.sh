@@ -411,26 +411,26 @@ readonly MAIN_START=$(_timestamp);
 if [ -n "$CFLAGS_COMMON" ]; then
 	_flags_print 'CFLAGS_COMMON' "$CFLAGS_COMMON";
 fi
-if [ -n "$CFLAGS_CLI" ]; then
-	_flags_print 'CFLAGS_CLI' "$CFLAGS_CLI";
-fi
 if [ -n "$CFLAGS_LIB" ]; then
 	_flags_print 'CFLAGS_LIB' "$CFLAGS_LIB";
 fi
+if [ -n "$CFLAGS_CLI" ]; then
+	_flags_print 'CFLAGS_CLI' "$CFLAGS_CLI";
+fi
 if [ -n "$LDFLAGS_COMMON" ]; then
 	_flags_print 'LDFLAGS_COMMON' "$LDFLAGS_COMMON";
-fi
-if [ -n "$LDFLAGS_CLI" ]; then
-	_flags_print 'LDFLAGS_CLI' "$LDFLAGS_CLI";
-fi
-if [ -n "$LDFLAGS_CLI_END" ]; then
-	_flags_print 'LDFLAGS_CLI_END' "$LDFLAGS_CLI_END";
 fi
 if [ -n "$LDFLAGS_LIB" ]; then
 	_flags_print 'LDFLAGS_LIB' "$LDFLAGS_LIB";
 fi
 if [ -n "$LDFLAGS_LIB_END" ]; then
 	_flags_print 'LDFLAGS_LIB_END' "$LDFLAGS_LIB_END";
+fi
+if [ -n "$LDFLAGS_CLI" ]; then
+	_flags_print 'LDFLAGS_CLI' "$LDFLAGS_CLI";
+fi
+if [ -n "$LDFLAGS_CLI_END" ]; then
+	_flags_print 'LDFLAGS_CLI_END' "$LDFLAGS_CLI_END";
 fi
 
 _cd "$ROOT";
