@@ -173,9 +173,8 @@ ALWAYS_INLINE size_t rice_write_binary(
 #undef count
 #undef crc
 ALWAYS_INLINE size_t rice_write_cache(
-	/*@partial@*/ register u8 *const restrict dest, register size_t,
-	register u32 *const restrict cache, register u8 *const restrict count,
-	register u32 *const restrict crc
+	/*@partial@*/ u8 *restrict dest, size_t,
+	u32 *restrict cache, u8 *restrict count, u32 *restrict crc
 )
 /*@modifies	*dest,
 		*cache,
@@ -242,10 +241,10 @@ ALWAYS_INLINE size_t rice_read_binary(
  * @return max number (plus 8u) of 1-bits in a unary code
 **/
 INLINE CONST u32
-get_unary_lax_limit(register const enum TTASampleBytes samplebytes)
+get_unary_lax_limit(const enum TTASampleBytes samplebytes)
 /*@*/
 {
-	register u32 r;
+	u32 r;
 	switch ( samplebytes ){
 	case TTASAMPLEBYTES_1:
 	case TTASAMPLEBYTES_2:
@@ -267,10 +266,10 @@ get_unary_lax_limit(register const enum TTASampleBytes samplebytes)
  * @return max number of bytes rice_encode could write
 **/
 INLINE CONST size_t
-get_rice_enc_max(register const enum TTASampleBytes samplebytes)
+get_rice_enc_max(const enum TTASampleBytes samplebytes)
 /*@*/
 {
-	register size_t r;
+	size_t r;
 	switch ( samplebytes ){
 	case TTASAMPLEBYTES_1:
 	case TTASAMPLEBYTES_2:
@@ -291,10 +290,10 @@ get_rice_enc_max(register const enum TTASampleBytes samplebytes)
  * @return max number of bytes rice_decode could read
 **/
 INLINE CONST size_t
-get_rice_dec_max(register const enum TTASampleBytes samplebytes)
+get_rice_dec_max(const enum TTASampleBytes samplebytes)
 /*@*/
 {
-	register size_t r;
+	size_t r;
 	switch ( samplebytes ){
 	case TTASAMPLEBYTES_1:
 	case TTASAMPLEBYTES_2:
@@ -320,7 +319,7 @@ get_rice_dec_max(register const enum TTASampleBytes samplebytes)
  * @pre k <= (u8) 31u	// 24u in practice
 **/
 ALWAYS_INLINE CONST u32
-binexp32(register const u8 k)
+binexp32(const u8 k)
 /*@*/
 {
 	assert(k <= (u8) 31u);
@@ -343,12 +342,12 @@ binexp32(register const u8 k)
  * @pre k <= (u8) 25u
 **/
 ALWAYS_INLINE CONST u32
-binexp32p4(register const u8 k, const enum ShiftMaskMode mode)
+binexp32p4(const u8 k, const enum ShiftMaskMode mode)
 /*@*/
 {
 	assert(k <= (u8) 25u);
 
-	register u32 r;
+	u32 r;
 	switch ( mode ){
 	case SMM_CONST:
 	case SMM_SHIFT:
@@ -374,12 +373,12 @@ binexp32p4(register const u8 k, const enum ShiftMaskMode mode)
  * @pre k <= (u8) 24u
 **/
 ALWAYS_INLINE CONST u32
-lsmask32(register const u8 k, const enum ShiftMaskMode mode)
+lsmask32(const u8 k, const enum ShiftMaskMode mode)
 /*@*/
 {
 	assert(k <= (u8) 24u);
 
-	register u32 r;
+	u32 r;
 	switch ( mode ){
 	case SMM_CONST:
 	case SMM_SHIFT:
@@ -413,7 +412,7 @@ lsmask32(register const u8 k, const enum ShiftMaskMode mode)
  * @pre x != UINT32_MAX
 **/
 ALWAYS_INLINE CONST uint
-tbcnt8_32(register const u32 x)
+tbcnt8_32(const u32 x)
 /*@*/
 {
 	assert(x != UINT32_MAX);
@@ -439,7 +438,7 @@ tbcnt8_32(register const u32 x)
  * @note defined for all values
 **/
 ALWAYS_INLINE CONST u8
-tbcnt8(register const u8 x)
+tbcnt8(const u8 x)
 /*@*/
 {
 	return tbcnt8_table[x];
@@ -459,10 +458,7 @@ tbcnt8(register const u8 x)
  * @post *k <= (u8) 24u
 **/
 ALWAYS_INLINE void
-rice_update(
-	register u32 *const restrict sum, register u8 *const restrict k,
-	register const u32 value
-)
+rice_update(u32 *const restrict sum, u8 *const restrict k, const u32 value)
 /*@modifies	*sum,
 		*k
 @*/
@@ -490,7 +486,7 @@ rice_update(
  * @return 'x'
 **/
 ALWAYS_INLINE u8
-rice_crc32(register const u8 x, register u32 *const restrict crc)
+rice_crc32(const u8 x, u32 *const restrict crc)
 /*@modifies	*crc@*/
 {
 	*crc = crc32_cont(x, *crc);
@@ -518,10 +514,9 @@ rice_crc32(register const u8 x, register u32 *const restrict crc)
 **/
 ALWAYS_INLINE size_t
 rice_encode(
-	/*@partial@*/ register u8 *const restrict dest, register u32 value,
-	register size_t nbytes_enc, register struct Rice *const restrict rice,
-	register struct BitCache *const restrict bitcache,
-	register u32 *const restrict crc
+	/*@partial@*/ u8 *const restrict dest, u32 value,
+	size_t nbytes_enc, struct Rice *const restrict rice,
+	struct BitCache *const restrict bitcache, u32 *const restrict crc
 )
 /*@modifies	*dest,
 		*rice,
@@ -529,15 +524,15 @@ rice_encode(
 		*crc
 @*/
 {
-	register u32 *const restrict sum0  = &rice->sum[0u];
-	register u32 *const restrict sum1  = &rice->sum[1u];
-	register  u8 *const restrict k0    = &rice->k[0u];
-	register  u8 *const restrict k1    = &rice->k[1u];
-	register u32 *const restrict cache = &bitcache->cache;
-	register  u8 *const restrict count = &bitcache->count;
+	u32 *const restrict sum0  = &rice->sum[0u];
+	u32 *const restrict sum1  = &rice->sum[1u];
+	 u8 *const restrict k0    = &rice->k[0u];
+	 u8 *const restrict k1    = &rice->k[1u];
+	u32 *const restrict cache = &bitcache->cache;
+	 u8 *const restrict count = &bitcache->count;
 
-	register u32 unary = 0, binary;
-	register  u8 kx;
+	u32 unary = 0, binary;
+	 u8 kx;
 
 	// value + state
 	kx = *k0;
@@ -579,18 +574,16 @@ rice_encode(
 **/
 INLINE size_t
 rice_encode_cacheflush(
-	/*@partial@*/ register u8 *const restrict dest,
-	register size_t nbytes_enc,
-	register struct BitCache *const restrict bitcache,
-	register u32 *const restrict crc
+	/*@partial@*/ u8 *const restrict dest, size_t nbytes_enc,
+	struct BitCache *const restrict bitcache, u32 *const restrict crc
 )
 /*@modifies	*dest,
 		*bitcache,
 		*crc
 @*/
 {
-	register u32 *const restrict cache = &bitcache->cache;
-	register  u8 *const restrict count = &bitcache->count;
+	u32 *const restrict cache = &bitcache->cache;
+	 u8 *const restrict count = &bitcache->count;
 
 	*count += 7u;
 	return rice_write_cache(dest, nbytes_enc, cache, count, crc);
@@ -617,9 +610,9 @@ rice_encode_cacheflush(
 **/
 ALWAYS_INLINE size_t
 rice_write_unary(
-	/*@partial@*/ register u8 *const restrict dest, register u32 unary,
-	register size_t nbytes_enc, register u32 *const restrict cache,
-	register u8 *const restrict count, register u32 *const restrict crc
+	/*@partial@*/ u8 *const restrict dest, u32 unary, size_t nbytes_enc,
+	u32 *const restrict cache, u8 *const restrict count,
+	u32 *const restrict crc
 )
 /*@modifies	*dest,
 		*cache,
@@ -659,10 +652,9 @@ loop_entr:
 **/
 ALWAYS_INLINE size_t
 rice_write_binary(
-	/*@partial@*/ register u8 *const restrict dest,
-	register const u32 binary, register size_t nbytes_enc,
-	register u32 *const restrict cache, register u8 *const restrict count,
-	register u32 *const restrict crc, register const u8 k
+	/*@partial@*/ u8 *const restrict dest, const u32 binary,
+	size_t nbytes_enc, u32 *const restrict cache,
+	u8 *const restrict count, u32 *const restrict crc, const u8 k
 )
 /*@modifies	*dest,
 		*cache,
@@ -691,9 +683,9 @@ rice_write_binary(
 **/
 ALWAYS_INLINE size_t
 rice_write_cache(
-	/*@partial@*/ register u8 *const restrict dest,
-	register size_t nbytes_enc, register u32 *const restrict cache,
-	register u8 *const restrict count, register u32 *const restrict crc
+	/*@partial@*/ u8 *const restrict dest, size_t nbytes_enc,
+	u32 *const restrict cache, u8 *const restrict count,
+	u32 *const restrict crc
 )
 /*@modifies	*dest,
 		*cache,
@@ -731,11 +723,10 @@ rice_write_cache(
 **/
 ALWAYS_INLINE size_t
 rice_decode(
-	/*@out@*/ register u32 *const restrict value,
-	register const u8 *const restrict src, register size_t nbytes_dec,
-	register struct Rice *const restrict rice,
-	register struct BitCache *const restrict bitcache,
-	register u32 *const restrict crc, register const u32 unary_lax_limit
+	/*@out@*/ u32 *const restrict value, const u8 *const restrict src,
+	size_t nbytes_dec, struct Rice *const restrict rice,
+	struct BitCache *const restrict bitcache, u32 *const restrict crc,
+	const u32 unary_lax_limit
 )
 /*@modifies	*value,
 		*rice,
@@ -743,16 +734,16 @@ rice_decode(
 		*crc
 @*/
 {
-	register u32 *const restrict sum0  = &rice->sum[0u];
-	register u32 *const restrict sum1  = &rice->sum[1u];
-	register  u8 *const restrict k0    = &rice->k[0u];
-	register  u8 *const restrict k1    = &rice->k[1u];
-	register u32 *const restrict cache = &bitcache->cache;
-	register  u8 *const restrict count = &bitcache->count;
+	u32 *const restrict sum0  = &rice->sum[0u];
+	u32 *const restrict sum1  = &rice->sum[1u];
+	 u8 *const restrict k0    = &rice->k[0u];
+	 u8 *const restrict k1    = &rice->k[1u];
+	u32 *const restrict cache = &bitcache->cache;
+	 u8 *const restrict count = &bitcache->count;
 
 	u32 unary, binary = 0;
-	register  u8 kx;
-	register bool depth1;
+	 u8 kx;
+	bool depth1;
 
 	// unary
 	nbytes_dec = rice_read_unary(
@@ -813,10 +804,9 @@ rice_decode(
 **/
 ALWAYS_INLINE size_t
 rice_read_unary(
-	/*@out@*/ register u32 *const restrict unary,
-	register const u8 *const restrict src, register size_t nbytes_dec,
-	register u32 *const restrict cache, register u8 *const restrict count,
-	register u32 *const restrict crc, register const u32 lax_limit
+	/*@out@*/ u32 *const restrict unary, const u8 *const restrict src,
+	size_t nbytes_dec, u32 *const restrict cache,
+	u8 *const restrict count, u32 *const restrict crc, const u32 lax_limit
 )
 /*@modifies	*unary,
 		*cache,
@@ -824,7 +814,7 @@ rice_read_unary(
 		*crc
 @*/
 {
-	register u8 nbits;
+	u8 nbits;
 
 	assert(*count <= (u8) 8u);
 
@@ -868,10 +858,9 @@ rice_read_unary(
 **/
 ALWAYS_INLINE size_t
 rice_read_binary(
-	/*@out@*/ register u32 *const restrict binary,
-	register const u8 *const restrict src, register size_t nbytes_dec,
-	register u32 *const restrict cache, register u8 *const restrict count,
-	register u32 *const restrict crc, register const u8 k
+	/*@out@*/ u32 *const restrict binary, const u8 *const restrict src,
+	size_t nbytes_dec, u32 *const restrict cache,
+	u8 *const restrict count, u32 *const restrict crc, const u8 k
 )
 /*@modifies	*binary,
 		*cache,

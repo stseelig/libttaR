@@ -91,13 +91,10 @@ ALWAYS_INLINE i32 tta_filter(
  * @return safety margin
 **/
 INLINE CONST size_t
-get_safety_margin(
-	register const enum TTASampleBytes samplebytes,
-	register const uint nchan
-)
+get_safety_margin(const enum TTASampleBytes samplebytes, const uint nchan)
 /*@*/
 {
-	register size_t r;
+	size_t r;
 	switch ( samplebytes ){
 	case TTASAMPLEBYTES_1:
 	case TTASAMPLEBYTES_2:
@@ -118,10 +115,10 @@ get_safety_margin(
  * @return arg 'k' for tta_predict1
 **/
 INLINE CONST u8
-get_predict_k(register const enum TTASampleBytes samplebytes)
+get_predict_k(const enum TTASampleBytes samplebytes)
 /*@*/
 {
-	register u8 r;
+	u8 r;
 	switch ( samplebytes ){
 	case TTASAMPLEBYTES_1:
 		r = (u8) 4u;
@@ -142,10 +139,10 @@ get_predict_k(register const enum TTASampleBytes samplebytes)
  * @return arg 'sum' for tta_filter
 **/
 INLINE CONST i32
-get_filter_round(register const enum TTASampleBytes samplebytes)
+get_filter_round(const enum TTASampleBytes samplebytes)
 /*@*/
 {
-	register i32 r;
+	i32 r;
 	switch ( samplebytes ){
 	case TTASAMPLEBYTES_1:
 	case TTASAMPLEBYTES_3:
@@ -166,10 +163,10 @@ get_filter_round(register const enum TTASampleBytes samplebytes)
  * @return arg 'k' for tta_filter
 **/
 INLINE CONST u8
-get_filter_k(register const enum TTASampleBytes samplebytes)
+get_filter_k(const enum TTASampleBytes samplebytes)
 /*@*/
 {
-	register u8 r;
+	u8 r;
 	switch ( samplebytes ){
 	case TTASAMPLEBYTES_1:
 	case TTASAMPLEBYTES_3:
@@ -195,7 +192,7 @@ get_filter_k(register const enum TTASampleBytes samplebytes)
  * @return shifted value
 **/
 ALWAYS_INLINE CONST i32
-asl32(register const i32 x, register const u8 k)
+asl32(const i32 x, const u8 k)
 /*@*/
 {
 	return (i32) (((u32) x) << k);
@@ -210,7 +207,7 @@ asl32(register const i32 x, register const u8 k)
  * @return shifted value
 **/
 ALWAYS_INLINE CONST i32
-asr32(register const i32 x, register const u8 k)
+asr32(const i32 x, const u8 k)
 /*@*/
 {
 	/*@-shiftimplementation@*/
@@ -235,7 +232,7 @@ asr32(register const i32 x, register const u8 k)
  * @return predicted value
 **/
 ALWAYS_INLINE CONST i32
-tta_predict1(register const i32 x, register const u8 k)
+tta_predict1(const i32 x, const u8 k)
 /*@*/
 {
 	return (i32) (((((u64fast) x) << k) - x) >> k);
@@ -252,7 +249,7 @@ tta_predict1(register const i32 x, register const u8 k)
  *     Use%20with%20signed%20integers
 **/
 ALWAYS_INLINE CONST i32
-tta_postfilter_enc(register const i32 x)
+tta_postfilter_enc(const i32 x)
 /*@*/
 {
 	return (x > 0 ? asl32(x, (u8) 1u) - 1 : asl32(-x, (u8) 1u));
@@ -268,7 +265,7 @@ tta_postfilter_enc(register const i32 x)
  * @see tta_postfilter_enc
 **/
 ALWAYS_INLINE CONST i32
-tta_prefilter_dec(register const i32 x)
+tta_prefilter_dec(const i32 x)
 /*@*/
 {
 	return ((((u32) x) & 0x1u) != 0
@@ -291,16 +288,16 @@ tta_prefilter_dec(register const i32 x)
 **/
 ALWAYS_INLINE i32
 tta_filter(
-	register struct Filter *const restrict filter, register i32 sum,
-	register const u8 k, register i32 value, const enum TTAMode mode
+	struct Filter *const restrict filter, i32 sum, const u8 k, i32 value,
+	const enum TTAMode mode
 )
 /*@modifies	*filter@*/
 {
-	register i32 *const restrict a = filter->qm;
-	register i32 *const restrict m = filter->dx;
-	register i32 *const restrict b = filter->dl;
+	i32 *const restrict a = filter->qm;
+	i32 *const restrict m = filter->dx;
+	i32 *const restrict b = filter->dl;
 
-	register uint i;
+	uint i;
 
 	// there is a compiler quirk where putting the ==0 branch !first slows
 	//   everything down considerably. it adds an branch or two to reduce

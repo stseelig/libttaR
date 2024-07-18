@@ -193,7 +193,7 @@ ALWAYS_INLINE CONST u64 letoh64(u64) /*@*/;
  * @return byteswapped value
  */
 ALWAYS_INLINE CONST u16
-bswap16(register const u16 x)
+bswap16(const u16 x)
 /*@*/
 {
 #if HAS_BUILTIN(BUILTIN_BSWAP16)
@@ -203,7 +203,7 @@ bswap16(register const u16 x)
 #elif HAS_BUILTIN(BUILTIN_BSWAP64)
 	return (u16) BUILTIN_BSWAP64(((u64) x) << 48u);
 #else
-	register u16 r = 0;
+	u16 r = 0;
 	r |= (x & 0xFF00u) >> 8u;
 	r |= (x & 0x00FFu) << 8u;
 	return r;
@@ -218,7 +218,7 @@ bswap16(register const u16 x)
  * @return byteswapped value
  */
 ALWAYS_INLINE CONST u32
-bswap32(register const u32 x)
+bswap32(const u32 x)
 /*@*/
 {
 #if HAS_BUILTIN(BUILTIN_BSWAP32)
@@ -226,7 +226,7 @@ bswap32(register const u32 x)
 #elif HAS_BUILTIN(BUILTIN_BSWAP64)
 	return (u32) BUILTIN_BSWAP64(((u64) x) << 32u);
 #else
-	register u32 r = 0;
+	u32 r = 0;
 	r |= (x & 0xFF000000u) >> 24u;
 	r |= (x & 0x00FF0000u) >>  8u;
 	r |= (x & 0x0000FF00u) <<  8u;
@@ -243,13 +243,13 @@ bswap32(register const u32 x)
  * @return byteswapped value
  */
 ALWAYS_INLINE CONST u64
-bswap64(register const u64 x)
+bswap64(const u64 x)
 /*@*/
 {
 #if HAS_BUILTIN(BUILTIN_BSWAP64)
 	return (u64) BUILTIN_BSWAP64(x);
 #else
-	register u64 r = 0;
+	u64 r = 0;
 	r |= (x & 0xFF00000000000000u) >> 56u;
 	r |= (x & 0x00FF000000000000u) >> 40u;
 	r |= (x & 0x0000FF0000000000u) >> 24u;
@@ -272,7 +272,7 @@ bswap64(register const u64 x)
  * @return little-endian value
 **/
 ALWAYS_INLINE CONST u16
-htole16(register const u16 x)
+htole16(const u16 x)
 /*@*/
 {
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
@@ -292,7 +292,7 @@ htole16(register const u16 x)
   * @return host-endian value
  **/
 ALWAYS_INLINE CONST u16
-letoh16(register const u16 x)
+letoh16(const u16 x)
 /*@*/
 {
 	return htole16(x);
@@ -306,7 +306,7 @@ letoh16(register const u16 x)
   * @return little-endian value
  **/
 ALWAYS_INLINE CONST u32
-htole32(register const u32 x)
+htole32(const u32 x)
 /*@*/
 {
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
@@ -327,7 +327,7 @@ htole32(register const u32 x)
  **/
 
 ALWAYS_INLINE CONST u32
-letoh32(register const u32 x)
+letoh32(const u32 x)
 /*@*/
 {
 	return htole32(x);
@@ -341,7 +341,7 @@ letoh32(register const u32 x)
   * @return little-endian value
  **/
 ALWAYS_INLINE CONST u64
-htole64(register const u64 x)
+htole64(const u64 x)
 /*@*/
 {
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
@@ -362,7 +362,7 @@ htole64(register const u64 x)
  **/
 
 ALWAYS_INLINE CONST u64
-letoh64(register const u64 x)
+letoh64(const u64 x)
 /*@*/
 {
 	return htole64(x);

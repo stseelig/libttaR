@@ -188,8 +188,8 @@ struct MTArg_Decoder {
 
 #undef fstat_c
 INLINE void encmt_fstat_init(
-	/*@out@*/ register struct FileStats_EncMT *restrict fstat_c,
-	register const struct FileStats *restrict
+	/*@out@*/ struct FileStats_EncMT *restrict fstat_c,
+	const struct FileStats *restrict
 )
 /*@modifies	*fstat_c@*/
 ;
@@ -253,8 +253,8 @@ extern void encmt_state_free(
 
 #undef fstat_c
 INLINE void decmt_fstat_init(
-	/*@out@*/ register struct FileStats_DecMT *restrict fstat_c,
-	register const struct FileStats *restrict
+	/*@out@*/ struct FileStats_DecMT *restrict fstat_c,
+	const struct FileStats *restrict
 )
 /*@modifies	*fstat_c@*/
 ;
@@ -334,8 +334,8 @@ extern void decmt_state_free(
 **/
 INLINE void
 encmt_fstat_init(
-	/*@out@*/ register struct FileStats_EncMT *restrict fstat_c,
-	register const struct FileStats *restrict fstat
+	/*@out@*/ struct FileStats_EncMT *restrict fstat_c,
+	const struct FileStats *restrict fstat
 )
 /*@modifies	*fstat_c@*/
 {
@@ -355,8 +355,8 @@ encmt_fstat_init(
 **/
 INLINE void
 decmt_fstat_init(
-	/*@out@*/ register struct FileStats_DecMT *restrict fstat_c,
-	register const struct FileStats *restrict fstat
+	/*@out@*/ struct FileStats_DecMT *restrict fstat_c,
+	const struct FileStats *restrict fstat
 )
 /*@modifies	*fstat_c@*/
 {

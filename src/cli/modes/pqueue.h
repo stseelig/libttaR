@@ -38,10 +38,7 @@ struct PQueue {
  * @param limit the maximum queue length
 **/
 INLINE void
-pqueue_init(
-	/*@out@*/ register struct PQueue *const restrict q,
-	register uint limit
-)
+pqueue_init(/*@out@*/ struct PQueue *const restrict q, uint limit)
 /*@modifies	q->limit,
 		q->next
 @*/
@@ -62,7 +59,7 @@ pqueue_init(
  * @return the next queue id
 **/
 ALWAYS_INLINE CONST uint
-pqueue_next(register uint curr, register uint limit)
+pqueue_next(uint curr, uint limit)
 /*@*/
 {
 	return (curr + 1u < limit ? curr + 1u : 0);
@@ -78,10 +75,10 @@ pqueue_next(register uint curr, register uint limit)
  * @note guarded by a spinlock
 **/
 ALWAYS_INLINE uint
-pqueue_pop(register struct PQueue *const restrict q)
+pqueue_pop(struct PQueue *const restrict q)
 /*@modifies	q->next@*/
 {
-	register const uint r = q->next;
+	const uint r = q->next;
 	q->next = pqueue_next(q->next, q->limit);
 	return r;
 }

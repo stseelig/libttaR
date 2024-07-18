@@ -18,8 +18,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 /*@only@*/ /*@out@*/
-HOT void *
-malloc_check(const size_t size)
+HOT void *malloc_check(size_t size)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -29,8 +28,7 @@ malloc_check(const size_t size)
 ;
 
 /*@only@*/ /*@in@*/
-HOT void *
-calloc_check(const size_t nmemb, const size_t size)
+HOT void *calloc_check(size_t nmemb, size_t size)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -40,9 +38,8 @@ calloc_check(const size_t nmemb, const size_t size)
 ;
 
 /*@only@*/ /*@partial@*/
-HOT void *
-realloc_check(
-	/*@only@*/ /*@null@*/ /*@out@*/ void *const ptr, const size_t size
+HOT void *realloc_check(
+	/*@only@*/ /*@null@*/ /*@out@*/ void *ptr, size_t size
 )
 /*@globals	fileSystem,
 		internalState

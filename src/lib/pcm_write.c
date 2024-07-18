@@ -163,7 +163,7 @@ pcm_write_i24le(
  * @return i32 sample
 **/
 ALWAYS_INLINE CONST u8
-i32h_to_u8(register const i32 x)
+i32h_to_u8(const i32 x)
 /*@*/
 {
 	return (u8) (x + 0x80u);
@@ -176,9 +176,7 @@ i32h_to_u8(register const i32 x)
  * @param src[in] source buffer
 **/
 ALWAYS_INLINE void
-write_i32h_to_i16le(
-	/*@out@*/ register u8 *const restrict dest, register const i32 x
-)
+write_i32h_to_i16le(/*@out@*/ u8 *const restrict dest, const i32 x)
 /*@modifies	*dest@*/
 {
 	dest[0u] = (u8)  ((u32) x);
@@ -193,9 +191,7 @@ write_i32h_to_i16le(
  * @param src[in] source buffer
 **/
 ALWAYS_INLINE void
-write_i32h_to_i24le(
-	/*@out@*/ register u8 *const restrict dest, register const i32 x
-)
+write_i32h_to_i24le(/*@out@*/ u8 *const restrict dest, const i32 x)
 /*@modifies	*dest@*/
 {
 	dest[0u] = (u8)  ((u32) x);

@@ -123,7 +123,7 @@ struct LibTTAr_CodecState_User {
  * @param rice[out] struct to initialize
 **/
 INLINE void
-rice_init(/*@out@*/ register struct Rice *const restrict rice)
+rice_init(/*@out@*/ struct Rice *const restrict rice)
 /*@modifies	*rice@*/
 {
 	rice->sum[0u] = (u32) 0x00004000u;	// binexp32p4((u8) 10u)
@@ -141,12 +141,12 @@ rice_init(/*@out@*/ register struct Rice *const restrict rice)
 **/
 INLINE void
 codec_init(
-	/*@out@*/ register struct Codec *const restrict codec,
-	register const uint nchan
+	/*@out@*/ struct Codec *const restrict codec,
+	const uint nchan
 )
 /*@modifies	*codec@*/
 {
-	register uint i;
+	uint i;
 	for ( i = 0; i < nchan; ++i ){
 		MEMSET(&codec[i].filter, 0x00, sizeof codec[i].filter);
 		rice_init(&codec[i].rice);
@@ -164,8 +164,8 @@ codec_init(
 INLINE void
 state_priv_init(
 	/*@out@*/
-	register struct LibTTAr_CodecState_Priv *const restrict priv,
-	register const uint nchan
+	struct LibTTAr_CodecState_Priv *const restrict priv,
+	const uint nchan
 )
 /*@modifies	*priv@*/
 {

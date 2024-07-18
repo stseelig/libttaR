@@ -155,7 +155,7 @@ pcm_read_i24le(
  * @return i32 sample
 **/
 ALWAYS_INLINE CONST i32
-u8_to_i32h(register const u8 x)
+u8_to_i32h(const u8 x)
 /*@*/
 {
 	return (i32) (x - 0x80u);
@@ -169,10 +169,10 @@ u8_to_i32h(register const u8 x)
  * @return i32 sample
 **/
 ALWAYS_INLINE PURE i32
-read_i16le_to_i32h(register const u8 *const restrict src)
+read_i16le_to_i32h(const u8 *const restrict src)
 /*@*/
 {
-	register u32 r = 0;
+	u32 r = 0;
 	r |=  (u32)       src[0u];
 	r |= ((u32) ((i8) src[1u])) << 8u;
 	return (i32) r;
@@ -186,10 +186,10 @@ read_i16le_to_i32h(register const u8 *const restrict src)
  * @return i32 sample
 **/
 ALWAYS_INLINE PURE i32
-read_i24le_to_i32h(register const u8 *const restrict src)
+read_i24le_to_i32h(const u8 *const restrict src)
 /*@*/
 {
-	register u32 r = 0;
+	u32 r = 0;
 	r |=  (u32)       src[0u];
 	r |= ((u32)       src[1u])  <<  8u;
 	r |= ((u32) ((i8) src[2u])) << 16u;

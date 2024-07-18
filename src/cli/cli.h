@@ -73,15 +73,15 @@ extern HOT void errprint_spinner(void)
 **/
 INLINE CONST double
 timediff(
-	register const struct timespec *const restrict start,
-	register const struct timespec *const restrict finish
+	const struct timespec *const restrict start,
+	const struct timespec *const restrict finish
 )
 /*@*/
 {
-	register const double diff_sec  = (double) (
+	const double diff_sec  = (double) (
 		finish->tv_sec - start->tv_sec
 	);
-	register const double diff_nsec = (
+	const double diff_nsec = (
 		((double) (finish->tv_nsec - start->tv_nsec)) / 1000000000.0
 	);
 	return diff_sec + diff_nsec;
