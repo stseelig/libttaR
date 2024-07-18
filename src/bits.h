@@ -86,11 +86,11 @@
 #define UNUSED			/*@unused@*/
 #endif
 
-#if HAS_ATTRIBUTE(counted_by)
-#define COUNTED_BY(x)		__attribute__((counted_by(x)))
-#else
-#define COUNTED_BY(x)
-#endif
+//#if HAS_ATTRIBUTE(counted_by)
+//#define COUNTED_BY(x)		__attribute__((counted_by(x)))
+//#else
+//#define COUNTED_BY(x)
+//#endif
 
 #if HAS_ATTRIBUTE(packed)
 #define PACKED			__attribute__((packed))
