@@ -521,8 +521,7 @@ outfile_name_fmt(
 }
 
 /**@fn findrchar
- * @brief slightly modified memrchr
- *    wrote my own for portability reasons (memrchr is a GNU extension)
+ * @brief rewritten memrchr (memrchr is a GNU extension)
  *
  * @param s[in] the input string
  * @param c the target character
