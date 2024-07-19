@@ -162,6 +162,9 @@ main(const int argc, char *const *const argv)
 		goto print_main_help;
 	}
 
+	// saved for warning/error printing
+	g_progname = argv[0];
+
 	// signals
 	memset(&sigact, 0x00, sizeof sigact);
 	sigact.sa_handler = sighand_cleanup_exit;
@@ -182,9 +185,6 @@ main(const int argc, char *const *const argv)
 	// atexit
 	t.d = atexit(atexit_cleanup);
 	assert(t.d == 0);
-
-	// saved for warning/error printing
-	g_progname = argv[0];
 
 	// enter a mode
 	if ( strcmp(argv[1u], "encode") == 0 ){
