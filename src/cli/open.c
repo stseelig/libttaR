@@ -526,8 +526,7 @@ outfile_name_fmt(
  *
  * @param s[in] the input string
  * @param c the target character
- * @param n the size of 's'; assumed non-zero, but still works if 0 as long as
- *    's' just a null-byte
+ * @param n the size of 's'
  *
  * @return a pointer to last instance of 'c' in 's'
  * @retval NULL not found
@@ -537,8 +536,9 @@ static PURE char *
 findrchar(const char *const restrict s, const char c, size_t n)
 /*@*/
 {
-	do {	if ( s[n] == c ){ return (char *) &s[n]; }
-	} while ( --n != 0 );
+	while ( n-- != 0 ){
+		if ( s[n] == c ){ return (char *) &s[n]; }
+	}
 	return NULL;
 }
 
