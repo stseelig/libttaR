@@ -143,11 +143,13 @@ char *g_rm_on_sigint = NULL;
 int
 main(const int argc, char *const *const argv)
 /*@globals	fileSystem,
-		internalState
+		internalState,
+		g_progname
 @*/
 /*@modifies	fileSystem,
 		internalState,
-		**argv
+		**argv,
+		g_progname
 @*/
 {
 	int r = EXIT_FAILURE;
