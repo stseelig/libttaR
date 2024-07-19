@@ -100,7 +100,7 @@ static void enc_loop(const struct OpenedFilesMember *restrict)
  * @return the number of warnings/errors
 **/
 int
-mode_encode(const uint optind, const uint argc, char *const *argv)
+mode_encode(const uint optind, const uint argc, char *const *const argv)
 /*@globals	fileSystem,
 		internalState
 @*/

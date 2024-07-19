@@ -119,7 +119,7 @@ rawpcm_statcopy(/*@out@*/ struct FileStats *const restrict fstat)
 static int
 opt_encode_rawpcm(
 	const uint optind0, const uint optind1, UNUSED const uint argc,
-	char *const *argv, UNUSED const enum OptMode mode
+	char *const *const argv, UNUSED const enum OptMode mode
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -210,7 +210,7 @@ opt_encode_rawpcm(
 NORETURN COLD int
 opt_encode_help(
 	UNUSED const uint optind0, UNUSED const uint optind1,
-	UNUSED const uint argc, UNUSED char *const *argv,
+	UNUSED const uint argc, UNUSED char *const *const argv,
 	UNUSED const enum OptMode mode
 )
 /*@globals	fileSystem@*/

@@ -96,7 +96,7 @@ static void dec_loop(struct OpenedFilesMember *restrict)
  * @return the number of warnings/errors
 **/
 int
-mode_decode(const uint optind, const uint argc, char *const *argv)
+mode_decode(const uint optind, const uint argc, char *const *const argv)
 /*@globals	fileSystem,
 		internalState
 @*/
