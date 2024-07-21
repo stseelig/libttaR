@@ -91,8 +91,8 @@ extern void decbuf_init(
 		internalState,
 		*db
 @*/
-/*@allocates	db->pcmbuf,
-		db->i32buf,
+/*@allocates	db->i32buf,
+		db->pcmbuf,
 		db->ttabuf
 @*/
 ;
@@ -118,8 +118,8 @@ extern HOT void decbuf_check_adjust(
 extern void codecbuf_free(const struct EncBuf *const restrict cb)
 /*@globals	internalState@*/
 /*@modifies	internalState@*/
-/*@releases	cb->pcmbuf,
-		cb->i32buf,
+/*@releases	cb->i32buf,
+		cb->pcmbuf,
 		cb->ttabuf
 @*/
 ;
