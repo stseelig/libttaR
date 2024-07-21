@@ -58,13 +58,13 @@ struct MTArg_EncIO_Frames {
 	semaphore_p			*navailable;
 
 	// parallel arrays
-	/*@owned@*/
+	/*@temp@*/
 	semaphore_p			*post_encoder;
-	/*@owned@*/
+	/*@temp@*/
 	size_t				*ni32_perframe;
-	/*@owned@*/
+	/*@temp@*/
 	struct EncBuf			*encbuf;
-	/*@owned@*/
+	/*@temp@*/
 	struct LibTTAr_CodecState_User	*user;
 };
 
@@ -75,13 +75,13 @@ struct MTArg_Encoder_Frames {
 	struct MTPQueue			queue;
 
 	// parallel arrays
-	/*@dependent@*/
+	/*@temp@*/
 	semaphore_p			*post_encoder;
-	/*@dependent@*/
+	/*@temp@*/
 	const size_t			*ni32_perframe;
-	/*@dependent@*/
+	/*@temp@*/
 	struct EncBuf			*encbuf;
-	/*@dependent@*/
+	/*@temp@*/
 	struct LibTTAr_CodecState_User	*user;
 };
 
@@ -93,21 +93,21 @@ struct MTArg_DecIO_Frames {
 	semaphore_p			*navailable;
 
 	// parallel arrays
-	/*@owned@*/
+	/*@temp@*/
 	semaphore_p			*post_decoder;
-	/*@owned@*/
+	/*@tempd@*/
 	size_t				*ni32_perframe;
-	/*@owned@*/
+	/*@temp@*/
 	size_t				*nbytes_tta_perframe;
-	/*@owned@*/
+	/*@temp@*/
 	struct DecBuf			*decbuf;
-	/*@owned@*/
+	/*@temp@*/
 	u32				*crc_read;	// little-endian
-	/*@owned@*/
+	/*@temp@*/
 	struct LibTTAr_CodecState_User	*user;
-	/*@owned@*/
+	/*@temp@*/
 	ichar				*dec_retval;
-	/*@owned@*/
+	/*@temp@*/
 	size_t				*nsamples_flat_2pad;
 };
 
@@ -118,19 +118,19 @@ struct MTArg_Decoder_Frames {
 	struct MTPQueue			queue;
 
 	// parallel arrays
-	/*@dependent@*/
+	/*@temp@*/
 	semaphore_p			*post_decoder;
-	/*@dependent@*/
+	/*@temp@*/
 	size_t				*ni32_perframe;
-	/*@dependent@*/
+	/*@temp@*/
 	size_t				*nbytes_tta_perframe;
-	/*@dependent@*/
+	/*@temp@*/
 	struct DecBuf			*decbuf;
-	/*@dependent@*/
+	/*@temp@*/
 	struct LibTTAr_CodecState_User	*user;
-	/*@dependent@*/
+	/*@temp@*/
 	ichar				*dec_retval;
-	/*@dependent@*/
+	/*@temp@*/
 	size_t				*nsamples_flat_2pad;
 };
 
@@ -216,12 +216,9 @@ extern void encmt_state_init(
 		encoder->frames.queue.lock
 @*/
 /*@allocates	io->frames.navailable,
-		io->frames.post_encoder,
-		io->frames.ni32_perframe,
-		io->frames.encbuf,
 		io->frames.encbuf[].i32buf,
-		io->frames.encbuf[].ttabuf,
-		io->frames.user
+		io->frames.encbuf[].pcmbuf,
+		io->frames.encbuf[].ttabuf
 @*/
 ;
 
@@ -240,12 +237,9 @@ extern void encmt_state_free(
 		encoder->frames.queue.lock
 @*/
 /*@releases	io->frames.navailable,
-		io->frames.post_encoder,
-		io->frames.ni32_perframe,
 		io->frames.encbuf[].i32buf,
-		io->frames.encbuf[].ttabuf,
-		io->frames.encbuf,
-		io->frames.user
+		io->frames.encbuf[].pcmbuf,
+		io->frames.encbuf[].ttabuf
 @*/
 ;
 
@@ -281,16 +275,9 @@ extern void decmt_state_init(
 		decoder->frames.queue.lock
 @*/
 /*@allocates	io->frames.navailable,
-		io->frames.post_decoder,
-		io->frames.ni32_perframe,
-		io->frames.nbytes_tta_perframe,
-		io->frames.decbuf,
+		io->frames.decbuf[].i32buf,
 		io->frames.decbuf[].pcmbuf,
-		io->frames.decbuf[].ttabuf,
-		io->frames.crc_read,
-		io->frames.user,
-		io->frames.dec_retval,
-		io->frames.nsamples_flat_2pad
+		io->frames.decbuf[].ttabuf
 @*/
 ;
 
@@ -300,7 +287,6 @@ extern void decmt_state_free(
 	struct MTArg_DecIO *restrict io,
 	struct MTArg_Decoder *restrict decoder, uint
 )
-
 /*@globals	internalState@*/
 /*@modifies	internalState,
 		*io,
@@ -310,16 +296,9 @@ extern void decmt_state_free(
 		decoder->frames.queue.lock
 @*/
 /*@releases	io->frames.navailable,
-		io->frames.post_decoder,
-		io->frames.ni32_perframe,
-		io->frames.nbytes_tta_perframe,
+		io->frames.decbuf[].i32buf,
 		io->frames.decbuf[].pcmbuf,
-		io->frames.decbuf[].ttabuf,
-		io->frames.decbuf,
-		io->frames.crc_read,
-		io->frames.user,
-		io->frames.dec_retval,
-		io->frames.nsamples_flat_2pad
+		io->frames.decbuf[].ttabuf
 @*/
 ;
 

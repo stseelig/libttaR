@@ -10,6 +10,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include <stdlib.h>
+#include <stdint.h>		// uintptr_t
 
 #include "../../bits.h"
 #include "../../libttaR.h"	// sizeof *user
@@ -21,6 +22,48 @@
 #include "mt-struct.h"
 #include "pqueue.h"
 #include "threads.h"
+
+//////////////////////////////////////////////////////////////////////////////
+
+#undef io
+static void encmt_state_init_allocs(
+	/*@out@*/ struct MTArg_EncIO *restrict io, size_t
+)
+/*@globals	fileSystem,
+		internalState
+@*/
+/*@modifies	fileSystem,
+		internalState,
+		io->frames.navailable,
+		io->frames.post_encoder,
+		io->frames.ni32_perframe,
+		io->frames.encbuf,
+		io->frames.user
+@*/
+/*@allocates	io->frames.navailable@*/
+;
+
+#undef io
+static void decmt_state_init_allocs(
+	/*@out@*/ struct MTArg_DecIO *restrict io, size_t
+)
+/*@globals	fileSystem,
+		internalState
+@*/
+/*@modifies	fileSystem,
+		internalState,
+		io->frames.navailable,
+		io->frames.post_decoder,
+		io->frames.ni32_perframe,
+		io->frames.nbytes_tta_perframe,
+		io->frames.decbuf,
+		io->frames.crc_read,
+		io->frames.user,
+		io->frames.dec_retval,
+		io->frames.nsamples_flat_2pad
+@*/
+/*@allocates	io->frames.navailable@*/
+;
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -62,34 +105,20 @@ encmt_state_init(
 		encoder->frames.queue.lock
 @*/
 /*@allocates	io->frames.navailable,
-		io->frames.post_encoder,
-		io->frames.ni32_perframe,
-		io->frames.encbuf,
 		io->frames.encbuf[].i32buf,
-		io->frames.encbuf[].ttabuf,
-		io->frames.user
+		io->frames.encbuf[].pcmbuf,
+		io->frames.encbuf[].ttabuf
 @*/
 {
 	uint i;
 
+	// base allocations
+	encmt_state_init_allocs(io, (size_t) framequeue_len);
+
 	// io->frames
 	io->frames.nmemb	= framequeue_len;
 	//
-	io->frames.navailable	= malloc_check(sizeof *io->frames.navailable);
 	semaphore_init(io->frames.navailable, 0);
-	//
-	io->frames.post_encoder		= calloc_check(
-		(size_t) framequeue_len, sizeof *io->frames.post_encoder
-	);
-	io->frames.ni32_perframe	= calloc_check(
-		(size_t) framequeue_len, sizeof *io->frames.ni32_perframe
-	);
-	io->frames.encbuf		= calloc_check(
-		(size_t) framequeue_len, sizeof *io->frames.encbuf
-	);
-	io->frames.user			= calloc_check(
-		(size_t) framequeue_len, sizeof *io->frames.user
-	);
 	//
 	for ( i = 0; i < framequeue_len; ++i ){
 		semaphore_init(&io->frames.post_encoder[i], 0);
@@ -132,7 +161,7 @@ encmt_state_init(
 }
 
 /**@fn encmt_state_free
- * @brief frees any allocated pointers and destroys any pthread objects in the
+ * @brief frees any allocated pointers and destroys any objects in the
  *   multi-threaded encoder state structs
  *
  * @param io[in] state struct for the io thread
@@ -154,29 +183,23 @@ encmt_state_free(
 		encoder->frames.queue.lock
 @*/
 /*@releases	io->frames.navailable,
-		io->frames.post_encoder,
-		io->frames.ni32_perframe,
 		io->frames.encbuf[].i32buf,
-		io->frames.encbuf[].ttabuf,
-		io->frames.encbuf,
-		io->frames.user
+		io->frames.encbuf[].pcmbuf,
+		io->frames.encbuf[].ttabuf
 @*/
 {
 	uint i;
 
 	// io
 	semaphore_destroy(io->frames.navailable);
-	free(io->frames.navailable);
 	for ( i = 0; i < framequeue_len; ++i ){
 		semaphore_destroy(&io->frames.post_encoder[i]);
 	}
-	free(io->frames.post_encoder);
-	free(io->frames.ni32_perframe);
 	for ( i = 0; i < framequeue_len; ++i ){
 		codecbuf_free(&io->frames.encbuf[i]);
 	}
-	free(io->frames.encbuf);
-	free(io->frames.user);
+	//
+	free(io->frames.navailable);
 
 	// encoder
 	spinlock_destroy(&encoder->frames.queue.lock);
@@ -185,6 +208,64 @@ encmt_state_free(
 }
 
 //--------------------------------------------------------------------------//
+
+/**@fn encmt_state_init_allocs
+ * @brief makes one large allocation and slices it up for the struct pointers
+ *
+ * @param io[out] state struct for the io thread
+ * @param framequeue_len length of the framequeue
+**/
+static void
+encmt_state_init_allocs(
+	/*@out@*/ struct MTArg_EncIO *const restrict io,
+	const size_t framequeue_len
+)
+/*@globals	fileSystem,
+		internalState
+@*/
+/*@modifies	fileSystem,
+		internalState,
+		io->frames.navailable,
+		io->frames.post_encoder,
+		io->frames.ni32_perframe,
+		io->frames.encbuf,
+		io->frames.user
+@*/
+/*@allocates	io->frames.navailable@*/
+{
+	size_t size_total = 0;
+	size_t offset[4u];
+	uintptr_t base;
+
+	// navailable
+	size_total += sizeof *io->frames.navailable;
+	// post_encoder
+	size_total += ALIGN(size_total, MAX_ALIGNMENT);
+	offset[0u]  = size_total;
+	size_total += framequeue_len * (sizeof *io->frames.post_encoder);
+	// ni32_perframe
+	size_total += ALIGN(size_total, MAX_ALIGNMENT);
+	offset[1u]  = size_total;
+	size_total += framequeue_len * (sizeof *io->frames.ni32_perframe);
+	// encbuf
+	size_total += ALIGN(size_total, MAX_ALIGNMENT);
+	offset[2u]  = size_total;
+	size_total += framequeue_len * (sizeof *io->frames.encbuf);
+	// user
+	size_total += ALIGN(size_total, MAX_ALIGNMENT);
+	offset[3u]  = size_total;
+	size_total += framequeue_len * (sizeof *io->frames.user);
+
+	base = (uintptr_t) calloc_check((size_t) 1u, size_total);
+	io->frames.navailable 		= (void *)  base;
+	io->frames.post_encoder		= (void *) (base + offset[0u]);
+	io->frames.ni32_perframe	= (void *) (base + offset[1u]);
+	io->frames.encbuf		= (void *) (base + offset[2u]);
+	io->frames.user			= (void *) (base + offset[3u]);
+	return;
+}
+
+//==========================================================================//
 
 /**@fn decmt_state_init
  * @brief initializes the multi-threaded decoder state structs
@@ -224,51 +305,20 @@ decmt_state_init(
 		decoder->frames.queue.lock
 @*/
 /*@allocates	io->frames.navailable,
-		io->frames.post_decoder,
-		io->frames.ni32_perframe,
-		io->frames.nbytes_tta_perframe,
-		io->frames.decbuf,
+		io->frames.decbuf[].i32buf,
 		io->frames.decbuf[].pcmbuf,
-		io->frames.decbuf[].ttabuf,
-		io->frames.crc_read,
-		io->frames.user,
-		io->frames.dec_retval,
-		io->frames.nsamples_flat_2pad
+		io->frames.decbuf[].ttabuf
 @*/
 {
 	uint i;
 
+	// base allocations
+	decmt_state_init_allocs(io, (size_t) framequeue_len);
+
 	// io->frames
 	io->frames.nmemb	= framequeue_len;
 	//
-	io->frames.navailable	= malloc_check(sizeof *io->frames.navailable);
 	semaphore_init(io->frames.navailable, 0);
-	//
-	io->frames.post_decoder		= calloc_check(
-		(size_t) framequeue_len, sizeof *io->frames.post_decoder
-	);
-	io->frames.ni32_perframe	= calloc_check(
-		(size_t) framequeue_len, sizeof *io->frames.ni32_perframe
-	);
-	io->frames.nbytes_tta_perframe	= calloc_check(
-		(size_t) framequeue_len,
-		sizeof *io->frames.nbytes_tta_perframe
-	);
-	io->frames.decbuf		= calloc_check(
-		(size_t) framequeue_len, sizeof *io->frames.decbuf
-	);
-	io->frames.crc_read		= calloc_check(
-		(size_t) framequeue_len, sizeof *io->frames.crc_read
-	);
-	io->frames.user			= calloc_check(
-		(size_t) framequeue_len, sizeof *io->frames.user
-	);
-	io->frames.dec_retval		= calloc_check(
-		(size_t) framequeue_len, sizeof *io->frames.dec_retval
-	);
-	io->frames.nsamples_flat_2pad	= calloc_check(
-		(size_t) framequeue_len, sizeof *io->frames.nsamples_flat_2pad
-	);
 	//
 	for ( i = 0; i < framequeue_len; ++i ){
 		semaphore_init(&io->frames.post_decoder[i], 0);
@@ -314,7 +364,7 @@ decmt_state_init(
 }
 
 /**@fn decmt_state_free
- * @brief frees any allocated pointers and destroys any pthread objects in the
+ * @brief frees any allocated pointers and destroys any objects in the
  *   multi-threaded decoder state structs
  *
  * @param io[in] state struct for the io thread
@@ -327,7 +377,6 @@ decmt_state_free(
 	struct MTArg_Decoder *const restrict decoder,
 	const uint framequeue_len
 )
-
 /*@globals	internalState@*/
 /*@modifies	internalState,
 		*io,
@@ -337,41 +386,113 @@ decmt_state_free(
 		decoder->frames.queue.lock
 @*/
 /*@releases	io->frames.navailable,
-		io->frames.post_decoder,
-		io->frames.ni32_perframe,
-		io->frames.nbytes_tta_perframe,
+		io->frames.decbuf[].i32buf,
 		io->frames.decbuf[].pcmbuf,
-		io->frames.decbuf[].ttabuf,
-		io->frames.decbuf,
-		io->frames.crc_read,
-		io->frames.user,
-		io->frames.dec_retval,
-		io->frames.nsamples_flat_2pad
+		io->frames.decbuf[].ttabuf
 @*/
 {
 	uint i;
 
 	// io
 	semaphore_destroy(io->frames.navailable);
-	free(io->frames.navailable);
 	for ( i = 0; i < framequeue_len; ++i ){
 		semaphore_destroy(&io->frames.post_decoder[i]);
 	}
-	free(io->frames.post_decoder);
-	free(io->frames.ni32_perframe);
-	free(io->frames.nbytes_tta_perframe);
 	for ( i = 0; i < framequeue_len; ++i ){
 		codecbuf_free((struct EncBuf *) &io->frames.decbuf[i]);
 	}
-	free(io->frames.decbuf);
-	free(io->frames.crc_read);
-	free(io->frames.user);
-	free(io->frames.dec_retval);
-	free(io->frames.nsamples_flat_2pad);
+	//
+	free(io->frames.navailable);
 
 	// decoder
 	spinlock_destroy(&decoder->frames.queue.lock);
 
+	return;
+}
+
+//--------------------------------------------------------------------------//
+
+/**@fn decmt_state_init_allocs
+ * @brief makes one large allocation and slices it up for the struct pointers
+ *
+ * @param io[out] state struct for the io thread
+ * @param framequeue_len length of the framequeue
+**/
+static void
+decmt_state_init_allocs(
+	/*@out@*/ struct MTArg_DecIO *const restrict io,
+	const size_t framequeue_len
+)
+/*@globals	fileSystem,
+		internalState
+@*/
+/*@modifies	fileSystem,
+		internalState,
+		io->frames.navailable,
+		io->frames.post_decoder,
+		io->frames.ni32_perframe,
+		io->frames.nbytes_tta_perframe,
+		io->frames.decbuf,
+		io->frames.crc_read,
+		io->frames.user,
+		io->frames.dec_retval,
+		io->frames.nsamples_flat_2pad
+@*/
+/*@allocates	io->frames.navailable@*/
+{
+	size_t size_total = 0;
+	size_t offset[8u];
+	uintptr_t base;
+
+	// navailable
+	size_total += sizeof *io->frames.navailable;
+	// post_decoder
+	size_total += ALIGN(size_total, MAX_ALIGNMENT);
+	offset[0u]  = size_total;
+	size_total += framequeue_len * (sizeof *io->frames.post_decoder);
+	// ni32_perframe
+	size_total += ALIGN(size_total, MAX_ALIGNMENT);
+	offset[1u]  = size_total;
+	size_total += framequeue_len * (sizeof *io->frames.ni32_perframe);
+	// nbytes_tta_perframe
+	size_total += ALIGN(size_total, MAX_ALIGNMENT);
+	offset[2u]  = size_total;
+	size_total += (
+		framequeue_len * (sizeof *io->frames.nbytes_tta_perframe)
+	);
+	// decbuf
+	size_total += ALIGN(size_total, MAX_ALIGNMENT);
+	offset[3u]  = size_total;
+	size_total += framequeue_len * (sizeof *io->frames.decbuf);
+	// crc_read
+	size_total += ALIGN(size_total, MAX_ALIGNMENT);
+	offset[4u]  = size_total;
+	size_total += framequeue_len * (sizeof *io->frames.crc_read);
+	// user
+	size_total += ALIGN(size_total, MAX_ALIGNMENT);
+	offset[5u]  = size_total;
+	size_total += framequeue_len * (sizeof *io->frames.user);
+	// dec_retval
+	size_total += ALIGN(size_total, MAX_ALIGNMENT);
+	offset[6u]  = size_total;
+	size_total += framequeue_len * (sizeof *io->frames.dec_retval);
+	// nsamples_flat_2pad
+	size_total += ALIGN(size_total, MAX_ALIGNMENT);
+	offset[7u]  = size_total;
+	size_total += (
+		framequeue_len * (sizeof *io->frames.nsamples_flat_2pad)
+	);
+
+	base = (uintptr_t) calloc_check((size_t) 1u, size_total);
+	io->frames.navailable 		= (void *)  base;
+	io->frames.post_decoder		= (void *) (base + offset[0u]);
+	io->frames.ni32_perframe	= (void *) (base + offset[1u]);
+	io->frames.nbytes_tta_perframe	= (void *) (base + offset[2u]);
+	io->frames.decbuf		= (void *) (base + offset[3u]);
+	io->frames.crc_read		= (void *) (base + offset[4u]);
+	io->frames.user			= (void *) (base + offset[5u]);
+	io->frames.dec_retval		= (void *) (base + offset[6u]);
+	io->frames.nsamples_flat_2pad	= (void *) (base + offset[7u]);
 	return;
 }
 
