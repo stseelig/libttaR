@@ -170,6 +170,22 @@ typedef uint_fast64_t	u64fast;
 
 //////////////////////////////////////////////////////////////////////////////
 
+// workaround for C99 not having max_align_t
+union max_alignment {
+	long long ll;
+	long double ld;
+	void *p;
+	void(*fp)(void);
+};
+#define MAX_ALIGNMENT	((size_t) sizeof(union max_alignment))
+
+#define ALIGN(size, alignment)	((size_t) ( \
+	((size) % (alignment)) != 0 \
+		? (alignment) - ((size) % (alignment)) : 0 \
+))
+
+//////////////////////////////////////////////////////////////////////////////
+
 ALWAYS_INLINE CONST u16 bswap16(u16) /*@*/;
 ALWAYS_INLINE CONST u32 bswap32(u32) /*@*/;
 ALWAYS_INLINE CONST u64 bswap64(u64) /*@*/;
