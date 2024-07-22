@@ -57,10 +57,10 @@ static void decmt_state_init_allocs(
 		io->frames.ni32_perframe,
 		io->frames.nbytes_tta_perframe,
 		io->frames.decbuf,
-		io->frames.crc_read,
 		io->frames.user,
+		io->frames.nsamples_flat_2pad,
 		io->frames.dec_retval,
-		io->frames.nsamples_flat_2pad
+		io->frames.crc_read
 @*/
 /*@allocates	io->frames.navailable@*/
 ;
@@ -144,10 +144,10 @@ encmt_state_init(
 	io->estat_out		= (struct EncStats *) estat_out;
 
 	// encoder->frames
-	encoder->frames.navailable	= io->frames.navailable;
-	//
 	spinlock_init(&encoder->frames.queue.lock);
 	pqueue_init(&encoder->frames.queue.q, framequeue_len);
+	//
+	encoder->frames.navailable	= io->frames.navailable;
 	//
 	encoder->frames.post_encoder	= io->frames.post_encoder;
 	encoder->frames.ni32_perframe	= io->frames.ni32_perframe;
@@ -344,10 +344,10 @@ decmt_state_init(
 	io->dstat_out		= (struct DecStats *) dstat_out;
 
 	// decoder->frames
-	decoder->frames.navailable          =  io->frames.navailable;
-	//
 	spinlock_init(&decoder->frames.queue.lock);
 	pqueue_init(&decoder->frames.queue.q, framequeue_len);
+	//
+	decoder->frames.navailable          =  io->frames.navailable;
 	//
 	decoder->frames.post_decoder        = io->frames.post_decoder;
 	decoder->frames.ni32_perframe       = io->frames.ni32_perframe;
@@ -433,10 +433,10 @@ decmt_state_init_allocs(
 		io->frames.ni32_perframe,
 		io->frames.nbytes_tta_perframe,
 		io->frames.decbuf,
-		io->frames.crc_read,
 		io->frames.user,
+		io->frames.nsamples_flat_2pad,
 		io->frames.dec_retval,
-		io->frames.nsamples_flat_2pad
+		io->frames.crc_read
 @*/
 /*@allocates	io->frames.navailable@*/
 {
@@ -466,26 +466,26 @@ decmt_state_init_allocs(
 	size_total += ALIGN(size_total, ALIGNOF(*io->frames.decbuf));
 	offset[3u]  = size_total;
 	size_total += framequeue_len * (sizeof *io->frames.decbuf);
-	// crc_read
-	size_total += ALIGN(size_total, ALIGNOF(*io->frames.crc_read));
-	offset[4u]  = size_total;
-	size_total += framequeue_len * (sizeof *io->frames.crc_read);
 	// user
 	size_total += ALIGN(size_total, ALIGNOF(*io->frames.user));
-	offset[5u]  = size_total;
+	offset[4u]  = size_total;
 	size_total += framequeue_len * (sizeof *io->frames.user);
-	// dec_retval
-	size_total += ALIGN(size_total, ALIGNOF(*io->frames.dec_retval));
-	offset[6u]  = size_total;
-	size_total += framequeue_len * (sizeof *io->frames.dec_retval);
 	// nsamples_flat_2pad
 	size_total += ALIGN(
 		size_total, ALIGNOF(*io->frames.nsamples_flat_2pad)
 	);
-	offset[7u]  = size_total;
+	offset[5u]  = size_total;
 	size_total += (
 		framequeue_len * (sizeof *io->frames.nsamples_flat_2pad)
 	);
+	// dec_retval
+	size_total += ALIGN(size_total, ALIGNOF(*io->frames.dec_retval));
+	offset[6u]  = size_total;
+	size_total += framequeue_len * (sizeof *io->frames.dec_retval);
+	// crc_read
+	size_total += ALIGN(size_total, ALIGNOF(*io->frames.crc_read));
+	offset[7u]  = size_total;
+	size_total += framequeue_len * (sizeof *io->frames.crc_read);
 
 	base = (uintptr_t) calloc_check((size_t) 1u, size_total);
 	io->frames.navailable 		= (void *)  base;
@@ -493,10 +493,10 @@ decmt_state_init_allocs(
 	io->frames.ni32_perframe	= (void *) (base + offset[1u]);
 	io->frames.nbytes_tta_perframe	= (void *) (base + offset[2u]);
 	io->frames.decbuf		= (void *) (base + offset[3u]);
-	io->frames.crc_read		= (void *) (base + offset[4u]);
-	io->frames.user			= (void *) (base + offset[5u]);
+	io->frames.user			= (void *) (base + offset[4u]);
+	io->frames.nsamples_flat_2pad	= (void *) (base + offset[5u]);
 	io->frames.dec_retval		= (void *) (base + offset[6u]);
-	io->frames.nsamples_flat_2pad	= (void *) (base + offset[7u]);
+	io->frames.crc_read		= (void *) (base + offset[7u]);
 	return;
 }
 

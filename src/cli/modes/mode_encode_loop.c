@@ -549,6 +549,8 @@ enc_frame_zeropad(
  *
  * @param arg state for the thread
  *
+ * @pre arg->frames->nmemb > the number of encoder threads
+ *
  * @retval NULL
 **/
 /*@null@*/
@@ -722,9 +724,9 @@ encmt_encoder(struct MTArg_Encoder *const restrict arg)
 	struct MTArg_Encoder_Frames  *const restrict frames = &arg->frames;
 	const struct FileStats_EncMT *const restrict fstat  =  arg->fstat;
 	//
-	semaphore_p     *const restrict nframes_avail  =  frames->navailable;
 	struct MTPQueue *const restrict queue        = &frames->queue;
-	semaphore_p     *const restrict post_encoder   =  frames->post_encoder;
+	semaphore_p   *const restrict nframes_avail  =  frames->navailable;
+	semaphore_p   *const restrict post_encoder   =  frames->post_encoder;
 	const size_t  *const restrict ni32_perframe  =  frames->ni32_perframe;
 	struct EncBuf *const restrict encbuf         =  frames->encbuf;
 	struct LibTTAr_CodecState_User *const restrict user = frames->user;

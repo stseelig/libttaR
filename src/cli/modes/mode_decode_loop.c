@@ -571,6 +571,8 @@ dec_frame_zeropad(
  *
  * @param arg state for the thread
  *
+ * @pre arg->frames->nmemb > the number of decoder threads
+ *
  * @retval NULL
 **/
 /*@null@*/
@@ -605,12 +607,12 @@ decmt_io(struct MTArg_DecIO *const restrict arg)
 		frames->nbytes_tta_perframe
 	);
 	struct DecBuf *const restrict decbuf             = frames->decbuf;
-	u32           *const restrict crc_read           = frames->crc_read;
 	struct LibTTAr_CodecState_User *const restrict user = frames->user;
-	ichar         *const restrict dec_retval         = frames->dec_retval;
 	size_t        *const restrict nsamples_flat_2pad = (
 		frames->nsamples_flat_2pad
 	);
+	ichar         *const restrict dec_retval         = frames->dec_retval;
+	u32           *const restrict crc_read           = frames->crc_read;
 	//
 	FILE       *const restrict outfile_fh   = outfile->fh;
 	const char *const restrict outfile_name = outfile->name;
@@ -723,6 +725,7 @@ loop0_read:
 		;
 	}
 	while ( nframes_target-- != 0 );
+	nbytes_tta_perframe[i] = 0;
 	last = i;
 
 	// write the remaining frames
@@ -735,7 +738,7 @@ loop0_read:
 	do {	// wait for frame to finish encoding
 		semaphore_wait(&post_decoder[i]);
 
-		// write tta to outfile
+		// write pcm to outfile
 		dec_frame_write(
 			&decbuf[i], &dstat, &user[i], infile_name, outfile_fh,
 			outfile_name, samplebytes, nchan,
@@ -780,8 +783,8 @@ decmt_decoder(struct MTArg_Decoder *const restrict arg)
 	struct MTArg_Decoder_Frames  *const restrict frames = &arg->frames;
 	const struct FileStats_DecMT *const restrict fstat  =  arg->fstat;
 	//
-	semaphore_p  *const restrict nframes_avail =  frames->navailable;
 	struct MTPQueue *const restrict queue      = &frames->queue;
+	semaphore_p  *const restrict nframes_avail =  frames->navailable;
 	semaphore_p  *const restrict post_decoder  =  frames->post_decoder;
 	const size_t *const restrict ni32_perframe =  frames->ni32_perframe;
 	const size_t *const restrict nbytes_tta_perframe    = (

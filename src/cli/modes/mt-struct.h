@@ -69,10 +69,9 @@ struct MTArg_EncIO_Frames {
 };
 
 struct MTArg_Encoder_Frames {
+	struct MTPQueue			queue;
 	/*@dependent@*/
 	semaphore_p			*navailable;
-
-	struct MTPQueue			queue;
 
 	// parallel arrays
 	/*@temp@*/
@@ -102,20 +101,19 @@ struct MTArg_DecIO_Frames {
 	/*@temp@*/
 	struct DecBuf			*decbuf;
 	/*@temp@*/
-	u32				*crc_read;	// little-endian
-	/*@temp@*/
 	struct LibTTAr_CodecState_User	*user;
+	/*@temp@*/
+	size_t				*nsamples_flat_2pad;
 	/*@temp@*/
 	ichar				*dec_retval;
 	/*@temp@*/
-	size_t				*nsamples_flat_2pad;
+	u32				*crc_read;	// little-endian
 };
 
 struct MTArg_Decoder_Frames {
+	struct MTPQueue			queue;
 	/*@dependent@*/
 	semaphore_p			*navailable;
-
-	struct MTPQueue			queue;
 
 	// parallel arrays
 	/*@temp@*/
@@ -129,9 +127,9 @@ struct MTArg_Decoder_Frames {
 	/*@temp@*/
 	struct LibTTAr_CodecState_User	*user;
 	/*@temp@*/
-	ichar				*dec_retval;
-	/*@temp@*/
 	size_t				*nsamples_flat_2pad;
+	/*@temp@*/
+	ichar				*dec_retval;
 };
 
 //--------------------------------------------------------------------------//
