@@ -240,19 +240,19 @@ encmt_state_init_allocs(
 	// navailable
 	size_total += sizeof *io->frames.navailable;
 	// post_encoder
-	size_total += ALIGN(size_total, MAX_ALIGNMENT);
+	size_total += ALIGN(size_total, ALIGNOF(*io->frames.post_encoder));
 	offset[0u]  = size_total;
 	size_total += framequeue_len * (sizeof *io->frames.post_encoder);
 	// ni32_perframe
-	size_total += ALIGN(size_total, MAX_ALIGNMENT);
+	size_total += ALIGN(size_total, ALIGNOF(*io->frames.ni32_perframe));
 	offset[1u]  = size_total;
 	size_total += framequeue_len * (sizeof *io->frames.ni32_perframe);
 	// encbuf
-	size_total += ALIGN(size_total, MAX_ALIGNMENT);
+	size_total += ALIGN(size_total, ALIGNOF(*io->frames.encbuf));
 	offset[2u]  = size_total;
 	size_total += framequeue_len * (sizeof *io->frames.encbuf);
 	// user
-	size_total += ALIGN(size_total, MAX_ALIGNMENT);
+	size_total += ALIGN(size_total, ALIGNOF(*io->frames.user));
 	offset[3u]  = size_total;
 	size_total += framequeue_len * (sizeof *io->frames.user);
 
@@ -447,37 +447,41 @@ decmt_state_init_allocs(
 	// navailable
 	size_total += sizeof *io->frames.navailable;
 	// post_decoder
-	size_total += ALIGN(size_total, MAX_ALIGNMENT);
+	size_total += ALIGN(size_total, ALIGNOF(*io->frames.post_decoder));
 	offset[0u]  = size_total;
 	size_total += framequeue_len * (sizeof *io->frames.post_decoder);
 	// ni32_perframe
-	size_total += ALIGN(size_total, MAX_ALIGNMENT);
+	size_total += ALIGN(size_total, ALIGNOF(*io->frames.ni32_perframe));
 	offset[1u]  = size_total;
 	size_total += framequeue_len * (sizeof *io->frames.ni32_perframe);
 	// nbytes_tta_perframe
-	size_total += ALIGN(size_total, MAX_ALIGNMENT);
+	size_total += ALIGN(
+		size_total, ALIGNOF(*io->frames.nbytes_tta_perframe)
+	);
 	offset[2u]  = size_total;
 	size_total += (
 		framequeue_len * (sizeof *io->frames.nbytes_tta_perframe)
 	);
 	// decbuf
-	size_total += ALIGN(size_total, MAX_ALIGNMENT);
+	size_total += ALIGN(size_total, ALIGNOF(*io->frames.decbuf));
 	offset[3u]  = size_total;
 	size_total += framequeue_len * (sizeof *io->frames.decbuf);
 	// crc_read
-	size_total += ALIGN(size_total, MAX_ALIGNMENT);
+	size_total += ALIGN(size_total, ALIGNOF(*io->frames.crc_read));
 	offset[4u]  = size_total;
 	size_total += framequeue_len * (sizeof *io->frames.crc_read);
 	// user
-	size_total += ALIGN(size_total, MAX_ALIGNMENT);
+	size_total += ALIGN(size_total, ALIGNOF(*io->frames.user));
 	offset[5u]  = size_total;
 	size_total += framequeue_len * (sizeof *io->frames.user);
 	// dec_retval
-	size_total += ALIGN(size_total, MAX_ALIGNMENT);
+	size_total += ALIGN(size_total, ALIGNOF(*io->frames.dec_retval));
 	offset[6u]  = size_total;
 	size_total += framequeue_len * (sizeof *io->frames.dec_retval);
 	// nsamples_flat_2pad
-	size_total += ALIGN(size_total, MAX_ALIGNMENT);
+	size_total += ALIGN(
+		size_total, ALIGNOF(*io->frames.nsamples_flat_2pad)
+	);
 	offset[7u]  = size_total;
 	size_total += (
 		framequeue_len * (sizeof *io->frames.nsamples_flat_2pad)

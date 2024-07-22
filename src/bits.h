@@ -179,6 +179,12 @@ union max_alignment {
 };
 #define MAX_ALIGNMENT	((size_t) sizeof(union max_alignment))
 
+#ifdef __GNUC__
+#define ALIGNOF(x)	__alignof__(x)
+#else
+#define ALIGNOF(x)	MAX_ALIGNMENT
+#endif
+
 #define ALIGN(size, alignment)	((size_t) ( \
 	((size) % (alignment)) != 0 \
 		? (alignment) - ((size) % (alignment)) : 0 \
