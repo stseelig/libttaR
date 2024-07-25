@@ -107,18 +107,13 @@ optargs_process(
 @*/
 {
 	uint r = 0;
-	bool endopts = false;
-	union {	int d; } t;
+	int optrv = 0;
 
 	while ( optind < argc ){
-		if ( (! endopts) && (argv[optind][0] == '-') ){
+		if ( (optrv >= 0) && (argv[optind][0] == '-') ){
 			// opt
-			t.d = optsget(optind, argc, argv, optdict);
-			if ( t.d < 0 ){
-				endopts = true;
-				t.d = -t.d;
-			}
-			optind += t.d;
+			optrv   = optsget(optind, argc, argv, optdict);
+			optind += (optrv >= 0 ? optrv : -optrv);
 		}
 		else {	// filename
 			r += (uint) (
@@ -155,34 +150,30 @@ optsget(
 {
 	char *arg;
 	int i;
-	union {	char	*s;
-		int	d;
-	} t;
+	int optrv = 0;
+	union {	char *s; } t;
 
-	for ( i = 0; optind + i < argc; ++i ){
+	for ( i = 0; optind + i < argc; i += optrv + 1 ){
 		arg = argv[optind + i];
 		if ( arg[0] != '-' ){	// return at first non-opt
 			break;
 		}
 		else if ( (arg[0] == '-') && (arg[1u] != '-') ){
-			t.d = shortoptsget(optind + i, argc, argv, optdict);
-			if UNLIKELY ( t.d < 0 ){
-				error_tta("bad shortopt: -%c", (char) -t.d);
+			optrv = shortoptsget(optind + i, argc, argv, optdict);
+			if UNLIKELY ( optrv < 0 ){
+				error_tta("bad shortopt: -%c", (char) -optrv);
 			}
-			i += t.d;
 		}
 		else if ( (arg[0] == '-') && (arg[1u] == '-') ){
 			if ( arg[2u] == '\0' ){	// "--" stops opt processing
-				++i;
-				return -i;
+				return -(++i);
 			}
-			t.d = longoptget(optind + i, argc, argv, optdict);
-			if UNLIKELY ( t.d < 0 ){
+			optrv = longoptget(optind + i, argc, argv, optdict);
+			if UNLIKELY ( optrv < 0 ){
 				t.s = strtok(arg, "=");
 				assert(t.s != NULL);
 				error_tta("bad longopt: %s", t.s);
 			}
-			i += t.d;
 		} else{;}
 	}
 	return i;
@@ -218,18 +209,17 @@ shortoptsget(
 @*/
 {
 	const char *const opt = &argv[optind][1u];
+	int optrv = 0;
 	uint i, j;
-	union {	int d; } t;
 
-	for ( i = 0; opt[i] != '\0'; ++i ){
+	for ( i = 0; opt[i] != '\0'; i += optrv + 1 ){
 		for ( j = 0; optdict[j].shortopt != 0; ++j ){
 			if ( (int) opt[i] == optdict[j].shortopt ){
-				t.d = optdict[j].fn(
+				optrv = optdict[j].fn(
 					optind, i + 1u, argc, argv,
 					OPTMODE_SHORT
 				);
-				if ( t.d < 0 ){ return -t.d; }	// args used
-				i += t.d;
+				if ( optrv < 0 ){ return -optrv; }// args used
 				goto cont_outer_loop;	// onto next char
 			}
 		}
@@ -263,7 +253,7 @@ longoptget(
 		**argv
 @*/
 {
-	int r = -1;
+	int optrv = -1;
 	const char *const opt = &argv[optind][2u];
 	const char *subopt;
 	size_t size = SIZE_MAX;
@@ -276,13 +266,13 @@ longoptget(
 
 	for ( i = 0; optdict[i].longopt != NULL; ++i ){
 		if ( strncmp(opt, optdict[i].longopt, size) == 0 ){
-			r = optdict[i].fn(
+			optrv = optdict[i].fn(
 				optind, 0, argc, argv, OPTMODE_LONG
 			);
 			break;
 		}
 	}
-	return r;
+	return optrv;
 }
 
 //==========================================================================//
