@@ -54,6 +54,9 @@ opt_decode_help(
 
 #define DECODE_OPTDICT_NMEMB	((uint) 8u)
 
+/**@var decode_optdict_longopt
+ * @brief array of longopts
+**/
 /*@observer@*/ /*@unchecked@*/
 static const char *decode_optdict_longopt[DECODE_OPTDICT_NMEMB] = {
 	"single-threaded",
@@ -66,6 +69,9 @@ static const char *decode_optdict_longopt[DECODE_OPTDICT_NMEMB] = {
 	"help"
 };
 
+/**@var decode_optdict_shortopt
+ * @brief array of shortopts
+**/
 /*@unchecked@*/
 static const int decode_optdict_shortopt[DECODE_OPTDICT_NMEMB] = {
 	'S',	// single-threaded
@@ -78,8 +84,11 @@ static const int decode_optdict_shortopt[DECODE_OPTDICT_NMEMB] = {
 	'?'	// help
 };
 
+/**@var decode_optdict_fn
+ * @brief array of option function pointers
+**/
 /*@unchecked@*/
-static int (*const decode_optdict_fp[DECODE_OPTDICT_NMEMB])
+static int (*const decode_optdict_fn[DECODE_OPTDICT_NMEMB])
 (uint, uint, uint, char *const *, enum OptMode) = {
 	opt_common_single_threaded,
 	opt_common_multi_threaded,
@@ -91,12 +100,15 @@ static int (*const decode_optdict_fp[DECODE_OPTDICT_NMEMB])
 	opt_decode_help,
 };
 
+/**@struct decode_optdict
+ * @brief option dictionary for optargs_process
+**/
 /*@unchecked@*/
 const struct OptDict decode_optdict = {
 	.nmemb    = DECODE_OPTDICT_NMEMB,
 	.longopt  = decode_optdict_longopt,
 	.shortopt = decode_optdict_shortopt,
-	.fn       = decode_optdict_fp
+	.fn       = decode_optdict_fn
 };
 
 //////////////////////////////////////////////////////////////////////////////
