@@ -15,6 +15,7 @@
 #include <string.h>	// strtok
 
 #include "../../bits.h"
+#include "../../splint.h"
 
 #include "../debug.h"
 #include "../formats.h"
@@ -31,8 +32,11 @@
 static int opt_encode_rawpcm(
 	uint, uint, uint, char *const *argv, enum OptMode
 )
-/*@globals	fileSystem@*/
+/*@globals	fileSystem,
+		internalState
+@*/
 /*@modifies	fileSystem,
+		internalState,
 		**argv
 @*/
 ;
@@ -46,24 +50,51 @@ static int opt_encode_help(
 
 //////////////////////////////////////////////////////////////////////////////
 
-/**@struct encode_optdict
- * @brief the option dictionary for mode_encode
-**/
+#define xENCODE_OPTDICT_NMEMB	((uint) 8u)
+
+/*@observer@*/ /*@unchecked@*/
+static const char *encode_optdict_longopt[xENCODE_OPTDICT_NMEMB] = {
+	"single-threaded",
+	"multi-threaded",
+	"delete-src",
+	"outfile",
+	"quiet",
+	"rawpcm",
+	"threads",
+	"help"
+};
+
 /*@unchecked@*/
-const struct OptDict encode_optdict[] = {
-	{ "help"		, '?'	, opt_encode_help		},
+static const int encode_optdict_shortopt[xENCODE_OPTDICT_NMEMB] = {
+	'S',	// single-threaded
+	'M',	// multi-threaded
+	'd',	// delete-src
+	'o',	// outfile
+	'q',	// quiet
+	-1,	// rawpcm
+	't',	// threads
+	'?'	// help
+};
 
-	{ "single-threaded"	, 'S'	, opt_common_single_threaded	},
-	{ "multi-threaded"	, 'M'	, opt_common_multi_threaded	},
+/*@unchecked@*/
+static int (*const encode_optdict_fp[xENCODE_OPTDICT_NMEMB])
+(uint, uint, uint, char *const *, enum OptMode) = {
+	opt_common_single_threaded,
+	opt_common_multi_threaded,
+	opt_common_delete_src,
+	opt_common_outfile,
+	opt_common_quiet,
+	opt_encode_rawpcm,
+	opt_common_threads,
+	opt_encode_help
+};
 
-	{ "delete-src"		, 'd'	, opt_common_delete_src		},
-	{ "outfile"		, 'o'	, opt_common_outfile		},
-	{ "quiet"		, 'q'	, opt_common_quiet		},
-	{ "rawpcm"		, -1	, opt_encode_rawpcm		},
-	{ "single-threaded"	, 'S'	, opt_common_single_threaded	},
-	{ "threads"		, 't'	, opt_common_threads		},
-
-	{ NULL, 0, NULL }
+/*@unchecked@*/
+const struct OptDict encode_optdict = {
+	.nmemb    = xENCODE_OPTDICT_NMEMB,
+	.longopt  = encode_optdict_longopt,
+	.shortopt = encode_optdict_shortopt,
+	.fn       = encode_optdict_fp
 };
 
 //==========================================================================//
@@ -121,8 +152,11 @@ opt_encode_rawpcm(
 	const uint optind0, const uint optind1, UNUSED const uint argc,
 	char *const *const argv, UNUSED const enum OptMode mode
 )
-/*@globals	fileSystem@*/
+/*@globals	fileSystem,
+		internalState
+@*/
 /*@modifies	fileSystem,
+		internalState,
 		**argv
 @*/
 {

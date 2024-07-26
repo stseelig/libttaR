@@ -15,6 +15,7 @@
 #include <string.h>	// strtok
 
 #include "../../bits.h"
+#include "../../splint.h"
 
 #include "../debug.h"
 #include "../formats.h"
@@ -138,10 +139,12 @@ opt_common_threads(
 	char *const *const argv, const enum OptMode mode
 )
 /*@globals	fileSystem,
+		internalState,
 		g_flag,
 		g_nthreads
 @*/
 /*@modifies	fileSystem,
+		internalState,
 		g_flag.threadmode,
 		g_nthreads,
 		**argv
@@ -212,9 +215,11 @@ opt_common_outfile(
 	char *const *const argv, const enum OptMode mode
 )
 /*@globals	fileSystem,
+		internalState,
 		g_flag
 @*/
 /*@modifies	fileSystem,
+		internalState,
 		g_flag.outfile,
 		g_flag.outfile_is_dir,
 		**argv

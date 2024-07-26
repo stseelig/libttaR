@@ -160,7 +160,7 @@ optsget(
 		}
 		else if ( (arg[0] == '-') && (arg[1u] != '-') ){
 			optrv = shortoptsget(optind + i, argc, argv, optdict);
-			if UNLIKELY ( optrv < 0 ){
+			if UNLIKELY ( (optrv < 0) || (arg[1u] == '\0') ){
 				error_tta("bad shortopt: -%c", (char) -optrv);
 			}
 		}
@@ -213,9 +213,9 @@ shortoptsget(
 	uint i, j;
 
 	for ( i = 0; opt[i] != '\0'; i += optrv + 1 ){
-		for ( j = 0; optdict[j].shortopt != 0; ++j ){
-			if ( (int) opt[i] == optdict[j].shortopt ){
-				optrv = optdict[j].fn(
+		for ( j = 0; j < optdict->nmemb; ++j ){
+			if ( (int) opt[i] == optdict->shortopt[j] ){
+				optrv = optdict->fn[j](
 					optind, i + 1u, argc, argv,
 					OPTMODE_SHORT
 				);
@@ -264,9 +264,9 @@ longoptget(
 		size = (size_t) (subopt - opt);
 	}
 
-	for ( i = 0; optdict[i].longopt != NULL; ++i ){
-		if ( strncmp(opt, optdict[i].longopt, size) == 0 ){
-			optrv = optdict[i].fn(
+	for ( i = 0; i < optdict->nmemb; ++i ){
+		if ( strncmp(opt, optdict->longopt[i], size) == 0 ){
+			optrv = optdict->fn[i](
 				optind, 0, argc, argv, OPTMODE_LONG
 			);
 			break;

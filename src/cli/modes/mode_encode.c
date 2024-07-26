@@ -124,7 +124,7 @@ mode_encode(const uint optind, const uint argc, char *const *const argv)
 
 	// process opts/args
 	nerrors_file += optargs_process(
-		&openedfiles, optind, argc, argv, encode_optdict
+		&openedfiles, optind, argc, argv, &encode_optdict
 	);
 
 	// get file stats

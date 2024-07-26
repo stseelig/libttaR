@@ -25,11 +25,10 @@ enum OptMode {
 //////////////////////////////////////////////////////////////////////////////
 
 struct OptDict {
-	/*@observer@*/ /*@null@*/
-	char	 *longopt;
-	int	  shortopt;	// -1: none
-	/*@null@*/
-	int	(*fn)(uint, uint, uint, char *const *, enum OptMode);
+	uint		nmemb;
+	const char	**longopt;
+	const int	*shortopt;	// -1: none
+	int (*const *fn)(uint, uint, uint, char *const *, enum OptMode);
 };
 
 //////////////////////////////////////////////////////////////////////////////

@@ -48,10 +48,12 @@ extern int opt_common_threads(
 	uint, uint, uint, char *const *argv, enum OptMode
 )
 /*@globals	fileSystem,
+		internalState,
 		g_flag,
 		g_nthreads
 @*/
 /*@modifies	fileSystem,
+		internalState,
 		g_flag.threadmode,
 		g_nthreads,
 		**argv
@@ -63,9 +65,11 @@ extern int opt_common_outfile(
 	uint, uint, uint, char *const *argv, enum OptMode
 )
 /*@globals	fileSystem,
+		internalState,
 		g_flag
 @*/
 /*@modifies	fileSystem,
+		internalState,
 		g_flag.outfile,
 		g_flag.outfile_is_dir,
 		**argv

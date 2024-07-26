@@ -19,10 +19,10 @@
 //////////////////////////////////////////////////////////////////////////////
 
 /*@unchecked@*/
-extern const struct OptDict encode_optdict[];
+extern const struct OptDict encode_optdict;
 
 /*@unchecked@*/
-extern const struct OptDict decode_optdict[];
+extern const struct OptDict decode_optdict;
 
 //////////////////////////////////////////////////////////////////////////////
 

@@ -14,6 +14,7 @@
 #include <string.h>	// strtok
 
 #include "../../bits.h"
+#include "../../splint.h"
 
 #include "../debug.h"
 #include "../formats.h"
@@ -31,9 +32,11 @@ static int opt_decode_format(
 	uint, uint, uint, char *const *argv, enum OptMode
 )
 /*@globals	fileSystem,
+		internalState,
 		g_flag
 @*/
 /*@modifies	fileSystem,
+		internalState,
 		g_flag.decfmt,
 		**argv
 @*/
@@ -49,24 +52,51 @@ opt_decode_help(
 
 //////////////////////////////////////////////////////////////////////////////
 
-/**@struct decode_optdict
- * @brief the option dictionary for mode_decode
-**/
+#define DECODE_OPTDICT_NMEMB	((uint) 8u)
+
+/*@observer@*/ /*@unchecked@*/
+static const char *decode_optdict_longopt[DECODE_OPTDICT_NMEMB] = {
+	"single-threaded",
+	"multi-threaded",
+	"delete-src",
+	"format",
+	"outfile",
+	"quiet",
+	"threads",
+	"help"
+};
+
 /*@unchecked@*/
-const struct OptDict decode_optdict[] = {
-	{ "help"		, '?'	, opt_decode_help		},
+static const int decode_optdict_shortopt[DECODE_OPTDICT_NMEMB] = {
+	'S',	// single-threaded
+	'M',	// multi-threaded
+	'd',	// delete-src
+	'f',	// format
+	'o',	// outfile
+	'q',	// quiet
+	't',	// threads
+	'?'	// help
+};
 
-	{ "single-threaded"	, 'S'	, opt_common_single_threaded	},
-	{ "multi-threaded"	, 'M'	, opt_common_multi_threaded	},
+/*@unchecked@*/
+static int (*const decode_optdict_fp[DECODE_OPTDICT_NMEMB])
+(uint, uint, uint, char *const *, enum OptMode) = {
+	opt_common_single_threaded,
+	opt_common_multi_threaded,
+	opt_common_delete_src,
+	opt_decode_format,
+	opt_common_outfile,
+	opt_common_quiet,
+	opt_common_threads,
+	opt_decode_help,
+};
 
-	{ "delete-src"		, 'd'	, opt_common_delete_src		},
-	{ "format"		, 'f'	, opt_decode_format		},
-	{ "outfile"		, 'o'	, opt_common_outfile		},
-	{ "quiet"		, 'q'	, opt_common_quiet		},
-	{ "single-threaded"	, 'S'	, opt_common_single_threaded	},
-	{ "threads"		, 't'	, opt_common_threads		},
-
-	{ NULL, 0, NULL }
+/*@unchecked@*/
+const struct OptDict decode_optdict = {
+	.nmemb    = DECODE_OPTDICT_NMEMB,
+	.longopt  = decode_optdict_longopt,
+	.shortopt = decode_optdict_shortopt,
+	.fn       = decode_optdict_fp
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -88,9 +118,11 @@ opt_decode_format(
 	char *const *const argv, const enum OptMode mode
 )
 /*@globals	fileSystem,
+		internalState,
 		g_flag
 @*/
 /*@modifies	fileSystem,
+		internalState,
 		g_flag.decfmt,
 		**argv
 @*/
