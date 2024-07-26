@@ -13,7 +13,7 @@
 
 #include "../../bits.h"
 
-#include "../optsget.h"	// enum OptMode
+#include "optsget.h"	// enum OptMode
 
 //////////////////////////////////////////////////////////////////////////////
 

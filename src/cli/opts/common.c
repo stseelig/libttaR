@@ -15,13 +15,12 @@
 #include <string.h>	// strtok
 
 #include "../../bits.h"
-#include "../../splint.h"
 
 #include "../debug.h"
 #include "../formats.h"
 #include "../main.h"	// PATH_DELIM
-#include "../opts.h"
-#include "../optsget.h"
+
+#include "optsget.h"
 
 //////////////////////////////////////////////////////////////////////////////
 

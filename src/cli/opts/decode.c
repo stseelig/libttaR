@@ -14,16 +14,14 @@
 #include <string.h>	// strtok
 
 #include "../../bits.h"
-#include "../../splint.h"
 
 #include "../debug.h"
 #include "../formats.h"
 #include "../help.h"
 #include "../main.h"
-#include "../opts.h"
-#include "../optsget.h"
 
 #include "common.h"
+#include "optsget.h"
 
 //////////////////////////////////////////////////////////////////////////////
 

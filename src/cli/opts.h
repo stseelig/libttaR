@@ -13,8 +13,10 @@
 
 #include "../bits.h"
 
-#include "formats.h"
-#include "optsget.h"	// enum OptDict
+#include "formats.h"		// struct fstat
+#include "open.h"		// struct OpenedFiles
+
+#include "opts/optsget.h"	// struct OptDict
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -25,6 +27,28 @@ extern const struct OptDict encode_optdict;
 extern const struct OptDict decode_optdict;
 
 //////////////////////////////////////////////////////////////////////////////
+
+// optsget.c
+
+#undef of
+#undef argv
+extern uint optargs_process(
+	struct OpenedFiles *restrict of, uint, uint, char *const *argv,
+	const struct OptDict *restrict
+)
+/*@globals	fileSystem,
+		internalState
+@*/
+/*@modifies	fileSystem,
+		internalState,
+		*of,
+		**argv
+@*/
+;
+
+//--------------------------------------------------------------------------//
+
+// encode.c
 
 #undef fstat
 extern void rawpcm_statcopy(/*@out@*/ struct FileStats *restrict fstat)

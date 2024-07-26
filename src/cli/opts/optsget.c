@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// optsget.c                                                                //
+// opts/optsget.c                                                           //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
@@ -26,12 +26,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../bits.h"
-#include "../splint.h"
+#include "../../bits.h"
+#include "../../splint.h"
 
-#include "debug.h"
-#include "main.h"
-#include "open.h"
+#include "../debug.h"
+#include "../main.h"
+#include "../open.h"
+
 #include "optsget.h"
 
 //////////////////////////////////////////////////////////////////////////////

@@ -21,10 +21,9 @@
 #include "../formats.h"
 #include "../help.h"
 #include "../main.h"
-#include "../opts.h"
-#include "../optsget.h"
 
 #include "common.h"
+#include "optsget.h"
 
 //////////////////////////////////////////////////////////////////////////////
 
