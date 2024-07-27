@@ -94,7 +94,7 @@ struct MTArg_DecIO_Frames {
 	// parallel arrays
 	/*@temp@*/
 	semaphore_p			*post_decoder;
-	/*@tempd@*/
+	/*@temp@*/
 	size_t				*ni32_perframe;
 	/*@temp@*/
 	size_t				*nbytes_tta_perframe;
