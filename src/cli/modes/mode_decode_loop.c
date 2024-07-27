@@ -802,9 +802,7 @@ decmt_decoder(struct MTArg_Decoder *const restrict arg)
 
 	struct LibTTAr_CodecState_Priv *restrict priv;
 	uint i;
-	union {	int	d;
-		size_t	z;
-	} t;
+	union {	size_t z; } t;
 
 	// setup
 	t.z = libttaR_codecstate_priv_size(nchan);
