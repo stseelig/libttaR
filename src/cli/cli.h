@@ -24,7 +24,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-INLINE CONST double timediff(
+INLINE PURE double timediff(
 	const struct timespec *restrict, const struct timespec *restrict
 )
 /*@*/
@@ -71,7 +71,7 @@ extern HOT void errprint_spinner(void)
  *
  * @return the difference in seconds
 **/
-INLINE CONST double
+INLINE PURE double
 timediff(
 	const struct timespec *const restrict start,
 	const struct timespec *const restrict finish
