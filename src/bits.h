@@ -124,6 +124,7 @@
 #define LIKELY(cond)		(__builtin_expect((cond), true))
 #define UNLIKELY(cond)		(__builtin_expect((cond), false))
 #else
+#pragma message "compiler does not have a builtin 'expect'"
 #define LIKELY(cond)		(cond)
 #define UNLIKELY(cond)		(cond)
 #endif
@@ -136,6 +137,7 @@
 	__builtin_expect_with_probability((cond), false, 1.0 - (prob)) \
 )
 #else
+#pragma message "compiler does not have a builtin 'expect_with_probability'"
 #define PROBABLE(cond, prob)	(cond)
 #define IMPROBABLE(cond, prob)	(cond)
 #endif
@@ -182,6 +184,7 @@ union max_alignment {
 #ifdef __GNUC__
 #define ALIGNOF(x)	__alignof__(x)
 #else
+#pragma message "compiler does not have an 'alignof'"
 #define ALIGNOF(x)	MAX_ALIGNMENT
 #endif
 

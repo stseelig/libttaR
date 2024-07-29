@@ -51,6 +51,12 @@ enum TTASampleBytes {
 #endif
 #endif // S_SPLINT_S
 
+#ifndef LIBTTAr_OPT_PREFER_LOOKUP_TABLES
+#if (! HAS_BUILTIN(BUILTIN_TZCNT32)) && (! HAS_BUILTIN(BUILTIN_TZCNT64))
+#pragma message "compiler does not have a builtin 'tzcnt'"
+#endif
+#endif
+
 #define TBCNT8_TEST	LIBTTAr_OPT_PREFER_LOOKUP_TABLES \
  || ((! HAS_BUILTIN(BUILTIN_TZCNT32)) && (! HAS_BUILTIN(BUILTIN_TZCNT64)))
 
@@ -103,7 +109,7 @@ struct Codec {
 struct LibTTAr_CodecState_Priv {
 	struct BitCache	bitcache;
 	//uint		nchan;
-	struct Codec 	codec[];// COUNTED_BY(nchan);
+	struct Codec 	codec[]; //COUNTED_BY(nchan);
 };
 
 struct LibTTAr_CodecState_User {
