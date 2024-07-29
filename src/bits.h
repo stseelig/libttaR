@@ -41,6 +41,7 @@
 #if HAS_ATTRIBUTE(always_inline)
 #define ALWAYS_INLINE		INLINE __attribute__((always_inline))
 #else
+#pragma message "compiler does not support the attribute 'always_inline'"
 #define ALWAYS_INLINE		INLINE
 #endif
 
