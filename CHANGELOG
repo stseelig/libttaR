@@ -3,7 +3,7 @@
 
 1.2.3 (2024-07-30):-----------------------------------------------------------
 
-	- possible codec performance improvement
+	- possible codec performance improvement (branchless filter)
 	- new compile option symbol
 
 1.2.2 (2024-07-07):-----------------------------------------------------------
