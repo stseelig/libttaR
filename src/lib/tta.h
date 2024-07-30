@@ -284,7 +284,9 @@ tta_prefilter_dec(const i32 x)
  * @param value the input value to filter
  * @param mode encode or decode
  *
- * @return
+ * @return the filtered value
+ *
+ * @note affected by LIBTTAr_OPT_BRANCHING_FILTER
 **/
 ALWAYS_INLINE i32
 tta_filter(
@@ -297,14 +299,24 @@ tta_filter(
 	i32 *const restrict m = filter->dx;
 	i32 *const restrict b = filter->dl;
 
+#ifndef LIBTTAr_OPT_BRANCHING_FILTER
+	const i32 e = (filter->error != 0
+		? (filter->error < 0 ? (i32) -1 : (i32) 1) : 0
+	);
+#endif
 	uint i;
 
+	// for-loops SIMD better than unrolled
+#ifndef LIBTTAr_OPT_BRANCHING_FILTER
+	for ( i = 0; i < 8u; ++i ){
+		sum += (a[i] += m[i] * e) * b[i];
+	}
+#else
 	// there is a compiler quirk where putting the ==0 branch !first slows
 	//   everything down considerably. it adds an branch or two to reduce
 	//   code size a bit, but that is just slower. logically, the ==0
 	//   branch should be last, because it is the least likely to happen
 	//   (main exception being silence)
-	// for-loops SIMD better than unrolled
 	if ( filter->error == 0 ){
 		for ( i = 0; i < 8u; ++i ){
 			sum += a[i] * b[i];
@@ -320,7 +332,7 @@ tta_filter(
 			sum += (a[i] += m[i]) * b[i];
 		}
 	}
-
+#endif
 	m[8u] = (i32) ((((u32) asr32(b[7u], (u8) 30u)) | 0x1u) << 2u);
 	m[7u] = (i32) ((((u32) asr32(b[6u], (u8) 30u)) | 0x1u) << 1u);
 	m[6u] = (i32) ((((u32) asr32(b[5u], (u8) 30u)) | 0x1u) << 1u);

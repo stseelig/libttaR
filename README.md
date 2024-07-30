@@ -16,7 +16,7 @@ The library is platform agnostic, but the program uses a lot of POSIX stuff.
 
 ### Defines
 NDEBUG\
-	turns off debug assertions
+	removes debug assertions
 
 LIBTTAr_OPT_DISABLE_UNROLLED_1CH\
 	disables the unrolled mono loop
@@ -27,8 +27,12 @@ LIBTTAr_OPT_DISABLE_UNROLLED_2CH\
 LIBTTAr_OPT_DISABLE_MCH\
 	disables the general/multichannel loop
 
+#### Old/Weak CPU
 LIBTTAr_OPT_PREFER_LOOKUP_TABLES\
-	makes some operations use lookup tables (for weak CPUs like a Celeron)
+	makes some operations use lookup tables
+
+LIBTTAr_OPT_BRANCHING_FILTER\
+	uses code that is not as SIMD friendly, but can be better
 
 ## Basic Usage
 $ ttaR encode file.(wav|w64)\
