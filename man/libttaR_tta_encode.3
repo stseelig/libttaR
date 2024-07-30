@@ -1,7 +1,7 @@
 '\# t
 .\#     Title: libttaR_tta_encode
 .\#    Author: Shane Seelig
-.\#      Date: 2024-07-17
+.\#      Date: 2024-07-30
 .\#    Source: libttaR 1.2
 .\#  Language: English
 .\#
@@ -311,6 +311,8 @@ enc_frame_encode(
             int     d;
     } t;
 
+    assert(encbuf->i32buf != NULL);
+
     // convert pcm to i32
     t.z = libttaR_pcm_read(
             encbuf->i32buf, encbuf->pcmbuf, ni32_target, samplebytes
@@ -371,6 +373,8 @@ dec_frame_decode(
 #ifdef NDEBUG
     (void) t.z;     // gcc
 #endif
+
+    assert(decbuf->i32buf != NULL);
 
     goto loop_entr;
     do {

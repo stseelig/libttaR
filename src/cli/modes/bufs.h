@@ -21,36 +21,33 @@
 
 #define TTABUF_LEN_DEFAULT		((size_t) BUFSIZ)
 
+enum CodecBufMode {
+	CBM_SINGLE_THREADED,
+	CBM_MULTI_THREADED
+};
+
 //////////////////////////////////////////////////////////////////////////////
 
-struct EncBuf {
+struct CodecBuf {
 	size_t	i32buf_len;
 	size_t	ttabuf_len;
-	/*@only@*/
-	i32	*i32buf;
+	/*@only@*/ /*@null@*/	// @only@ in -S, @dependent@ in -M
+	i32	*i32buf;	// thread owned in -M for page-fault reduction
 	/*@only@*/
 	u8	*pcmbuf;
 	/*@only@*/
 	u8	*ttabuf;
 };
 
-struct DecBuf {
-	size_t	i32buf_len;
-	size_t	ttabuf_len;
-	/*@only@*/
-	i32	*i32buf;
-	/*@only@*/
-	u8	*pcmbuf;
-	/*@only@*/
-	u8	*ttabuf;
-};
+#define EncBuf	CodecBuf
+#define DecBuf	CodecBuf
 
 //////////////////////////////////////////////////////////////////////////////
 
 #undef eb
 extern void encbuf_init(
 	/*@out@*/ struct EncBuf *const restrict eb, size_t, size_t, uint,
-	enum TTASampleBytes
+	enum TTASampleBytes, enum CodecBufMode
 )
 /*@globals	fileSystem,
 		internalState
@@ -82,7 +79,7 @@ extern HOT void encbuf_adjust(struct EncBuf *const restrict eb, size_t, uint)
 #undef db
 extern void decbuf_init(
 	/*@out@*/ struct DecBuf *const restrict db, size_t, size_t, uint,
-	enum TTASampleBytes
+	enum TTASampleBytes, enum CodecBufMode
 )
 /*@globals	fileSystem,
 		internalState
@@ -115,7 +112,9 @@ extern HOT void decbuf_check_adjust(
 //--------------------------------------------------------------------------//
 
 #undef cb
-extern void codecbuf_free(const struct EncBuf *const restrict cb)
+extern void codecbuf_free(
+	const struct CodecBuf *const restrict cb, enum CodecBufMode
+)
 /*@globals	internalState@*/
 /*@modifies	internalState@*/
 /*@releases	cb->i32buf,

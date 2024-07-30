@@ -36,7 +36,7 @@ void
 encbuf_init(
 	/*@out@*/ struct EncBuf *const restrict eb, const size_t ni32_len,
 	const size_t ttabuf_len, const uint nchan,
-	const enum TTASampleBytes samplebytes
+	const enum TTASampleBytes samplebytes, enum CodecBufMode mode
 )
 /*@globals	fileSystem,
 		internalState
@@ -60,7 +60,14 @@ encbuf_init(
 	eb->ttabuf_len = (ttabuf_len * nchan) + safety_margin;
 	assert(eb->ttabuf_len != 0);
 
-	eb->i32buf = calloc_check(eb->i32buf_len, sizeof *eb->i32buf);
+	switch ( mode ){
+	case CBM_SINGLE_THREADED:
+		eb->i32buf = calloc_check(eb->i32buf_len, sizeof *eb->i32buf);
+		break;
+	case CBM_MULTI_THREADED:
+		eb->i32buf = NULL;
+		break;
+	}
 	eb->pcmbuf = calloc_check(eb->i32buf_len, (size_t) samplebytes);
 	eb->ttabuf = malloc_check(eb->ttabuf_len);
 	return;
@@ -111,7 +118,7 @@ void
 decbuf_init(
 	/*@out@*/ struct DecBuf *const restrict db, const size_t ni32_len,
 	const size_t ttabuf_len, const uint nchan,
-	const enum TTASampleBytes samplebytes
+	const enum TTASampleBytes samplebytes, enum CodecBufMode mode
 )
 /*@globals	fileSystem,
 		internalState
@@ -135,7 +142,14 @@ decbuf_init(
 	db->ttabuf_len = (ttabuf_len * nchan) + safety_margin;
 	assert(db->ttabuf_len != 0);
 
-	db->i32buf = calloc_check(ni32_len, sizeof *db->i32buf);
+	switch ( mode ){
+	case CBM_SINGLE_THREADED:
+		db->i32buf = calloc_check(ni32_len, sizeof *db->i32buf);
+		break;
+	case CBM_MULTI_THREADED:
+		db->i32buf = NULL;
+		break;
+	}
 	db->pcmbuf = calloc_check(ni32_len, (size_t) samplebytes);
 	db->ttabuf = malloc_check(db->ttabuf_len);
 	return;
@@ -189,7 +203,9 @@ decbuf_check_adjust(
  * @param cb[in] the codec buffers struct
 **/
 void
-codecbuf_free(const struct EncBuf *const restrict cb)
+codecbuf_free(
+	const struct CodecBuf *const restrict cb, enum CodecBufMode mode
+)
 /*@globals	internalState@*/
 /*@modifies	internalState@*/
 /*@releases	cb->i32buf,
@@ -197,7 +213,9 @@ codecbuf_free(const struct EncBuf *const restrict cb)
 		cb->ttabuf
 @*/
 {
-	free(cb->i32buf);
+	if ( mode == CBM_SINGLE_THREADED ){
+		free(cb->i32buf);
+	}
 	free(cb->pcmbuf);
 	free(cb->ttabuf);
 	return;

@@ -172,7 +172,10 @@ decst_loop(
 	} t;
 
 	// setup
-	decbuf_init(&decbuf, buflen, TTABUF_LEN_DEFAULT, nchan, samplebytes);
+	decbuf_init(
+		&decbuf, buflen, TTABUF_LEN_DEFAULT, nchan, samplebytes,
+		CBM_SINGLE_THREADED
+	);
 	t.z = libttaR_codecstate_priv_size(nchan);
 	assert(t.z != 0);
 	priv = malloc_check(t.z);
@@ -258,7 +261,7 @@ loop_entr:
 
 	// cleanup
 	free(priv);
-	codecbuf_free((struct EncBuf *) &decbuf);
+	codecbuf_free(&decbuf, CBM_SINGLE_THREADED);
 
 	*dstat_out = dstat;
 	return;
@@ -388,6 +391,8 @@ dec_frame_decode(
 #ifdef NDEBUG
 	(void) t.z;	// gcc
 #endif
+
+	assert(decbuf->i32buf != NULL);
 
 	goto loop_entr;
 	do {
@@ -800,11 +805,14 @@ decmt_decoder(struct MTArg_Decoder *const restrict arg)
 	const uint nchan                      = fstat->nchan;
 	const enum TTASampleBytes samplebytes = fstat->samplebytes;
 
-	struct LibTTAr_CodecState_Priv *restrict priv;
+	i32 *i32buf = NULL;
+	struct LibTTAr_CodecState_Priv *priv = NULL;
 	uint i;
 	union {	size_t z; } t;
 
 	// setup
+	i32buf = calloc_check(decbuf[0].i32buf_len, sizeof *i32buf);
+	//
 	t.z = libttaR_codecstate_priv_size(nchan);
 	assert(t.z != 0);
 	priv = malloc_check(t.z);
@@ -812,6 +820,7 @@ decmt_decoder(struct MTArg_Decoder *const restrict arg)
 	goto loop_entr;
 	do {
 		// decode frame
+		decbuf[i].i32buf = i32buf;
 		dec_retval[i] = (ichar) dec_frame_decode(
 			&decbuf[i], priv, &user[i], samplebytes, nchan,
 			ni32_perframe[i], nbytes_tta_perframe[i],
@@ -832,6 +841,7 @@ loop_entr:
 	while ( nbytes_tta_perframe[i] != 0 );
 
 	// cleanup
+	free(i32buf);
 	free(priv);
 
 	return NULL;

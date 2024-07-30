@@ -214,7 +214,6 @@ extern void encmt_state_init(
 		encoder->frames.queue.lock
 @*/
 /*@allocates	io->frames.navailable,
-		io->frames.encbuf[].i32buf,
 		io->frames.encbuf[].pcmbuf,
 		io->frames.encbuf[].ttabuf
 @*/
@@ -235,7 +234,6 @@ extern void encmt_state_free(
 		encoder->frames.queue.lock
 @*/
 /*@releases	io->frames.navailable,
-		io->frames.encbuf[].i32buf,
 		io->frames.encbuf[].pcmbuf,
 		io->frames.encbuf[].ttabuf
 @*/
@@ -273,7 +271,6 @@ extern void decmt_state_init(
 		decoder->frames.queue.lock
 @*/
 /*@allocates	io->frames.navailable,
-		io->frames.decbuf[].i32buf,
 		io->frames.decbuf[].pcmbuf,
 		io->frames.decbuf[].ttabuf
 @*/
@@ -294,7 +291,6 @@ extern void decmt_state_free(
 		decoder->frames.queue.lock
 @*/
 /*@releases	io->frames.navailable,
-		io->frames.decbuf[].i32buf,
 		io->frames.decbuf[].pcmbuf,
 		io->frames.decbuf[].ttabuf
 @*/

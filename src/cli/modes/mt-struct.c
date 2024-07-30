@@ -105,7 +105,6 @@ encmt_state_init(
 		encoder->frames.queue.lock
 @*/
 /*@allocates	io->frames.navailable,
-		io->frames.encbuf[].i32buf,
 		io->frames.encbuf[].pcmbuf,
 		io->frames.encbuf[].ttabuf
 @*/
@@ -126,7 +125,8 @@ encmt_state_init(
 	for ( i = 0; i < framequeue_len; ++i ){
 		encbuf_init(
 			&io->frames.encbuf[i], i32buf_len,
-			TTABUF_LEN_DEFAULT, fstat->nchan, fstat->samplebytes
+			TTABUF_LEN_DEFAULT, fstat->nchan, fstat->samplebytes,
+			CBM_MULTI_THREADED
 		);
 	}
 
@@ -183,7 +183,6 @@ encmt_state_free(
 		encoder->frames.queue.lock
 @*/
 /*@releases	io->frames.navailable,
-		io->frames.encbuf[].i32buf,
 		io->frames.encbuf[].pcmbuf,
 		io->frames.encbuf[].ttabuf
 @*/
@@ -196,7 +195,7 @@ encmt_state_free(
 		semaphore_destroy(&io->frames.post_encoder[i]);
 	}
 	for ( i = 0; i < framequeue_len; ++i ){
-		codecbuf_free(&io->frames.encbuf[i]);
+		codecbuf_free(&io->frames.encbuf[i], CBM_MULTI_THREADED);
 	}
 	//
 	free(io->frames.navailable);
@@ -305,7 +304,6 @@ decmt_state_init(
 		decoder->frames.queue.lock
 @*/
 /*@allocates	io->frames.navailable,
-		io->frames.decbuf[].i32buf,
 		io->frames.decbuf[].pcmbuf,
 		io->frames.decbuf[].ttabuf
 @*/
@@ -326,7 +324,8 @@ decmt_state_init(
 	for ( i = 0; i < framequeue_len; ++i ){
 		decbuf_init(
 			&io->frames.decbuf[i], i32buf_len,
-			TTABUF_LEN_DEFAULT, fstat->nchan, fstat->samplebytes
+			TTABUF_LEN_DEFAULT, fstat->nchan, fstat->samplebytes,
+			CBM_MULTI_THREADED
 		);
 	}
 
@@ -386,7 +385,6 @@ decmt_state_free(
 		decoder->frames.queue.lock
 @*/
 /*@releases	io->frames.navailable,
-		io->frames.decbuf[].i32buf,
 		io->frames.decbuf[].pcmbuf,
 		io->frames.decbuf[].ttabuf
 @*/
@@ -399,7 +397,7 @@ decmt_state_free(
 		semaphore_destroy(&io->frames.post_decoder[i]);
 	}
 	for ( i = 0; i < framequeue_len; ++i ){
-		codecbuf_free((struct EncBuf *) &io->frames.decbuf[i]);
+		codecbuf_free(&io->frames.decbuf[i], CBM_MULTI_THREADED);
 	}
 	//
 	free(io->frames.navailable);
