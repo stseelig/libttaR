@@ -41,13 +41,13 @@ enum LibTTAr_RetVal {
 };
 
 // max unary r/w size:		read	write
-//	8/16-bit:		  18u	  16u
-//	  24-bit:		4098u	4096u
-// max binary r/w size:		   3u	   3u
-// max cacheflush w size: 		   4u
+//	8/16-bit:		  34u	  40u
+//	  24-bit:		4098u	4104u
+// max binary r/w size:		   3u	   0u
+// max cacheflush w size: 		   8u
 // rounded up to the nearest (power of 2) + (power of 2)
-#define TTABUF_SAFETY_MARGIN_1_2	((size_t)   24u)
-#define TTABUF_SAFETY_MARGIN_3		((size_t) 4104u)
+#define TTABUF_SAFETY_MARGIN_1_2	((size_t)   48u)
+#define TTABUF_SAFETY_MARGIN_3		((size_t) 4112u)
 
 enum TTAMode {
 	TTA_ENC,
@@ -235,7 +235,7 @@ ALWAYS_INLINE CONST i32
 tta_predict1(const i32 x, const u8 k)
 /*@*/
 {
-	return (i32) (((((u64fast) x) << k) - x) >> k);
+	return (i32) (((((u64l) x) << k) - x) >> k);
 }
 
 /**@fn tta_postfilter_enc

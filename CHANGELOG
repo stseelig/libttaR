@@ -1,9 +1,16 @@
 
 # libttaR ####################################################################
 
+1.2.4 (2024-08-01):-----------------------------------------------------------
+
+	- performance improvements (rice coder)
+		- possible regression for 32-bit encoding
+	- safety-margin bugfix
+	- more debug asserts
+
 1.2.3 (2024-07-30):-----------------------------------------------------------
 
-	- possible codec performance improvement (branchless filter)
+	- possible performance improvement (branchless filter)
 	- new compile option symbol
 
 1.2.2 (2024-07-07):-----------------------------------------------------------
@@ -32,7 +39,7 @@
 
 1.1.1 (2024-06-15):-----------------------------------------------------------
 
-	- safety-margin bug again (the 24-bit unary can blow up)
+	- safety-margin bugfix
 	- additional compile option symbols
 	- performance improvements
 

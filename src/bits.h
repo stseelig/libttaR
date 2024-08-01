@@ -87,12 +87,6 @@
 #define UNUSED			/*@unused@*/
 #endif
 
-//#if HAS_ATTRIBUTE(counted_by)
-//#define COUNTED_BY(x)		__attribute__((counted_by(x)))
-//#else
-//#define COUNTED_BY(x)
-//#endif
-
 #if HAS_ATTRIBUTE(packed)
 #define PACKED			__attribute__((packed))
 #else
@@ -169,7 +163,7 @@ typedef uint64_t	u64;
 typedef   int8_t	 i8;
 typedef  int32_t	i32;
 
-typedef uint_fast64_t	u64fast;
+typedef uint_least64_t	u64l;
 
 //////////////////////////////////////////////////////////////////////////////
 

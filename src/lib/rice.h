@@ -45,13 +45,13 @@ enum ShiftMaskMode {
 //	8/16-bit :   16u bytes + 7u bits + terminator
 //	  24-bit : 4096u bytes + 7u bits + terminator
 // the lax_limit has an extra byte to make handling invalid data faster/easier
-#define UNARY_LAX_LIMIT_1_2	((u32) ((8u *   18u) - 1u))
+#define UNARY_LAX_LIMIT_1_2	((u32) ((8u *   34u) - 1u))
 #define UNARY_LAX_LIMIT_3	((u32) ((8u * 4098u) - 1u))
 
 // max unary + binary r/w size for one value
-#define RICE_ENC_MAX_1_2	((size_t)   19u)
-#define RICE_ENC_MAX_3		((size_t) 4099u)
-#define RICE_DEC_MAX_1_2	((size_t)   21u)
+#define RICE_ENC_MAX_1_2	((size_t)   40u)
+#define RICE_ENC_MAX_3		((size_t) 4104u)
+#define RICE_DEC_MAX_1_2	((size_t)   37u)
 #define RICE_DEC_MAX_3		((size_t) 4101u)
 
 //////////////////////////////////////////////////////////////////////////////
@@ -59,7 +59,7 @@ enum ShiftMaskMode {
 /*@unchecked@*/ /*@unused@*/
 extern HIDDEN const u32 binexp32p4_table[26u];
 /*@unchecked@*/ /*@unused@*/
-extern HIDDEN const u32 lsmask32_table[25u];
+extern HIDDEN const u32 lsmask32_table[32u];
 
 #if TBCNT8_TEST
 /*@unchecked@*/ /*@unused@*/
@@ -143,7 +143,7 @@ INLINE size_t rice_encode_cacheflush(
 #undef count
 #undef crc
 ALWAYS_INLINE size_t rice_write_unary(
-	/*@partial@*/ u8 *restrict dest, u32, size_t, u32 *restrict cache,
+	/*@partial@*/ u8 *restrict dest, u32, size_t, u64l *restrict cache,
 	u8 *restrict count, u32 *restrict crc
 )
 /*@modifies	*dest,
@@ -153,18 +153,13 @@ ALWAYS_INLINE size_t rice_write_unary(
 @*/
 ;
 
-#undef dest
 #undef cache
 #undef count
-#undef crc
-ALWAYS_INLINE size_t rice_write_binary(
-	/*@partial@*/ u8 *restrict dest, u32, size_t, u32 *restrict cache,
-	u8 *restrict count, u32 *restrict crc, u8
+ALWAYS_INLINE void rice_cache_binary(
+	u32, u64l *restrict cache, u8 *restrict count, u8
 )
-/*@modifies	*dest,
-		*cache,
-		*count,
-		*crc
+/*@modifies	*cache,
+		*count
 @*/
 ;
 
@@ -174,7 +169,7 @@ ALWAYS_INLINE size_t rice_write_binary(
 #undef crc
 ALWAYS_INLINE size_t rice_write_cache(
 	/*@partial@*/ u8 *restrict dest, size_t,
-	u32 *restrict cache, u8 *restrict count, u32 *restrict crc
+	u64l *restrict cache, u8 *restrict count, u32 *restrict crc
 )
 /*@modifies	*dest,
 		*cache,
@@ -370,13 +365,13 @@ binexp32p4(const u8 k, const enum ShiftMaskMode mode)
  *
  * @return a mask with 'k' low bits set
  *
- * @pre k <= (u8) 24u
+ * @pre k <= (u8) 31u
 **/
 ALWAYS_INLINE CONST u32
 lsmask32(const u8 k, const enum ShiftMaskMode mode)
 /*@*/
 {
-	assert(k <= (u8) 24u);
+	assert(k <= (u8) 31u);
 
 	u32 r;
 	switch ( mode ){
@@ -508,8 +503,8 @@ rice_crc32(const u8 x, u32 *const restrict crc)
  * @return number of bytes written to 'dest' + 'nbytes_enc'
  *
  * @note max write size (unary + binary):
- *     8/16-bit :   19u
- *       24-bit : 4099u
+ *     8/16-bit :   40u
+ *       24-bit : 4104u
  * @note affected by LIBTTAr_OPT_PREFER_LOOKUP_TABLES
 **/
 ALWAYS_INLINE size_t
@@ -524,24 +519,24 @@ rice_encode(
 		*crc
 @*/
 {
-	u32 *const restrict sum0  = &rice->sum[0u];
-	u32 *const restrict sum1  = &rice->sum[1u];
-	 u8 *const restrict k0    = &rice->k[0u];
-	 u8 *const restrict k1    = &rice->k[1u];
-	u32 *const restrict cache = &bitcache->cache;
-	 u8 *const restrict count = &bitcache->count;
+	u32  *const restrict sum0  = &rice->sum[0u];
+	u32  *const restrict sum1  = &rice->sum[1u];
+	 u8  *const restrict k0    = &rice->k[0u];
+	 u8  *const restrict k1    = &rice->k[1u];
+	u64l *const restrict cache = &bitcache->cache.u_64l;
+	 u8  *const restrict count = &bitcache->count;
 
 	u32 unary = 0, binary;
-	 u8 kx;
+	 u8 bin_k;
 
 	// value + state
-	kx = *k0;
+	bin_k = *k0;
 	rice_update(sum0, k0, value);
-	if PROBABLE ( value >= binexp32(kx), 0.575 ){
-		value -= binexp32(kx);
-		kx     = *k1;
+	if PROBABLE ( value >= binexp32(bin_k), 0.575 ){
+		value -= binexp32(bin_k);
+		bin_k  = *k1;
 		rice_update(sum1, k1, value);
-		unary  = (value >> kx) + 1u;
+		unary  = (value >> bin_k) + 1u;
 	}
 
 	// unary
@@ -550,12 +545,8 @@ rice_encode(
 	);
 
 	// binary
-	if LIKELY ( kx != 0 ){
-		binary = value & lsmask32(kx, SMM_ENC);
-		nbytes_enc = rice_write_binary(
-			dest, binary, nbytes_enc, cache, count, crc, kx
-		);
-	}
+	binary = value & lsmask32(bin_k, SMM_ENC);
+	rice_cache_binary(binary, cache, count, bin_k);
 
 	return nbytes_enc;
 }
@@ -570,7 +561,9 @@ rice_encode(
  *
  * @return number of bytes written to 'dest' + 'nbytes_enc'
  *
- * @note max write size: 4u
+ * @pre bitcache->count <= (u8) 64u	// 63 in practice
+ *
+ * @note max write size: 8u
 **/
 INLINE size_t
 rice_encode_cacheflush(
@@ -582,11 +575,15 @@ rice_encode_cacheflush(
 		*crc
 @*/
 {
-	u32 *const restrict cache = &bitcache->cache;
-	 u8 *const restrict count = &bitcache->count;
+	u64l *const restrict cache = &bitcache->cache.u_64l;
+	 u8  *const restrict count = &bitcache->count;
+
+	assert(*count <= (u8) 64u);
 
 	*count += 7u;
-	return rice_write_cache(dest, nbytes_enc, cache, count, crc);
+	nbytes_enc = rice_write_cache(dest, nbytes_enc, cache, count, crc);
+	*count  = 0u;
+	return nbytes_enc;
 }
 
 //--------------------------------------------------------------------------//
@@ -603,15 +600,18 @@ rice_encode_cacheflush(
  *
  * @return number of bytes written to 'dest' + 'nbytes_enc'
  *
- * @note max write size:
- *	 8/16-bit :   16u
- *	   24-bit : 4096u
+ * @pre  *count <= (u8) 64u	// 63 in practice
+ * @post *count <= (u8) 40u	// 39u in practice
+ *
+ * @note max write size (unary + cache):
+ *	 8/16-bit :   32u + 8u ==   40u
+ *	   24-bit : 4096u + 8u == 4104u
  * @note affected by LIBTTAr_OPT_PREFER_LOOKUP_TABLES
 **/
 ALWAYS_INLINE size_t
 rice_write_unary(
 	/*@partial@*/ u8 *const restrict dest, u32 unary, size_t nbytes_enc,
-	u32 *const restrict cache, u8 *const restrict count,
+	u64l *const restrict cache, u8 *const restrict count,
 	u32 *const restrict crc
 )
 /*@modifies	*dest,
@@ -620,52 +620,54 @@ rice_write_unary(
 		*crc
 @*/
 {
+	assert(*count <= (u8) 64u);
+
 	goto loop_entr;
-	do {	unary  -= 23u;
-		*cache |= lsmask32((u8) 23u, SMM_CONST) << *count;
-		*count += 23u;
+	do {	unary  -= 32u;
+		*cache |= ((u64l) 0xFFFFFFFFu) << *count;
+		*count += 32u;
 loop_entr:
 		nbytes_enc = rice_write_cache(
 			dest, nbytes_enc, cache, count, crc
 		);
-	} while UNLIKELY ( unary > (u32) 23u );
+	} while UNLIKELY ( unary >= (u32) 32u );
 
-	*cache |= lsmask32((u8) unary, SMM_ENC) << *count;
+	*cache |= ((u64l) lsmask32((u8) unary, SMM_ENC)) << *count;
 	*count += unary + 1u;	// + terminator
+
+	assert(*count <= (u8)  40u);
 	return nbytes_enc;
 }
 
-/**@fn rice_write_binary
- * @brief write a binary code to 'dest'
+/**@fn rice_cache_binary
+ * @brief write a binary code to the bitcache
  *
- * @param dest[out] destination buffer
- * @param nbytes_enc total number of bytes encoded so far; index of 'dest'
  * @param binary the binary code
  * @param cache[in out] the bitcache
  * @param count[in out] number of active bits in the 'cache'
- * @param crc[in out] the current CRC
- * @param k from rice->k[], kx
+ * @param bin_k number of bits in the binary code
  *
- * @return number of bytes written to 'dest' + 'nbytes_enc'
+ * @pre  *count <= (u8) 40u	// 39u in practice
+ * @post *count <= (u8) 64u	// 63 in practice
  *
- * @note max write size: 3u
+ * @note max bitcache write size: 3u
 **/
-ALWAYS_INLINE size_t
-rice_write_binary(
-	/*@partial@*/ u8 *const restrict dest, const u32 binary,
-	size_t nbytes_enc, u32 *const restrict cache,
-	u8 *const restrict count, u32 *const restrict crc, const u8 k
+ALWAYS_INLINE void
+rice_cache_binary(
+	const u32 binary, u64l *const restrict cache,
+	u8 *const restrict count, const u8 bin_k
 )
-/*@modifies	*dest,
-		*cache,
-		*count,
-		*crc
+/*@modifies	*cache,
+		*count
 @*/
 {
-	nbytes_enc = rice_write_cache(dest, nbytes_enc, cache, count, crc);
-	*cache |= binary << *count;
-	*count += k;
-	return nbytes_enc;
+	assert(*count <= (u8) 40u);
+
+	*cache |= ((u64l) binary) << *count;
+	*count += bin_k;
+
+	assert(*count <= (u8) 64u);
+	return;
 }
 
 /**@fn rice_write_cache
@@ -677,14 +679,17 @@ rice_write_binary(
  * @param count[in out] number of active bits in the 'cache'
  * @param crc[in out] the current CRC
  *
+ * @pre  *count <= (u8) 71u	// 70 in practice (rice_encode_cacheflush)
+ * @post *count <= (u8)  7u
+ *
  * @return number of bytes written to 'dest' + 'nbytes_enc'
  *
- * @note max write size: 4u
+ * @note max write size: 8u
 **/
 ALWAYS_INLINE size_t
 rice_write_cache(
 	/*@partial@*/ u8 *const restrict dest, size_t nbytes_enc,
-	u32 *const restrict cache, u8 *const restrict count,
+	u64l *const restrict cache, u8 *const restrict count,
 	u32 *const restrict crc
 )
 /*@modifies	*dest,
@@ -693,11 +698,15 @@ rice_write_cache(
 		*crc
 @*/
 {
+	assert(*count <= (u8) 71u);
+
 	while ( *count >= (u8) 8u ){
 		dest[nbytes_enc++] = rice_crc32((u8) *cache, crc);
 		*cache >>= 8u;
 		*count  -= 8u;
 	}
+
+	assert(*count <= (u8)  7u);
 	return nbytes_enc;
 }
 
@@ -717,7 +726,7 @@ rice_write_cache(
  * @return number of bytes read from 'src' + 'nbytes_dec'
  *
  * @note max read size (unary + binary):
- *     8/16-bit :   21u
+ *     8/16-bit :   37u
  *       24-bit : 4101u
  * @see rice_read_binary
 **/
@@ -738,11 +747,11 @@ rice_decode(
 	u32 *const restrict sum1  = &rice->sum[1u];
 	 u8 *const restrict k0    = &rice->k[0u];
 	 u8 *const restrict k1    = &rice->k[1u];
-	u32 *const restrict cache = &bitcache->cache;
+	u32 *const restrict cache = &bitcache->cache.u_32;
 	 u8 *const restrict count = &bitcache->count;
 
-	u32 unary, binary = 0;
-	 u8 kx;
+	u32 unary, binary;
+	 u8 bin_k;
 	bool depth1;
 
 	// unary
@@ -751,22 +760,20 @@ rice_decode(
 	);
 	if PROBABLE ( unary != 0, 0.575 ){
 		unary  -= 1u;
-		kx      = *k1;
+		bin_k   = *k1;
 		depth1  = true;
 	}
-	else {	kx      = *k0;
+	else {	bin_k   = *k0;
 		depth1  = false;
 	}
 
 	// binary
-	if LIKELY ( kx != 0 ){
-		nbytes_dec = rice_read_binary(
-			&binary, src, nbytes_dec, cache, count, crc, kx
-		);
-	}
+	nbytes_dec = rice_read_binary(
+		&binary, src, nbytes_dec, cache, count, crc, bin_k
+	);
 
 	// value + state
-	*value = (unary << kx) + binary;
+	*value = (unary << bin_k) + binary;
 	if PROBABLE ( depth1, 0.575 ){
 		rice_update(sum1, k1, *value);
 		*value += binexp32(*k0);
@@ -798,7 +805,7 @@ rice_decode(
  * @post *count <= (u8) 7u
  *
  * @note max read size:
- *     8/16-bit :   18u
+ *     8/16-bit :   34u
  *       24-bit : 4098u
  * @note affected by LIBTTAr_OPT_PREFER_LOOKUP_TABLES
 **/
@@ -847,7 +854,7 @@ rice_read_unary(
  * @param cache[in out] the bitcache
  * @param count[in out] number of active bits in the 'cache'
  * @param crc[in out] the current CRC
- * @param k from rice->k[], kx
+ * @param bin_k number of bits in the binary code
  *
  * @return number of bytes read from 'src' + 'nbytes_dec'
  *
@@ -855,12 +862,13 @@ rice_read_unary(
  * @post *count <= (u8) 8u	// ~
  *
  * @note max read size: 3u
+ *   a check like in the unary reader is unnecessary
 **/
 ALWAYS_INLINE size_t
 rice_read_binary(
 	/*@out@*/ u32 *const restrict binary, const u8 *const restrict src,
 	size_t nbytes_dec, u32 *const restrict cache,
-	u8 *const restrict count, u32 *const restrict crc, const u8 k
+	u8 *const restrict count, u32 *const restrict crc, const u8 bin_k
 )
 /*@modifies	*binary,
 		*cache,
@@ -870,14 +878,13 @@ rice_read_binary(
 {
 	assert(*count <= (u8) 8u);
 
-	while PROBABLE ( *count < k, 0.9 ){
-		// a check like in the unary reader is unnecessary
+	while PROBABLE ( *count < bin_k, 0.9 ){
 		*cache |= rice_crc32(src[nbytes_dec++], crc) << *count;
 		*count += 8u;
 	}
-	*binary = *cache & lsmask32(k, SMM_DEC);
-	*cache  = (*cache >> k) & lsmask32(*count - k, SMM_DEC);
-	*count -= k;
+	*binary  = *cache & lsmask32(bin_k, SMM_DEC);
+	*cache >>= bin_k;
+	*count  -= bin_k;
 
 	assert(*count <= (u8) 8u);
 	return nbytes_dec;

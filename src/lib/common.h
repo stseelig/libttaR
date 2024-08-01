@@ -64,31 +64,37 @@ enum TTASampleBytes {
 
 // -nolibc; a decent compiler should do this anyway
 
-#if HAS_BUILTIN(__builtin_memmove)
-#define MEMMOVE(dest, src, n)	((void) __builtin_memmove((dest), (src), (n)))
+#if HAS_BUILTIN(__builtin_memmove_inline)
+#define MEMMOVE(dest, src, n)	__builtin_memmove_inline((dest), (src), (n))
+#elif HAS_BUILTIN(__builtin_memmove)
+#define MEMMOVE(dest, src, n)	__builtin_memmove((dest), (src), (n))
 #else
 // gcc will not reach here, even though it does not have a builtin memmove
 #pragma message "compiler does not have a builtin 'memmove'"
 #define MEMMOVE(dest, src, n)	((void) memmove((dest), (src), (n)))
 #endif
 
-#if HAS_BUILTIN(__builtin_memset)
-#define MEMSET(s, c, n)		(__builtin_memset((s), (c), (n)))
+#if HAS_BUILTIN(__builtin_memset_inline)
+#define MEMSET(s, c, n)		__builtin_memset_inline((s), (c), (n))
+#elif HAS_BUILTIN(__builtin_memset)
+#define MEMSET(s, c, n)		__builtin_memset((s), (c), (n))
 #else
 #pragma message "compiler does not have a builtin 'memset'"
-#define MEMSET(s, c, n)		(memset((s), (c), (n)))
+#define MEMSET(s, c, n)		memset((s), (c), (n))
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
 
 struct BitCache {
-	u32	cache;
-	u8	count;
+	union {	u64l	u_64l;
+		u32	u_32;
+	}	cache;
+	 u8	count;
 };
 
 struct Rice {
 	u32	sum[2u];
-	u8	k[2u];
+	 u8	k[2u];
 };
 
 struct Filter {
@@ -104,12 +110,9 @@ struct Codec {
 	i32		prev;
 };
 
-// just adding a length field is way too much of a performance hit. actually
-//   checking is even worse. I just put a warning in the manpage instead
 struct LibTTAr_CodecState_Priv {
 	struct BitCache	bitcache;
-	//uint		nchan;
-	struct Codec 	codec[]; //COUNTED_BY(nchan);
+	struct Codec 	codec[];
 };
 
 struct LibTTAr_CodecState_User {
@@ -176,7 +179,6 @@ state_priv_init(
 /*@modifies	*priv@*/
 {
 	MEMSET(&priv->bitcache, 0x00, sizeof priv->bitcache);
-	//priv->nchan = nchan;
 	codec_init((struct Codec *) &priv->codec, nchan);
 	return;
 }

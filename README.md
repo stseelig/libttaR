@@ -32,7 +32,7 @@ LIBTTAr_OPT_PREFER_LOOKUP_TABLES\
 	makes some operations use lookup tables
 
 LIBTTAr_OPT_BRANCHING_FILTER\
-	uses code that is not as SIMD friendly, but can be better
+	uses code that is not as SIMD friendly
 
 ## Basic Usage
 $ ttaR encode file.(wav|w64)\
