@@ -42,7 +42,7 @@ enum ShiftMaskMode {
 //--------------------------------------------------------------------------//
 
 // max unary size:
-//	8/16-bit :   16u bytes + 7u bits + terminator
+//	8/16-bit :   32u bytes + 7u bits + terminator
 //	  24-bit : 4096u bytes + 7u bits + terminator
 // the lax_limit has an extra byte to make handling invalid data faster/easier
 #define UNARY_LAX_LIMIT_1_2	((u32) ((8u *   34u) - 1u))
