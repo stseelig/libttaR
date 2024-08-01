@@ -31,7 +31,8 @@ enum TTASampleBytes {
 
 //==========================================================================//
 
-#ifndef S_SPLINT_S	// splint preproc bugs
+#ifdef __GNUC__
+
 #if UINT_MAX == UINT32_MAX
 #define BUILTIN_TZCNT32			__builtin_ctz
 #elif ULONG_MAX == UINT32_MAX
@@ -49,7 +50,28 @@ enum TTASampleBytes {
 #else
 #define BUILTIN_TZCNT64			0
 #endif
-#endif // S_SPLINT_S
+
+#define BUILTIN_MEMMOVE_INLINE		__builtin_memmove_inline
+#define BUILTIN_MEMMOVE			__builtin_memmove
+
+#define BUILTIN_MEMSET_INLINE		__builtin_memset_inline
+#define BUILTIN_MEMSET			__builtin_memset
+
+#else // !defined(__GNUC__)
+
+#define BUILTIN_TZCNT32			0
+#define BUILTIN_TZCNT64			0
+
+#define BUILTIN_MEMMOVE_INLINE		0
+#define BUILTIN_MEMMOVE			0
+
+#define BUILTIN_MEMSET_INLINE		0
+#define BUILTIN_MEMSET			0
+
+#endif
+
+
+//////////////////////////////////////////////////////////////////////////////
 
 #ifndef LIBTTAr_OPT_PREFER_LOOKUP_TABLES
 #if (! HAS_BUILTIN(BUILTIN_TZCNT32)) && (! HAS_BUILTIN(BUILTIN_TZCNT64))
@@ -64,20 +86,20 @@ enum TTASampleBytes {
 
 // -nolibc; a decent compiler should do this anyway
 
-#if HAS_BUILTIN(__builtin_memmove_inline)
-#define MEMMOVE(dest, src, n)	__builtin_memmove_inline((dest), (src), (n))
-#elif HAS_BUILTIN(__builtin_memmove)
-#define MEMMOVE(dest, src, n)	__builtin_memmove((dest), (src), (n))
+#if HAS_BUILTIN(BUILTIN_MEMMOVE_INLINE)
+#define MEMMOVE(dest, src, n)	BUILTIN_MEMMOVE_INLINE((dest), (src), (n))
+#elif HAS_BUILTIN(BUILTIN_MEMMOVE)
+#define MEMMOVE(dest, src, n)	BUILTIN_MEMMOVE((dest), (src), (n))
 #else
 // gcc will not reach here, even though it does not have a builtin memmove
 #pragma message "compiler does not have a builtin 'memmove'"
 #define MEMMOVE(dest, src, n)	((void) memmove((dest), (src), (n)))
 #endif
 
-#if HAS_BUILTIN(__builtin_memset_inline)
-#define MEMSET(s, c, n)		__builtin_memset_inline((s), (c), (n))
-#elif HAS_BUILTIN(__builtin_memset)
-#define MEMSET(s, c, n)		__builtin_memset((s), (c), (n))
+#if HAS_BUILTIN(BUILTIN_MEMSET_INLINE)
+#define MEMSET(s, c, n)		BUILTIN_MEMSET_INLINE((s), (c), (n))
+#elif HAS_BUILTIN(BUILTIN_MEMSET)
+#define MEMSET(s, c, n)		BUILTIN_MEMSET((s), (c), (n))
 #else
 #pragma message "compiler does not have a builtin 'memset'"
 #define MEMSET(s, c, n)		memset((s), (c), (n))
@@ -86,7 +108,7 @@ enum TTASampleBytes {
 //////////////////////////////////////////////////////////////////////////////
 
 struct BitCache {
-	union {	u64l	u_64l;
+	union {	u64f	u_64l;
 		u32	u_32;
 	}	cache;
 	 u8	count;

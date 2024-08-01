@@ -235,7 +235,7 @@ ALWAYS_INLINE CONST i32
 tta_predict1(const i32 x, const u8 k)
 /*@*/
 {
-	return (i32) (((((u64l) x) << k) - x) >> k);
+	return (i32) (((((u64f) x) << k) - x) >> k);
 }
 
 /**@fn tta_postfilter_enc

@@ -24,13 +24,19 @@
 
 #ifdef __GNUC__
 
-#if __has_attribute(pure)
+#ifdef __has_attribute
+#define HAS_ATTRIBUTE(x)	__has_attribute(x)
+#else
+#define HAS_ATTRIBUTE(x)	0
+#endif
+
+#if HAS_ATTRIBUTE(pure)
 #define LIBTTAr_PURE		__attribute__((pure))
 #else
 #define LIBTTAr_PURE
 #endif
 
-#if __has_attribute(const)
+#if HAS_ATTRIBUTE(const)
 #define LIBTTAr_CONST		__attribute__((const))
 #else
 #define LIBTTAr_CONST

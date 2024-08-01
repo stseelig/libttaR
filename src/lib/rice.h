@@ -143,7 +143,7 @@ INLINE size_t rice_encode_cacheflush(
 #undef count
 #undef crc
 ALWAYS_INLINE size_t rice_write_unary(
-	/*@partial@*/ u8 *restrict dest, u32, size_t, u64l *restrict cache,
+	/*@partial@*/ u8 *restrict dest, u32, size_t, u64f *restrict cache,
 	u8 *restrict count, u32 *restrict crc
 )
 /*@modifies	*dest,
@@ -156,7 +156,7 @@ ALWAYS_INLINE size_t rice_write_unary(
 #undef cache
 #undef count
 ALWAYS_INLINE void rice_cache_binary(
-	u32, u64l *restrict cache, u8 *restrict count, u8
+	u32, u64f *restrict cache, u8 *restrict count, u8
 )
 /*@modifies	*cache,
 		*count
@@ -169,7 +169,7 @@ ALWAYS_INLINE void rice_cache_binary(
 #undef crc
 ALWAYS_INLINE size_t rice_write_cache(
 	/*@partial@*/ u8 *restrict dest, size_t,
-	u64l *restrict cache, u8 *restrict count, u32 *restrict crc
+	u64f *restrict cache, u8 *restrict count, u32 *restrict crc
 )
 /*@modifies	*dest,
 		*cache,
@@ -523,7 +523,7 @@ rice_encode(
 	u32  *const restrict sum1  = &rice->sum[1u];
 	 u8  *const restrict k0    = &rice->k[0u];
 	 u8  *const restrict k1    = &rice->k[1u];
-	u64l *const restrict cache = &bitcache->cache.u_64l;
+	u64f *const restrict cache = &bitcache->cache.u_64l;
 	 u8  *const restrict count = &bitcache->count;
 
 	u32 unary = 0, binary;
@@ -575,7 +575,7 @@ rice_encode_cacheflush(
 		*crc
 @*/
 {
-	u64l *const restrict cache = &bitcache->cache.u_64l;
+	u64f *const restrict cache = &bitcache->cache.u_64l;
 	 u8  *const restrict count = &bitcache->count;
 
 	assert(*count <= (u8) 64u);
@@ -611,7 +611,7 @@ rice_encode_cacheflush(
 ALWAYS_INLINE size_t
 rice_write_unary(
 	/*@partial@*/ u8 *const restrict dest, u32 unary, size_t nbytes_enc,
-	u64l *const restrict cache, u8 *const restrict count,
+	u64f *const restrict cache, u8 *const restrict count,
 	u32 *const restrict crc
 )
 /*@modifies	*dest,
@@ -624,7 +624,7 @@ rice_write_unary(
 
 	goto loop_entr;
 	do {	unary  -= 32u;
-		*cache |= ((u64l) 0xFFFFFFFFu) << *count;
+		*cache |= ((u64f) 0xFFFFFFFFu) << *count;
 		*count += 32u;
 loop_entr:
 		nbytes_enc = rice_write_cache(
@@ -632,7 +632,7 @@ loop_entr:
 		);
 	} while UNLIKELY ( unary >= (u32) 32u );
 
-	*cache |= ((u64l) lsmask32((u8) unary, SMM_ENC)) << *count;
+	*cache |= ((u64f) lsmask32((u8) unary, SMM_ENC)) << *count;
 	*count += unary + 1u;	// + terminator
 
 	assert(*count <= (u8) 40u);
@@ -654,7 +654,7 @@ loop_entr:
 **/
 ALWAYS_INLINE void
 rice_cache_binary(
-	const u32 binary, u64l *const restrict cache,
+	const u32 binary, u64f *const restrict cache,
 	u8 *const restrict count, const u8 bin_k
 )
 /*@modifies	*cache,
@@ -663,7 +663,7 @@ rice_cache_binary(
 {
 	assert(*count <= (u8) 40u);
 
-	*cache |= ((u64l) binary) << *count;
+	*cache |= ((u64f) binary) << *count;
 	*count += bin_k;
 
 	assert(*count <= (u8) 64u);
@@ -689,7 +689,7 @@ rice_cache_binary(
 ALWAYS_INLINE size_t
 rice_write_cache(
 	/*@partial@*/ u8 *const restrict dest, size_t nbytes_enc,
-	u64l *const restrict cache, u8 *const restrict count,
+	u64f *const restrict cache, u8 *const restrict count,
 	u32 *const restrict crc
 )
 /*@modifies	*dest,

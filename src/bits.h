@@ -28,10 +28,18 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
+#ifdef __GNUC__
+
 #ifdef __has_attribute
 #define HAS_ATTRIBUTE(x)	__has_attribute(x)
 #else
 #define HAS_ATTRIBUTE(x)	0
+#endif
+
+#else // !defined(__GNUC__)
+
+#define HAS_ATTRIBUTE(x)	0
+
 #endif
 
 //--------------------------------------------------------------------------//
@@ -105,10 +113,18 @@
 
 //==========================================================================//
 
+#ifdef __GNUC__
+
 #ifdef __has_builtin
 #define HAS_BUILTIN(x)		__has_builtin(x)
 #else
 #define HAS_BUILTIN(x)		0
+#endif
+
+#else // !defined(__GNUC__)
+
+#define HAS_BUILTIN(x)		0
+
 #endif
 
 //--------------------------------------------------------------------------//
@@ -163,7 +179,7 @@ typedef uint64_t	u64;
 typedef   int8_t	 i8;
 typedef  int32_t	i32;
 
-typedef uint_least64_t	u64l;
+typedef uint_fast64_t	u64f;
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -203,9 +219,29 @@ ALWAYS_INLINE CONST u64 letoh64(u64) /*@*/;
 
 //////////////////////////////////////////////////////////////////////////////
 
+#if __GNUC__
+
 #define BUILTIN_BSWAP16		__builtin_bswap16
 #define BUILTIN_BSWAP32		__builtin_bswap32
 #define BUILTIN_BSWAP64		__builtin_bswap64
+
+#else // !defined(__GNUC__)
+
+#define BUILTIN_BSWAP16		0
+#define BUILTIN_BSWAP32		0
+#define BUILTIN_BSWAP64		0
+
+#endif
+
+#ifndef __BYTE_ORDER__
+#error "'__BYTE_ORDER__' not defined"
+#endif
+#ifndef __ORDER_BIG_ENDIAN__
+#error "'__ORDER_BIG_ENDIAN__' not defined"
+#endif
+#ifndef __ORDER_LITTLE_ENDIAN__
+#error "'__ORDER_LITTLE_ENDIAN__' not defined"
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 
