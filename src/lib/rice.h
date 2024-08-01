@@ -679,7 +679,7 @@ rice_cache_binary(
  * @param count[in out] number of active bits in the 'cache'
  * @param crc[in out] the current CRC
  *
- * @pre  *count <= (u8) 71u	// 70 in practice (rice_encode_cacheflush)
+ * @pre  *count <= (u8) 71u	// 70u in practice (rice_encode_cacheflush)
  * @post *count <= (u8)  7u
  *
  * @return number of bytes written to 'dest' + 'nbytes_enc'
