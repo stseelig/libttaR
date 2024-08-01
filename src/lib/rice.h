@@ -635,7 +635,7 @@ loop_entr:
 	*cache |= ((u64l) lsmask32((u8) unary, SMM_ENC)) << *count;
 	*count += unary + 1u;	// + terminator
 
-	assert(*count <= (u8)  40u);
+	assert(*count <= (u8) 40u);
 	return nbytes_enc;
 }
 
