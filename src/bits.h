@@ -233,6 +233,7 @@ ALWAYS_INLINE CONST u64 letoh64(u64) /*@*/;
 
 #endif
 
+#ifndef S_SPLINT_S
 #ifndef __BYTE_ORDER__
 #error "'__BYTE_ORDER__' not defined"
 #endif
@@ -242,6 +243,7 @@ ALWAYS_INLINE CONST u64 letoh64(u64) /*@*/;
 #ifndef __ORDER_LITTLE_ENDIAN__
 #error "'__ORDER_LITTLE_ENDIAN__' not defined"
 #endif
+#endif // S_SPLINT_S
 
 //////////////////////////////////////////////////////////////////////////////
 

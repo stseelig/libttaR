@@ -319,7 +319,7 @@ binexp32(const u8 k)
 {
 	assert(k <= (u8) 31u);
 
-	return (u32) (0x1u << k);
+	return (((u32) 0x1u) << k);
 }
 
 /**@fn binexp32p4
@@ -346,8 +346,10 @@ binexp32p4(const u8 k, const enum ShiftMaskMode mode)
 	switch ( mode ){
 	case SMM_CONST:
 	case SMM_SHIFT:
-		r = (u32) (k != 0
-			? (k < (u8) 25u ? 0x10u << k : 0xFFFFFFFFu) : 0
+		r = (k != 0
+			? (k < (u8) 25u
+				? ((u32) 0x10u) << k : (u32) 0xFFFFFFFFu
+			) : 0
 		);
 		break;
 	case SMM_TABLE:
@@ -377,7 +379,7 @@ lsmask32(const u8 k, const enum ShiftMaskMode mode)
 	switch ( mode ){
 	case SMM_CONST:
 	case SMM_SHIFT:
-		r = (u32) ((0x1u << k) - 1u);
+		r = ((((u32) 0x1u) << k) - 1u);
 		break;
 	case SMM_TABLE:
 		r = lsmask32_table[k];
@@ -389,7 +391,7 @@ lsmask32(const u8 k, const enum ShiftMaskMode mode)
 //==========================================================================//
 
 #ifndef LIBTTAr_OPT_PREFER_LOOKUP_TABLES
-#define TBCNT8(cache) 	((u8) tbcnt8_32((cache)))
+#define TBCNT8(cache) 	((u8) tbcnt8_32((u32) (cache)))
 #else
 #define TBCNT8(cache) 	(tbcnt8((u8) (cache)))
 #endif
@@ -828,7 +830,7 @@ rice_read_unary(
 	nbits  = TBCNT8(*cache);
 	*unary = nbits;
 	if IMPROBABLE ( nbits == *count, 0.25 ){
-		do {	*cache  = rice_crc32(src[nbytes_dec++], crc);
+		do {	*cache  = (u32) rice_crc32(src[nbytes_dec++], crc);
 			nbits   = TBCNT8(*cache);
 			*unary += nbits;
 			if UNLIKELY ( *unary > lax_limit ){
@@ -876,10 +878,13 @@ rice_read_binary(
 		*crc
 @*/
 {
+	u8 inbyte;
+
 	assert(*count <= (u8) 8u);
 
 	while PROBABLE ( *count < bin_k, 0.9 ){
-		*cache |= rice_crc32(src[nbytes_dec++], crc) << *count;
+		inbyte  = rice_crc32(src[nbytes_dec++], crc);
+		*cache |= ((u32) inbyte) << *count;
 		*count += 8u;
 	}
 	*binary  = *cache & lsmask32(bin_k, SMM_DEC);
