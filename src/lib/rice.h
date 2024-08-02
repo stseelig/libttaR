@@ -635,7 +635,7 @@ loop_entr:
 	} while UNLIKELY ( unary >= (u32) 32u );
 
 	*cache |= ((u64f) lsmask32((u8) unary, SMM_ENC)) << *count;
-	*count += unary + 1u;	// + terminator
+	*count += ((u8) unary) + 1u;	// + terminator
 
 	assert(*count <= (u8) 40u);
 	return nbytes_enc;
