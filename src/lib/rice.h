@@ -779,6 +779,7 @@ rice_decode(
  * @note max read size:
  *     8/16-bit :   34u
  *       24-bit : 4098u
+ * @note affected by LIBTTAr_OPT_PREFER_LOOKUP_TABLES
 **/
 ALWAYS_INLINE size_t
 rice_read_unary(

@@ -28,10 +28,10 @@ LIBTTAr_OPT_DISABLE_MCH\
 	disables the general/multichannel loop
 
 #### Old/Weak CPU
-LIBTTAr_OPT_PREFER_LOOKUP_TABLES (encode only)\
+LIBTTAr_OPT_PREFER_LOOKUP_TABLES\
 	makes some operations use lookup tables
 
-LIBTTAr_OPT_DISABLE_BRANCHLESS_FILTER (both)\
+LIBTTAr_OPT_DISABLE_BRANCHLESS_FILTER\
 	uses code that is not as SIMD friendly
 
 LIBTTAr_OPT_DISABLE_PREFETCHING (decode only)\
