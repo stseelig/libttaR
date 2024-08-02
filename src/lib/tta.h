@@ -49,11 +49,6 @@ enum LibTTAr_RetVal {
 #define TTABUF_SAFETY_MARGIN_1_2	((size_t)   48u)
 #define TTABUF_SAFETY_MARGIN_3		((size_t) 4112u)
 
-enum TTAMode {
-	TTA_ENC,
-	TTA_DEC
-};
-
 //////////////////////////////////////////////////////////////////////////////
 
 INLINE CONST size_t get_safety_margin(enum TTASampleBytes, uint) /*@*/;
@@ -286,7 +281,7 @@ tta_prefilter_dec(const i32 x)
  *
  * @return the filtered value
  *
- * @note affected by LIBTTAr_OPT_BRANCHING_FILTER
+ * @note affected by LIBTTAr_OPT_DISABLE_BRANCHLESS_FILTER
 **/
 ALWAYS_INLINE i32
 tta_filter(
@@ -299,7 +294,7 @@ tta_filter(
 	i32 *const restrict m = filter->dx;
 	i32 *const restrict b = filter->dl;
 
-#ifndef LIBTTAr_OPT_BRANCHING_FILTER
+#ifndef LIBTTAr_OPT_DISABLE_BRANCHLESS_FILTER
 	const i32 e = (filter->error != 0
 		? (filter->error < 0 ? (i32) -1 : (i32) 1) : 0
 	);
@@ -307,7 +302,7 @@ tta_filter(
 	uint i;
 
 	// for-loops SIMD better than unrolled
-#ifndef LIBTTAr_OPT_BRANCHING_FILTER
+#ifndef LIBTTAr_OPT_DISABLE_BRANCHLESS_FILTER
 	for ( i = 0; i < 8u; ++i ){
 		sum += (a[i] += m[i] * e) * b[i];
 	}

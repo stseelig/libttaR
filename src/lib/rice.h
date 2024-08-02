@@ -78,7 +78,6 @@ INLINE CONST size_t get_rice_dec_max(enum TTASampleBytes) /*@*/;
 //--------------------------------------------------------------------------//
 
 ALWAYS_INLINE CONST u32 binexp32(u8) /*@*/;
-ALWAYS_INLINE CONST u32 binexp32p4(u8, enum ShiftMaskMode) /*@*/;
 ALWAYS_INLINE CONST u32 lsmask32(u8, enum ShiftMaskMode) /*@*/;
 
 //--------------------------------------------------------------------------//
@@ -322,43 +321,6 @@ binexp32(const u8 k)
 	return (((u32) 0x1u) << k);
 }
 
-/**@fn binexp32p4
- * @brief binary exponetiation 32-bit + 4-lshift (2**('k' + 4u))
- *
- * @param k bit number - 4u
- * @param mode constant, shift, or lookup table
- *
- * @return a mask with only the ('k' + 4u)th bit set, 0, or 0xFFFFFFFFu
- *
- * @note special cases (for rice_update):
- *        0u => 0x00000000u: floors rice.k[] to  0u
- *       25u => 0xFFFFFFFFu:   caps rice.k[] to 24u
- *
- * @pre k <= (u8) 25u
-**/
-ALWAYS_INLINE CONST u32
-binexp32p4(const u8 k, const enum ShiftMaskMode mode)
-/*@*/
-{
-	assert(k <= (u8) 25u);
-
-	u32 r;
-	switch ( mode ){
-	case SMM_CONST:
-	case SMM_SHIFT:
-		r = (k != 0
-			? (k < (u8) 25u
-				? ((u32) 0x10u) << k : (u32) 0xFFFFFFFFu
-			) : 0
-		);
-		break;
-	case SMM_TABLE:
-		r = binexp32p4_table[k];
-		break;
-	}
-	return r;
-}
-
 /**@fn lsmask32
  * @brief least significant mask 32-bit
  *
@@ -445,7 +407,7 @@ tbcnt8(const u8 x)
 //==========================================================================//
 
 /**@fn rice_update
- * @brief update the rice struct data
+ * @brief update the rice state
  *
  * @param sum[in out] rice->sum[]
  * @param k[in out] rice->k[]
@@ -455,18 +417,24 @@ tbcnt8(const u8 x)
  * @post *k <= (u8) 24u
 **/
 ALWAYS_INLINE void
-rice_update(u32 *const restrict sum, u8 *const restrict k, const u32 value)
+rice_update(
+	u32 *const restrict sum, u8 *const restrict k, const u32 value
+)
 /*@modifies	*sum,
 		*k
 @*/
 {
+	u32 test[2u];
+
 	assert(*k <= (u8) 24u);
 
+	MEMCPY(test, &binexp32p4_table[*k], sizeof test);
+
 	*sum += value - (*sum >> 4u);
-	if UNLIKELY ( *sum < binexp32p4(*k, SMM_TABLE) ){
+	if IMPROBABLE ( *sum < test[0u], 0.027 ){
 		*k -= 1u;
 	}
-	else if UNLIKELY ( *sum > binexp32p4(*k + 1u, SMM_TABLE) ){
+	else if IMPROBABLE ( *sum > test[1u], 0.027 ){
 		*k += 1u;
 	} else{;}
 
@@ -730,7 +698,7 @@ rice_write_cache(
  * @note max read size (unary + binary):
  *     8/16-bit :   37u
  *       24-bit : 4101u
- * @see rice_read_binary
+ * @note affected by LIBTTAr_OPT_DISABLE_PREFETCHING
 **/
 ALWAYS_INLINE size_t
 rice_decode(
@@ -764,10 +732,12 @@ rice_decode(
 		unary  -= 1u;
 		bin_k   = *k1;
 		depth1  = true;
+		PREFETCH(&binexp32p4_table[*k1], 0, 3);
 	}
 	else {	bin_k   = *k0;
 		depth1  = false;
 	}
+	PREFETCH(&binexp32p4_table[*k0], 0, 3);
 
 	// binary
 	nbytes_dec = rice_read_binary(
@@ -809,7 +779,6 @@ rice_decode(
  * @note max read size:
  *     8/16-bit :   34u
  *       24-bit : 4098u
- * @note affected by LIBTTAr_OPT_PREFER_LOOKUP_TABLES
 **/
 ALWAYS_INLINE size_t
 rice_read_unary(

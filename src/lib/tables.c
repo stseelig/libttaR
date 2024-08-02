@@ -16,6 +16,13 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
+/**@var binexp32p4_table
+ * @brief binary exponetiation 32-bit + 4-lshift (2**('k' + 4u)) lookup table
+ *   a value with only the ('k' + 4u)th bit set, 0, or 0xFFFFFFFFu
+ * @note special cases (for rice_update):
+ *        0u => 0x00000000u: floors rice.k[] to  0u
+ *       25u => 0xFFFFFFFFu:   caps rice.k[] to 24u
+**/
 /*@unchecked@*/
 HIDDEN const u32 binexp32p4_table[26u] = {
 (u32) 0x00000000u, (u32) 0x00000020u, (u32) 0x00000040u, (u32) 0x00000080u,
@@ -27,6 +34,9 @@ HIDDEN const u32 binexp32p4_table[26u] = {
 (u32) 0x10000000u, (u32) 0xFFFFFFFFu
 };
 
+/**@var lsmask32_table
+ * @brief least significant mask 32-bit lookup table
+**/
 /*@unchecked@*/
 HIDDEN const u32 lsmask32_table[32u] = {
 (u32) 0x00000000u, (u32) 0x00000001u, (u32) 0x00000003u, (u32) 0x00000007u,
@@ -40,6 +50,9 @@ HIDDEN const u32 lsmask32_table[32u] = {
 };
 
 #if TBCNT8_TEST
+/**@var tbcnt8_table
+ * @brief trailing bit count 8-bit lookup table
+**/
 /*@unchecked@*/
 HIDDEN const u8 tbcnt8_table[256u] = {
 (u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 3u,
@@ -77,6 +90,12 @@ HIDDEN const u8 tbcnt8_table[256u] = {
 };
 #endif
 
+/**@var crc32_table
+ * @brief CRC lookup table for Sarwate's method
+ * @note width   : 32-bit
+ *       endian  : little
+ *       poly    : 0xEDB88320u
+**/
 /*@unchecked@*/
 HIDDEN const u32 crc32_table[256u] = {
 (u32) 0x00000000u, (u32) 0x77073096u, (u32) 0xEE0E612Cu, (u32) 0x990951BAu,

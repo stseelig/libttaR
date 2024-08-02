@@ -28,11 +28,14 @@ LIBTTAr_OPT_DISABLE_MCH\
 	disables the general/multichannel loop
 
 #### Old/Weak CPU
-LIBTTAr_OPT_PREFER_LOOKUP_TABLES\
+LIBTTAr_OPT_PREFER_LOOKUP_TABLES (encode only)\
 	makes some operations use lookup tables
 
-LIBTTAr_OPT_BRANCHING_FILTER\
+LIBTTAr_OPT_DISABLE_BRANCHLESS_FILTER (both)\
 	uses code that is not as SIMD friendly
+
+LIBTTAr_OPT_DISABLE_PREFETCHING (decode only)\
+	disables prefetch builtin
 
 ## Basic Usage
 $ ttaR encode file.(wav|w64)\
@@ -49,8 +52,8 @@ The library is just a collection of functions for reading from one buffer and
 writing to another with some support functions to calculate values.
 It does not allocate, print, nor make any other syscall.
 (Though it can abort, but should not, if NDEBUG is not defined.)
-It does not even need libc as long as your compiler has a builtin memset and
-memmove (ie, not gcc).
+It does not even need libc as long as your compiler has a builtin memset,
+memcpy, and memmove (all 3, ie, not gcc).
 So fairly bare-bones as far as codec libraries go.
 
 The two codec functions are reentrant, so you can code as few samples at a

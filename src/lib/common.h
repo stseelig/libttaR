@@ -21,6 +21,11 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
+enum TTAMode {
+	TTA_ENC,
+	TTA_DEC
+};
+
 enum TTASampleBytes {
 	TTASAMPLEBYTES_1 = 1u,
 	TTASAMPLEBYTES_2 = 2u,
@@ -51,22 +56,29 @@ enum TTASampleBytes {
 #define BUILTIN_TZCNT64			0
 #endif
 
-#define BUILTIN_MEMMOVE_INLINE		__builtin_memmove_inline
+// the _inline's cause clang to panic (Debian clang version 11.0.1-2)
+//#define BUILTIN_MEMCPY_INLINE		__builtin_memcpy_inline
+#define BUILTIN_MEMCPY			__builtin_memcpy
+//#define BUILTIN_MEMMOVE_INLINE		__builtin_memmove_inline
 #define BUILTIN_MEMMOVE			__builtin_memmove
-
-#define BUILTIN_MEMSET_INLINE		__builtin_memset_inline
+//#define BUILTIN_MEMSET_INLINE		__builtin_memset_inline
 #define BUILTIN_MEMSET			__builtin_memset
+
+#define BUILTIN_PREFETCH		__builtin_prefetch
 
 #else // !defined(__GNUC__)
 
 #define BUILTIN_TZCNT32			0
 #define BUILTIN_TZCNT64			0
 
+#define BUILTIN_MEMCPY_INLINE		0
+#define BUILTIN_MEMCPY			0
 #define BUILTIN_MEMMOVE_INLINE		0
 #define BUILTIN_MEMMOVE			0
-
 #define BUILTIN_MEMSET_INLINE		0
 #define BUILTIN_MEMSET			0
+
+#define BUILTIN_PREFETCH		0
 
 #endif
 
@@ -86,6 +98,15 @@ enum TTASampleBytes {
 
 // -nolibc; a decent compiler should do this anyway
 
+#if HAS_BUILTIN(BUILTIN_MEMCPY_INLINE)
+#define MEMCPY(dest, src, n)	BUILTIN_MEMCPY_INLINE((dest), (src), (n))
+#elif HAS_BUILTIN(BUILTIN_MEMCPY)
+#define MEMCPY(dest, src, n)	BUILTIN_MEMCPY((dest), (src), (n))
+#else
+#pragma message "compiler does not have a builtin 'memcpy'"
+#define MEMCPY(dest, src, n)	((void) memcpy((dest), (src), (n)))
+#endif
+
 #if HAS_BUILTIN(BUILTIN_MEMMOVE_INLINE)
 #define MEMMOVE(dest, src, n)	BUILTIN_MEMMOVE_INLINE((dest), (src), (n))
 #elif HAS_BUILTIN(BUILTIN_MEMMOVE)
@@ -103,6 +124,19 @@ enum TTASampleBytes {
 #else
 #pragma message "compiler does not have a builtin 'memset'"
 #define MEMSET(s, c, n)		memset((s), (c), (n))
+#endif
+
+//==========================================================================//
+
+#ifndef LIBTTAr_OPT_DISABLE_PREFETCHING
+#if HAS_BUILTIN(BUILTIN_PREFETCH)
+#define PREFETCH(...)	__builtin_prefetch(__VA_ARGS__)
+#else
+#pragma message "compiler does not have a builtin 'prefetch'"
+#define PREFETCH(...)
+#endif
+#else
+#define PREFETCH(...)
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
