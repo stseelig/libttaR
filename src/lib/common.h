@@ -108,7 +108,7 @@ enum TTASampleBytes {
 //////////////////////////////////////////////////////////////////////////////
 
 struct BitCache {
-	union {	u64f	u_64l;
+	union {	u64f	u_64f;
 		u32	u_32;
 	}	cache;
 	 u8	count;

@@ -523,7 +523,7 @@ rice_encode(
 	u32  *const restrict sum1  = &rice->sum[1u];
 	 u8  *const restrict k0    = &rice->k[0u];
 	 u8  *const restrict k1    = &rice->k[1u];
-	u64f *const restrict cache = &bitcache->cache.u_64l;
+	u64f *const restrict cache = &bitcache->cache.u_64f;
 	 u8  *const restrict count = &bitcache->count;
 
 	u32 unary = 0, binary;
@@ -575,7 +575,7 @@ rice_encode_cacheflush(
 		*crc
 @*/
 {
-	u64f *const restrict cache = &bitcache->cache.u_64l;
+	u64f *const restrict cache = &bitcache->cache.u_64f;
 	 u8  *const restrict count = &bitcache->count;
 
 	assert(*count <= (u8) 64u);
