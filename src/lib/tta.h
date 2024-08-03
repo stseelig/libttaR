@@ -52,31 +52,35 @@ enum LibTTAr_RetVal {
 //////////////////////////////////////////////////////////////////////////////
 
 INLINE CONST size_t get_safety_margin(enum TTASampleBytes, uint) /*@*/;
-INLINE CONST u8 get_predict_k(enum TTASampleBytes) /*@*/;
+INLINE CONST bitcnt get_predict_k(enum TTASampleBytes) /*@*/;
 INLINE CONST i32 get_filter_round(enum TTASampleBytes) /*@*/;
-INLINE CONST u8 get_filter_k(enum TTASampleBytes) /*@*/;
+INLINE CONST bitcnt get_filter_k(enum TTASampleBytes) /*@*/;
 
 //--------------------------------------------------------------------------//
 
 ALWAYS_INLINE CONST i32 signof32(i32) /*@*/;
-ALWAYS_INLINE CONST i32 asl32(i32, u8) /*@*/;
-ALWAYS_INLINE CONST i32 asr32(i32, u8) /*@*/;
+ALWAYS_INLINE CONST i32 asl32(i32, bitcnt) /*@*/;
+ALWAYS_INLINE CONST i32 asr32(i32, bitcnt) /*@*/;
 
 //--------------------------------------------------------------------------//
 
-INLINE CONST i32 tta_predict1(i32, u8) /*@*/;
+INLINE CONST i32 tta_predict1(i32, bitcnt) /*@*/;
 INLINE CONST i32 tta_postfilter_enc(i32) /*@*/;
 INLINE CONST i32 tta_prefilter_dec(i32) /*@*/;
 
 //--------------------------------------------------------------------------//
 
 #undef filter
-ALWAYS_INLINE i32 tta_filter_enc(struct Filter *restrict filter, i32, i32, u8)
+ALWAYS_INLINE i32 tta_filter_enc(
+	struct Filter *restrict filter, i32, i32, bitcnt
+)
 /*@modifies	*filter@*/
 ;
 
 #undef filter
-ALWAYS_INLINE i32 tta_filter_dec(struct Filter *restrict filter, i32, i32, u8)
+ALWAYS_INLINE i32 tta_filter_dec(
+	struct Filter *restrict filter, i32, i32, bitcnt
+)
 /*@modifies	*filter@*/
 ;
 
@@ -113,18 +117,18 @@ get_safety_margin(const enum TTASampleBytes samplebytes, const uint nchan)
  *
  * @return arg 'k' for tta_predict1
 **/
-INLINE CONST u8
+INLINE CONST bitcnt
 get_predict_k(const enum TTASampleBytes samplebytes)
 /*@*/
 {
-	u8 r;
+	bitcnt r;
 	switch ( samplebytes ){
 	case TTASAMPLEBYTES_1:
-		r = (u8) 4u;
+		r = (bitcnt) 4u;
 		break;
 	case TTASAMPLEBYTES_2:
 	case TTASAMPLEBYTES_3:
-		r = (u8) 5u;
+		r = (bitcnt) 5u;
 		break;
 	}
 	return r;
@@ -161,18 +165,18 @@ get_filter_round(const enum TTASampleBytes samplebytes)
  *
  * @return arg 'k' for tta_filter
 **/
-INLINE CONST u8
+INLINE CONST bitcnt
 get_filter_k(const enum TTASampleBytes samplebytes)
 /*@*/
 {
-	u8 r;
+	bitcnt r;
 	switch ( samplebytes ){
 	case TTASAMPLEBYTES_1:
 	case TTASAMPLEBYTES_3:
-		r = (u8) 10u;
+		r = (bitcnt) 10u;
 		break;
 	case TTASAMPLEBYTES_2:
-		r = (u8)  9u;
+		r = (bitcnt)  9u;
 		break;
 	}
 	return r;
@@ -203,7 +207,7 @@ signof32(const i32 x)
  * @return shifted value
 **/
 ALWAYS_INLINE CONST i32
-asl32(const i32 x, const u8 k)
+asl32(const i32 x, const bitcnt k)
 /*@*/
 {
 	return (i32) (((u32) x) << k);
@@ -218,7 +222,7 @@ asl32(const i32 x, const u8 k)
  * @return shifted value
 **/
 ALWAYS_INLINE CONST i32
-asr32(const i32 x, const u8 k)
+asr32(const i32 x, const bitcnt k)
 /*@*/
 {
 	/*@-shiftimplementation@*/
@@ -243,7 +247,7 @@ asr32(const i32 x, const u8 k)
  * @return predicted value
 **/
 ALWAYS_INLINE CONST i32
-tta_predict1(const i32 x, const u8 k)
+tta_predict1(const i32 x, const bitcnt k)
 /*@*/
 {
 	return (i32) (((((u64f) x) << k) - x) >> k);
@@ -263,7 +267,7 @@ ALWAYS_INLINE CONST i32
 tta_postfilter_enc(const i32 x)
 /*@*/
 {
-	return (x > 0 ? asl32(x, (u8) 1u) - 1 : asl32(-x, (u8) 1u));
+	return (x > 0 ? asl32(x, (bitcnt) 1u) - 1 : asl32(-x, (bitcnt) 1u));
 }
 
 /**@fn tta_prefilter_dec
@@ -280,7 +284,7 @@ tta_prefilter_dec(const i32 x)
 /*@*/
 {
 	return ((((u32) x) & 0x1u) != 0
-		? asr32(x + 1, (u8) 1u) : asr32(-x, (u8) 1u)
+		? asr32(x + 1, (bitcnt) 1u) : asr32(-x, (bitcnt) 1u)
 	);
 }
 
@@ -298,7 +302,8 @@ tta_prefilter_dec(const i32 x)
 **/
 ALWAYS_INLINE i32
 tta_filter_enc(
-	struct Filter *const restrict filter, i32 value, i32 round, const u8 k
+	struct Filter *const restrict filter, i32 value, i32 round,
+	const bitcnt k
 )
 /*@modifies	*filter@*/
 {
@@ -318,10 +323,10 @@ tta_filter_enc(
 	round += (a[6u] += m[6u] * sign) * b[6u];
 	round += (a[7u] += m[7u] * sign) * b[7u];
 
-	m[8u]  = (i32) ((((u32) asr32(b[7u], (u8) 30u)) | 0x1u) << 2u);
-	m[7u]  = (i32) ((((u32) asr32(b[6u], (u8) 30u)) | 0x1u) << 1u);
-	m[6u]  = (i32) ((((u32) asr32(b[5u], (u8) 30u)) | 0x1u) << 1u);
-	m[5u]  = (i32) ((((u32) asr32(b[4u], (u8) 30u)) | 0x1u) << 0u);
+	m[8u]  = (i32) ((((u32) asr32(b[7u], (bitcnt) 30u)) | 0x1u) << 2u);
+	m[7u]  = (i32) ((((u32) asr32(b[6u], (bitcnt) 30u)) | 0x1u) << 1u);
+	m[6u]  = (i32) ((((u32) asr32(b[5u], (bitcnt) 30u)) | 0x1u) << 1u);
+	m[5u]  = (i32) ((((u32) asr32(b[4u], (bitcnt) 30u)) | 0x1u) << 0u);
 
 	b[8u]  = value;
 	b[7u]  = b[8u] - b[7u];
@@ -331,8 +336,8 @@ tta_filter_enc(
 	value -= asr32(round, k);
 	e[0u]  = signof32(value);
 
-	MEMMOVE(m, &m[1u], (size_t) (8u*(sizeof *m)));
-	MEMMOVE(b, &b[1u], (size_t) (8u*(sizeof *b)));
+	MEMMOVE(m, &m[1u], (size_t) (8u * (sizeof *m)));
+	MEMMOVE(b, &b[1u], (size_t) (8u * (sizeof *b)));
 
 	return value;
 }
@@ -349,7 +354,8 @@ tta_filter_enc(
 **/
 ALWAYS_INLINE i32
 tta_filter_dec(
-	struct Filter *const restrict filter, i32 value, i32 round, const u8 k
+	struct Filter *const restrict filter, i32 value, i32 round,
+	const bitcnt k
 )
 /*@modifies	*filter@*/
 {
@@ -373,17 +379,17 @@ tta_filter_dec(
 	value += asr32(round, k);
 	b[8u]  = value;
 
-	m[8u]  = (i32) ((((u32) asr32(b[7u], (u8) 30u)) | 0x1u) << 2u);
-	m[7u]  = (i32) ((((u32) asr32(b[6u], (u8) 30u)) | 0x1u) << 1u);
-	m[6u]  = (i32) ((((u32) asr32(b[5u], (u8) 30u)) | 0x1u) << 1u);
-	m[5u]  = (i32) ((((u32) asr32(b[4u], (u8) 30u)) | 0x1u) << 0u);
+	m[8u]  = (i32) ((((u32) asr32(b[7u], (bitcnt) 30u)) | 0x1u) << 2u);
+	m[7u]  = (i32) ((((u32) asr32(b[6u], (bitcnt) 30u)) | 0x1u) << 1u);
+	m[6u]  = (i32) ((((u32) asr32(b[5u], (bitcnt) 30u)) | 0x1u) << 1u);
+	m[5u]  = (i32) ((((u32) asr32(b[4u], (bitcnt) 30u)) | 0x1u) << 0u);
 
 	b[7u]  = b[8u] - b[7u];
 	b[6u]  = b[7u] - b[6u];
 	b[5u]  = b[6u] - b[5u];
 
-	MEMMOVE(m, &m[1u], (size_t) (8u*(sizeof *m)));
-	MEMMOVE(b, &b[1u], (size_t) (8u*(sizeof *b)));
+	MEMMOVE(m, &m[1u], (size_t) (8u * (sizeof *m)));
+	MEMMOVE(b, &b[1u], (size_t) (8u * (sizeof *b)));
 
 	return value;
 }

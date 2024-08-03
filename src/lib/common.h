@@ -29,7 +29,80 @@ enum TTASampleBytes {
 #define TTA_SAMPLEBYTES_MAX	((uint) TTASAMPLEBYTES_3)
 #define TTA_SAMPLEBITS_MAX	((uint) (8u*TTA_SAMPLEBYTES_MAX))
 
+//////////////////////////////////////////////////////////////////////////////
+
+// fast type use or lack thereof assumes to not make the slow even slower and
+//   to not favor one mode (encode/decode) at a great expense to the other.
+//   mileage will vary
+typedef u32	rice24;
+typedef  u8f	bitcnt;
+typedef u32	cache32;
+typedef u64f	cache64;
+
 //==========================================================================//
+
+struct BitCache {
+	union {	cache64	enc;
+		cache32	dec;
+	}	cache;
+	bitcnt	count;
+};
+
+struct Rice {
+	u32	sum[2u];	// needs 32-bit wrapping
+	bitcnt	k[2u];
+};
+
+struct Filter {
+	i32	qm[8u];
+	i32	dx[9u];		// the extra value is for a memmove trick
+	i32	dl[9u];		// ~
+	i32	error;		// enc: sign of the error, dec: full error
+};
+
+struct Codec {
+	struct Filter	filter;
+	struct Rice	rice;
+	i32		prev;
+};
+
+struct LibTTAr_CodecState_Priv {
+	struct BitCache	bitcache;
+	struct Codec 	codec[];
+};
+
+struct LibTTAr_CodecState_User {
+	u32	ncalls_codec;
+	u32	crc;
+	size_t	ni32;			// enc: num read, dec: num written
+	size_t	ni32_total;		// ~
+	size_t	nbytes_tta;		// enc: num written, dec: num read
+	size_t	nbytes_tta_total;	// ~
+};
+
+//////////////////////////////////////////////////////////////////////////////
+
+#undef priv
+INLINE void state_priv_init(
+	/*@out@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
+	const uint
+)
+/*@modifies	*priv@*/
+;
+
+#undef codec
+INLINE void codec_init(
+	/*@out@*/ struct Codec *const restrict codec, const uint
+)
+/*@modifies	*codec@*/
+;
+
+#undef rice
+INLINE void rice_init(/*@out@*/ struct Rice *const restrict rice)
+/*@modifies	*rice@*/
+;
+
+//////////////////////////////////////////////////////////////////////////////
 
 #ifdef __GNUC__
 
@@ -119,62 +192,25 @@ enum TTASampleBytes {
 
 //////////////////////////////////////////////////////////////////////////////
 
-struct BitCache {
-	union {	u64f	u_64f;
-		u32	u_32;
-	}	cache;
-	 u8	count;
-};
-
-struct Rice {
-	u32	sum[2u];
-	 u8	k[2u];
-};
-
-struct Filter {
-	i32	qm[8u];
-	i32	dx[9u];	// the extra value is for a memmove trick
-	i32	dl[9u];	// ~
-	i32	error;	// enc: sign of the error, dec: full error
-};
-
-struct Codec {
-	struct Filter	filter;
-	struct Rice	rice;
-	i32		prev;
-};
-
-struct LibTTAr_CodecState_Priv {
-	struct BitCache	bitcache;
-	struct Codec 	codec[];
-};
-
-struct LibTTAr_CodecState_User {
-	u32	ncalls_codec;
-	u32	crc;
-	size_t	ni32;			// enc: num read, dec: num written
-	size_t	ni32_total;		// ~
-	size_t	nbytes_tta;		// enc: num written, dec: num read
-	size_t	nbytes_tta_total;	// ~
-};
-
-//////////////////////////////////////////////////////////////////////////////
-
-/**@fn rice_init
- * @brief initializes a 'struct Rice'
+/**@fn state_priv_init
+ * @brief initializes a private state struct
  *
- * @param rice[out] struct to initialize
+ * @param priv[out] the private state struct
+ * @param nchan number of audio channels
 **/
 INLINE void
-rice_init(/*@out@*/ struct Rice *const restrict rice)
-/*@modifies	*rice@*/
+state_priv_init(
+	/*@out@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
+	const uint nchan
+)
+/*@modifies	*priv@*/
 {
-	rice->sum[0u] = (u32) 0x00004000u;	// binexp32p4((u8) 10u)
-	rice->sum[1u] = (u32) 0x00004000u;	// ~
-	rice->k[0u]   = (u8) 10u;
-	rice->k[1u]   = (u8) 10u;
+	MEMSET(&priv->bitcache, 0x00, sizeof priv->bitcache);
+	codec_init((struct Codec *) &priv->codec, nchan);
 	return;
 }
+
+//--------------------------------------------------------------------------//
 
 /**@fn codec_init
  * @brief initializes an array of 'struct Codec'
@@ -184,8 +220,7 @@ rice_init(/*@out@*/ struct Rice *const restrict rice)
 **/
 INLINE void
 codec_init(
-	/*@out@*/ struct Codec *const restrict codec,
-	const uint nchan
+	/*@out@*/ struct Codec *const restrict codec, const uint nchan
 )
 /*@modifies	*codec@*/
 {
@@ -198,22 +233,19 @@ codec_init(
 	return;
 }
 
-/**@fn state_priv_init
- * @brief initializes a private state struct
+/**@fn rice_init
+ * @brief initializes a 'struct Rice'
  *
- * @param priv[out] the private state struct
- * @param nchan number of audio channels
+ * @param rice[out] struct to initialize
 **/
 INLINE void
-state_priv_init(
-	/*@out@*/
-	struct LibTTAr_CodecState_Priv *const restrict priv,
-	const uint nchan
-)
-/*@modifies	*priv@*/
+rice_init(/*@out@*/ struct Rice *const restrict rice)
+/*@modifies	*rice@*/
 {
-	MEMSET(&priv->bitcache, 0x00, sizeof priv->bitcache);
-	codec_init((struct Codec *) &priv->codec, nchan);
+	rice->sum[0u] = (u32) 0x00004000u;	// binexp32p4((bitcnt) 10u)
+	rice->sum[1u] = (u32) 0x00004000u;	// ~
+	rice->k[0u]   = (bitcnt) 10u;
+	rice->k[1u]   = (bitcnt) 10u;
 	return;
 }
 

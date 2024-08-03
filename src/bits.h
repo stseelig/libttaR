@@ -16,16 +16,23 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-#undef bswap16
-#undef bswap32
-#undef bswap64
+typedef unsigned char	uchar;
+typedef unsigned int	uint;
 
-#undef letoh16
-#undef htole16
-#undef letoh32
-#undef htole32
-#undef letoh64
-#undef htole64
+typedef signed char	ichar;
+typedef long long	longlong;
+
+typedef  uint8_t	 u8;
+typedef uint16_t	u16;
+typedef uint32_t	u32;
+typedef uint64_t	u64;
+
+typedef   int8_t	 i8;
+typedef  int32_t	i32;
+
+typedef uint_fast8_t	 u8f;
+typedef uint_fast32_t	u32f;	// not currently used; for experimenting
+typedef uint_fast64_t	u64f;
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -166,24 +173,6 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-typedef unsigned char	uchar;
-typedef unsigned int	uint;
-
-typedef signed char	ichar;
-typedef long long	longlong;
-
-typedef  uint8_t	 u8;
-typedef uint16_t	u16;
-typedef uint32_t	u32;
-typedef uint64_t	u64;
-
-typedef   int8_t	 i8;
-typedef  int32_t	i32;
-
-typedef uint_fast64_t	u64f;
-
-//////////////////////////////////////////////////////////////////////////////
-
 // workaround for C99 not having max_align_t
 union max_alignment {
 	long long ll;
@@ -206,6 +195,17 @@ union max_alignment {
 ))
 
 //////////////////////////////////////////////////////////////////////////////
+
+#undef bswap16
+#undef bswap32
+#undef bswap64
+
+#undef letoh16
+#undef htole16
+#undef letoh32
+#undef htole32
+#undef letoh64
+#undef htole64
 
 ALWAYS_INLINE CONST u16 bswap16(u16) /*@*/;
 ALWAYS_INLINE CONST u32 bswap32(u32) /*@*/;

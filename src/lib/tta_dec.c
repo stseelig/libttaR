@@ -32,7 +32,7 @@ static size_t tta_decode_mch(
 	/*@out@*/ i32 *const dest, const u8 *,
 	u32 *restrict crc_out, /*@out@*/ size_t *restrict ni32_out,
 	struct BitCache *restrict bitcache, struct Codec *restrict codec,
-	size_t, size_t, u8, i32, u8, u32, uint
+	size_t, size_t, bitcnt, i32, bitcnt, rice24, uint
 #ifndef NDEBUG
 	, size_t
 #endif
@@ -56,7 +56,7 @@ static size_t tta_decode_1ch(
 	/*@out@*/ i32 *const dest, const u8 *,
 	u32 *restrict crc_out, /*@out@*/ size_t *restrict ni32_out,
 	struct BitCache *restrict bitcache, struct Codec *restrict codec,
-	size_t, size_t, u8, i32, u8, u32, uint
+	size_t, size_t, bitcnt, i32, bitcnt, rice24, uint
 #ifndef NDEBUG
 	, size_t
 #endif
@@ -80,7 +80,7 @@ static size_t tta_decode_2ch(
 	/*@out@*/ i32 *dest, const u8 *,
 	u32 *restrict crc_out, /*@out@*/ size_t *restrict ni32_out,
 	struct BitCache *restrict bitcache, struct Codec *restrict codec,
-	size_t, size_t, u8, i32, u8, u32, uint
+	size_t, size_t, bitcnt, i32, bitcnt, rice24, uint
 #ifndef NDEBUG
 	, size_t
 #endif
@@ -144,10 +144,10 @@ libttaR_tta_decode(
 {
 	int r = LIBTTAr_RET_AGAIN;
 	size_t nbytes_dec;
-	const  u8 predict_k    = get_predict_k(samplebytes);
-	const i32 filter_round = get_filter_round(samplebytes);
-	const  u8 filter_k     = get_filter_k(samplebytes);
-	const u32 unary_lax_limit    = get_unary_lax_limit(samplebytes);
+	const bitcnt predict_k    = get_predict_k(samplebytes);
+	const i32    filter_round = get_filter_round(samplebytes);
+	const bitcnt filter_k     = get_filter_k(samplebytes);
+	const rice24 unary_lax_limit = get_unary_lax_limit(samplebytes);
 	const size_t safety_margin   = get_safety_margin(samplebytes, nchan);
 	const size_t read_soft_limit = (nbytes_tta_target < safety_margin
 		? src_len - safety_margin : nbytes_tta_target
@@ -293,9 +293,9 @@ tta_decode_mch(
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
 	struct Codec *const restrict codec, const size_t ni32_target,
-	const size_t read_soft_limit, const u8 predict_k,
-	const i32 filter_round, const u8 filter_k, const u32 unary_lax_limit,
-	const uint nchan
+	const size_t read_soft_limit, const bitcnt predict_k,
+	const i32 filter_round, const bitcnt filter_k,
+	const rice24 unary_lax_limit, const uint nchan
 #ifndef NDEBUG
 	, const size_t rice_dec_max
 #endif
@@ -391,9 +391,9 @@ tta_decode_1ch(
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
 	struct Codec *const restrict codec, const size_t ni32_target,
-	const size_t read_soft_limit, const u8 predict_k,
-	const i32 filter_round, const u8 filter_k, const u32 unary_lax_limit,
-	UNUSED const uint nchan
+	const size_t read_soft_limit, const bitcnt predict_k,
+	const i32 filter_round, const bitcnt filter_k,
+	const rice24 unary_lax_limit, UNUSED const uint nchan
 #ifndef NDEBUG
 	, const size_t rice_dec_max
 #endif
@@ -471,9 +471,9 @@ tta_decode_2ch(
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache *const restrict bitcache,
 	struct Codec *const restrict codec, const size_t ni32_target,
-	const size_t read_soft_limit, const u8 predict_k,
-	const i32 filter_round, const u8 filter_k, const u32 unary_lax_limit,
-	UNUSED const uint nchan
+	const size_t read_soft_limit, const bitcnt predict_k,
+	const i32 filter_round, const bitcnt filter_k,
+	const rice24 unary_lax_limit, UNUSED const uint nchan
 #ifndef NDEBUG
 	, const size_t rice_dec_max
 #endif
