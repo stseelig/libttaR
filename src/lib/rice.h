@@ -851,7 +851,7 @@ rice_read_unary(
 	assert(*count <= (bitcnt) 8u);
 
 	nbit   = TBCNT8(*cache);
-	*unary = nbit;
+	*unary = (rice24) nbit;
 	if IMPROBABLE ( nbit == *count, 0.25 ){
 		do {	inbyte  = rice_crc32(src[nbytes_dec++], crc);
 			*cache  = (cache32) inbyte;
