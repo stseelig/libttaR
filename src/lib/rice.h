@@ -14,7 +14,6 @@
 
 #include <assert.h>
 #include <limits.h>	// tbcnt8_32 assert
-#include <stdbool.h>
 #include <stddef.h>	// size_t
 
 #include "../bits.h"
@@ -94,11 +93,24 @@ ALWAYS_INLINE CONST u8 tbcnt8(u8) /*@*/;
 
 #undef sum
 #undef k
-ALWAYS_INLINE void rice_update(u32 *restrict sum, u8 *restrict k, u32)
+ALWAYS_INLINE void rice_update_enc(
+	u32 *restrict sum, u8 *restrict k, u32,	const u32 *restrict
+)
 /*@modifies	*sum,
 		*k
 @*/
 ;
+
+#undef sum
+#undef k
+ALWAYS_INLINE void rice_update_dec(
+	u32 *restrict sum, u8 *restrict k, u32,	const u32 *restrict
+)
+/*@modifies	*sum,
+		*k
+@*/
+;
+//--------------------------------------------------------------------------//
 
 #undef crc
 ALWAYS_INLINE u8 rice_crc32(u8, u32 *restrict crc)
@@ -406,19 +418,21 @@ tbcnt8(const u8 x)
 
 //==========================================================================//
 
-/**@fn rice_update
- * @brief update the rice state
+/**@fn rice_update_enc
+ * @brief update the rice state; encode version
  *
  * @param sum[in out] rice->sum[]
  * @param k[in out] rice->k[]
  * @param value input value to code
+ * @param test_in[in] binexp32p4 comparison values
  *
  * @pre  *k <= (u8) 24u
  * @post *k <= (u8) 24u
 **/
 ALWAYS_INLINE void
-rice_update(
-	u32 *const restrict sum, u8 *const restrict k, const u32 value
+rice_update_enc(
+	u32 *const restrict sum, u8 *const restrict k, const u32 value,
+	const u32 *const restrict test_in
 )
 /*@modifies	*sum,
 		*k
@@ -428,7 +442,7 @@ rice_update(
 
 	assert(*k <= (u8) 24u);
 
-	MEMCPY(test, &binexp32p4_table[*k], sizeof test);
+	MEMCPY(test, test_in, sizeof test);
 
 	*sum += value - (*sum >> 4u);
 	if IMPROBABLE ( *sum < test[0u], 0.027 ){
@@ -441,6 +455,42 @@ rice_update(
 	assert(*k <= (u8) 24u);
 	return;
 }
+
+/**@fn rice_update_dec
+ * @brief update the rice state; decode version
+ *
+ * @param sum[in out] rice->sum[]
+ * @param k[in out] rice->k[]
+ * @param value input value to code
+ * @param test[in] binexp32p4 comparison values
+ *
+ * @pre  *k <= (u8) 24u
+ * @post *k <= (u8) 24u
+**/
+ALWAYS_INLINE void
+rice_update_dec(
+	u32 *const restrict sum, u8 *const restrict k, const u32 value,
+	const u32 *const restrict test
+)
+/*@modifies	*sum,
+		*k
+@*/
+{
+	assert(*k <= (u8) 24u);
+
+	*sum += value - (*sum >> 4u);
+	if IMPROBABLE ( *sum < test[0u], 0.027 ){
+		*k -= 1u;
+	}
+	else if IMPROBABLE ( *sum > test[1u], 0.027 ){
+		*k += 1u;
+	} else{;}
+
+	assert(*k <= (u8) 24u);
+	return;
+}
+
+//==========================================================================//
 
 /**@fn rice_crc32
  * @brief add a byte to a CRC
@@ -498,14 +548,17 @@ rice_encode(
 
 	u32 unary = 0, binary;
 	 u8 bin_k;
+	const u32 *test0, *test1;
 
 	// value + state
 	bin_k = *k0;
-	rice_update(sum0, k0, value);
+	test0 = &binexp32p4_table[*k0];
+	rice_update_enc(sum0, k0, value, test0);
 	if PROBABLE ( value >= binexp32(bin_k), 0.575 ){
 		value -= binexp32(bin_k);
 		bin_k  = *k1;
-		rice_update(sum1, k1, value);
+		test1  = &binexp32p4_table[*k1];
+		rice_update_enc(sum1, k1, value, test1);
 		unary  = (value >> bin_k) + 1u;
 	}
 
@@ -698,7 +751,6 @@ rice_write_cache(
  * @note max read size (unary + binary):
  *     8/16-bit :   37u
  *       24-bit : 4101u
- * @note affected by LIBTTAr_OPT_DISABLE_PREFETCHING
 **/
 ALWAYS_INLINE size_t
 rice_decode(
@@ -722,7 +774,7 @@ rice_decode(
 
 	u32 unary, binary;
 	 u8 bin_k;
-	bool depth1;
+	const u32 *test0, *test1 = NULL;
 
 	// unary
 	nbytes_dec = rice_read_unary(
@@ -731,13 +783,10 @@ rice_decode(
 	if PROBABLE ( unary != 0, 0.575 ){
 		unary  -= 1u;
 		bin_k   = *k1;
-		depth1  = true;
-		PREFETCH(&binexp32p4_table[*k1], 0, 3);
+		test1   = &binexp32p4_table[*k1];
 	}
-	else {	bin_k   = *k0;
-		depth1  = false;
-	}
-	PREFETCH(&binexp32p4_table[*k0], 0, 3);
+	else {	bin_k   = *k0; }
+	test0 = &binexp32p4_table[*k0];
 
 	// binary
 	nbytes_dec = rice_read_binary(
@@ -746,11 +795,11 @@ rice_decode(
 
 	// value + state
 	*value = (unary << bin_k) + binary;
-	if PROBABLE ( depth1, 0.575 ){
-		rice_update(sum1, k1, *value);
+	if PROBABLE ( test1 != NULL, 0.575 ){
+		rice_update_dec(sum1, k1, *value, test1);
 		*value += binexp32(*k0);
 	}
-	rice_update(sum0, k0, *value);
+	rice_update_dec(sum0, k0, *value, test0);
 
 	return nbytes_dec;
 }

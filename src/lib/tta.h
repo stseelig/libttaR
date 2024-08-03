@@ -58,6 +58,7 @@ INLINE CONST u8 get_filter_k(enum TTASampleBytes) /*@*/;
 
 //--------------------------------------------------------------------------//
 
+ALWAYS_INLINE CONST i32 signof32(i32) /*@*/;
 ALWAYS_INLINE CONST i32 asl32(i32, u8) /*@*/;
 ALWAYS_INLINE CONST i32 asr32(i32, u8) /*@*/;
 
@@ -70,9 +71,12 @@ INLINE CONST i32 tta_prefilter_dec(i32) /*@*/;
 //--------------------------------------------------------------------------//
 
 #undef filter
-ALWAYS_INLINE i32 tta_filter(
-	struct Filter *restrict filter, i32, u8, i32, enum TTAMode
-)
+ALWAYS_INLINE i32 tta_filter_enc(struct Filter *restrict filter, i32, i32, u8)
+/*@modifies	*filter@*/
+;
+
+#undef filter
+ALWAYS_INLINE i32 tta_filter_dec(struct Filter *restrict filter, i32, i32, u8)
 /*@modifies	*filter@*/
 ;
 
@@ -176,7 +180,19 @@ get_filter_k(const enum TTASampleBytes samplebytes)
 
 //==========================================================================//
 
-// shifting signed integers is naughty (implementation defined)
+/**@fn signof32
+ * @brief get the sign of a 32-bit integer
+ *
+ * @param x input value
+ *
+ * @retval -1, 1, or 0
+**/
+ALWAYS_INLINE CONST i32
+signof32(const i32 x)
+/*@*/
+{
+	return (x != 0 ? (x < 0 ? (i32) -1 : (i32) 1) : 0);
+}
 
 /**@fn asl32
  * @brief arithmetic shift left 32-bit
@@ -270,85 +286,101 @@ tta_prefilter_dec(const i32 x)
 
 //==========================================================================//
 
-/**@fn tta_filter
- * @brief adaptive hybrid filter
+/**@fn tta_filter_enc
+ * @brief adaptive encoding filter
  *
  * @param filter[in out] the filter data for the current channel
+ * @param value the input value to filter
  * @param sum intial sum / round
  * @param k amount to shift the 'sum' by before add/subtract-ing from 'value'
- * @param value the input value to filter
- * @param mode encode or decode
  *
  * @return the filtered value
- *
- * @note affected by LIBTTAr_OPT_DISABLE_BRANCHLESS_FILTER
 **/
 ALWAYS_INLINE i32
-tta_filter(
-	struct Filter *const restrict filter, i32 sum, const u8 k, i32 value,
-	const enum TTAMode mode
+tta_filter_enc(
+	struct Filter *const restrict filter, i32 value, i32 sum, const u8 k
 )
 /*@modifies	*filter@*/
 {
-	i32 *const restrict a = filter->qm;
-	i32 *const restrict m = filter->dx;
-	i32 *const restrict b = filter->dl;
+	i32 *const restrict a =  filter->qm;
+	i32 *const restrict m =  filter->dx;
+	i32 *const restrict b =  filter->dl;
+	i32 *const restrict e = &filter->error;
 
-#ifndef LIBTTAr_OPT_DISABLE_BRANCHLESS_FILTER
-	const i32 e = (filter->error != 0
-		? (filter->error < 0 ? (i32) -1 : (i32) 1) : 0
-	);
-#endif
-	uint i;
+	const i32 sign = e[0u];
 
-	// for-loops SIMD better than unrolled
-#ifndef LIBTTAr_OPT_DISABLE_BRANCHLESS_FILTER
-	for ( i = 0; i < 8u; ++i ){
-		sum += (a[i] += m[i] * e) * b[i];
-	}
-#else
-	// there is a compiler quirk where putting the ==0 branch !first slows
-	//   everything down considerably. it adds an branch or two to reduce
-	//   code size a bit, but that is just slower. logically, the ==0
-	//   branch should be last, because it is the least likely to happen
-	//   (main exception being silence)
-	if ( filter->error == 0 ){
-		for ( i = 0; i < 8u; ++i ){
-			sum += a[i] * b[i];
-		}
-	}
-	else if ( filter->error < 0 ){
-		for ( i = 0; i < 8u; ++i ){
-			sum += (a[i] -= m[i]) * b[i];
-		}
-	}
-	else {	// filter->error > 0
-		for ( i = 0; i < 8u; ++i ){
-			sum += (a[i] += m[i]) * b[i];
-		}
-	}
-#endif
-	m[8u] = (i32) ((((u32) asr32(b[7u], (u8) 30u)) | 0x1u) << 2u);
-	m[7u] = (i32) ((((u32) asr32(b[6u], (u8) 30u)) | 0x1u) << 1u);
-	m[6u] = (i32) ((((u32) asr32(b[5u], (u8) 30u)) | 0x1u) << 1u);
-	m[5u] = (i32) ((((u32) asr32(b[4u], (u8) 30u)) | 0x1u) << 0u);
+	sum   += (a[0u] += m[0u] * sign) * b[0u];
+	sum   += (a[1u] += m[1u] * sign) * b[1u];
+	sum   += (a[2u] += m[2u] * sign) * b[2u];
+	sum   += (a[3u] += m[3u] * sign) * b[3u];
+	sum   += (a[4u] += m[4u] * sign) * b[4u];
+	sum   += (a[5u] += m[5u] * sign) * b[5u];
+	sum   += (a[6u] += m[6u] * sign) * b[6u];
+	sum   += (a[7u] += m[7u] * sign) * b[7u];
 
-	switch ( mode ){
-	case TTA_ENC:
-		b[8u]         = value;
-		value        -= asr32(sum, k);
-		filter->error = value;
-		break;
-	case TTA_DEC:
-		filter->error = value;
-		value        += asr32(sum, k);
-		b[8u]         = value;
-		break;
-	}
+	m[8u]  = (i32) ((((u32) asr32(b[7u], (u8) 30u)) | 0x1u) << 2u);
+	m[7u]  = (i32) ((((u32) asr32(b[6u], (u8) 30u)) | 0x1u) << 1u);
+	m[6u]  = (i32) ((((u32) asr32(b[5u], (u8) 30u)) | 0x1u) << 1u);
+	m[5u]  = (i32) ((((u32) asr32(b[4u], (u8) 30u)) | 0x1u) << 0u);
 
-	b[7u] = b[8u] - b[7u];
-	b[6u] = b[7u] - b[6u];
-	b[5u] = b[6u] - b[5u];
+	b[8u]  = value;
+	b[7u]  = b[8u] - b[7u];
+	b[6u]  = b[7u] - b[6u];
+	b[5u]  = b[6u] - b[5u];
+
+	value -= asr32(sum, k);
+	e[0u]  = signof32(value);
+
+	MEMMOVE(m, &m[1u], (size_t) (8u*(sizeof *m)));
+	MEMMOVE(b, &b[1u], (size_t) (8u*(sizeof *b)));
+
+	return value;
+}
+
+/**@fn tta_filter_dec
+ * @brief adaptive decoding filter
+ *
+ * @param filter[in out] the filter data for the current channel
+ * @param value the input value to filter
+ * @param sum intial sum / round
+ * @param k amount to shift the 'sum' by before add/subtract-ing from 'value'
+ *
+ * @return the filtered value
+**/
+ALWAYS_INLINE i32
+tta_filter_dec(
+	struct Filter *const restrict filter, i32 value, i32 sum, const u8 k
+)
+/*@modifies	*filter@*/
+{
+	i32 *const restrict a =  filter->qm;
+	i32 *const restrict m =  filter->dx;
+	i32 *const restrict b =  filter->dl;
+	i32 *const restrict e = &filter->error;
+
+	const i32 sign = signof32(e[0u]);
+
+	sum   += (a[0u] += m[0u] * sign) * b[0u];
+	sum   += (a[1u] += m[1u] * sign) * b[1u];
+	sum   += (a[2u] += m[2u] * sign) * b[2u];
+	sum   += (a[3u] += m[3u] * sign) * b[3u];
+	sum   += (a[4u] += m[4u] * sign) * b[4u];
+	sum   += (a[5u] += m[5u] * sign) * b[5u];
+	sum   += (a[6u] += m[6u] * sign) * b[6u];
+	sum   += (a[7u] += m[7u] * sign) * b[7u];
+
+	e[0u]  = value;
+	value += asr32(sum, k);
+	b[8u]  = value;
+
+	m[8u]  = (i32) ((((u32) asr32(b[7u], (u8) 30u)) | 0x1u) << 2u);
+	m[7u]  = (i32) ((((u32) asr32(b[6u], (u8) 30u)) | 0x1u) << 1u);
+	m[6u]  = (i32) ((((u32) asr32(b[5u], (u8) 30u)) | 0x1u) << 1u);
+	m[5u]  = (i32) ((((u32) asr32(b[4u], (u8) 30u)) | 0x1u) << 0u);
+
+	b[7u]  = b[8u] - b[7u];
+	b[6u]  = b[7u] - b[6u];
+	b[5u]  = b[6u] - b[5u];
 
 	MEMMOVE(m, &m[1u], (size_t) (8u*(sizeof *m)));
 	MEMMOVE(b, &b[1u], (size_t) (8u*(sizeof *b)));

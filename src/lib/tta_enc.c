@@ -320,9 +320,8 @@ tta_encode_mch(
 			codec[j].prev = prev;
 
 			// filter
-			curr = tta_filter(
-				&codec[j].filter, filter_round, filter_k,
-				curr, TTA_ENC
+			curr = tta_filter_enc(
+				&codec[j].filter, curr, filter_round, filter_k
 			);
 			curr = tta_postfilter_enc(curr);
 
@@ -400,8 +399,8 @@ tta_encode_1ch(
 		codec->prev = prev;
 
 		// filter
-		curr = tta_filter(
-			&codec->filter, filter_round, filter_k, curr, TTA_ENC
+		curr = tta_filter_enc(
+			&codec->filter, curr, filter_round, filter_k
 		);
 		curr = tta_postfilter_enc(curr);
 
@@ -479,9 +478,8 @@ tta_encode_2ch(
 		codec[0u].prev = prev;
 
 		// filter
-		curr = tta_filter(
-			&codec[0u].filter, filter_round, filter_k, curr,
-			TTA_ENC
+		curr = tta_filter_enc(
+			&codec[0u].filter, curr, filter_round, filter_k
 		);
 		curr = tta_postfilter_enc(curr);
 
@@ -504,9 +502,8 @@ tta_encode_2ch(
 		codec[1u].prev = prev;
 
 		// filter
-		curr = tta_filter(
-			&codec[1u].filter, filter_round, filter_k, curr,
-			TTA_ENC
+		curr = tta_filter_enc(
+			&codec[1u].filter, curr, filter_round, filter_k
 		);
 		curr = tta_postfilter_enc(curr);
 

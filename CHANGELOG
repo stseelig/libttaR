@@ -1,11 +1,14 @@
 
 # libttaR ####################################################################
 
+1.2.6 (2024-08-03):-----------------------------------------------------------
+
+	- performance improvements (rice decoder and filter)
+	- removed some compile option symbols
+
 1.2.5 (2024-08-02):-----------------------------------------------------------
 
 	- performance improvements (rice coder)
-		- builtin memcpy
-		- prefetching (decoder only)
 	- new and renamed compile option symbols
 
 1.2.4 (2024-08-01):-----------------------------------------------------------

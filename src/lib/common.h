@@ -21,11 +21,6 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-enum TTAMode {
-	TTA_ENC,
-	TTA_DEC
-};
-
 enum TTASampleBytes {
 	TTASAMPLEBYTES_1 = 1u,
 	TTASAMPLEBYTES_2 = 2u,
@@ -64,8 +59,6 @@ enum TTASampleBytes {
 //#define BUILTIN_MEMSET_INLINE		__builtin_memset_inline
 #define BUILTIN_MEMSET			__builtin_memset
 
-#define BUILTIN_PREFETCH		__builtin_prefetch
-
 #else // !defined(__GNUC__)
 
 #define BUILTIN_TZCNT32			0
@@ -77,8 +70,6 @@ enum TTASampleBytes {
 #define BUILTIN_MEMMOVE			0
 #define BUILTIN_MEMSET_INLINE		0
 #define BUILTIN_MEMSET			0
-
-#define BUILTIN_PREFETCH		0
 
 #endif
 
@@ -126,19 +117,6 @@ enum TTASampleBytes {
 #define MEMSET(s, c, n)		memset((s), (c), (n))
 #endif
 
-//==========================================================================//
-
-#ifndef LIBTTAr_OPT_DISABLE_PREFETCHING
-#if HAS_BUILTIN(BUILTIN_PREFETCH)
-#define PREFETCH(...)	__builtin_prefetch(__VA_ARGS__)
-#else
-#pragma message "compiler does not have a builtin 'prefetch'"
-#define PREFETCH(...)
-#endif
-#else
-#define PREFETCH(...)
-#endif
-
 //////////////////////////////////////////////////////////////////////////////
 
 struct BitCache {
@@ -154,10 +132,10 @@ struct Rice {
 };
 
 struct Filter {
-	i32	error;
 	i32	qm[8u];
 	i32	dx[9u];	// the extra value is for a memmove trick
 	i32	dl[9u];	// ~
+	i32	error;	// enc: sign of the error, dec: full error
 };
 
 struct Codec {

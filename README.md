@@ -31,12 +31,6 @@ LIBTTAr_OPT_DISABLE_MCH\
 LIBTTAr_OPT_PREFER_LOOKUP_TABLES\
 	makes some operations use lookup tables
 
-LIBTTAr_OPT_DISABLE_BRANCHLESS_FILTER\
-	uses code that is not as SIMD friendly
-
-LIBTTAr_OPT_DISABLE_PREFETCHING (decode only)\
-	disables prefetch builtin
-
 ## Basic Usage
 $ ttaR encode file.(wav|w64)\
 $ ttaR decode file.tta

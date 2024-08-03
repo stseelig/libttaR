@@ -335,9 +335,8 @@ tta_decode_mch(
 
 			// filter
 			curr = tta_prefilter_dec(curr);
-			curr = tta_filter(
-				&codec[j].filter, filter_round, filter_k,
-				curr, TTA_DEC
+			curr = tta_filter_dec(
+				&codec[j].filter, curr, filter_round, filter_k
 			);
 
 			// predict
@@ -428,8 +427,8 @@ tta_decode_1ch(
 
 		// filter
 		curr = tta_prefilter_dec(curr);
-		curr = tta_filter(
-			&codec->filter, filter_round, filter_k, curr, TTA_DEC
+		curr = tta_filter_dec(
+			&codec->filter, curr, filter_round, filter_k
 		);
 
 		// predict
@@ -508,9 +507,8 @@ tta_decode_2ch(
 
 		// filter
 		curr = tta_prefilter_dec(curr);
-		curr = tta_filter(
-			&codec[0u].filter, filter_round, filter_k, curr,
-			TTA_DEC
+		curr = tta_filter_dec(
+			&codec[0u].filter, curr, filter_round, filter_k
 		);
 
 		// predict
@@ -532,9 +530,8 @@ tta_decode_2ch(
 
 		// filter
 		curr = tta_prefilter_dec(curr);
-		curr = tta_filter(
-			&codec[1u].filter, filter_round, filter_k, curr,
-			TTA_DEC
+		curr = tta_filter_dec(
+			&codec[1u].filter, curr, filter_round, filter_k
 		);
 
 		// predict
