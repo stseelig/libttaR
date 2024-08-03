@@ -135,7 +135,7 @@ get_predict_k(const enum TTASampleBytes samplebytes)
  *
  * @param samplebytes number of bytes per PCM sample
  *
- * @return arg 'sum' for tta_filter
+ * @return arg 'round' for tta_filter
 **/
 INLINE CONST i32
 get_filter_round(const enum TTASampleBytes samplebytes)
@@ -291,14 +291,14 @@ tta_prefilter_dec(const i32 x)
  *
  * @param filter[in out] the filter data for the current channel
  * @param value the input value to filter
- * @param sum intial sum / round
- * @param k amount to shift the 'sum' by before add/subtract-ing from 'value'
+ * @param round the intial filter sum
+ * @param k amount to shift the sum by before subtracting from 'value'
  *
  * @return the filtered value
 **/
 ALWAYS_INLINE i32
 tta_filter_enc(
-	struct Filter *const restrict filter, i32 value, i32 sum, const u8 k
+	struct Filter *const restrict filter, i32 value, i32 round, const u8 k
 )
 /*@modifies	*filter@*/
 {
@@ -309,14 +309,14 @@ tta_filter_enc(
 
 	const i32 sign = e[0u];
 
-	sum   += (a[0u] += m[0u] * sign) * b[0u];
-	sum   += (a[1u] += m[1u] * sign) * b[1u];
-	sum   += (a[2u] += m[2u] * sign) * b[2u];
-	sum   += (a[3u] += m[3u] * sign) * b[3u];
-	sum   += (a[4u] += m[4u] * sign) * b[4u];
-	sum   += (a[5u] += m[5u] * sign) * b[5u];
-	sum   += (a[6u] += m[6u] * sign) * b[6u];
-	sum   += (a[7u] += m[7u] * sign) * b[7u];
+	round += (a[0u] += m[0u] * sign) * b[0u];
+	round += (a[1u] += m[1u] * sign) * b[1u];
+	round += (a[2u] += m[2u] * sign) * b[2u];
+	round += (a[3u] += m[3u] * sign) * b[3u];
+	round += (a[4u] += m[4u] * sign) * b[4u];
+	round += (a[5u] += m[5u] * sign) * b[5u];
+	round += (a[6u] += m[6u] * sign) * b[6u];
+	round += (a[7u] += m[7u] * sign) * b[7u];
 
 	m[8u]  = (i32) ((((u32) asr32(b[7u], (u8) 30u)) | 0x1u) << 2u);
 	m[7u]  = (i32) ((((u32) asr32(b[6u], (u8) 30u)) | 0x1u) << 1u);
@@ -328,7 +328,7 @@ tta_filter_enc(
 	b[6u]  = b[7u] - b[6u];
 	b[5u]  = b[6u] - b[5u];
 
-	value -= asr32(sum, k);
+	value -= asr32(round, k);
 	e[0u]  = signof32(value);
 
 	MEMMOVE(m, &m[1u], (size_t) (8u*(sizeof *m)));
@@ -342,14 +342,14 @@ tta_filter_enc(
  *
  * @param filter[in out] the filter data for the current channel
  * @param value the input value to filter
- * @param sum intial sum / round
- * @param k amount to shift the 'sum' by before add/subtract-ing from 'value'
+ * @param round the intial filter sum
+ * @param k amount to shift the sum by before adding to 'value'
  *
  * @return the filtered value
 **/
 ALWAYS_INLINE i32
 tta_filter_dec(
-	struct Filter *const restrict filter, i32 value, i32 sum, const u8 k
+	struct Filter *const restrict filter, i32 value, i32 round, const u8 k
 )
 /*@modifies	*filter@*/
 {
@@ -360,17 +360,17 @@ tta_filter_dec(
 
 	const i32 sign = signof32(e[0u]);
 
-	sum   += (a[0u] += m[0u] * sign) * b[0u];
-	sum   += (a[1u] += m[1u] * sign) * b[1u];
-	sum   += (a[2u] += m[2u] * sign) * b[2u];
-	sum   += (a[3u] += m[3u] * sign) * b[3u];
-	sum   += (a[4u] += m[4u] * sign) * b[4u];
-	sum   += (a[5u] += m[5u] * sign) * b[5u];
-	sum   += (a[6u] += m[6u] * sign) * b[6u];
-	sum   += (a[7u] += m[7u] * sign) * b[7u];
+	round += (a[0u] += m[0u] * sign) * b[0u];
+	round += (a[1u] += m[1u] * sign) * b[1u];
+	round += (a[2u] += m[2u] * sign) * b[2u];
+	round += (a[3u] += m[3u] * sign) * b[3u];
+	round += (a[4u] += m[4u] * sign) * b[4u];
+	round += (a[5u] += m[5u] * sign) * b[5u];
+	round += (a[6u] += m[6u] * sign) * b[6u];
+	round += (a[7u] += m[7u] * sign) * b[7u];
 
 	e[0u]  = value;
-	value += asr32(sum, k);
+	value += asr32(round, k);
 	b[8u]  = value;
 
 	m[8u]  = (i32) ((((u32) asr32(b[7u], (u8) 30u)) | 0x1u) << 2u);
