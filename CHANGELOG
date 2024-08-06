@@ -1,6 +1,12 @@
 
 # libttaR ####################################################################
 
+1.2.7 (2024-08-XX):-----------------------------------------------------------
+
+	- performance improvements (encoder and decoder)
+	- more debug asserts
+	- new compile option symbols
+
 1.2.6 (2024-08-03):-----------------------------------------------------------
 
 	- performance improvements (rice decoder and filter)

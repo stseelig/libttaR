@@ -17,6 +17,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #define CRC32_INIT	((u32) 0xFFFFFFFFu)
+#define CRC32_FINI(x)	(~(x))
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -39,24 +40,42 @@ crc32_cont(const u8 x, const u32 crc)
 {
 	// having the variable instead of just having a one line return is
 	//   important. otherwise it does (on x86) a xor against memory, which
-	//   can be much slower (I think it has something to do with
-	//   dependency chains and pipelining). probably a compiler bug
+	//   can be much slower (I think it has to do with dependency chains
+	//   and pipelining). probably a compiler bug
 	register const u32 lookup = crc32_table[((u8) crc) ^ x];
 	return (u32) ((crc >> 8u) ^ lookup);
 }
 
-/**@fn crc32_end
- * @brief end a CRC calculation
+/**@fn crc32_cont_enc
+ * @brief continue a CRC calculation; encode version
  *
+ * @param x the byte to add to the CRC
  * @param crc the current CRC
  *
- * @return the finished CRC
+ * @return the updated CRC
 **/
-ALWAYS_INLINE CONST u32
-crc32_end(const u32 crc)
+ALWAYS_INLINE CONST crc32_enc
+crc32_cont_enc(const u8 x, const crc32_enc crc)
 /*@*/
 {
-	return ~crc;
+	register const u32 lookup = crc32_table[((u8) crc) ^ x];
+	return (crc32_enc) ((crc >> 8u) ^ lookup);
+}
+
+/**@fn crc32_cont_dec
+ * @brief continue a CRC calculation; decode version
+ *
+ * @param x the byte to add to the CRC
+ * @param crc the current CRC
+ *
+ * @return the updated CRC
+**/
+ALWAYS_INLINE CONST crc32_dec
+crc32_cont_dec(const u8 x, const crc32_dec crc)
+/*@*/
+{
+	register const u32 lookup = crc32_table[((u8) crc) ^ x];
+	return (crc32_dec) ((crc >> 8u) ^ lookup);
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////

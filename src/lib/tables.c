@@ -12,7 +12,7 @@
 
 #include "../bits.h"
 
-#include "common.h"	// TBCNT8_TEST
+#include "common.h"	// TBCNT8_TABLE
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -34,6 +34,7 @@ HIDDEN const u32 binexp32p4_table[26u] = {
 (u32) 0x10000000u, (u32) 0xFFFFFFFFu
 };
 
+#ifdef LIBTTAr_OPT_PREFER_LOOKUP_TABLES
 /**@var lsmask32_table
  * @brief least significant mask 32-bit lookup table
 **/
@@ -48,8 +49,9 @@ HIDDEN const u32 lsmask32_table[32u] = {
 (u32) 0x00FFFFFFu, (u32) 0x01FFFFFFu, (u32) 0x03FFFFFFu, (u32) 0x07FFFFFFu,
 (u32) 0x0FFFFFFFu, (u32) 0x1FFFFFFFu, (u32) 0x3FFFFFFFu, (u32) 0x7FFFFFFFu
 };
+#endif // LIBTTAr_OPT_PREFER_LOOKUP_TABLES
 
-#if TBCNT8_TEST
+#ifdef TBCNT8_TABLE
 /**@var tbcnt8_table
  * @brief trailing bit count 8-bit lookup table
 **/
@@ -88,7 +90,7 @@ HIDDEN const u8 tbcnt8_table[256u] = {
 (u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 3u,
 (u8) 0u, (u8) 1u, (u8) 0u, (u8) 2u, (u8) 0u, (u8) 1u, (u8) 0u, (u8) 8u	// FF
 };
-#endif
+#endif // TBCNT8_TABLE
 
 /**@var crc32_table
  * @brief CRC lookup table for Sarwate's method

@@ -3,6 +3,8 @@ Tau's True Audio (TTA) codec rewrite
 
 ## What is TTA?
 TTA is a lossless audio codec designed around realtime hardware coding.
+The codec has no tunable parameters, and each input produces a unique output.
+It supports 8, 16, and 24-bit PCM.
 
 http://tausoft.org/wiki/True_Audio_Codec_Overview
 
@@ -14,9 +16,20 @@ I recommend compiling with clang.
 ### Platforms
 The library is platform agnostic, but the program uses a lot of POSIX stuff.
 
+I have only tested on Linux.
+
+### Processors
+The codec greatly benefits from 256-bit (specifically 8*i32) wide SIMD,
+and clang does a fairly good job targeting it.
+
+While developing, I mostly tested on:
+
+	- AMD Ryzen 7 1700    (primary tuning)\
+	- Intel Celeron N2830 (secondary tuning)
+
 ### Defines
 NDEBUG\
-	removes debug assertions
+	disables all debug assertions
 
 LIBTTAr_OPT_DISABLE_UNROLLED_1CH\
 	disables the unrolled mono loop
@@ -27,13 +40,16 @@ LIBTTAr_OPT_DISABLE_UNROLLED_2CH\
 LIBTTAr_OPT_DISABLE_MCH\
 	disables the general/multichannel loop
 
-#### Old/Weak CPU
-LIBTTAr_OPT_PREFER_LOOKUP_TABLES\
-	makes some operations use lookup tables
+LIBTTAr_OPT_SLOW_CPU\
+	for weak and/or old CPUs (specifically the Intel Celeron N2830)\
+	fine-grained suboptions in 'src/lib/common.h'
 
 ## Basic Usage
 $ ttaR encode file.(wav|w64)\
 $ ttaR decode file.tta
+
+By default, ttaR will multithread with the number of coder threads equal to
+the number of online processors.
 
 Read the man page (./man/ttaR.1) for a full list of the options.
 

@@ -24,21 +24,21 @@
 
 #ifndef LIBTTAr_OPT_DISABLE_MCH
 #undef dest
-#undef crc_out
+#undef crc_inout
 #undef ni32_out
 #undef bitcache
 #undef codec
 static size_t tta_decode_mch(
 	/*@out@*/ i32 *const dest, const u8 *,
-	u32 *restrict crc_out, /*@out@*/ size_t *restrict ni32_out,
-	struct BitCache *restrict bitcache, struct Codec *restrict codec,
-	size_t, size_t, bitcnt, i32, bitcnt, rice24, uint
+	u32 *restrict crc_inout, /*@out@*/ size_t *restrict ni32_out,
+	struct BitCache_Dec *restrict bitcache, struct Codec *restrict codec,
+	size_t, size_t, bitcnt, i32, bitcnt, rice24_dec, uint
 #ifndef NDEBUG
 	, size_t
 #endif
 )
 /*@modifies	*dest,
-		*crc_out,
+		*crc_inout,
 		*ni32_out,
 		*bitcache,
 		*codec
@@ -48,21 +48,21 @@ static size_t tta_decode_mch(
 
 #ifndef LIBTTAr_OPT_DISABLE_UNROLLED_1CH
 #undef dest
-#undef crc_out
+#undef crc_inout
 #undef ni32_out
 #undef bitcache
 #undef codec
 static size_t tta_decode_1ch(
 	/*@out@*/ i32 *const dest, const u8 *,
-	u32 *restrict crc_out, /*@out@*/ size_t *restrict ni32_out,
-	struct BitCache *restrict bitcache, struct Codec *restrict codec,
-	size_t, size_t, bitcnt, i32, bitcnt, rice24, uint
+	u32 *restrict crc_inout, /*@out@*/ size_t *restrict ni32_out,
+	struct BitCache_Dec *restrict bitcache, struct Codec *restrict codec,
+	size_t, size_t, bitcnt, i32, bitcnt, rice24_dec, uint
 #ifndef NDEBUG
 	, size_t
 #endif
 )
 /*@modifies	*dest,
-		*crc_out,
+		*crc_inout,
 		*ni32_out,
 		*bitcache,
 		*codec
@@ -72,21 +72,21 @@ static size_t tta_decode_1ch(
 
 #ifndef LIBTTAr_OPT_DISABLE_UNROLLED_2CH
 #undef dest
-#undef crc_out
+#undef crc_inout
 #undef ni32_out
 #undef bitcache
 #undef codec
 static size_t tta_decode_2ch(
 	/*@out@*/ i32 *dest, const u8 *,
-	u32 *restrict crc_out, /*@out@*/ size_t *restrict ni32_out,
-	struct BitCache *restrict bitcache, struct Codec *restrict codec,
-	size_t, size_t, bitcnt, i32, bitcnt, rice24, uint
+	u32 *restrict crc_inout, /*@out@*/ size_t *restrict ni32_out,
+	struct BitCache_Dec *restrict bitcache, struct Codec *restrict codec,
+	size_t, size_t, bitcnt, i32, bitcnt, rice24_dec, uint
 #ifndef NDEBUG
 	, size_t
 #endif
 )
 /*@modifies	*dest,
-		*crc_out,
+		*crc_inout,
 		*ni32_out,
 		*bitcache,
 		*codec
@@ -147,7 +147,7 @@ libttaR_tta_decode(
 	const bitcnt predict_k    = get_predict_k(samplebytes);
 	const i32    filter_round = get_filter_round(samplebytes);
 	const bitcnt filter_k     = get_filter_k(samplebytes);
-	const rice24 unary_lax_limit = get_unary_lax_limit(samplebytes);
+	const rice24_dec unary_lax_limit = get_unary_lax_limit(samplebytes);
 	const size_t safety_margin   = get_safety_margin(samplebytes, nchan);
 	const size_t read_soft_limit = (nbytes_tta_target < safety_margin
 		? src_len - safety_margin : nbytes_tta_target
@@ -202,9 +202,10 @@ libttaR_tta_decode(
 #ifndef LIBTTAr_OPT_DISABLE_UNROLLED_1CH
 	case 1u:
 		nbytes_dec = tta_decode_1ch(
-			dest, src, &user->crc, &user->ni32, &priv->bitcache,
-			priv->codec, ni32_target, read_soft_limit, predict_k,
-			filter_round, filter_k, unary_lax_limit, nchan
+			dest, src, &user->crc, &user->ni32,
+			&priv->bitcache.dec, priv->codec, ni32_target,
+			read_soft_limit, predict_k, filter_round, filter_k,
+			unary_lax_limit, nchan
 #ifndef NDEBUG
 			, rice_dec_max
 #endif
@@ -214,9 +215,10 @@ libttaR_tta_decode(
 #ifndef LIBTTAr_OPT_DISABLE_UNROLLED_2CH
 	case 2u:
 		nbytes_dec = tta_decode_2ch(
-			dest, src, &user->crc, &user->ni32, &priv->bitcache,
-			priv->codec, ni32_target, read_soft_limit, predict_k,
-			filter_round, filter_k, unary_lax_limit, nchan
+			dest, src, &user->crc, &user->ni32,
+			&priv->bitcache.dec, priv->codec, ni32_target,
+			read_soft_limit, predict_k, filter_round, filter_k,
+			unary_lax_limit, nchan
 #ifndef NDEBUG
 			, rice_dec_max
 #endif
@@ -226,9 +228,10 @@ libttaR_tta_decode(
 	default:
 #ifndef LIBTTAr_OPT_DISABLE_MCH
 		nbytes_dec = tta_decode_mch(
-			dest, src, &user->crc, &user->ni32, &priv->bitcache,
-			priv->codec, ni32_target, read_soft_limit, predict_k,
-			filter_round, filter_k, unary_lax_limit, nchan
+			dest, src, &user->crc, &user->ni32,
+			&priv->bitcache.dec, priv->codec, ni32_target,
+			read_soft_limit, predict_k, filter_round, filter_k,
+			unary_lax_limit, nchan
 #ifndef NDEBUG
 			, rice_dec_max
 #endif
@@ -253,7 +256,7 @@ libttaR_tta_decode(
 	    ||
 	     (user->nbytes_tta_total > nbytes_tta_perframe)
 	){
-		user->crc       = crc32_end(user->crc);
+		user->crc       = CRC32_FINI(user->crc);
 		r = (user->nbytes_tta_total == nbytes_tta_perframe
 			? LIBTTAr_RET_DONE : LIBTTAr_RET_DECFAIL
 		);
@@ -270,7 +273,7 @@ libttaR_tta_decode(
  *
  * @param dest[out] destination buffer
  * @param src[in] source buffer
- * @param crc_out[in out] the current CRC
+ * @param crc_inout[in out] the current CRC
  * @param ni32_out[out] 'user'->ni32
  * @param bitcache[in out] the bitcache data
  * @param codec[in out] the codec struct array
@@ -289,27 +292,28 @@ libttaR_tta_decode(
 static size_t
 tta_decode_mch(
 	/*@out@*/ i32 *const dest, const u8 *const src,
-	u32 *const restrict crc_out,
+	u32 *const restrict crc_inout,
 	/*@out@*/ size_t *const restrict ni32_out,
-	struct BitCache *const restrict bitcache,
+	struct BitCache_Dec *const restrict bitcache,
 	struct Codec *const restrict codec, const size_t ni32_target,
 	const size_t read_soft_limit, const bitcnt predict_k,
 	const i32 filter_round, const bitcnt filter_k,
-	const rice24 unary_lax_limit, const uint nchan
+	const rice24_dec unary_lax_limit, const uint nchan
 #ifndef NDEBUG
 	, const size_t rice_dec_max
 #endif
 )
 /*@modifies	*dest,
-		*crc_out,
+		*crc_inout,
 		*ni32_out,
 		*bitcache,
 		*codec
 @*/
 {
 	size_t nbytes_dec = 0;
-	u32 crc = *crc_out;
-	i32 curr, prev;
+	crc32_dec crc = (crc32_dec) *crc_inout;
+	union { i32 i; u32 u; } curr;
+	i32 prev;
 	size_t i;
 	uint j;
 #ifndef NDEBUG
@@ -327,39 +331,39 @@ tta_decode_mch(
 			nbytes_old = nbytes_dec;
 #endif
 			nbytes_dec = rice_decode(
-				(u32 *) &curr, src, nbytes_dec,
-				&codec[j].rice, bitcache, &crc,
-				unary_lax_limit
+				&curr.u, src, nbytes_dec, &codec[j].rice,
+				bitcache, &crc, unary_lax_limit
 			);
 			assert(nbytes_dec - nbytes_old <= rice_dec_max);
 
 			// filter
-			curr = tta_prefilter_dec(curr);
-			curr = tta_filter_dec(
-				&codec[j].filter, curr, filter_round, filter_k
+			curr.i  = tta_prefilter_dec(curr.u);
+			curr.i  = tta_filter_dec(
+				&codec[j].filter, curr.i, filter_round,
+				filter_k
 			);
 
 			// predict
-			curr += tta_predict1(codec[j].prev, predict_k);
-			codec[j].prev = curr;
+			curr.i += tta_predict1(codec[j].prev, predict_k);
+			codec[j].prev = curr.i;
 
 			// decorrelate
 			if ( j + 1u < nchan ){
-				dest[i + j] = curr;
-				prev = curr;
+				dest[i + j] = curr.i;
+				prev = curr.i;
 			}
 			/*@-usedef@*/	// prev will be defined for non-mono
-			else {	dest[i + j] = (curr += prev / 2);
+			else {	dest[i + j] = (curr.i += prev / 2);
 			/*@=usedef@*/
 				while ( j-- != 0 ){
-					dest[i + j] = (curr -= dest[i + j]);
+					dest[i + j] = (curr.i -= dest[i + j]);
 				}
 				/*@innerbreak@*/ break;
 			}
 		}
 	}
-	*crc_out  = crc;
-	*ni32_out = i;
+	*crc_inout = (u32) crc;
+	*ni32_out  = i;
 	return nbytes_dec;
 }
 #endif
@@ -370,7 +374,7 @@ tta_decode_mch(
  *
  * @param dest[out] destination buffer
  * @param src[in] source buffer
- * @param crc_out[in out] the current CRC
+ * @param crc_inout[in out] the current CRC
  * @param ni32_out[out] 'user'->ni32
  * @param bitcache[in out] the bitcache data
  * @param codec[in out] the codec struct
@@ -387,27 +391,27 @@ tta_decode_mch(
 static size_t
 tta_decode_1ch(
 	/*@out@*/ i32 *const dest, const u8 *const src,
-	u32 *const restrict crc_out,
+	u32 *const restrict crc_inout,
 	/*@out@*/ size_t *const restrict ni32_out,
-	struct BitCache *const restrict bitcache,
+	struct BitCache_Dec *const restrict bitcache,
 	struct Codec *const restrict codec, const size_t ni32_target,
 	const size_t read_soft_limit, const bitcnt predict_k,
 	const i32 filter_round, const bitcnt filter_k,
-	const rice24 unary_lax_limit, UNUSED const uint nchan
+	const rice24_dec unary_lax_limit, UNUSED const uint nchan
 #ifndef NDEBUG
 	, const size_t rice_dec_max
 #endif
 )
 /*@modifies	*dest,
-		*crc_out,
+		*crc_inout,
 		*ni32_out,
 		*bitcache,
 		*codec
 @*/
 {
 	size_t nbytes_dec = 0;
-	u32 crc = *crc_out;
-	i32 curr;
+	crc32_dec crc = (crc32_dec) *crc_inout;
+	union { i32 i; u32 u; } curr;
 	size_t i;
 #ifndef NDEBUG
 	size_t nbytes_old;
@@ -420,26 +424,26 @@ tta_decode_1ch(
 		nbytes_old = nbytes_dec;
 #endif
 		nbytes_dec = rice_decode(
-			(u32 *) &curr, src, nbytes_dec, &codec->rice,
-			bitcache, &crc, unary_lax_limit
+			&curr.u, src, nbytes_dec, &codec[0].rice, bitcache,
+			&crc, unary_lax_limit
 		);
 		assert(nbytes_dec - nbytes_old <= rice_dec_max);
 
 		// filter
-		curr = tta_prefilter_dec(curr);
-		curr = tta_filter_dec(
-			&codec->filter, curr, filter_round, filter_k
+		curr.i  = tta_prefilter_dec(curr.u);
+		curr.i  = tta_filter_dec(
+			&codec[0].filter, curr.i, filter_round, filter_k
 		);
 
 		// predict
-		curr += tta_predict1(codec->prev, predict_k);
-		codec->prev = curr;
+		curr.i += tta_predict1(codec[0].prev, predict_k);
+		codec[0].prev = curr.i;
 
 		// put
-		dest[i] = curr;
+		dest[i] = curr.i;
 	}
-	*crc_out  = crc;
-	*ni32_out = i;
+	*crc_inout = (u32) crc;
+	*ni32_out  = i;
 	return nbytes_dec;
 }
 #endif
@@ -450,7 +454,7 @@ tta_decode_1ch(
  *
  * @param dest[out] destination buffer
  * @param src[in] source buffer
- * @param crc_out[in out] the current CRC
+ * @param crc_inout[in out] the current CRC
  * @param ni32_out[out] 'user'->ni32
  * @param bitcache[in out] the bitcache data
  * @param codec[in out] the codec struct array
@@ -467,27 +471,28 @@ tta_decode_1ch(
 static size_t
 tta_decode_2ch(
 	/*@out@*/ i32 *const dest, const u8 *const src,
-	u32 *const restrict crc_out,
+	u32 *const restrict crc_inout,
 	/*@out@*/ size_t *const restrict ni32_out,
-	struct BitCache *const restrict bitcache,
+	struct BitCache_Dec *const restrict bitcache,
 	struct Codec *const restrict codec, const size_t ni32_target,
 	const size_t read_soft_limit, const bitcnt predict_k,
 	const i32 filter_round, const bitcnt filter_k,
-	const rice24 unary_lax_limit, UNUSED const uint nchan
+	const rice24_dec unary_lax_limit, UNUSED const uint nchan
 #ifndef NDEBUG
 	, const size_t rice_dec_max
 #endif
 )
 /*@modifies	*dest,
-		*crc_out,
+		*crc_inout,
 		*ni32_out,
 		*bitcache,
 		*codec
 @*/
 {
 	size_t nbytes_dec = 0;
-	u32 crc = *crc_out;
-	i32 curr, prev;
+	crc32_dec crc = (crc32_dec) *crc_inout;
+	union { i32 i; u32 u; } curr;
+	i32 prev;
 	size_t i;
 #ifndef NDEBUG
 	size_t nbytes_old;
@@ -500,50 +505,50 @@ tta_decode_2ch(
 		nbytes_old = nbytes_dec;
 #endif
 		nbytes_dec = rice_decode(
-			(u32 *) &curr, src, nbytes_dec, &codec[0u].rice,
-			bitcache, &crc, unary_lax_limit
+			&curr.u, src, nbytes_dec, &codec[0u].rice, bitcache,
+			&crc, unary_lax_limit
 		);
 		assert(nbytes_dec - nbytes_old <= rice_dec_max);
 
 		// filter
-		curr = tta_prefilter_dec(curr);
-		curr = tta_filter_dec(
-			&codec[0u].filter, curr, filter_round, filter_k
+		curr.i  = tta_prefilter_dec(curr.u);
+		curr.i  = tta_filter_dec(
+			&codec[0u].filter, curr.i, filter_round, filter_k
 		);
 
 		// predict
-		curr += tta_predict1(codec[0u].prev, predict_k);
-		codec[0u].prev = curr;
+		curr.i += tta_predict1(codec[0u].prev, predict_k);
+		codec[0u].prev = curr.i;
 
 		// save for decorrelation
-		prev = curr;
+		prev  = curr.i;
 
 	// 1	// decode
 #ifndef NDEBUG
 		nbytes_old = nbytes_dec;
 #endif
 		nbytes_dec = rice_decode(
-			(u32 *) &curr, src, nbytes_dec, &codec[1u].rice,
-			bitcache, &crc, unary_lax_limit
+			&curr.u, src, nbytes_dec, &codec[1u].rice, bitcache,
+			&crc, unary_lax_limit
 		);
 		assert(nbytes_dec - nbytes_old <= rice_dec_max);
 
 		// filter
-		curr = tta_prefilter_dec(curr);
-		curr = tta_filter_dec(
-			&codec[1u].filter, curr, filter_round, filter_k
+		curr.i  = tta_prefilter_dec(curr.u);
+		curr.i  = tta_filter_dec(
+			&codec[1u].filter, curr.i, filter_round, filter_k
 		);
 
 		// predict
-		curr += tta_predict1(codec[1u].prev, predict_k);
-		codec[1u].prev = curr;
+		curr.i += tta_predict1(codec[1u].prev, predict_k);
+		codec[1u].prev = curr.i;
 
 		// decorrelate
-		dest[i + 1u] = (curr += prev / 2);
-		dest[i]	     = curr - prev;
+		dest[i + 1u] = (curr.i += prev / 2);
+		dest[i + 0u] = curr.i - prev;
 	}
-	*crc_out  = crc;
-	*ni32_out = i;
+	*crc_inout = (u32) crc;
+	*ni32_out  = i;
 	return nbytes_dec;
 }
 #endif

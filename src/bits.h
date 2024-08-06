@@ -31,7 +31,7 @@ typedef   int8_t	 i8;
 typedef  int32_t	i32;
 
 typedef uint_fast8_t	 u8f;
-typedef uint_fast32_t	u32f;	// not currently used; for experimenting
+typedef uint_fast32_t	u32f;
 typedef uint_fast64_t	u64f;
 
 //////////////////////////////////////////////////////////////////////////////
@@ -44,11 +44,11 @@ typedef uint_fast64_t	u64f;
 #define HAS_ATTRIBUTE(x)	0
 #endif
 
-#else // !defined(__GNUC__)
+#else // ! defined(__GNUC__)
 
 #define HAS_ATTRIBUTE(x)	0
 
-#endif
+#endif // __GNUC__
 
 //--------------------------------------------------------------------------//
 
@@ -124,41 +124,79 @@ typedef uint_fast64_t	u64f;
 #ifdef __GNUC__
 
 #ifdef __has_builtin
-#define HAS_BUILTIN(x)		__has_builtin(x)
+#define HAS_BUILTIN(x)			__has_builtin(x)
 #else
-#define HAS_BUILTIN(x)		0
+#define HAS_BUILTIN(x)			0
 #endif
 
-#else // !defined(__GNUC__)
+#define BUILTIN_EXPECT			__builtin_expect
+#define BUILTIN_EXPECT_WITH_PROBABILITY	__builtin_expect_with_probability
+#define BUILTIN_UNPREDICTABLE		__builtin_unpredictable
 
-#define HAS_BUILTIN(x)		0
+#define BUILTIN_BSWAP16			__builtin_bswap16
+#define BUILTIN_BSWAP32			__builtin_bswap32
+#define BUILTIN_BSWAP64			__builtin_bswap64
 
+#else // ! defined(__GNUC__)
+
+#define HAS_BUILTIN(x)			0
+
+#define BUILTIN_EXPECT			0
+#define BUILTIN_EXPECT_WITH_PROBABILITY	0
+#define BUILTIN_UNPREDICTABLE		0
+
+#define BUILTIN_BSWAP16			0
+#define BUILTIN_BSWAP32			0
+#define BUILTIN_BSWAP64			0
+
+#endif // __GNUC__
+
+#ifndef S_SPLINT_S
+#ifndef __BYTE_ORDER__
+#error "'__BYTE_ORDER__' not defined"
 #endif
+#ifndef __ORDER_BIG_ENDIAN__
+#error "'__ORDER_BIG_ENDIAN__' not defined"
+#endif
+#ifndef __ORDER_LITTLE_ENDIAN__
+#error "'__ORDER_LITTLE_ENDIAN__' not defined"
+#endif
+#endif // S_SPLINT_S
 
-//--------------------------------------------------------------------------//
+//////////////////////////////////////////////////////////////////////////////
 
 // these should always be A/B tested; not always beneficial
 
-#if HAS_BUILTIN(__builtin_expect)
-#define LIKELY(cond)		(__builtin_expect((cond), true))
-#define UNLIKELY(cond)		(__builtin_expect((cond), false))
+#if HAS_BUILTIN(BUILTIN_EXPECT)
+#define LIKELY(cond)		(BUILTIN_EXPECT((cond), true))
+#define UNLIKELY(cond)		(BUILTIN_EXPECT((cond), false))
 #else
 #pragma message "compiler does not have a builtin 'expect'"
 #define LIKELY(cond)		(cond)
 #define UNLIKELY(cond)		(cond)
 #endif
 
-#if HAS_BUILTIN(__builtin_expect_with_probability)
+#if HAS_BUILTIN(BUILTIN_EXPECT_WITH_PROBABILITY)
 #define PROBABLE(cond, prob)	( \
-	__builtin_expect_with_probability((cond), true, (prob)) \
+	BUILTIN_EXPECT_WITH_PROBABILITY((cond), true, (prob)) \
 )
 #define IMPROBABLE(cond, prob)	( \
-	__builtin_expect_with_probability((cond), false, 1.0 - (prob)) \
+	BUILTIN_EXPECT_WITH_PROBABILITY((cond), false, 1.0 - (prob)) \
 )
 #else
 #pragma message "compiler does not have a builtin 'expect_with_probability'"
 #define PROBABLE(cond, prob)	(cond)
 #define IMPROBABLE(cond, prob)	(cond)
+#endif
+
+// not sure if this is useful
+#if HAS_BUILTIN(BUILTIN_UNPREDICTABLE)
+#define UNPREDICTABLE(cond)	( \
+	BUILTIN_UNPREDICTABLE(cond) \
+)
+#else
+//#pragma message "compiler does not have a builtin 'unpredictable'"
+#define UNPREDICTABLE(cond)	(cond)
 #endif
 
 //--------------------------------------------------------------------------//
@@ -217,34 +255,6 @@ ALWAYS_INLINE CONST u32 htole32(u32) /*@*/;
 ALWAYS_INLINE CONST u32 letoh32(u32) /*@*/;
 ALWAYS_INLINE CONST u64 htole64(u64) /*@*/;
 ALWAYS_INLINE CONST u64 letoh64(u64) /*@*/;
-
-//////////////////////////////////////////////////////////////////////////////
-
-#if __GNUC__
-
-#define BUILTIN_BSWAP16		__builtin_bswap16
-#define BUILTIN_BSWAP32		__builtin_bswap32
-#define BUILTIN_BSWAP64		__builtin_bswap64
-
-#else // !defined(__GNUC__)
-
-#define BUILTIN_BSWAP16		0
-#define BUILTIN_BSWAP32		0
-#define BUILTIN_BSWAP64		0
-
-#endif
-
-#ifndef S_SPLINT_S
-#ifndef __BYTE_ORDER__
-#error "'__BYTE_ORDER__' not defined"
-#endif
-#ifndef __ORDER_BIG_ENDIAN__
-#error "'__ORDER_BIG_ENDIAN__' not defined"
-#endif
-#ifndef __ORDER_LITTLE_ENDIAN__
-#error "'__ORDER_LITTLE_ENDIAN__' not defined"
-#endif
-#endif // S_SPLINT_S
 
 //////////////////////////////////////////////////////////////////////////////
 

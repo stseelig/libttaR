@@ -12,6 +12,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
+#include <assert.h>
 #include <stddef.h>	// size_t
 
 #include "../bits.h"
@@ -58,15 +59,15 @@ INLINE CONST bitcnt get_filter_k(enum TTASampleBytes) /*@*/;
 
 //--------------------------------------------------------------------------//
 
-ALWAYS_INLINE CONST i32 signof32(i32) /*@*/;
-ALWAYS_INLINE CONST i32 asl32(i32, bitcnt) /*@*/;
 ALWAYS_INLINE CONST i32 asr32(i32, bitcnt) /*@*/;
+ALWAYS_INLINE CONST i32 signof32_enc(i32) /*@*/;
+ALWAYS_INLINE CONST i32 signof32_dec(i32) /*@*/;
 
 //--------------------------------------------------------------------------//
 
 INLINE CONST i32 tta_predict1(i32, bitcnt) /*@*/;
-INLINE CONST i32 tta_postfilter_enc(i32) /*@*/;
-INLINE CONST i32 tta_prefilter_dec(i32) /*@*/;
+INLINE CONST u32 tta_postfilter_enc(i32) /*@*/;
+INLINE CONST i32 tta_prefilter_dec(u32) /*@*/;
 
 //--------------------------------------------------------------------------//
 
@@ -184,35 +185,6 @@ get_filter_k(const enum TTASampleBytes samplebytes)
 
 //==========================================================================//
 
-/**@fn signof32
- * @brief get the sign of a 32-bit integer
- *
- * @param x input value
- *
- * @retval -1, 1, or 0
-**/
-ALWAYS_INLINE CONST i32
-signof32(const i32 x)
-/*@*/
-{
-	return (x != 0 ? (x < 0 ? (i32) -1 : (i32) 1) : 0);
-}
-
-/**@fn asl32
- * @brief arithmetic shift left 32-bit
- *
- * @param x value to shift
- * @param k amount to shift
- *
- * @return shifted value
-**/
-ALWAYS_INLINE CONST i32
-asl32(const i32 x, const bitcnt k)
-/*@*/
-{
-	return (i32) (((u32) x) << k);
-}
-
 /**@fn asr32
  * @brief arithmetic shift right 32-bit
  *
@@ -220,20 +192,65 @@ asl32(const i32 x, const bitcnt k)
  * @param k amount to shift
  *
  * @return shifted value
+ *
+ * @pre k <= (bitcnt) 31u
 **/
 ALWAYS_INLINE CONST i32
 asr32(const i32 x, const bitcnt k)
 /*@*/
 {
+	assert(k <= (bitcnt) 31u);
+
 	/*@-shiftimplementation@*/
-	if ( (x < 0) && ((i32) (((i32) -1) >> 1u) != (i32) -1) ){
-	/*@=shiftimplementation@*/
-		return (i32) ~((~((u32) x)) >> k);
-	}
-	else {	/*@-shiftimplementation@*/
+	if ( (i32) (((i32) -1) >> 1u) == (i32) -1 ){
+		// native
 		return (i32) (x >> k);
-		/*@=shiftimplementation@*/
 	}
+	else {	// emulated
+		return (UNPREDICTABLE (x < 0)
+			? (i32) ~((~((u32) x)) >> k) : (i32) (x >> k)
+		);
+	}
+	/*@=shiftimplementation@*/
+}
+
+/**@fn signof32_enc
+ * @brief get the sign of a 32-bit integer; encoder version
+ *
+ * @param x input value
+ *
+ * @retval -1, 1, or 0
+ *
+ * @note affected by LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES
+**/
+ALWAYS_INLINE CONST i32
+signof32_enc(const i32 x)
+/*@*/
+{
+#ifndef LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES
+	const u32 y = (u32) -x;
+	return (asr32(x, (bitcnt) 31u) + (y >> 31u));
+#else
+	return (UNPREDICTABLE (x != 0)
+		? (UNPREDICTABLE (x < 0) ? (i32) -1 : (i32) 1) : 0
+	);
+#endif
+}
+
+/**@fn signof32_dec
+ * @brief get the sign of a 32-bit integer; decoder version
+ *
+ * @param x input value
+ *
+ * @retval -1, 1, or 0
+**/
+ALWAYS_INLINE CONST i32
+signof32_dec(const i32 x)
+/*@*/
+{
+	return (UNPREDICTABLE (x != 0)
+		? (UNPREDICTABLE (x < 0) ? (i32) -1 : (i32) 1) : 0
+	);
 }
 
 //==========================================================================//
@@ -245,16 +262,25 @@ asr32(const i32 x, const bitcnt k)
  * @param k how much to shift it by
  *
  * @return predicted value
+ *
+ * @pre k <= (bitcnt) 32u
 **/
 ALWAYS_INLINE CONST i32
 tta_predict1(const i32 x, const bitcnt k)
 /*@*/
 {
+	assert(k <= (bitcnt) 32u);
+
 	return (i32) (((((u64f) x) << k) - x) >> k);
 }
 
 /**@fn tta_postfilter_enc
  * @brief interleave value for coding
+ *        0 -> 0
+ *        1 -> 1
+ *       -1 -> 2
+ *        2 -> 3
+ *       -2 -> 4
  *
  * @param x input value
  *
@@ -262,30 +288,50 @@ tta_predict1(const i32 x, const bitcnt k)
  *
  * @note https://en.wikipedia.org/wiki/Golomb_coding#Overview#\
  *     Use%20with%20signed%20integers
+ * @note affected by LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES
 **/
-ALWAYS_INLINE CONST i32
+ALWAYS_INLINE CONST u32
 tta_postfilter_enc(const i32 x)
 /*@*/
 {
-	return (x > 0 ? asl32(x, (bitcnt) 1u) - 1 : asl32(-x, (bitcnt) 1u));
+#ifndef LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES
+	const u32 y     = (u32) -x;
+	const u32 xsign = (u32) asr32((i32) y, (bitcnt) 31u);
+	return (u32) ((y << 1u) ^ xsign);
+#else
+	return (UNPREDICTABLE (x > 0)
+		? ((i32) (((u32) x) << 1u)) - 1 : (i32) (((u32) -x) << 1u)
+	);
+#endif
 }
 
 /**@fn tta_prefilter_dec
  * @brief deinterleave value for filtering
+ *        0 ->  0
+ *        1 ->  1
+ *        2 -> -1
+ *        3 ->  2
+ *        4 -> -2
  *
  * @param x input value
  *
  * @return deinterleaved value
  *
  * @see tta_postfilter_enc
+ * @note affected by LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES
 **/
 ALWAYS_INLINE CONST i32
-tta_prefilter_dec(const i32 x)
+tta_prefilter_dec(const u32 x)
 /*@*/
 {
-	return ((((u32) x) & 0x1u) != 0
+#ifndef LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES
+	const u32 xsign = (u32) -((i32) (x & 0x1u));
+	return -((i32) ((x >> 1u) ^ xsign));
+#else
+	return (UNPREDICTABLE ((((u32) x) & 0x1u) != 0)
 		? asr32(x + 1, (bitcnt) 1u) : asr32(-x, (bitcnt) 1u)
 	);
+#endif
 }
 
 //==========================================================================//
@@ -334,7 +380,7 @@ tta_filter_enc(
 	b[5u]  = b[6u] - b[5u];
 
 	value -= asr32(round, k);
-	e[0u]  = signof32(value);
+	e[0u]  = signof32_enc(value);
 
 	MEMMOVE(m, &m[1u], (size_t) (8u * (sizeof *m)));
 	MEMMOVE(b, &b[1u], (size_t) (8u * (sizeof *b)));
@@ -364,7 +410,7 @@ tta_filter_dec(
 	i32 *const restrict b =  filter->dl;
 	i32 *const restrict e = &filter->error;
 
-	const i32 sign = signof32(e[0u]);
+	const i32 sign = signof32_dec(e[0u]);
 
 	round += (a[0u] += m[0u] * sign) * b[0u];
 	round += (a[1u] += m[1u] * sign) * b[1u];

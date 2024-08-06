@@ -21,31 +21,77 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
+#ifdef LIBTTAr_OPT_SLOW_CPU
+
+#define LIBTTAr_OPT_NO_FAT_RICE_ENCODER
+#define LIBTTAr_OPT_NO_NATIVE_TZCNT
+#define LIBTTAr_OPT_ONLY_NECESSARY_FAST_TYPES
+#define LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES
+#define LIBTTAr_OPT_PREFER_LOOKUP_TABLES
+
+#else // ! defined(LIBTTAr_OPT_SLOW_CPU)
+
+//#define LIBTTAr_OPT_NO_FAT_RICE_ENCODER
+//#define LIBTTAr_OPT_NO_NATIVE_TZCNT
+//#define LIBTTAr_OPT_ONLY_NECESSARY_FAST_TYPES
+//#define LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES
+//#define LIBTTAr_OPT_PREFER_LOOKUP_TABLES
+
+#endif // LIBTTAr_OPT_SLOW_CPU
+
+//--------------------------------------------------------------------------//
+
+// this tested much slower even when NO_FAT_RICE_ENCODER was faster
+//   - Intel Celeron N2830, clang 11
+
+//#define LIBTTAr_OPT_NO_FAT_RICE_DECODER";
+
+//////////////////////////////////////////////////////////////////////////////
+
 enum TTASampleBytes {
 	TTASAMPLEBYTES_1 = 1u,
 	TTASAMPLEBYTES_2 = 2u,
 	TTASAMPLEBYTES_3 = 3u
 };
 #define TTA_SAMPLEBYTES_MAX	((uint) TTASAMPLEBYTES_3)
-#define TTA_SAMPLEBITS_MAX	((uint) (8u*TTA_SAMPLEBYTES_MAX))
+#define TTA_SAMPLEBITS_MAX	((uint) (8u * TTA_SAMPLEBYTES_MAX))
 
 //////////////////////////////////////////////////////////////////////////////
 
-// fast type use or lack thereof assumes to not make the slow even slower and
-//   to not favor one mode (encode/decode) at a great expense to the other.
-//   mileage will vary
-typedef u32	rice24;
+// fast types specifically tuned for the AMD Ryzen 7 1700 & clang 11
+#ifndef LIBTTAr_OPT_ONLY_NECESSARY_FAST_TYPES
+typedef u32	rice24_enc;
+typedef u32f	rice24_dec;
+typedef u32	crc32_enc;
+typedef u32f	crc32_dec;
+typedef u32f	cache32;
+typedef u64f	cache64;
 typedef  u8f	bitcnt;
+#else // defined(LIBTTAr_OPT_ONLY_NECESSARY_FAST_TYPES)
+typedef u32	rice24_enc;
+typedef u32	rice24_dec;
+typedef u32	crc32_enc;
+typedef u32	crc32_dec;
 typedef u32	cache32;
 typedef u64f	cache64;
+typedef  u8	bitcnt;
+#endif // LIBTTAr_OPT_SLOW_TYPES
 
 //==========================================================================//
 
-struct BitCache {
-	union {	cache64	enc;
-		cache32	dec;
-	}	cache;
+struct BitCache_Enc {
+	cache64	cache;
 	bitcnt	count;
+};
+
+struct BitCache_Dec {
+	cache32	cache;
+	bitcnt	count;
+};
+
+union BitCache {
+	struct BitCache_Enc enc;
+	struct BitCache_Dec dec;
 };
 
 struct Rice {
@@ -67,7 +113,7 @@ struct Codec {
 };
 
 struct LibTTAr_CodecState_Priv {
-	struct BitCache	bitcache;
+	union BitCache	bitcache;
 	struct Codec 	codec[];
 };
 
@@ -127,12 +173,12 @@ INLINE void rice_init(/*@out@*/ struct Rice *const restrict rice)
 // the _inline's cause clang to panic (Debian clang version 11.0.1-2)
 //#define BUILTIN_MEMCPY_INLINE		__builtin_memcpy_inline
 #define BUILTIN_MEMCPY			__builtin_memcpy
-//#define BUILTIN_MEMMOVE_INLINE		__builtin_memmove_inline
+//#define BUILTIN_MEMMOVE_INLINE	__builtin_memmove_inline
 #define BUILTIN_MEMMOVE			__builtin_memmove
 //#define BUILTIN_MEMSET_INLINE		__builtin_memset_inline
 #define BUILTIN_MEMSET			__builtin_memset
 
-#else // !defined(__GNUC__)
+#else // ! defined(__GNUC__)
 
 #define BUILTIN_TZCNT32			0
 #define BUILTIN_TZCNT64			0
@@ -144,19 +190,23 @@ INLINE void rice_init(/*@out@*/ struct Rice *const restrict rice)
 #define BUILTIN_MEMSET_INLINE		0
 #define BUILTIN_MEMSET			0
 
-#endif
+#endif // __GNUC__
 
 
 //////////////////////////////////////////////////////////////////////////////
 
-#ifndef LIBTTAr_OPT_PREFER_LOOKUP_TABLES
+#if (! defined(LIBTTAr_OPT_PREFER_LOOKUP_TABLES)) \
+&&  (! defined(LIBTTAr_OPT_NO_NATIVE_TZCNT))
 #if (! HAS_BUILTIN(BUILTIN_TZCNT32)) && (! HAS_BUILTIN(BUILTIN_TZCNT64))
 #pragma message "compiler does not have a builtin 'tzcnt'"
 #endif
 #endif
 
-#define TBCNT8_TEST	LIBTTAr_OPT_PREFER_LOOKUP_TABLES \
+#if defined(LIBTTAr_OPT_NO_NATIVE_TZCNT) \
+ || defined(LIBTTAr_OPT_PREFER_LOOKUP_TABLES) \
  || ((! HAS_BUILTIN(BUILTIN_TZCNT32)) && (! HAS_BUILTIN(BUILTIN_TZCNT64)))
+#define TBCNT8_TABLE
+#endif
 
 //==========================================================================//
 

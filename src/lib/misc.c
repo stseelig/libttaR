@@ -130,7 +130,7 @@ libttaR_crc32(const u8 *const restrict buf, const size_t size)
 	for ( i = 0; i < size; ++i ){
 		crc = crc32_cont(buf[i], crc);
 	}
-	return crc32_end(crc);
+	return CRC32_FINI(crc);
 }
 
 /**@fn libttaR_codecstate_priv_size
