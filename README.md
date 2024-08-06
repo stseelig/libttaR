@@ -24,8 +24,8 @@ and clang does a fairly good job targeting it.
 
 While developing, I mostly tested on:
 
-	- AMD Ryzen 7 1700    (primary tuning)\
-	- Intel Celeron N2830 (secondary tuning)
+	AMD Ryzen 7 1700    (primary tuning)\
+	Intel Celeron N2830 (secondary tuning)
 
 ### Defines
 NDEBUG\
