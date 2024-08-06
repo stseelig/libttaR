@@ -23,7 +23,7 @@ The codec greatly benefits from 256-bit (specifically 8*i32) wide SIMD,
 and clang does a fairly good job targeting it.
 
 While developing, I mostly tested on:
-
+\
 	AMD Ryzen 7 1700    (primary tuning)\
 	Intel Celeron N2830 (secondary tuning)
 
