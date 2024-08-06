@@ -231,9 +231,7 @@ signof32_enc(const i32 x)
 	const u32 y = (u32) -x;
 	return (asr32(x, (bitcnt) 31u) + (y >> 31u));
 #else
-	return (UNPREDICTABLE (x != 0)
-		? (UNPREDICTABLE (x < 0) ? (i32) -1 : (i32) 1) : 0
-	);
+	return signof32_dec(x);
 #endif
 }
 
