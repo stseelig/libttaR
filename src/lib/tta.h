@@ -65,9 +65,9 @@ ALWAYS_INLINE CONST i32 signof32_dec(i32) /*@*/;
 
 //--------------------------------------------------------------------------//
 
-INLINE CONST i32 tta_predict1(i32, bitcnt) /*@*/;
-INLINE CONST u32 tta_postfilter_enc(i32) /*@*/;
-INLINE CONST i32 tta_prefilter_dec(u32) /*@*/;
+ALWAYS_INLINE CONST i32 tta_predict1(i32, bitcnt) /*@*/;
+ALWAYS_INLINE CONST u32 tta_postfilter_enc(i32) /*@*/;
+ALWAYS_INLINE CONST i32 tta_prefilter_dec(u32) /*@*/;
 
 //--------------------------------------------------------------------------//
 
@@ -274,11 +274,11 @@ tta_predict1(const i32 x, const bitcnt k)
 
 /**@fn tta_postfilter_enc
  * @brief interleave value for coding
- *        0 -> 0
- *        1 -> 1
- *       -1 -> 2
- *        2 -> 3
- *       -2 -> 4
+ *        0 => 0
+ *        1 => 1
+ *       -1 => 2
+ *        2 => 3
+ *       -2 => 4
  *
  * @param x input value
  *
@@ -305,11 +305,11 @@ tta_postfilter_enc(const i32 x)
 
 /**@fn tta_prefilter_dec
  * @brief deinterleave value for filtering
- *        0 ->  0
- *        1 ->  1
- *        2 -> -1
- *        3 ->  2
- *        4 -> -2
+ *        0 =>  0
+ *        1 =>  1
+ *        2 => -1
+ *        3 =>  2
+ *        4 => -2
  *
  * @param x input value
  *
