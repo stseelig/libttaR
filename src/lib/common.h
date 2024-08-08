@@ -75,7 +75,7 @@ typedef u32	crc32_dec;
 typedef u32	cache32;
 typedef u64f	cache64;
 typedef  u8	bitcnt;
-#endif // LIBTTAr_OPT_SLOW_TYPES
+#endif // LIBTTAr_OPT_ONLY_NECESSARY_FAST_TYPES
 
 //==========================================================================//
 
