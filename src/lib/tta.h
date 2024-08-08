@@ -297,8 +297,10 @@ tta_postfilter_enc(const i32 x)
 	const u32 xsign = (u32) asr32((i32) y, (bitcnt) 31u);
 	return (u32) ((y << 1u) ^ xsign);
 #else
+	const u32 y = (u32)  x;
+	const u32 z = (u32) -x;
 	return (UNPREDICTABLE (x > 0)
-		? (((u32) x) << 1u) - 1u : ((u32) -x) << 1u
+		? (u32) ((y << 1u) - 1u) : (u32) (z << 1u)
 	);
 #endif
 }
@@ -326,8 +328,9 @@ tta_prefilter_dec(const u32 x)
 	const u32 xsign = (u32) -((i32) (x & 0x1u));
 	return -((i32) ((x >> 1u) ^ xsign));
 #else
+	const i32 y = (i32) x;
 	return (UNPREDICTABLE ((((u32) x) & 0x1u) != 0)
-		? asr32(x + 1, (bitcnt) 1u) : asr32(-x, (bitcnt) 1u)
+		? asr32(y + 1, (bitcnt) 1u) : asr32(-y, (bitcnt) 1u)
 	);
 #endif
 }

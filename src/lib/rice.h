@@ -552,7 +552,9 @@ rice_encode(
 		); \
 	}
 	#define RICE_ENCODE_UNARY_ZERO(Xunary) { \
+		/*@-noeffect@*/ \
 		(void) (Xunary); \
+		/*@=noeffect@*/ \
 		nbytes_enc = rice_write_unary_zero( \
 			dest, nbytes_enc, cache, count, crc \
 		); \
