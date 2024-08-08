@@ -298,7 +298,7 @@ tta_postfilter_enc(const i32 x)
 	return (u32) ((y << 1u) ^ xsign);
 #else
 	return (UNPREDICTABLE (x > 0)
-		? ((i32) (((u32) x) << 1u)) - 1 : (i32) (((u32) -x) << 1u)
+		? (((u32) x) << 1u) - 1u : ((u32) -x) << 1u
 	);
 #endif
 }
