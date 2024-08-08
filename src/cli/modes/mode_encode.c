@@ -251,7 +251,7 @@ enc_loop(const struct OpenedFilesMember *const restrict ofm)
 	//}
 
 	// open outfile
-	outfile = fopen_check(outfile_name, "w", FATAL);
+	outfile = fopen_check(outfile_name, "wb", FATAL);
 	if UNLIKELY ( outfile == NULL ){
 		error_sys(errno, "fopen", outfile_name);
 	}

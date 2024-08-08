@@ -263,7 +263,7 @@ dec_loop(struct OpenedFilesMember *const restrict ofm)
 	// MAYBE check that the combined seektable entries matches filesize
 
 	// open outfile
-	outfile = fopen_check(outfile_name, "w", FATAL);
+	outfile = fopen_check(outfile_name, "wb", FATAL);
 	if UNLIKELY ( outfile == NULL ){
 		error_sys(errno, "fopen", outfile_name);
 	}

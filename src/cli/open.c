@@ -208,7 +208,7 @@ openedfiles_add(
 	 added = &of->file[of->nmemb - 1u];
 	*added = calloc_check((size_t) 1u, sizeof **added);
 
-	(*added)->infile = fopen_check(name, "r", NONFATAL);
+	(*added)->infile = fopen_check(name, "rb", NONFATAL);
 	if ( (*added)->infile == NULL ){
 		r = errno;
 	}
