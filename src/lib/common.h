@@ -103,7 +103,7 @@ struct Filter {
 	i32	qm[8u];
 	i32	dx[9u];		// the extra value is for a memmove trick
 	i32	dl[9u];		// ~
-	i32	error;		// enc: sign of the error, dec: full error
+	i32	error;		// sign of the error (-1, 1, or 0)
 };
 
 struct Codec {

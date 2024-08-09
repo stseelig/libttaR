@@ -60,8 +60,7 @@ INLINE CONST bitcnt get_filter_k(enum TTASampleBytes) /*@*/;
 //--------------------------------------------------------------------------//
 
 ALWAYS_INLINE CONST i32 asr32(i32, bitcnt) /*@*/;
-ALWAYS_INLINE CONST i32 signof32_enc(i32) /*@*/;
-ALWAYS_INLINE CONST i32 signof32_dec(i32) /*@*/;
+ALWAYS_INLINE CONST i32 signof32(i32) /*@*/;
 
 //--------------------------------------------------------------------------//
 
@@ -83,6 +82,31 @@ ALWAYS_INLINE i32 tta_filter_dec(
 	struct Filter *restrict filter, i32, i32, bitcnt
 )
 /*@modifies	*filter@*/
+;
+
+#undef a
+ALWAYS_INLINE i32 filter_sum(
+	i32 *restrict a, const i32 *restrict, const i32 *restrict , i32, i32
+)
+/*@modifies	*a@*/
+;
+
+#undef m
+ALWAYS_INLINE void filter_update_m(i32 *restrict m, const i32 *restrict)
+/*@modifies	*m@*/
+;
+
+#undef b
+ALWAYS_INLINE void filter_update_b(i32 *restrict b)
+/*@modifies	*b@*/
+;
+
+#undef m
+#undef b
+ALWAYS_INLINE void filter_shift(i32 *restrict m, i32 *restrict b)
+/*@modifies	*m,
+		*b
+@*/
 ;
 
 //////////////////////////////////////////////////////////////////////////////
@@ -214,8 +238,8 @@ asr32(const i32 x, const bitcnt k)
 	/*@=shiftimplementation@*/
 }
 
-/**@fn signof32_enc
- * @brief get the sign of a 32-bit integer; encoder version
+/**@fn signof32
+ * @brief get the sign of a 32-bit integer
  *
  * @param x input value
  *
@@ -224,31 +248,17 @@ asr32(const i32 x, const bitcnt k)
  * @note affected by LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES
 **/
 ALWAYS_INLINE CONST i32
-signof32_enc(const i32 x)
+signof32(const i32 x)
 /*@*/
 {
 #ifndef LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES
 	const u32 y = (u32) -x;
-	return (asr32(x, (bitcnt) 31u) + (y >> 31u));
+	return (i32) (asr32(x, (bitcnt) 31u) + (y >> 31u));
 #else
-	return signof32_dec(x);
-#endif
-}
-
-/**@fn signof32_dec
- * @brief get the sign of a 32-bit integer; decoder version
- *
- * @param x input value
- *
- * @retval -1, 1, or 0
-**/
-ALWAYS_INLINE CONST i32
-signof32_dec(const i32 x)
-/*@*/
-{
 	return (UNPREDICTABLE (x != 0)
 		? (UNPREDICTABLE (x < 0) ? (i32) -1 : (i32) 1) : 0
 	);
+#endif
 }
 
 //==========================================================================//
@@ -297,10 +307,10 @@ tta_postfilter_enc(const i32 x)
 	const u32 xsign = (u32) asr32((i32) y, (bitcnt) 31u);
 	return (u32) ((y << 1u) ^ xsign);
 #else
-	const u32 y = (u32)  x;
-	const u32 z = (u32) -x;
+	const u32 yp = (u32)  x;
+	const u32 yn = (u32) -x;
 	return (UNPREDICTABLE (x > 0)
-		? (u32) ((y << 1u) - 1u) : (u32) (z << 1u)
+		? (u32) ((yp << 1u) - 1u) : (u32) (yn << 1u)
 	);
 #endif
 }
@@ -349,7 +359,7 @@ tta_prefilter_dec(const u32 x)
 **/
 ALWAYS_INLINE i32
 tta_filter_enc(
-	struct Filter *const restrict filter, i32 value, i32 round,
+	struct Filter *const restrict filter, const i32 value, i32 round,
 	const bitcnt k
 )
 /*@modifies	*filter@*/
@@ -359,34 +369,17 @@ tta_filter_enc(
 	i32 *const restrict b =  filter->dl;
 	i32 *const restrict e = &filter->error;
 
-	const i32 sign = e[0u];
+	i32 retval;
 
-	round += (a[0u] += m[0u] * sign) * b[0u];
-	round += (a[1u] += m[1u] * sign) * b[1u];
-	round += (a[2u] += m[2u] * sign) * b[2u];
-	round += (a[3u] += m[3u] * sign) * b[3u];
-	round += (a[4u] += m[4u] * sign) * b[4u];
-	round += (a[5u] += m[5u] * sign) * b[5u];
-	round += (a[6u] += m[6u] * sign) * b[6u];
-	round += (a[7u] += m[7u] * sign) * b[7u];
-
-	m[8u]  = (i32) ((((u32) asr32(b[7u], (bitcnt) 30u)) | 0x1u) << 2u);
-	m[7u]  = (i32) ((((u32) asr32(b[6u], (bitcnt) 30u)) | 0x1u) << 1u);
-	m[6u]  = (i32) ((((u32) asr32(b[5u], (bitcnt) 30u)) | 0x1u) << 1u);
-	m[5u]  = (i32) ((((u32) asr32(b[4u], (bitcnt) 30u)) | 0x1u) << 0u);
-
+	round  = filter_sum(a, m, b, e[0u], round);
+	filter_update_m(m, b);
 	b[8u]  = value;
-	b[7u]  = b[8u] - b[7u];
-	b[6u]  = b[7u] - b[6u];
-	b[5u]  = b[6u] - b[5u];
+	filter_update_b(b);
+	filter_shift(m, b);
+	retval = value - asr32(round, k);
+	e[0u]  = signof32(retval);
 
-	value -= asr32(round, k);
-	e[0u]  = signof32_enc(value);
-
-	MEMMOVE(m, &m[1u], (size_t) (8u * (sizeof *m)));
-	MEMMOVE(b, &b[1u], (size_t) (8u * (sizeof *b)));
-
-	return value;
+	return retval;
 }
 
 /**@fn tta_filter_dec
@@ -401,7 +394,7 @@ tta_filter_enc(
 **/
 ALWAYS_INLINE i32
 tta_filter_dec(
-	struct Filter *const restrict filter, i32 value, i32 round,
+	struct Filter *const restrict filter, const i32 value, i32 round,
 	const bitcnt k
 )
 /*@modifies	*filter@*/
@@ -411,34 +404,93 @@ tta_filter_dec(
 	i32 *const restrict b =  filter->dl;
 	i32 *const restrict e = &filter->error;
 
-	const i32 sign = signof32_dec(e[0u]);
+	i32 retval;
 
-	round += (a[0u] += m[0u] * sign) * b[0u];
-	round += (a[1u] += m[1u] * sign) * b[1u];
-	round += (a[2u] += m[2u] * sign) * b[2u];
-	round += (a[3u] += m[3u] * sign) * b[3u];
-	round += (a[4u] += m[4u] * sign) * b[4u];
-	round += (a[5u] += m[5u] * sign) * b[5u];
-	round += (a[6u] += m[6u] * sign) * b[6u];
-	round += (a[7u] += m[7u] * sign) * b[7u];
+	round  = filter_sum(a, m, b, e[0u], round);
+	retval = value + asr32(round, k);
+	b[8u]  = retval;
+	filter_update_m(m, b);
+	filter_update_b(b);
+	filter_shift(m, b);
+	e[0u]  = signof32(value);
 
-	e[0u]  = value;
-	value += asr32(round, k);
-	b[8u]  = value;
+	return retval;
+}
 
-	m[8u]  = (i32) ((((u32) asr32(b[7u], (bitcnt) 30u)) | 0x1u) << 2u);
-	m[7u]  = (i32) ((((u32) asr32(b[6u], (bitcnt) 30u)) | 0x1u) << 1u);
-	m[6u]  = (i32) ((((u32) asr32(b[5u], (bitcnt) 30u)) | 0x1u) << 1u);
-	m[5u]  = (i32) ((((u32) asr32(b[4u], (bitcnt) 30u)) | 0x1u) << 0u);
+//--------------------------------------------------------------------------//
 
-	b[7u]  = b[8u] - b[7u];
-	b[6u]  = b[7u] - b[6u];
-	b[5u]  = b[6u] - b[5u];
+/**@fn filter_sum
+ * @brief updates 'a' and sums the filter
+ *
+ * @param a filter->qm
+ * @param m filter->dx
+ * @param b filter->dl
+ * @param error sign of the error (-1, 1, or 0)
+ * @param round initial sum
+ *
+ * @return sum of the filter
+**/
+ALWAYS_INLINE i32
+filter_sum(
+	i32 *const restrict a, const i32 *const restrict m,
+	const i32 *const restrict b, const i32 error, i32 round
+)
+/*@modifies	*a@*/
+{
+	uint i;
+	for ( i = 0; i < 8u; ++i ){
+		round += (a[i] += m[i] * error) * b[i];
+	}
+	return round;
+}
 
+/**@fn filter_update_m
+ * @brief updates 'm'
+ *
+ * @param m filter->dx
+ * @param b filter->dl
+**/
+ALWAYS_INLINE void
+filter_update_m(i32 *const restrict m, const i32 *const restrict b)
+/*@modifies	*m@*/
+{
+	m[8u] = (i32) ((((u32) asr32(b[7u], (bitcnt) 30u)) | 0x1u) << 2u);
+	m[7u] = (i32) ((((u32) asr32(b[6u], (bitcnt) 30u)) | 0x1u) << 1u);
+	m[6u] = (i32) ((((u32) asr32(b[5u], (bitcnt) 30u)) | 0x1u) << 1u);
+	m[5u] = (i32) ((((u32) asr32(b[4u], (bitcnt) 30u)) | 0x1u) << 0u);
+	return;
+}
+
+/**@fn filter_update_b
+ * @brief updates 'b'
+ *
+ * @param b filter->dl
+**/
+ALWAYS_INLINE void
+filter_update_b(i32 *const restrict b)
+/*@modifies	*b@*/
+{
+	b[7u] = b[8u] - b[7u];
+	b[6u] = b[7u] - b[6u];
+	b[5u] = b[6u] - b[5u];
+	return;
+}
+
+/**@fn filter_shift
+ * @brief shifts the 'm' and 'b' arrays left by 1
+ *
+ * @param m filter->dx
+ * @param b filter->dl
+**/
+ALWAYS_INLINE void
+filter_shift(i32 *const restrict m, i32 *const restrict b)
+/*@modifies	*m,
+		*b
+@*/
+{
 	MEMMOVE(m, &m[1u], (size_t) (8u * (sizeof *m)));
 	MEMMOVE(b, &b[1u], (size_t) (8u * (sizeof *b)));
-
-	return value;
+	return;
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////
