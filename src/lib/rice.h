@@ -119,8 +119,7 @@ ALWAYS_INLINE size_t rice_encode(
 ;
 
 #undef dest
-#undef cache
-#undef count
+#undef bitcache
 #undef crc_inout
 INLINE size_t rice_encode_cacheflush(
 	/*@partial@*/ u8 *restrict dest, size_t,
