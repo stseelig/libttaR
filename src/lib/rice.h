@@ -698,11 +698,9 @@ loop_entr:
  * @return number of bytes written to 'dest' + 'nbytes_enc'
  *
  * @pre  *count <= (bitcnt) 64u	// 63 in practice
- * @post *count <= (bitcnt) 40u	// 39u in practice
+ * @post *count <= (bitcnt)  8u
  *
- * @note max write size (unary + cache):
- *	 8/16-bit :   32u + 8u ==   40u
- *	   24-bit : 4096u + 8u == 4104u
+ * @note max write size: 8u
 **/
 ALWAYS_INLINE size_t
 rice_write_unary_zero(
@@ -723,7 +721,7 @@ rice_write_unary_zero(
 	);
 	*count += 1u;	// + terminator
 
-	assert(*count <= (bitcnt) 40u);
+	assert(*count <= (bitcnt)  8u);
 	return nbytes_enc;
 }
 
