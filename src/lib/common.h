@@ -44,7 +44,7 @@
 // this tested much slower even when NO_FAT_RICE_ENCODER was faster
 //   - Intel Celeron N2830, clang 11
 
-//#define LIBTTAr_OPT_NO_FAT_RICE_DECODER";
+//#define LIBTTAr_OPT_NO_FAT_RICE_DECODER;
 
 //////////////////////////////////////////////////////////////////////////////
 
