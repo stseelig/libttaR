@@ -412,7 +412,7 @@ rice_crc32_dec(const u8 x, crc32_dec *const restrict crc)
  * @param sum[in out] rice->sum[]
  * @param k[in out] rice->k[]
  * @param value input value to code
- * @param test_in[in] binexp32p4 comparison values
+ * @param test[in] binexp32p4 comparison values
  *
  * @pre  *k <= (bitcnt) 24u
  * @post *k <= (bitcnt) 24u
@@ -420,7 +420,7 @@ rice_crc32_dec(const u8 x, crc32_dec *const restrict crc)
 ALWAYS_INLINE void
 rice_update(
 	u32 *const restrict sum, bitcnt *const restrict k, const u32 value,
-	const u32 *const restrict test_in
+	const u32 *const restrict test
 )
 /*@modifies	*sum,
 		*k
@@ -429,10 +429,10 @@ rice_update(
 	assert(*k <= (bitcnt) 24u);
 
 	*sum += value - (*sum >> 4u);	// may wrap
-	if IMPROBABLE ( *sum < test_in[0u], 0.027 ){
+	if IMPROBABLE ( *sum < test[0u], 0.027 ){
 		*k -= 1u;
 	}
-	else if IMPROBABLE ( *sum > test_in[1u], 0.027 ){
+	else if IMPROBABLE ( *sum > test[1u], 0.027 ){
 		*k += 1u;
 	} else{;}
 
