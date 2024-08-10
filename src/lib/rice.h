@@ -82,17 +82,7 @@ ALWAYS_INLINE u8 rice_crc32_dec(u8, crc32_dec *restrict crc)
 
 #undef sum
 #undef k
-ALWAYS_INLINE void rice_update_enc(
-	u32 *restrict sum, bitcnt *restrict k, u32, const u32 *restrict
-)
-/*@modifies	*sum,
-		*k
-@*/
-;
-
-#undef sum
-#undef k
-ALWAYS_INLINE void rice_update_dec(
+ALWAYS_INLINE void rice_update(
 	u32 *restrict sum, bitcnt *restrict k, u32, const u32 *restrict
 )
 /*@modifies	*sum,
@@ -416,18 +406,7 @@ rice_crc32_dec(const u8 x, crc32_dec *const restrict crc)
 
 //==========================================================================//
 
-// shared body for the rice_update functions
-#define RICE_UPDATE(Xtest0, Xtest1) { \
-	*sum += value - (*sum >> 4u);	/* may wrap */ \
-	if IMPROBABLE ( *sum < (Xtest0), 0.027 ){ \
-		*k -= 1u; \
-	} \
-	else if IMPROBABLE ( *sum > (Xtest1), 0.027 ){ \
-		*k += 1u; \
-	} else{;} \
-}
-
-/**@fn rice_update_enc; encode version
+/**@fn rice_update
  * @brief update the rice state
  *
  * @param sum[in out] rice->sum[]
@@ -439,39 +418,7 @@ rice_crc32_dec(const u8 x, crc32_dec *const restrict crc)
  * @post *k <= (bitcnt) 24u
 **/
 ALWAYS_INLINE void
-rice_update_enc(
-	u32 *const restrict sum, bitcnt *const restrict k, const u32 value,
-	const u32 *const restrict test_in
-)
-/*@modifies	*sum,
-		*k
-@*/
-{
-	u32 test[2u];
-
-	assert(*k <= (bitcnt) 24u);
-
-	MEMCPY(test, test_in, sizeof test);
-	RICE_UPDATE(test[0u], test[1u]);
-
-	assert(*k <= (bitcnt) 24u);
-	return;
-}
-
-/**@fn rice_update_dec; decode version
- * @brief update the rice state
- *
- * @param sum[in out] rice->sum[]
- * @param k[in out] rice->k[]
- * @param value input value to code
- * @param test_in[in] binexp32p4 comparison values
- *
- * @pre  *k <= (bitcnt) 24u
- * @post *k <= (bitcnt) 24u
- * @note affected by LIBTTAr_OPT_NO_FAT_RICE_DECODER
-**/
-ALWAYS_INLINE void
-rice_update_dec(
+rice_update(
 	u32 *const restrict sum, bitcnt *const restrict k, const u32 value,
 	const u32 *const restrict test_in
 )
@@ -481,11 +428,14 @@ rice_update_dec(
 {
 	assert(*k <= (bitcnt) 24u);
 
-#ifndef LIBTTAr_OPT_NO_FAT_RICE_DECODER
-	rice_update_enc(sum, k, value, test_in);
-#else
-	RICE_UPDATE(test_in[0u], test_in[1u]);
-#endif
+	*sum += value - (*sum >> 4u);	// may wrap
+	if IMPROBABLE ( *sum < test_in[0u], 0.027 ){
+		*k -= 1u;
+	}
+	else if IMPROBABLE ( *sum > test_in[1u], 0.027 ){
+		*k += 1u;
+	} else{;}
+
 	assert(*k <= (bitcnt) 24u);
 	return;
 }
@@ -536,13 +486,13 @@ rice_encode(
 	#define RICE_ENCODE_STATE_0(Xvalue) { \
 		bin_k      = *k0; \
 		test0      = &binexp32p4_table[*k0]; \
-		rice_update_enc(sum0, k0, (Xvalue), test0); \
+		rice_update(sum0, k0, (Xvalue), test0); \
 	}
 	#define RICE_ENCODE_STATE_1(Xvalue) { \
 		(Xvalue)  -= binexp32(bin_k); \
 		bin_k      = *k1; \
 		test1      = &binexp32p4_table[*k1]; \
-		rice_update_enc(sum1, k1, (Xvalue), test1); \
+		rice_update(sum1, k1, (Xvalue), test1); \
 	}
 	#define RICE_ENCODE_UNARY(Xunary) { \
 		unary      = (Xunary); \
@@ -862,11 +812,11 @@ rice_decode(
 		); \
 	}
 	#define RICE_DECODE_STATE_1(Xvalue) { \
-		rice_update_dec(sum1, k1, (Xvalue), test1); \
+		rice_update(sum1, k1, (Xvalue), test1); \
 		(Xvalue)  += binexp32(*k0); \
 	}
 	#define RICE_DECODE_STATE_0(Xvalue) { \
-		rice_update_dec(sum0, k0, (Xvalue), test0); \
+		rice_update(sum0, k0, (Xvalue), test0); \
 	}
 
 #ifndef LIBTTAr_OPT_NO_FAT_RICE_DECODER

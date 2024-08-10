@@ -172,7 +172,7 @@ INLINE void rice_init(/*@out@*/ struct Rice *const restrict rice)
 
 // the _inline's cause clang to panic (Debian clang version 11.0.1-2)
 //#define BUILTIN_MEMCPY_INLINE		__builtin_memcpy_inline
-#define BUILTIN_MEMCPY			__builtin_memcpy
+//#define BUILTIN_MEMCPY		__builtin_memcpy
 //#define BUILTIN_MEMMOVE_INLINE	__builtin_memmove_inline
 #define BUILTIN_MEMMOVE			__builtin_memmove
 //#define BUILTIN_MEMSET_INLINE		__builtin_memset_inline
@@ -183,8 +183,8 @@ INLINE void rice_init(/*@out@*/ struct Rice *const restrict rice)
 #define BUILTIN_TZCNT32			0
 #define BUILTIN_TZCNT64			0
 
-#define BUILTIN_MEMCPY_INLINE		0
-#define BUILTIN_MEMCPY			0
+//#define BUILTIN_MEMCPY_INLINE		0
+//#define BUILTIN_MEMCPY		0
 #define BUILTIN_MEMMOVE_INLINE		0
 #define BUILTIN_MEMMOVE			0
 #define BUILTIN_MEMSET_INLINE		0
@@ -212,14 +212,14 @@ INLINE void rice_init(/*@out@*/ struct Rice *const restrict rice)
 
 // -nolibc; a decent compiler should do this anyway
 
-#if HAS_BUILTIN(BUILTIN_MEMCPY_INLINE)
-#define MEMCPY(dest, src, n)	BUILTIN_MEMCPY_INLINE((dest), (src), (n))
-#elif HAS_BUILTIN(BUILTIN_MEMCPY)
-#define MEMCPY(dest, src, n)	BUILTIN_MEMCPY((dest), (src), (n))
-#else
-#pragma message "compiler does not have a builtin 'memcpy'"
-#define MEMCPY(dest, src, n)	((void) memcpy((dest), (src), (n)))
-#endif
+//#if HAS_BUILTIN(BUILTIN_MEMCPY_INLINE)
+//#define MEMCPY(dest, src, n)	BUILTIN_MEMCPY_INLINE((dest), (src), (n))
+//#elif HAS_BUILTIN(BUILTIN_MEMCPY)
+//#define MEMCPY(dest, src, n)	BUILTIN_MEMCPY((dest), (src), (n))
+//#else
+//#pragma message "compiler does not have a builtin 'memcpy'"
+//#define MEMCPY(dest, src, n)	((void) memcpy((dest), (src), (n)))
+//#endif
 
 #if HAS_BUILTIN(BUILTIN_MEMMOVE_INLINE)
 #define MEMMOVE(dest, src, n)	BUILTIN_MEMMOVE_INLINE((dest), (src), (n))
