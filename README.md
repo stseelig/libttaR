@@ -63,8 +63,8 @@ The library is just a collection of functions for reading from one buffer and
 writing to another with some support functions to calculate values.
 It does not allocate, print, nor make any other syscall.
 (Though it can abort, but should not, if NDEBUG is not defined.)
-It does not even need libc as long as your compiler has a builtin memset,
-memcpy, and memmove (all 3, ie, not gcc).
+It does not even need libc as long as your compiler
+has a builtin memset and memmove (both, ie, not gcc).
 So fairly bare-bones as far as codec libraries go.
 
 The two codec functions are reentrant, so you can code as few samples at a
