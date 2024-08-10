@@ -96,6 +96,8 @@ ALWAYS_INLINE void filter_update_m(i32 *restrict m, const i32 *restrict)
 /*@modifies	*m@*/
 ;
 
+ALWAYS_INLINE CONST i32 updated_m(i32, bitcnt) /*@*/;
+
 #undef b
 ALWAYS_INLINE void filter_update_b(i32 *restrict b)
 /*@modifies	*b@*/
@@ -307,8 +309,7 @@ tta_postfilter_enc(const i32 x)
 	const u32 xsign = (u32) asr32((i32) y, (bitcnt) 31u);
 	return (u32) ((y << 1u) ^ xsign);
 #else
-	const u32 yp = (u32)  x;
-	const u32 yn = (u32) -x;
+	const u32 yp = (u32)  x, yn = (u32) -x;
 	return (UNPREDICTABLE (x > 0)
 		? (u32) ((yp << 1u) - 1u) : (u32) (yn << 1u)
 	);
@@ -422,9 +423,9 @@ tta_filter_dec(
 /**@fn filter_sum
  * @brief updates 'a' and sums the filter
  *
- * @param a filter->qm
- * @param m filter->dx
- * @param b filter->dl
+ * @param a[in out] filter->qm
+ * @param m[in] filter->dx
+ * @param b[in] filter->dl
  * @param error sign of the error (-1, 1, or 0)
  * @param round initial sum
  *
@@ -447,24 +448,37 @@ filter_sum(
 /**@fn filter_update_m
  * @brief updates 'm'
  *
- * @param m filter->dx
- * @param b filter->dl
+ * @param m[in out] filter->dx
+ * @param b[in] filter->dl
 **/
 ALWAYS_INLINE void
 filter_update_m(i32 *const restrict m, const i32 *const restrict b)
 /*@modifies	*m@*/
 {
-	m[8u] = (i32) ((((u32) asr32(b[7u], (bitcnt) 30u)) | 0x1u) << 2u);
-	m[7u] = (i32) ((((u32) asr32(b[6u], (bitcnt) 30u)) | 0x1u) << 1u);
-	m[6u] = (i32) ((((u32) asr32(b[5u], (bitcnt) 30u)) | 0x1u) << 1u);
-	m[5u] = (i32) ((((u32) asr32(b[4u], (bitcnt) 30u)) | 0x1u) << 0u);
+	m[8u] = updated_m(b[7u], (bitcnt) 2u);
+	m[7u] = updated_m(b[6u], (bitcnt) 1u);
+	m[6u] = updated_m(b[5u], (bitcnt) 1u);
+	m[5u] = updated_m(b[4u], (bitcnt) 0u);
 	return;
+}
+
+/**@fn updated_m
+ * @brief returns an updated 'm' value
+ *
+ * @param b filter->dl[]
+ * @param k final shift amount
+**/
+ALWAYS_INLINE CONST i32
+updated_m(const i32 b, const bitcnt k)
+/*@*/
+{
+	return (i32) ((((u32) asr32(b, (bitcnt) 30u)) | 0x1u) << k);
 }
 
 /**@fn filter_update_b
  * @brief updates 'b'
  *
- * @param b filter->dl
+ * @param b[in out] filter->dl
 **/
 ALWAYS_INLINE void
 filter_update_b(i32 *const restrict b)
@@ -479,8 +493,8 @@ filter_update_b(i32 *const restrict b)
 /**@fn filter_shift
  * @brief shifts the 'm' and 'b' arrays left by 1
  *
- * @param m filter->dx
- * @param b filter->dl
+ * @param m[in out] filter->dx
+ * @param b[in out] filter->dl
 **/
 ALWAYS_INLINE void
 filter_shift(i32 *const restrict m, i32 *const restrict b)
