@@ -95,7 +95,7 @@ libttaR_test_nchan(const uint nchan)
 #endif
 	default:
 		break;
-#endif
+#endif // LIBTTAr_OPT_DISABLE_MCH
 	}
 	return r;
 }
