@@ -19,8 +19,9 @@ The library is platform agnostic, but the program uses a lot of POSIX stuff.
 I have only tested on Linux.
 
 ### Processors
-The codec greatly benefits from 256-bit (specifically 8*i32) wide SIMD,
-and clang does a fairly good job targeting it.
+2's complement integers are assumed.
+
+The codec may benefit from 256-bit SIMD.
 
 While developing, I mostly tested on:
 \
