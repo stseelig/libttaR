@@ -477,7 +477,7 @@ tta_encode_2ch(
 
 	// 0	// correlate
 		next    = src[i + 1u];
-		curr.i  = next - src[i];
+		curr.i  = next - src[i + 0u];
 
 		// predict
 		prev    = curr.i;
