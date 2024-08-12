@@ -309,7 +309,7 @@ tta_postfilter_enc(const i32 x)
 	const u32 xsign = (u32) asr32((i32) y, (bitcnt) 31u);
 	return (u32) ((y << 1u) ^ xsign);
 #else
-	const u32 yp = (u32)  x, yn = (u32) -x;
+	const u32 yp = (u32) x, yn = (u32) -x;
 	return (UNPREDICTABLE (x > 0)
 		? (u32) ((yp << 1u) - 1u) : (u32) (yn << 1u)
 	);
