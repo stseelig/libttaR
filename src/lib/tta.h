@@ -255,7 +255,7 @@ signof32(const i32 x)
 {
 #ifndef LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES
 	const u32 y = (u32) -x;
-	return (i32) (asr32(x, (bitcnt) 31u) + (y >> 31u));
+	return (i32) (asr32(x, (bitcnt) 31u) | (y >> 31u));
 #else
 	return (UNPREDICTABLE (x != 0)
 		? (UNPREDICTABLE (x < 0) ? (i32) -1 : (i32) 1) : 0
