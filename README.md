@@ -21,8 +21,6 @@ I have only tested on Linux.
 ### Processors
 2's complement integers are assumed.
 
-The codec may benefit from 256-bit SIMD.
-
 While developing, I mostly tested on:
 \
 	- AMD Ryzen 7 1700    (primary tuning)\
