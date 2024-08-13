@@ -114,7 +114,7 @@ ALWAYS_INLINE CONST __m128i update_mb_lo(__m128i, __m128i) /*@*/;
 
 // SSE2, SSSE3, SSE4.1
 ///@see "../filter.h"
-i32
+ALWAYS_INLINE i32
 tta_filter_enc(
 	struct Filter *const restrict filter, const i32 value, i32 round,
 	const bitcnt k
@@ -134,7 +134,7 @@ tta_filter_enc(
 
 // SSE2, SSSE3, SSE4.1
 ///@see "../filter.h"
-i32
+ALWAYS_INLINE i32
 tta_filter_dec(
 	struct Filter *const restrict filter, const i32 value, i32 round,
 	const bitcnt k

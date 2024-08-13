@@ -69,49 +69,6 @@ ALWAYS_INLINE CONST i32 tta_predict1(i32, bitcnt) /*@*/;
 ALWAYS_INLINE CONST u32 tta_postfilter_enc(i32) /*@*/;
 ALWAYS_INLINE CONST i32 tta_prefilter_dec(u32) /*@*/;
 
-//--------------------------------------------------------------------------//
-
-#undef filter
-ALWAYS_INLINE i32 tta_filter_enc(
-	struct Filter *restrict filter, i32, i32, bitcnt
-)
-/*@modifies	*filter@*/
-;
-
-#undef filter
-ALWAYS_INLINE i32 tta_filter_dec(
-	struct Filter *restrict filter, i32, i32, bitcnt
-)
-/*@modifies	*filter@*/
-;
-
-#undef a
-ALWAYS_INLINE i32 filter_sum(
-	i32 *restrict a, const i32 *restrict, const i32 *restrict , i32, i32
-)
-/*@modifies	*a@*/
-;
-
-#undef m
-ALWAYS_INLINE void filter_update_m(i32 *restrict m, const i32 *restrict)
-/*@modifies	*m@*/
-;
-
-ALWAYS_INLINE CONST i32 updated_m(i32, bitcnt) /*@*/;
-
-#undef b
-ALWAYS_INLINE void filter_update_b(i32 *restrict b)
-/*@modifies	*b@*/
-;
-
-#undef m
-#undef b
-ALWAYS_INLINE void filter_shift(i32 *restrict m, i32 *restrict b)
-/*@modifies	*m,
-		*b
-@*/
-;
-
 //////////////////////////////////////////////////////////////////////////////
 
 /**@fn get_safety_margin
