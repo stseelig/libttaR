@@ -16,6 +16,7 @@
 #include "../bits.h"
 
 #include "common.h"
+#include "filter.h"
 #include "rice.h"
 #include "tta.h"
 

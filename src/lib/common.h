@@ -48,108 +48,6 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-enum TTASampleBytes {
-	TTASAMPLEBYTES_1 = 1u,
-	TTASAMPLEBYTES_2 = 2u,
-	TTASAMPLEBYTES_3 = 3u
-};
-#define TTA_SAMPLEBYTES_MAX	((uint) TTASAMPLEBYTES_3)
-#define TTA_SAMPLEBITS_MAX	((uint) (8u * TTA_SAMPLEBYTES_MAX))
-
-//////////////////////////////////////////////////////////////////////////////
-
-// fast types specifically tuned for the AMD Ryzen 7 1700 & clang 11
-#ifndef LIBTTAr_OPT_ONLY_NECESSARY_FAST_TYPES
-typedef u32	rice24_enc;
-typedef u32f	rice24_dec;
-typedef u32	crc32_enc;
-typedef u32f	crc32_dec;
-typedef u32f	cache32;
-typedef u64f	cache64;
-typedef  u8f	bitcnt;
-#else // defined(LIBTTAr_OPT_ONLY_NECESSARY_FAST_TYPES)
-typedef u32	rice24_enc;
-typedef u32	rice24_dec;
-typedef u32	crc32_enc;
-typedef u32	crc32_dec;
-typedef u32	cache32;
-typedef u64f	cache64;
-typedef  u8	bitcnt;
-#endif // LIBTTAr_OPT_ONLY_NECESSARY_FAST_TYPES
-
-//==========================================================================//
-
-struct BitCache_Enc {
-	cache64	cache;
-	bitcnt	count;
-};
-
-struct BitCache_Dec {
-	cache32	cache;
-	bitcnt	count;
-};
-
-union BitCache {
-	struct BitCache_Enc enc;
-	struct BitCache_Dec dec;
-};
-
-struct Rice {
-	u32	sum[2u];	// needs 32-bit wrapping
-	bitcnt	k[2u];
-};
-
-struct Filter {
-	i32	qm[8u];
-	i32	dx[9u];		// the extra value is for a memmove trick
-	i32	dl[9u];		// ~
-	i32	error;		// sign of the error (-1, 1, or 0)
-};
-
-struct Codec {
-	struct Filter	filter;
-	struct Rice	rice;
-	i32		prev;
-};
-
-struct LibTTAr_CodecState_Priv {
-	union BitCache	bitcache;
-	struct Codec 	codec[];
-};
-
-struct LibTTAr_CodecState_User {
-	u32	ncalls_codec;
-	u32	crc;
-	size_t	ni32;			// enc: num read, dec: num written
-	size_t	ni32_total;		// ~
-	size_t	nbytes_tta;		// enc: num written, dec: num read
-	size_t	nbytes_tta_total;	// ~
-};
-
-//////////////////////////////////////////////////////////////////////////////
-
-#undef priv
-INLINE void state_priv_init(
-	/*@out@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
-	const uint
-)
-/*@modifies	*priv@*/
-;
-
-#undef codec
-INLINE void codec_init(
-	/*@out@*/ struct Codec *const restrict codec, const uint
-)
-/*@modifies	*codec@*/
-;
-
-#undef rice
-INLINE void rice_init(/*@out@*/ struct Rice *const restrict rice)
-/*@modifies	*rice@*/
-;
-
-//////////////////////////////////////////////////////////////////////////////
-
 #ifdef __GNUC__
 
 #if UINT_MAX == UINT32_MAX
@@ -239,6 +137,104 @@ INLINE void rice_init(/*@out@*/ struct Rice *const restrict rice)
 #pragma message "compiler does not have a builtin 'memset'"
 #define MEMSET(s, c, n)		memset((s), (c), (n))
 #endif
+
+//////////////////////////////////////////////////////////////////////////////
+
+enum TTASampleBytes {
+	TTASAMPLEBYTES_1 = 1u,
+	TTASAMPLEBYTES_2 = 2u,
+	TTASAMPLEBYTES_3 = 3u
+};
+#define TTA_SAMPLEBYTES_MAX	((uint) TTASAMPLEBYTES_3)
+#define TTA_SAMPLEBITS_MAX	((uint) (8u * TTA_SAMPLEBYTES_MAX))
+
+//////////////////////////////////////////////////////////////////////////////
+
+// fast types specifically tuned for the AMD Ryzen 7 1700 & clang 11
+#ifndef LIBTTAr_OPT_ONLY_NECESSARY_FAST_TYPES
+typedef u32	rice24_enc;
+typedef u32f	rice24_dec;
+typedef u32	crc32_enc;
+typedef u32f	crc32_dec;
+typedef u32f	cache32;
+typedef u64f	cache64;
+typedef  u8f	bitcnt;
+#else // defined(LIBTTAr_OPT_ONLY_NECESSARY_FAST_TYPES)
+typedef u32	rice24_enc;
+typedef u32	rice24_dec;
+typedef u32	crc32_enc;
+typedef u32	crc32_dec;
+typedef u32	cache32;
+typedef u64f	cache64;
+typedef  u8	bitcnt;
+#endif // LIBTTAr_OPT_ONLY_NECESSARY_FAST_TYPES
+
+//==========================================================================//
+
+struct BitCache_Enc {
+	cache64	cache;
+	bitcnt	count;
+};
+
+struct BitCache_Dec {
+	cache32	cache;
+	bitcnt	count;
+};
+
+union BitCache {
+	struct BitCache_Enc enc;
+	struct BitCache_Dec dec;
+};
+
+struct Rice {
+	u32	sum[2u];	// needs 32-bit wrapping
+	bitcnt	k[2u];
+};
+
+// struct Filter
+#include "filter.h"
+
+struct Codec {
+	struct Filter	filter;
+	struct Rice	rice;
+	i32		prev;
+};
+
+struct LibTTAr_CodecState_Priv {
+	union BitCache	bitcache;
+	struct Codec 	codec[];
+};
+
+struct LibTTAr_CodecState_User {
+	u32	ncalls_codec;
+	u32	crc;
+	size_t	ni32;			// enc: num read, dec: num written
+	size_t	ni32_total;		// ~
+	size_t	nbytes_tta;		// enc: num written, dec: num read
+	size_t	nbytes_tta_total;	// ~
+};
+
+//////////////////////////////////////////////////////////////////////////////
+
+#undef priv
+INLINE void state_priv_init(
+	/*@out@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
+	const uint
+)
+/*@modifies	*priv@*/
+;
+
+#undef codec
+INLINE void codec_init(
+	/*@out@*/ struct Codec *const restrict codec, const uint
+)
+/*@modifies	*codec@*/
+;
+
+#undef rice
+INLINE void rice_init(/*@out@*/ struct Rice *const restrict rice)
+/*@modifies	*rice@*/
+;
 
 //////////////////////////////////////////////////////////////////////////////
 

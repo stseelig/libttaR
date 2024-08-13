@@ -103,6 +103,13 @@ typedef uint_fast64_t	u64f;
 #define UNUSED			/*@unused@*/
 #endif
 
+#if HAS_ATTRIBUTE(aligned)
+#define ALIGNED(x)			__attribute__((aligned(x)))
+#else
+#pragma message "compiler does not support the attribute 'aligned'"
+#define ALIGNED(x)
+#endif
+
 #if HAS_ATTRIBUTE(packed)
 #define PACKED			__attribute__((packed))
 #else
@@ -133,6 +140,10 @@ typedef uint_fast64_t	u64f;
 #define BUILTIN_EXPECT_WITH_PROBABILITY	__builtin_expect_with_probability
 #define BUILTIN_UNPREDICTABLE		__builtin_unpredictable
 
+#define BUILTIN_UNREACHABLE		__builtin_unreachable
+
+#define BUILTIN_ASSUME_ALIGNED		__builtin_assume_aligned
+
 #define BUILTIN_BSWAP16			__builtin_bswap16
 #define BUILTIN_BSWAP32			__builtin_bswap32
 #define BUILTIN_BSWAP64			__builtin_bswap64
@@ -144,6 +155,10 @@ typedef uint_fast64_t	u64f;
 #define BUILTIN_EXPECT			0
 #define BUILTIN_EXPECT_WITH_PROBABILITY	0
 #define BUILTIN_UNPREDICTABLE		0
+
+#define BUILTIN_UNREACHABLE		0
+
+#define BUILTIN_ASSUME_ALIGNED		0
 
 #define BUILTIN_BSWAP16			0
 #define BUILTIN_BSWAP32			0
@@ -191,9 +206,7 @@ typedef uint_fast64_t	u64f;
 
 // not sure if this is useful
 #if HAS_BUILTIN(BUILTIN_UNPREDICTABLE)
-#define UNPREDICTABLE(cond)	( \
-	BUILTIN_UNPREDICTABLE(cond) \
-)
+#define UNPREDICTABLE(cond)	(BUILTIN_UNPREDICTABLE(cond))
 #else
 //#pragma message "compiler does not have a builtin 'unpredictable'"
 #define UNPREDICTABLE(cond)	(cond)
@@ -203,13 +216,21 @@ typedef uint_fast64_t	u64f;
 
 // mainly for byte-shaving errors
 
-#if HAS_BUILTIN(__builtin_unreachable)
-#define UNREACHABLE		__builtin_unreachable(); /*@notreached@*/
+#if HAS_BUILTIN(BUILTIN_UNREACHABLE)
+#define UNREACHABLE		BUILTIN_UNREACHABLE(); /*@notreached@*/
 #else
 #define UNREACHABLE		; /*@notreached@*/
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
+
+#if HAS_BUILTIN(BUILTIN_ASSUME_ALIGNED)
+#define ASSUME_ALIGNED(addr, align)	( \
+	BUILTIN_ASSUME_ALIGNED((addr), (align)) \
+)
+#else
+#define ASSUME_ALIGNED(addr, align)
+#endif
 
 // workaround for C99 not having max_align_t
 union max_alignment {

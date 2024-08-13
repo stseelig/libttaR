@@ -37,6 +37,8 @@ readonly PROGRAM='ttaR';
 #	Debian clang version 11.0.1-2
 
 readonly CC='clang';
+#readonly CC='/opt/llvm-mingw/bin/clang';
+#readonly CC='/opt/llvm-mingw/bin/x86_64-w64-mingw32-clang';
 readonly LD="$CC";
 
 #============================================================================#
@@ -87,6 +89,9 @@ CFLAGS_LIB="$CFLAGS_LIB -O3";
 
 # uncomment to disable the multichannel/general codec
 #CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_OPT_DISABLE_MCH";
+
+# uncomment to disable SIMD intrinsics
+#CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_OPT_DISABLE_SIMD_INTRINSICS";
 
 # uncomment if your CPU is a slow POS see 'src/lib/common.h' for more info
 #CFLAGS_LIB="$CFLAGS_LIB -DLIBTTAr_OPT_SLOW_CPU";

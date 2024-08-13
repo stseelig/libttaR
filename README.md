@@ -39,6 +39,9 @@ LIBTTAr_OPT_DISABLE_UNROLLED_2CH\
 LIBTTAr_OPT_DISABLE_MCH\
 	disables the general/multichannel loop
 
+LIBTTAr_OPT_DISABLE_SIMD_INTRINSICS\
+	disables SIMD intrinsics
+
 LIBTTAr_OPT_SLOW_CPU\
 	for weak and/or old CPUs (specifically the Intel Celeron N2830)\
 	fine-grained suboptions in 'src/lib/common.h'
