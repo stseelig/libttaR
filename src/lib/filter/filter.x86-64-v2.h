@@ -25,9 +25,6 @@
 #ifndef __SSE4_1__
 #error "no SSE4.1"
 #endif
-#ifndef __AVX2__
-#error "no AVX2"
-#endif
 #endif // S_SPLINT_S
 
 //////////////////////////////////////////////////////////////////////////////
@@ -182,17 +179,26 @@ sum_m128i_epi32(__m128i x)
  *
  * @return the updated high half of 'm'
 **/
-// SSE2, AVX2
+// SSE2
 ALWAYS_INLINE CONST __m128i
 update_m_hi(__m128i b_hi)
 /*@*/
 {
+	__m128i t1, t2;
 	const __m128i v_ormask = _mm_set1_epi32(1);
-	const __m128i v_sllcnt = _mm_set_epi32(2, 1, 1, 0);
 
 	b_hi = _mm_srai_epi32(b_hi, 30);
 	b_hi = _mm_or_si128(b_hi, v_ormask);
-	b_hi = _mm_sllv_epi32(b_hi, v_sllcnt);	// AVX2
+
+	// _mm_sllv_epi32() is super slow
+	t1   = _mm_slli_epi32(b_hi, 1);
+	t2   = _mm_slli_epi32(b_hi, 2);
+	b_hi = _mm_blend_ps(
+		_mm_castsi128_ps(b_hi), _mm_castsi128_ps(t1), 0x6
+	);
+	b_hi = _mm_blend_ps(
+		_mm_castsi128_ps(b_hi), _mm_castsi128_ps(t2), 0x8
+	);
 	return b_hi;
 }
 

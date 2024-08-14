@@ -22,8 +22,8 @@
 
 #ifdef __x86_64__
 
-#ifdef __AVX2__
-#include "filter/filter.x86-64-v3.h"
+#if __SSE4_1__
+#include "filter/filter.x86-64-v2.h"
 #else
 #include "filter/filter.C.h"
 #endif
