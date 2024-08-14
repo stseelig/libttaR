@@ -103,12 +103,12 @@ typedef uint_fast64_t	u64f;
 #define UNUSED			/*@unused@*/
 #endif
 
-#if HAS_ATTRIBUTE(aligned)
-#define ALIGNED(x)			__attribute__((aligned(x)))
-#else
-#pragma message "compiler does not support the attribute 'aligned'"
-#define ALIGNED(x)
-#endif
+//#if HAS_ATTRIBUTE(aligned)
+//#define ALIGNED(x)		__attribute__((aligned(x)))
+//#else
+//#pragma message "compiler does not support the attribute 'aligned'"
+//#define ALIGNED(x)
+//#endif
 
 #if HAS_ATTRIBUTE(packed)
 #define PACKED			__attribute__((packed))
@@ -142,7 +142,7 @@ typedef uint_fast64_t	u64f;
 
 #define BUILTIN_UNREACHABLE		__builtin_unreachable
 
-#define BUILTIN_ASSUME_ALIGNED		__builtin_assume_aligned
+//#define BUILTIN_ASSUME_ALIGNED	__builtin_assume_aligned
 
 #define BUILTIN_BSWAP16			__builtin_bswap16
 #define BUILTIN_BSWAP32			__builtin_bswap32
@@ -158,7 +158,7 @@ typedef uint_fast64_t	u64f;
 
 #define BUILTIN_UNREACHABLE		0
 
-#define BUILTIN_ASSUME_ALIGNED		0
+//#define BUILTIN_ASSUME_ALIGNED	0
 
 #define BUILTIN_BSWAP16			0
 #define BUILTIN_BSWAP32			0
@@ -224,13 +224,13 @@ typedef uint_fast64_t	u64f;
 
 //////////////////////////////////////////////////////////////////////////////
 
-#if HAS_BUILTIN(BUILTIN_ASSUME_ALIGNED)
-#define ASSUME_ALIGNED(addr, align)	( \
-	BUILTIN_ASSUME_ALIGNED((addr), (align)) \
-)
-#else
-#define ASSUME_ALIGNED(addr, align)
-#endif
+//#if HAS_BUILTIN(BUILTIN_ASSUME_ALIGNED)
+//#define ASSUME_ALIGNED(addr, align)	( \
+//	BUILTIN_ASSUME_ALIGNED((addr), (align)) \
+//)
+//#else
+//#define ASSUME_ALIGNED(addr, align)
+//#endif
 
 // workaround for C99 not having max_align_t
 union max_alignment {
