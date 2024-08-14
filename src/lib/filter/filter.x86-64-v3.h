@@ -112,8 +112,8 @@ ALWAYS_INLINE CONST __m128i update_mb_lo(__m128i, __m128i) /*@*/;
 	_mm_storeu_si128((void *) &filter_b[4u], b_hi_out); \
 }
 
-// SSE2, SSSE3, SSE4.1
 ///@see "../filter.h"
+// SSE2, SSSE3, SSE4.1
 ALWAYS_INLINE i32
 tta_filter_enc(
 	struct Filter *const restrict filter, const i32 value, i32 round,
@@ -132,8 +132,8 @@ tta_filter_enc(
 	return retval;
 }
 
-// SSE2, SSSE3, SSE4.1
 ///@see "../filter.h"
+// SSE2, SSSE3, SSE4.1
 ALWAYS_INLINE i32
 tta_filter_dec(
 	struct Filter *const restrict filter, const i32 value, i32 round,
