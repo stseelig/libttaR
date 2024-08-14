@@ -63,7 +63,7 @@ ALWAYS_INLINE CONST __m128i update_mb_lo(__m128i, __m128i) /*@*/;
 	i32 *const restrict filter_a = filter->qm; \
 	i32 *const restrict filter_m = filter->dx; \
 	i32 *const restrict filter_b = filter->dl; \
-	i32 *const restrict error    = &filter->error; /* the full error */ \
+	i32 *const restrict error    = &filter->error; \
 \
 	i32 retval; \
 	__m128i a_lo, a_hi, m_lo, m_hi, b_lo, b_hi; \
