@@ -5,6 +5,7 @@
 
 	- x86-64-v3 SIMD intrinsics (filter)
 	- other minor improvements
+	- new compile option symbol
 
 1.2.8 (2024-08-08):-----------------------------------------------------------
 
