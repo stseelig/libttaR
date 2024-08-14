@@ -1,8 +1,8 @@
-#ifndef TTA_CODEC_FILTER_FILTER_X86_64_V3_H
-#define TTA_CODEC_FILTER_FILTER_X86_64_V3_H
+#ifndef TTA_CODEC_FILTER_FILTER_X86_64_V2_H
+#define TTA_CODEC_FILTER_FILTER_X86_64_V2_H
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// codec/filter/filter.x86-64-v3.h                                          //
+// codec/filter/filter.x86-64-v2.h                                          //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
@@ -29,7 +29,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-#include <immintrin.h>
+#include <smmintrin.h>
 
 #include "../../bits.h"
 
