@@ -22,7 +22,7 @@
 
 #ifdef __x86_64__
 
-#if __SSE4_1__
+#ifdef __SSE4_1__
 #include "filter/filter.x86-64-v2.h"
 #else
 #include "filter/filter.C.h"
