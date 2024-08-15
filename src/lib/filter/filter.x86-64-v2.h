@@ -61,7 +61,7 @@ ALWAYS_INLINE CONST __m128i update_mb_lo(__m128i, __m128i) /*@*/;
 	i32 *const restrict filter_m = filter->dx; \
 	i32 *const restrict filter_b = filter->dl; \
 	i32 *const restrict error    = &filter->error; \
-\
+	\
 	i32 retval; \
 	__m128i a_lo, a_hi, m_lo, m_hi, b_lo, b_hi; \
 	__m128i r_lo, r_hi, t_lo, t_hi; \
@@ -77,16 +77,19 @@ ALWAYS_INLINE CONST __m128i update_mb_lo(__m128i, __m128i) /*@*/;
 	b_lo    = _mm_loadu_si128((void *) &filter_b[0u]); \
 	b_hi    = _mm_loadu_si128((void *) &filter_b[4u]); \
 	v_error = _mm_set1_epi32(*error); \
-	v_mask  = _mm_cmpeq_epi32(v_error, v_zero); \
 }
 
 #define FILTER_SUM_UPDATE_A { \
-	t_lo   = _mm_sign_epi32(m_lo, v_error);	/* SSSE3 */ \
-	t_hi   = _mm_sign_epi32(m_hi, v_error);	/* SSSE3 */ \
-	t_lo   = _mm_andnot_si128(v_mask, t_lo); \
-	t_hi   = _mm_andnot_si128(v_mask, t_hi); \
+	/* the andnot's are logically unnecessary, but make it faster */ \
+	v_mask = _mm_cmpeq_epi32(v_error, v_zero); \
+	t_lo   = _mm_andnot_si128(v_mask, m_lo); \
+	t_hi   = _mm_andnot_si128(v_mask, m_hi); \
+	\
+	t_lo   = _mm_sign_epi32(t_lo, v_error);	/* SSSE3 */ \
 	a_lo   = _mm_add_epi32(a_lo, t_lo); \
+	t_hi   = _mm_sign_epi32(t_hi, v_error);	/* SSSE3 */ \
 	a_hi   = _mm_add_epi32(a_hi, t_hi); \
+	\
 	r_lo   = _mm_mullo_epi32(a_lo, b_lo); 	/* SSE4.1 */ \
 	r_hi   = _mm_mullo_epi32(a_hi, b_hi);	/* SSE4.1 */ \
 	round += sum_m128i_epi32(r_lo); \
