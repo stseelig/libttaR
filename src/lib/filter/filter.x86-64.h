@@ -15,6 +15,9 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
+#include <assert.h>
+#include <stdbool.h>	// true
+
 #include <smmintrin.h>
 
 #include "../../bits.h"
@@ -30,10 +33,12 @@ struct Filter{
 
 //////////////////////////////////////////////////////////////////////////////
 
+ALWAYS_INLINE CONST __m128i predictz_m128i(__m128i, __m128i) /*@*/;
+
 #ifdef __SSSE3__
-ALWAYS_INLINE CONST __m128i sign_m128i_epi32_v2(__m128i, __m128i) /*@*/;
+ALWAYS_INLINE CONST __m128i cneg_izaz_m128i_epi32_v2(__m128i, __m128i) /*@*/;
 #else
-ALWAYS_INLINE CONST __m128i sign_m128i_epi32_v1(__m128i, __m128i) /*@*/;
+ALWAYS_INLINE CONST __m128i cneg_izaz_m128i_epi32_v1(__m128i, __m128i) /*@*/;
 #endif
 
 #ifdef __SSE4_1__
@@ -70,7 +75,7 @@ ALWAYS_INLINE CONST __m128i update_mb_lo_v1(__m128i, __m128i) /*@*/;
 	__m128i a_lo, a_hi, m_lo, m_hi, b_lo, b_hi; \
 	__m128i r_lo, r_hi, t_lo, t_hi; \
 	__m128i m_lo_out, m_hi_out, b_lo_out, b_hi_out; \
-	__m128i v_error, v_iseqz;
+	__m128i v_error;
 
 #define FILTER_READ { \
 	a_lo     = _mm_loadu_si128((void *) &filter_a[0u]); \
@@ -83,14 +88,12 @@ ALWAYS_INLINE CONST __m128i update_mb_lo_v1(__m128i, __m128i) /*@*/;
 }
 
 #define FILTER_SUM_UPDATE_A(Xver) { \
-	/* the andnot's are logically unnecessary, but make it faster */ \
-	v_iseqz  = _mm_cmpeq_epi32(v_error, _mm_setzero_si128()); \
-	t_lo     = _mm_andnot_si128(v_iseqz, m_lo); \
-	t_hi     = _mm_andnot_si128(v_iseqz, m_hi); \
+	t_lo     = predictz_m128i(m_lo, v_error); \
+	t_hi     = predictz_m128i(m_hi, v_error); \
 	\
-	t_lo     = sign_m128i_epi32_##Xver(t_lo, v_error); \
+	t_lo     = cneg_izaz_m128i_epi32_##Xver(t_lo, v_error); \
 	a_lo     = _mm_add_epi32(a_lo, t_lo); \
-	t_hi     = sign_m128i_epi32_##Xver(t_hi, v_error); \
+	t_hi     = cneg_izaz_m128i_epi32_##Xver(t_hi, v_error); \
 	a_hi     = _mm_add_epi32(a_hi, t_hi); \
 	\
 	r_lo     = mullo_m128i_epi32_##Xver(a_lo, b_lo); \
@@ -117,34 +120,62 @@ ALWAYS_INLINE CONST __m128i update_mb_lo_v1(__m128i, __m128i) /*@*/;
 
 //==========================================================================//
 
-/**@fn sign_m128i_epi32
- * @brief conditionally negates x if cmp is negative, or zero's if cmp is 0
+/**@fn predictz_m128i
+ * @brief helps the CPU to know if it can skip the next few instructions
+ *
+ * @param x the input vector
+ * @param error the extended error vector
+ *
+ * @return error != 0 ? x : 0
+ *
+ * @note the error is 0 often enough that this provides a small speedup.
+ *   it should be basically cost-free anyway
+**/
+// SSE2
+ALWAYS_INLINE CONST __m128i
+predictz_m128i(const __m128i x, const __m128i error)
+/*@*/
+{
+	const __m128i v_iseqz = _mm_cmpeq_epi32(error, _mm_setzero_si128());
+
+	return _mm_andnot_si128(v_iseqz, x);
+}
+
+/**@fn cneg_izaz_m128i_epi32
+ * @brief conditional negation. if zero then already zero
  *
  * @param x the input vector
  * @param cmp the comparison vector
  *
- * @return cmp != 0 (cmp < 0 ? -x : x) : 0
+ * @return cmp < 0 ? -x : x
+ *
+ * @pre _mm_cvtsi128_si32(cmp) == 0 ? _mm_cvtsi128_si32(x) == 0 : true
 **/
 #ifdef __SSSE3__
 // SSSE3
 ALWAYS_INLINE CONST __m128i
-sign_m128i_epi32_v2(const __m128i x, const __m128i cmp)
+cneg_izaz_m128i_epi32_v2(const __m128i x, const __m128i cmp)
 /*@*/
 {
+	assert(_mm_cvtsi128_si32(cmp) == 0
+		? _mm_cvtsi128_si32(x) == 0 : true
+	);
+
 	return _mm_sign_epi32(x, cmp);	// SSSE3
 }
 #else
 // SSE2
 ALWAYS_INLINE CONST __m128i
-sign_m128i_epi32_v1(const __m128i x, const __m128i cmp)
+cneg_izaz_m128i_epi32_v1(const __m128i x, const __m128i cmp)
 /*@*/
 {
-	const __m128i v_iseq0 = _mm_cmpeq_epi32(cmp, _mm_setzero_si128());
-	const __m128i v_islt0 = _mm_cmplt_epi32(cmp, _mm_setzero_si128());
+	const __m128i v_isltz = _mm_cmplt_epi32(cmp, _mm_setzero_si128());
 
-	return _mm_sub_epi32(
-		_mm_xor_si128(_mm_andnot_si128(v_iseq0, x), v_islt0), v_islt0
+	assert(_mm_cvtsi128_si32(cmp) == 0
+		? _mm_cvtsi128_si32(x) == 0 : true
 	);
+
+	return _mm_sub_epi32(_mm_xor_si128(x, v_isltz), v_isltz);
 }
 #endif
 
