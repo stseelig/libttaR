@@ -99,9 +99,9 @@ ALWAYS_INLINE CONST __m128i update_mb_lo_v1(__m128i, __m128i) /*@*/;
 	round   += sum_m128i_epi32(r_hi); \
 }
 
-#define FILTER_UPDATE_MB(Xver, value) { \
+#define FILTER_UPDATE_MB(Xver, Xvalue) { \
 	m_hi_out = update_m_hi_##Xver(b_hi); \
-	b_hi_out = update_b_hi(b_hi, (value)); \
+	b_hi_out = update_b_hi(b_hi, (Xvalue)); \
 	m_lo_out = update_mb_lo_##Xver(m_hi, m_lo); \
 	b_lo_out = update_mb_lo_##Xver(b_hi, b_lo); \
 }
