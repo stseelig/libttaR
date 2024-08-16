@@ -1,8 +1,8 @@
-#ifndef TTA_CODEC_FILTER_FILTER_X86_64_V2_H
-#define TTA_CODEC_FILTER_FILTER_X86_64_V2_H
+#ifndef TTA_CODEC_FILTER_FILTER_X86_64_V1_H
+#define TTA_CODEC_FILTER_FILTER_X86_64_V1_H
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// codec/filter/filter.x86-64-v2.h                                          //
+// codec/filter/filter.x86-64-v1.h                                          //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
@@ -14,12 +14,6 @@
 #ifndef S_SPLINT_S
 #ifndef __SSE2__
 #error "no SSE2"
-#endif
-#ifndef __SSSE3__
-#error "no SSSE3"
-#endif
-#ifndef __SSE4_1__
-#error "no SSE4.1"
 #endif
 #endif // S_SPLINT_S
 
@@ -49,8 +43,8 @@ tta_filter_enc(
 	FILTER_VARIABLES;
 
 	FILTER_READ;
-	FILTER_SUM_UPDATE_A(v2);
-	FILTER_UPDATE_MB(v2, value);
+	FILTER_SUM_UPDATE_A(v1);
+	FILTER_UPDATE_MB(v1, value);
 	FILTER_WRITE;
 	retval = value - asr32(round, k);
 	*error = retval;
@@ -68,9 +62,9 @@ tta_filter_dec(
 	FILTER_VARIABLES;
 
 	FILTER_READ;
-	FILTER_SUM_UPDATE_A(v2);
+	FILTER_SUM_UPDATE_A(v1);
 	retval = value + asr32(round, k);
-	FILTER_UPDATE_MB(v2, retval);
+	FILTER_UPDATE_MB(v1, retval);
 	FILTER_WRITE;
 	*error = value;
 	return retval;

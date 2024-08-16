@@ -1,11 +1,15 @@
 
 # libttaR ####################################################################
 
+1.2.10 (2024-08-16):----------------------------------------------------------
+
+	- x86-64-v1 SIMD intrinsics (filter)
+	- possible minor intrinsic improvements
+
 1.2.9 (2024-08-13):-----------------------------------------------------------
 
 	- x86-64-v3 SIMD intrinsics (filter)
-		- changed to x86-64-v2 in revision, because the one AVX2
-	    intrinsic that was used was slower than four SSE2 instrinsics
+		- changed to x86-64-v2 in revision (no benefit from AVX2)
 	- other minor improvements
 	- new compile option symbol
 

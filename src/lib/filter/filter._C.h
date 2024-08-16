@@ -1,8 +1,8 @@
-#ifndef TTA_CODEC_FILTER_FILTER_C_H
-#define TTA_CODEC_FILTER_FILTER_C_H
+#ifndef TTA_CODEC_FILTER_FILTER__C_H
+#define TTA_CODEC_FILTER_FILTER__C_H
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// codec/filter/filter.C.h                                                  //
+// codec/filter/filter._C.h                                                 //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
@@ -31,7 +31,7 @@ struct Filter {
 //////////////////////////////////////////////////////////////////////////////
 
 #undef a
-ALWAYS_INLINE i32 filter_sum(
+ALWAYS_INLINE i32 filter_sum_update_a(
 	i32 *restrict a, const i32 *restrict, const i32 *restrict , i32, i32
 )
 /*@modifies	*a@*/
@@ -51,7 +51,7 @@ ALWAYS_INLINE void filter_update_b(i32 *restrict b)
 
 #undef m
 #undef b
-ALWAYS_INLINE void filter_shift(i32 *restrict m, i32 *restrict b)
+ALWAYS_INLINE void filter_shift_mb(i32 *restrict m, i32 *restrict b)
 /*@modifies	*m,
 		*b
 @*/
@@ -74,11 +74,11 @@ tta_filter_enc(
 
 	i32 retval;
 
-	round  = filter_sum(a, m, b, e[0u], round);
+	round  = filter_sum_update_a(a, m, b, e[0u], round);
 	filter_update_m(m, b);
 	b[8u]  = value;
 	filter_update_b(b);
-	filter_shift(m, b);
+	filter_shift_mb(m, b);
 	retval = value - asr32(round, k);
 	e[0u]  = signof32(retval);
 
@@ -100,12 +100,12 @@ tta_filter_dec(
 
 	i32 retval;
 
-	round  = filter_sum(a, m, b, e[0u], round);
+	round  = filter_sum_update_a(a, m, b, e[0u], round);
 	retval = value + asr32(round, k);
 	b[8u]  = retval;
 	filter_update_m(m, b);
 	filter_update_b(b);
-	filter_shift(m, b);
+	filter_shift_mb(m, b);
 	e[0u]  = signof32(value);
 
 	return retval;
@@ -113,7 +113,7 @@ tta_filter_dec(
 
 //--------------------------------------------------------------------------//
 
-/**@fn filter_sum
+/**@fn filter_sum_update_a
  * @brief updates 'a' and sums the filter
  *
  * @param a[in out] filter->qm
@@ -125,7 +125,7 @@ tta_filter_dec(
  * @return sum of the filter
 **/
 ALWAYS_INLINE i32
-filter_sum(
+filter_sum_update_a(
 	i32 *const restrict a, const i32 *const restrict m,
 	const i32 *const restrict b, const i32 error, i32 round
 )
@@ -183,14 +183,14 @@ filter_update_b(i32 *const restrict b)
 	return;
 }
 
-/**@fn filter_shift
+/**@fn filter_shift_mb
  * @brief shifts the 'm' and 'b' arrays left by 1
  *
  * @param m[in out] filter->dx
  * @param b[in out] filter->dl
 **/
 ALWAYS_INLINE void
-filter_shift(i32 *const restrict m, i32 *const restrict b)
+filter_shift_mb(i32 *const restrict m, i32 *const restrict b)
 /*@modifies	*m,
 		*b
 @*/

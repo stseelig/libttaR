@@ -22,20 +22,22 @@
 
 #ifdef __x86_64__
 
-#ifdef __SSE4_1__
+#if defined(__SSE4_1__)
 #include "filter/filter.x86-64-v2.h"
+#elif defined(__SSE2__)
+#include "filter/filter.x86-64-v1.h"
 #else
-#include "filter/filter.C.h"
+#include "filter/filter._C.h"
 #endif
 
 #else // C
 
-#include "filter/filter.C.h"
+#include "filter/filter._C.h"
 
 #endif
 #else // defined(LIBTTAr_OPT_DISABLE_SIMD_INTRINSICS)
 
-#include "filter/filter.C.h"
+#include "filter/filter._C.h"
 
 #endif // LIBTTAr_OPT_DISABLE_SIMD_INTRINSICS
 
