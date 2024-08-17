@@ -570,7 +570,7 @@ rice_encode_cacheflush(
 {
 	cache64 *const restrict cache = &bitcache->cache;
 	bitcnt  *const restrict count = &bitcache->count;
-	crc32_enc crc = *crc_inout;
+	crc32_enc crc = (crc32_enc) *crc_inout;
 
 	assert(*count <= (bitcnt) 64u);
 
