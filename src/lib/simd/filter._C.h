@@ -1,8 +1,8 @@
-#ifndef TTA_CODEC_FILTER_FILTER__C_H
-#define TTA_CODEC_FILTER_FILTER__C_H
+#ifndef TTA_CODEC_SIMD_FILTER__C_H
+#define TTA_CODEC_SIMD_FILTER__C_H
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// codec/filter/filter._C.h                                                 //
+// codec/simd/filter._C.h                                                   //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //

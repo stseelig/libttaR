@@ -1,8 +1,8 @@
-#ifndef TTA_CODEC_FILTER_FILTER_X86_H
-#define TTA_CODEC_FILTER_FILTER_X86_H
+#ifndef TTA_CODEC_SIMD_FILTER_X86_H
+#define TTA_CODEC_SIMD_FILTER_X86_H
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// codec/filter/filter.x86-64.h                                             //
+// codec/simd/filter.x86.h                                                  //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
@@ -39,6 +39,10 @@ ALWAYS_INLINE CONST __m128i predictz_m128i(__m128i, __m128i) /*@*/;
 ALWAYS_INLINE CONST __m128i cneg_izaz_m128i_epi32_v2(__m128i, __m128i) /*@*/;
 #else
 ALWAYS_INLINE CONST __m128i cneg_izaz_m128i_epi32_v1(__m128i, __m128i) /*@*/;
+#endif
+
+#ifndef NDEBUG
+ALWAYS_INLINE CONST i32 disjunct_m128i_epi32(__m128i) /*@*/;
 #endif
 
 #ifdef __SSE4_1__
@@ -149,7 +153,7 @@ predictz_m128i(const __m128i x, const __m128i error)
  *
  * @return cmp < 0 ? -x : x
  *
- * @pre _mm_cvtsi128_si32(cmp) == 0 ? _mm_cvtsi128_si32(x) == 0 : true
+ * @pre disjunct_m128i_epi32(cmp) == 0 ? disjunct_m128i_epi32(x) == 0 : true
 **/
 #ifdef __SSSE3__
 // SSSE3
@@ -157,8 +161,8 @@ ALWAYS_INLINE CONST __m128i
 cneg_izaz_m128i_epi32_v2(const __m128i x, const __m128i cmp)
 /*@*/
 {
-	assert(_mm_cvtsi128_si32(cmp) == 0
-		? _mm_cvtsi128_si32(x) == 0 : true
+	assert(disjunct_m128i_epi32(cmp) == 0
+		? disjunct_m128i_epi32(x) == 0 : true
 	);
 
 	return _mm_sign_epi32(x, cmp);	// SSSE3
@@ -171,11 +175,32 @@ cneg_izaz_m128i_epi32_v1(const __m128i x, const __m128i cmp)
 {
 	const __m128i v_isltz = _mm_cmplt_epi32(cmp, _mm_setzero_si128());
 
-	assert(_mm_cvtsi128_si32(cmp) == 0
-		? _mm_cvtsi128_si32(x) == 0 : true
+	assert(disjunct_m128i_epi32(cmp) == 0
+		? disjunct_m128i_epi32(x) == 0 : true
 	);
 
 	return _mm_sub_epi32(_mm_xor_si128(x, v_isltz), v_isltz);
+}
+#endif
+
+#ifndef NDEBUG
+/**@fn disjunct_m128i_epi32
+ * @brief ors together every item in the vector
+ *
+ * @param x the input vector
+ *
+ * @return the disjunct of all items in the vector
+ *
+ * @note only used in an assertion
+**/
+// SSE2
+ALWAYS_INLINE CONST i32
+disjunct_m128i_epi32(__m128i x)
+/*@*/
+{
+	x = _mm_or_si128(x, _mm_bsrli_si128(x, 8));
+	x = _mm_or_si128(x, _mm_bsrli_si128(x, 4));
+	return (i32) _mm_cvtsi128_si32(x);
 }
 #endif
 
@@ -213,7 +238,7 @@ mullo_m128i_epi32_v1(const __m128i a, const __m128i b)
 #endif
 
 /**@fn sum_m128i_epi32
- * @brief sums every item in the vector
+ * @brief adds together every item in the vector
  *
  * @param x the input vector
  *

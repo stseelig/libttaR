@@ -20,24 +20,32 @@
 
 #ifndef LIBTTAr_OPT_DISABLE_SIMD_INTRINSICS
 
-#ifdef __x86_64__
+#if defined(__i386__)
+
+#if defined(__SSE2__)
+#include "simd/filter.x86-32-sse2.h"
+#else
+#include "simd/filter._C.h"
+#endif
+
+#elif defined(__x86_64__)
 
 #if defined(__SSE4_1__)
-#include "filter/filter.x86-64-v2.h"
+#include "simd/filter.x86-64-v2.h"
 #elif defined(__SSE2__)
-#include "filter/filter.x86-64-v1.h"
+#include "simd/filter.x86-64-v1.h"
 #else
-#include "filter/filter._C.h"
+#include "simd/filter._C.h"
 #endif
 
 #else // C
 
-#include "filter/filter._C.h"
+#include "simd/filter._C.h"
 
 #endif
 #else // defined(LIBTTAr_OPT_DISABLE_SIMD_INTRINSICS)
 
-#include "filter/filter._C.h"
+#include "simd/filter._C.h"
 
 #endif // LIBTTAr_OPT_DISABLE_SIMD_INTRINSICS
 
