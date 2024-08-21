@@ -24,6 +24,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
+// aligned in 'struct Codec'
 struct Filter{
 	i32	qm[8u];
 	i32	dx[8u];
@@ -70,10 +71,8 @@ ALWAYS_INLINE CONST __m128i update_mb_lo_v1(__m128i, __m128i) /*@*/;
 //////////////////////////////////////////////////////////////////////////////
 
 #define FILTER_VARIABLES \
-	i32 *const restrict filter_a = filter->qm; \
-	i32 *const restrict filter_m = filter->dx; \
-	i32 *const restrict filter_b = filter->dl; \
-	i32 *const restrict error    = &filter->error; \
+	i32 *const restrict filter_a = ASSUME_ALIGNED( filter->qm   , 16u); \
+	i32 *const restrict error    = ASSUME_ALIGNED(&filter->error, 16u); \
 	\
 	i32 retval; \
 	__m128i a_lo, a_hi, m_lo, m_hi, b_lo, b_hi; \
@@ -82,12 +81,12 @@ ALWAYS_INLINE CONST __m128i update_mb_lo_v1(__m128i, __m128i) /*@*/;
 	__m128i v_error;
 
 #define FILTER_READ { \
-	a_lo     = _mm_loadu_si128((void *) &filter_a[0u]); \
-	a_hi     = _mm_loadu_si128((void *) &filter_a[4u]); \
-	m_lo     = _mm_loadu_si128((void *) &filter_m[0u]); \
-	m_hi     = _mm_loadu_si128((void *) &filter_m[4u]); \
-	b_lo     = _mm_loadu_si128((void *) &filter_b[0u]); \
-	b_hi     = _mm_loadu_si128((void *) &filter_b[4u]); \
+	a_lo     = _mm_load_si128((void *) &filter_a[ 0u]); \
+	a_hi     = _mm_load_si128((void *) &filter_a[ 4u]); \
+	m_lo     = _mm_load_si128((void *) &filter_a[ 8u]); \
+	m_hi     = _mm_load_si128((void *) &filter_a[12u]); \
+	b_lo     = _mm_load_si128((void *) &filter_a[16u]); \
+	b_hi     = _mm_load_si128((void *) &filter_a[20u]); \
 	v_error  = _mm_set1_epi32(*error); \
 }
 
@@ -114,12 +113,12 @@ ALWAYS_INLINE CONST __m128i update_mb_lo_v1(__m128i, __m128i) /*@*/;
 }
 
 #define FILTER_WRITE { \
-	_mm_storeu_si128((void *) &filter_a[0u], a_lo); \
-	_mm_storeu_si128((void *) &filter_a[4u], a_hi); \
-	_mm_storeu_si128((void *) &filter_m[0u], m_lo_out); \
-	_mm_storeu_si128((void *) &filter_m[4u], m_hi_out); \
-	_mm_storeu_si128((void *) &filter_b[0u], b_lo_out); \
-	_mm_storeu_si128((void *) &filter_b[4u], b_hi_out); \
+	_mm_store_si128((void *) &filter_a[ 0u], a_lo); \
+	_mm_store_si128((void *) &filter_a[ 4u], a_hi); \
+	_mm_store_si128((void *) &filter_a[ 8u], m_lo_out); \
+	_mm_store_si128((void *) &filter_a[12u], m_hi_out); \
+	_mm_store_si128((void *) &filter_a[16u], b_lo_out); \
+	_mm_store_si128((void *) &filter_a[20u], b_hi_out); \
 }
 
 //==========================================================================//
@@ -330,7 +329,7 @@ update_b_hi(const __m128i b_hi, const i32 value)
 	const __m128i v_in5   = _mm_bsrli_si128(b_hi, 12);
 	const __m128i v_value = _mm_set1_epi32(value);
 
-	return  _mm_sub_epi32(
+	return _mm_sub_epi32(
 		_mm_sub_epi32(v_value, v_in7), _mm_add_epi32(v_in5, v_in6)
 	);
 }

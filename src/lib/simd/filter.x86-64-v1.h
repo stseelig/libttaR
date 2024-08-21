@@ -47,7 +47,8 @@ tta_filter_enc(
 	FILTER_UPDATE_MB(v1, value);
 	FILTER_WRITE;
 	retval = value - asr32(round, k);
-	*error = retval;
+	filter->error = retval;
+
 	return retval;
 }
 
@@ -66,7 +67,8 @@ tta_filter_dec(
 	retval = value + asr32(round, k);
 	FILTER_UPDATE_MB(v1, retval);
 	FILTER_WRITE;
-	*error = value;
+	filter->error = value;
+
 	return retval;
 }
 

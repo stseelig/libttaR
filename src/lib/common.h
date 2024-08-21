@@ -55,7 +55,7 @@
 #elif ULONG_MAX == UINT32_MAX
 #define BUILTIN_TZCNT32			__builtin_ctzl
 #else
-#define BUILTIN_TZCNT32			0
+#define BUILTIN_TZCNT32			nil
 #endif
 
 #if UINT_MAX == UINT64_MAX
@@ -65,12 +65,10 @@
 #elif ULONG_LONG_MAX == UINT64_MAX
 #define BUILTIN_TZCNT64			__builtin_ctzll
 #else
-#define BUILTIN_TZCNT64			0
+#define BUILTIN_TZCNT64			nil
 #endif
 
 // the _inline's cause clang to panic (Debian clang version 11.0.1-2)
-//#define BUILTIN_MEMCPY_INLINE		__builtin_memcpy_inline
-//#define BUILTIN_MEMCPY		__builtin_memcpy
 //#define BUILTIN_MEMMOVE_INLINE	__builtin_memmove_inline
 #define BUILTIN_MEMMOVE			__builtin_memmove
 //#define BUILTIN_MEMSET_INLINE		__builtin_memset_inline
@@ -78,15 +76,13 @@
 
 #else // ! defined(__GNUC__)
 
-#define BUILTIN_TZCNT32			0
-#define BUILTIN_TZCNT64			0
+#define BUILTIN_TZCNT32			nil
+#define BUILTIN_TZCNT64			nil
 
-//#define BUILTIN_MEMCPY_INLINE		0
-//#define BUILTIN_MEMCPY		0
-#define BUILTIN_MEMMOVE_INLINE		0
-#define BUILTIN_MEMMOVE			0
-#define BUILTIN_MEMSET_INLINE		0
-#define BUILTIN_MEMSET			0
+#define BUILTIN_MEMMOVE_INLINE		nil
+#define BUILTIN_MEMMOVE			nil
+#define BUILTIN_MEMSET_INLINE		nil
+#define BUILTIN_MEMSET			nil
 
 #endif // __GNUC__
 
@@ -109,15 +105,6 @@
 //==========================================================================//
 
 // -nolibc; a decent compiler should do this anyway
-
-//#if HAS_BUILTIN(BUILTIN_MEMCPY_INLINE)
-//#define MEMCPY(dest, src, n)	BUILTIN_MEMCPY_INLINE((dest), (src), (n))
-//#elif HAS_BUILTIN(BUILTIN_MEMCPY)
-//#define MEMCPY(dest, src, n)	BUILTIN_MEMCPY((dest), (src), (n))
-//#else
-//#pragma message "compiler does not have a builtin 'memcpy'"
-//#define MEMCPY(dest, src, n)	((void) memcpy((dest), (src), (n)))
-//#endif
 
 #if HAS_BUILTIN(BUILTIN_MEMMOVE_INLINE)
 #define MEMMOVE(dest, src, n)	BUILTIN_MEMMOVE_INLINE((dest), (src), (n))
@@ -194,7 +181,7 @@ struct Rice {
 // struct Filter
 #include "filter.h"
 
-struct Codec {
+struct ALIGNED(16u) Codec {	// alignment necessary for intrinsics (filter)
 	struct Filter	filter;
 	struct Rice	rice;
 	i32		prev;

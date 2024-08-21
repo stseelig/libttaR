@@ -16,6 +16,7 @@
 
 //==========================================================================//
 
+// aligned in 'struct Codec'
 struct Filter {
 	i32	qm[8u];
 	i32	dx[9u];	// the extra value is for a memmove trick
@@ -67,10 +68,10 @@ tta_filter_enc(
 )
 /*@modifies	*filter@*/
 {
-	i32 *const restrict a = filter->qm;
-	i32 *const restrict m = filter->dx;
-	i32 *const restrict b = filter->dl;
-	i32 *const restrict e = &filter->error;
+	i32 *const restrict a = ASSUME_ALIGNED( filter->qm   , 16u);
+	i32 *const restrict m = ASSUME_ALIGNED( filter->dx   , 16u);
+	i32 *const restrict b = ASSUME_ALIGNED( filter->dl   ,  4u);
+	i32 *const restrict e = ASSUME_ALIGNED(&filter->error,  4u);
 
 	i32 retval;
 
@@ -93,10 +94,10 @@ tta_filter_dec(
 )
 /*@modifies	*filter@*/
 {
-	i32 *const restrict a = filter->qm;
-	i32 *const restrict m = filter->dx;
-	i32 *const restrict b = filter->dl;
-	i32 *const restrict e = &filter->error;
+	i32 *const restrict a = ASSUME_ALIGNED( filter->qm   , 16u);
+	i32 *const restrict m = ASSUME_ALIGNED( filter->dx   , 16u);
+	i32 *const restrict b = ASSUME_ALIGNED( filter->dl   ,  4u);
+	i32 *const restrict e = ASSUME_ALIGNED(&filter->error,  4u);
 
 	i32 retval;
 

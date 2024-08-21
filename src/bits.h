@@ -103,12 +103,15 @@ typedef uint_fast64_t	u64f;
 #define UNUSED			/*@unused@*/
 #endif
 
-//#if HAS_ATTRIBUTE(aligned)
-//#define ALIGNED(x)		__attribute__((aligned(x)))
-//#else
-//#pragma message "compiler does not support the attribute 'aligned'"
-//#define ALIGNED(x)
-//#endif
+#if HAS_ATTRIBUTE(aligned)
+#define ALIGNED(x)			__attribute__((aligned(x)))
+#else
+#ifndef S_SPLINT_S
+#error "compiler does not support the attribute 'aligned'"
+#else
+#define ALIGNED(x)
+#endif
+#endif
 
 #if HAS_ATTRIBUTE(packed)
 #define PACKED			__attribute__((packed))
@@ -142,7 +145,7 @@ typedef uint_fast64_t	u64f;
 
 #define BUILTIN_UNREACHABLE		__builtin_unreachable
 
-//#define BUILTIN_ASSUME_ALIGNED	__builtin_assume_aligned
+#define BUILTIN_ASSUME_ALIGNED		__builtin_assume_aligned
 
 #define BUILTIN_BSWAP16			__builtin_bswap16
 #define BUILTIN_BSWAP32			__builtin_bswap32
@@ -152,31 +155,19 @@ typedef uint_fast64_t	u64f;
 
 #define HAS_BUILTIN(x)			0
 
-#define BUILTIN_EXPECT			0
-#define BUILTIN_EXPECT_WITH_PROBABILITY	0
-#define BUILTIN_UNPREDICTABLE		0
+#define BUILTIN_EXPECT			nil
+#define BUILTIN_EXPECT_WITH_PROBABILITY	nil
+#define BUILTIN_UNPREDICTABLE		nil
 
-#define BUILTIN_UNREACHABLE		0
+#define BUILTIN_UNREACHABLE		nil
 
-//#define BUILTIN_ASSUME_ALIGNED	0
+#define BUILTIN_ASSUME_ALIGNED		nil
 
-#define BUILTIN_BSWAP16			0
-#define BUILTIN_BSWAP32			0
-#define BUILTIN_BSWAP64			0
+#define BUILTIN_BSWAP16			nil
+#define BUILTIN_BSWAP32			nil
+#define BUILTIN_BSWAP64			nil
 
 #endif // __GNUC__
-
-#ifndef S_SPLINT_S
-#ifndef __BYTE_ORDER__
-#error "'__BYTE_ORDER__' not defined"
-#endif
-#ifndef __ORDER_BIG_ENDIAN__
-#error "'__ORDER_BIG_ENDIAN__' not defined"
-#endif
-#ifndef __ORDER_LITTLE_ENDIAN__
-#error "'__ORDER_LITTLE_ENDIAN__' not defined"
-#endif
-#endif // S_SPLINT_S
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -224,13 +215,12 @@ typedef uint_fast64_t	u64f;
 
 //////////////////////////////////////////////////////////////////////////////
 
-//#if HAS_BUILTIN(BUILTIN_ASSUME_ALIGNED)
-//#define ASSUME_ALIGNED(addr, align)	( \
-//	BUILTIN_ASSUME_ALIGNED((addr), (align)) \
-//)
-//#else
-//#define ASSUME_ALIGNED(addr, align)
-//#endif
+#if HAS_BUILTIN(BUILTIN_ASSUME_ALIGNED)
+#define ASSUME_ALIGNED(x, align)	BUILTIN_ASSUME_ALIGNED((x), (align))
+#else
+#pragma message "compiler does not have a builtin 'assume_aligned'"
+#define ASSUME_ALIGNED(x, align)	(x)
+#endif
 
 // workaround for C99 not having max_align_t
 union max_alignment {
@@ -357,6 +347,18 @@ bswap64(const u64 x)
 }
 
 //==========================================================================//
+
+#ifndef S_SPLINT_S
+#ifndef __BYTE_ORDER__
+#error "'__BYTE_ORDER__' not defined"
+#endif
+#ifndef __ORDER_BIG_ENDIAN__
+#error "'__ORDER_BIG_ENDIAN__' not defined"
+#endif
+#ifndef __ORDER_LITTLE_ENDIAN__
+#error "'__ORDER_LITTLE_ENDIAN__' not defined"
+#endif
+#endif // S_SPLINT_S
 
 /**@fn htole16
  * @brief host to little-endian 16-bit

@@ -1,8 +1,8 @@
-#ifndef TTA_CODEC_SIMD_FILTER_X86_64_V2_H
-#define TTA_CODEC_SIMD_FILTER_X86_64_V2_H
+#ifndef TTA_CODEC_SIMD_FILTER_PPC32_ALTIVEC_H
+#define TTA_CODEC_SIMD_FILTER_PPC32_ALTIVEC_H
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// codec/simd/filter.x86-64-v2.h                                            //
+// codec/simd/filter.ppc32-altivec.h                                        //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
@@ -12,14 +12,8 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef S_SPLINT_S
-#ifndef __SSE2__
-#error "no SSE2"
-#endif
-#ifndef __SSSE3__
-#error "no SSSE3"
-#endif
-#ifndef __SSE4_1__
-#error "no SSE4.1"
+#ifndef __ALTIVEC__
+#error "no AltiVec"
 #endif
 #endif // S_SPLINT_S
 
@@ -29,7 +23,7 @@
 
 //==========================================================================//
 
-#include "filter.x86.h"
+#include "filter.ppc.h"
 
 //==========================================================================//
 
@@ -49,11 +43,11 @@ tta_filter_enc(
 	FILTER_VARIABLES;
 
 	FILTER_READ;
-	FILTER_SUM_UPDATE_A(v2);
-	FILTER_UPDATE_MB(v2, value);
+	FILTER_SUM_UPDATE_A;
+	FILTER_UPDATE_MB(value);
 	FILTER_WRITE;
 	retval = value - asr32(round, k);
-	filter->error = retval;
+	*error = retval;
 
 	return retval;
 }
@@ -69,11 +63,11 @@ tta_filter_dec(
 	FILTER_VARIABLES;
 
 	FILTER_READ;
-	FILTER_SUM_UPDATE_A(v2);
+	FILTER_SUM_UPDATE_A;
 	retval = value + asr32(round, k);
-	FILTER_UPDATE_MB(v2, retval);
+	FILTER_UPDATE_MB(retval);
 	FILTER_WRITE;
-	filter->error = value;
+	*error = value;
 
 	return retval;
 }
