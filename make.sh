@@ -37,7 +37,6 @@ readonly PROGRAM='ttaR';
 #	Debian clang version 11.0.1-2
 
 readonly CC='clang';
-#readonly CC='/opt/llvm-mingw/bin/clang';
 #readonly CC='/opt/llvm-mingw/bin/x86_64-w64-mingw32-clang';
 readonly LD="$CC";
 
