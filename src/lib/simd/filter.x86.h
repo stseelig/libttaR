@@ -15,12 +15,22 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
+#ifndef S_SPLINT_S
+#ifndef __SSE2__
+#error "no SSE2"
+#endif
+#endif // S_SPLINT_S
+
+//////////////////////////////////////////////////////////////////////////////
+
 #include <assert.h>
 #include <stdbool.h>	// true
 
 #include <smmintrin.h>
 
 #include "../../bits.h"
+
+#include "../tta.h"
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -35,38 +45,18 @@ struct Filter{
 //////////////////////////////////////////////////////////////////////////////
 
 ALWAYS_INLINE CONST __m128i predictz_m128i(__m128i, __m128i) /*@*/;
-
-#ifdef __SSSE3__
-ALWAYS_INLINE CONST __m128i cneg_izaz_m128i_epi32_v2(__m128i, __m128i) /*@*/;
-#else
-ALWAYS_INLINE CONST __m128i cneg_izaz_m128i_epi32_v1(__m128i, __m128i) /*@*/;
-#endif
+ALWAYS_INLINE CONST __m128i cneg_izaz_m128i_epi32(__m128i, __m128i) /*@*/;
 
 #ifndef NDEBUG
 ALWAYS_INLINE CONST i32 disjunct_m128i_epi32(__m128i) /*@*/;
 #endif
 
-#ifdef __SSE4_1__
-ALWAYS_INLINE CONST __m128i mullo_m128i_epi32_v2(__m128i, __m128i) /*@*/;
-#else
-ALWAYS_INLINE CONST __m128i mullo_m128i_epi32_v1(__m128i, __m128i) /*@*/;
-#endif
-
+ALWAYS_INLINE CONST __m128i mullo_m128i_epi32(__m128i, __m128i) /*@*/;
 ALWAYS_INLINE CONST i32 sum_m128i_epi32(__m128i) /*@*/;
 
-#ifdef __SSE4_1__
-ALWAYS_INLINE CONST __m128i update_m_hi_v2(__m128i) /*@*/;
-#else
-ALWAYS_INLINE CONST __m128i update_m_hi_v1(__m128i) /*@*/;
-#endif
-
+ALWAYS_INLINE CONST __m128i update_m_hi(__m128i) /*@*/;
 ALWAYS_INLINE CONST __m128i update_b_hi(__m128i, i32) /*@*/;
-
-#ifdef __SSSE3__
-ALWAYS_INLINE CONST __m128i update_mb_lo_v2(__m128i, __m128i) /*@*/;
-#else
-ALWAYS_INLINE CONST __m128i update_mb_lo_v1(__m128i, __m128i) /*@*/;
-#endif
+ALWAYS_INLINE CONST __m128i update_mb_lo(__m128i, __m128i) /*@*/;
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -90,26 +80,26 @@ ALWAYS_INLINE CONST __m128i update_mb_lo_v1(__m128i, __m128i) /*@*/;
 	v_error  = _mm_set1_epi32(*error); \
 }
 
-#define FILTER_SUM_UPDATE_A(Xver) { \
+#define FILTER_SUM_UPDATE_A { \
 	t_lo     = predictz_m128i(m_lo, v_error); \
 	t_hi     = predictz_m128i(m_hi, v_error); \
 	\
-	t_lo     = cneg_izaz_m128i_epi32_##Xver(t_lo, v_error); \
+	t_lo     = cneg_izaz_m128i_epi32(t_lo, v_error); \
 	a_lo     = _mm_add_epi32(a_lo, t_lo); \
-	t_hi     = cneg_izaz_m128i_epi32_##Xver(t_hi, v_error); \
+	t_hi     = cneg_izaz_m128i_epi32(t_hi, v_error); \
 	a_hi     = _mm_add_epi32(a_hi, t_hi); \
 	\
-	r_lo     = mullo_m128i_epi32_##Xver(a_lo, b_lo); \
-	r_hi     = mullo_m128i_epi32_##Xver(a_hi, b_hi); \
+	r_lo     = mullo_m128i_epi32(a_lo, b_lo); \
+	r_hi     = mullo_m128i_epi32(a_hi, b_hi); \
 	round   += sum_m128i_epi32(r_lo); \
 	round   += sum_m128i_epi32(r_hi); \
 }
 
-#define FILTER_UPDATE_MB(Xver, Xvalue) { \
-	m_hi_out = update_m_hi_##Xver(b_hi); \
+#define FILTER_UPDATE_MB(Xvalue) { \
+	m_hi_out = update_m_hi(b_hi); \
 	b_hi_out = update_b_hi(b_hi, (Xvalue)); \
-	m_lo_out = update_mb_lo_##Xver(m_hi, m_lo); \
-	b_lo_out = update_mb_lo_##Xver(b_hi, b_lo); \
+	m_lo_out = update_mb_lo(m_hi, m_lo); \
+	b_lo_out = update_mb_lo(b_hi, b_lo); \
 }
 
 #define FILTER_WRITE { \
@@ -121,7 +111,47 @@ ALWAYS_INLINE CONST __m128i update_mb_lo_v1(__m128i, __m128i) /*@*/;
 	_mm_store_si128((void *) &filter_a[20u], b_hi_out); \
 }
 
-//==========================================================================//
+///@see "../filter.h"
+ALWAYS_INLINE i32
+tta_filter_enc(
+	struct Filter *const restrict filter, const i32 value, i32 round,
+	const bitcnt k
+)
+/*@modifies	*filter@*/
+{
+	FILTER_VARIABLES;
+
+	FILTER_READ;
+	FILTER_SUM_UPDATE_A;
+	FILTER_UPDATE_MB(value);
+	FILTER_WRITE;
+	retval = value - asr32(round, k);
+	filter->error = retval;
+
+	return retval;
+}
+
+///@see "../filter.h"
+ALWAYS_INLINE i32
+tta_filter_dec(
+	struct Filter *const restrict filter, const i32 value, i32 round,
+	const bitcnt k
+)
+/*@modifies	*filter@*/
+{
+	FILTER_VARIABLES;
+
+	FILTER_READ;
+	FILTER_SUM_UPDATE_A;
+	retval = value + asr32(round, k);
+	FILTER_UPDATE_MB(retval);
+	FILTER_WRITE;
+	filter->error = value;
+
+	return retval;
+}
+
+//--------------------------------------------------------------------------//
 
 /**@fn predictz_m128i
  * @brief helps the CPU to know if it can skip the next few instructions
@@ -134,7 +164,6 @@ ALWAYS_INLINE CONST __m128i update_mb_lo_v1(__m128i, __m128i) /*@*/;
  * @note the error is 0 often enough that this provides a small speedup.
  *   it should be basically cost-free anyway
 **/
-// SSE2
 ALWAYS_INLINE CONST __m128i
 predictz_m128i(const __m128i x, const __m128i error)
 /*@*/
@@ -154,24 +183,18 @@ predictz_m128i(const __m128i x, const __m128i error)
  *
  * @pre disjunct_m128i_epi32(cmp) == 0 ? disjunct_m128i_epi32(x) == 0 : true
 **/
-#ifdef __SSSE3__
-// SSSE3
 ALWAYS_INLINE CONST __m128i
-cneg_izaz_m128i_epi32_v2(const __m128i x, const __m128i cmp)
+cneg_izaz_m128i_epi32(const __m128i x, const __m128i cmp)
 /*@*/
 {
+#ifdef __SSSE3__
+
 	assert(disjunct_m128i_epi32(cmp) == 0
 		? disjunct_m128i_epi32(x) == 0 : true
 	);
 
 	return _mm_sign_epi32(x, cmp);	// SSSE3
-}
 #else
-// SSE2
-ALWAYS_INLINE CONST __m128i
-cneg_izaz_m128i_epi32_v1(const __m128i x, const __m128i cmp)
-/*@*/
-{
 	const __m128i v_isltz = _mm_cmplt_epi32(cmp, _mm_setzero_si128());
 
 	assert(disjunct_m128i_epi32(cmp) == 0
@@ -179,8 +202,8 @@ cneg_izaz_m128i_epi32_v1(const __m128i x, const __m128i cmp)
 	);
 
 	return _mm_sub_epi32(_mm_xor_si128(x, v_isltz), v_isltz);
-}
 #endif
+}
 
 #ifndef NDEBUG
 /**@fn disjunct_m128i_epi32
@@ -192,7 +215,6 @@ cneg_izaz_m128i_epi32_v1(const __m128i x, const __m128i cmp)
  *
  * @note only used in an assertion
 **/
-// SSE2
 ALWAYS_INLINE CONST i32
 disjunct_m128i_epi32(__m128i x)
 /*@*/
@@ -211,20 +233,14 @@ disjunct_m128i_epi32(__m128i x)
  *
  * @return the lower 32-bit product
 **/
+ALWAYS_INLINE CONST __m128i
+mullo_m128i_epi32(const __m128i a, const __m128i b)
+/*@*/
+{
 #ifdef __SSE4_1__
-// SSE4.1
-ALWAYS_INLINE CONST __m128i
-mullo_m128i_epi32_v2(const __m128i a, const __m128i b)
-/*@*/
-{
+
 	return _mm_mullo_epi32(a, b);	// SSE4.1
-}
 #else
-// SSE2
-ALWAYS_INLINE CONST __m128i
-mullo_m128i_epi32_v1(const __m128i a, const __m128i b)
-/*@*/
-{
 	const __m128i p0 = _mm_mul_epu32(a, b);
 	const __m128i p1 = _mm_mul_epu32(
 		_mm_bsrli_si128(a, 4), _mm_bsrli_si128(b, 4)
@@ -233,8 +249,8 @@ mullo_m128i_epi32_v1(const __m128i a, const __m128i b)
 	return _mm_unpacklo_epi32(
 		_mm_shuffle_epi32(p0, 0xE8), _mm_shuffle_epi32(p1, 0xE8)
 	);
-}
 #endif
+}
 
 /**@fn sum_m128i_epi32
  * @brief adds together every item in the vector
@@ -243,7 +259,6 @@ mullo_m128i_epi32_v1(const __m128i a, const __m128i b)
  *
  * @return the sum of all items in the vector
 **/
-// SSE2
 ALWAYS_INLINE CONST i32
 sum_m128i_epi32(__m128i x)
 /*@*/
@@ -260,12 +275,12 @@ sum_m128i_epi32(__m128i x)
  *
  * @return the updated high half of 'm'
 **/
-#ifdef __SSE4_1__
-// SSE2, SSE4.1
 ALWAYS_INLINE CONST __m128i
-update_m_hi_v2(__m128i b_hi)
+update_m_hi(__m128i b_hi)
 /*@*/
 {
+#ifdef __SSE4_1__
+
 	__m128i t1, t2;
 
 	b_hi = _mm_srai_epi32(b_hi, 30);
@@ -280,13 +295,7 @@ update_m_hi_v2(__m128i b_hi)
 		),
 		_mm_castsi128_ps(t2), 0x8
 	);
-}
 #else
-// SSE2
-ALWAYS_INLINE CONST __m128i
-update_m_hi_v1(__m128i b_hi)
-/*@*/
-{
 	__m128i t1, t2;
 
 	b_hi = _mm_srai_epi32(b_hi, 30);
@@ -308,8 +317,8 @@ update_m_hi_v1(__m128i b_hi)
 		t2
 	);
 	return _mm_or_si128(_mm_or_si128(b_hi, t1), t2);
-}
 #endif
+}
 
 /**@fn update_b_hi
  * @brief updates the high half of 'b'
@@ -319,7 +328,6 @@ update_m_hi_v1(__m128i b_hi)
  *
  * @return the updated high half of 'b'
 **/
-// SSE2
 ALWAYS_INLINE CONST __m128i
 update_b_hi(const __m128i b_hi, const i32 value)
 /*@*/
@@ -343,25 +351,19 @@ update_b_hi(const __m128i b_hi, const i32 value)
  *
  * @return the updated low half
 **/
+ALWAYS_INLINE CONST __m128i
+update_mb_lo(const __m128i mb_hi, const __m128i mb_lo)
+/*@*/
+{
 #ifdef __SSSE3__
-// SSSE3
-ALWAYS_INLINE CONST __m128i
-update_mb_lo_v2(const __m128i mb_hi, const __m128i mb_lo)
-/*@*/
-{
+
 	return _mm_alignr_epi8(mb_hi, mb_lo, 4);	// SSSE3
-}
 #else
-// SSE2
-ALWAYS_INLINE CONST __m128i
-update_mb_lo_v1(const __m128i mb_hi, const __m128i mb_lo)
-/*@*/
-{
 	return _mm_or_si128(
 		_mm_bslli_si128(mb_hi, 12), _mm_bsrli_si128(mb_lo,  4)
 	);
-}
 #endif
+}
 
 // EOF ///////////////////////////////////////////////////////////////////////
 #endif

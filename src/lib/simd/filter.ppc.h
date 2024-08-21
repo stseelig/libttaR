@@ -24,6 +24,28 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
+#ifndef S_SPLINT_S
+#ifndef __BYTE_ORDER__
+#error "'__BYTE_ORDER__' not defined"
+#endif
+#ifndef __ORDER_BIG_ENDIAN__
+#error "'__ORDER_BIG_ENDIAN__' not defined"
+#endif
+#ifndef __ORDER_LITTLE_ENDIAN__
+#error "'__ORDER_LITTLE_ENDIAN__' not defined"
+#endif
+#if (__BYTE_ORDER__ != __ORDER_BIG_ENDIAN__) \
+ && (__BYTE_ORDER__ != __ORDER_LITTLE_ENDIAN__)
+#error "__BYTE_ORDER__"
+#endif
+
+#ifndef __ALTIVEC__
+#error "no AltiVec"
+#endif
+#endif // S_SPLINT_S
+
+//////////////////////////////////////////////////////////////////////////////
+
 #include <assert.h>
 #include <stdbool.h>	// true
 
@@ -31,6 +53,8 @@
 #define vector	__vector
 
 #include "../../bits.h"
+
+#include "../tta.h"
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -110,7 +134,47 @@ ALWAYS_INLINE CONST vector i32 update_mb_lo(vector i32, vector i32) /*@*/;
 	vec_st(b_hi_out, 80, filter_a); \
 }
 
-//==========================================================================//
+///@see "../filter.h"
+ALWAYS_INLINE i32
+tta_filter_enc(
+	struct Filter *const restrict filter, const i32 value, i32 round,
+	const bitcnt k
+)
+/*@modifies	*filter@*/
+{
+	FILTER_VARIABLES;
+
+	FILTER_READ;
+	FILTER_SUM_UPDATE_A;
+	FILTER_UPDATE_MB(value);
+	FILTER_WRITE;
+	retval = value - asr32(round, k);
+	*error = retval;
+
+	return retval;
+}
+
+///@see "../filter.h"
+ALWAYS_INLINE i32
+tta_filter_dec(
+	struct Filter *const restrict filter, const i32 value, i32 round,
+	const bitcnt k
+)
+/*@modifies	*filter@*/
+{
+	FILTER_VARIABLES;
+
+	FILTER_READ;
+	FILTER_SUM_UPDATE_A;
+	retval = value + asr32(round, k);
+	FILTER_UPDATE_MB(retval);
+	FILTER_WRITE;
+	*error = value;
+
+	return retval;
+}
+
+//--------------------------------------------------------------------------//
 
 /**@fn predictz_vi32
  * @brief helps the CPU to know if it can skip the next few instructions
@@ -211,7 +275,11 @@ update_m_hi(vector i32 b_hi)
 		(i32) 0x1, (i32) 0x1, (i32) 0x1, (i32) 0x1
 	};
 	const vector u32 v_sl  = (const vector u32) {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
 		(u32)  0u, (u32)  1u, (u32)  1u, (u32)  2u
+#else // __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+		(u32)  2u, (u32)  1u, (u32)  1u, (u32)  0u
+#endif
 	};
 
 	b_hi = vec_sra(b_hi, v_sra);

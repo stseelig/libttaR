@@ -21,35 +21,17 @@
 #ifndef LIBTTAr_OPT_DISABLE_SIMD_INTRINSICS
 
 // ppc
-#if defined(__powerpc__) && (! defined(__powerpc64__))
+#if defined(__powerpc__)
 #if defined(__ALTIVEC__)
-#include "simd/filter.ppc32-altivec.h"
-#else
-#include "simd/filter._C.h"
-#endif
-
-// ppc64
-#elif defined(__powerpc64__)
-#if defined(__ALTIVEC__)
-#include "simd/filter.ppc64-altivec.h"
+#include "simd/filter.ppc.h"
 #else
 #include "simd/filter._C.h"
 #endif
 
 // x86
-#elif defined(__i386__)
+#elif defined(__i386__) || defined(__x86_64__)
 #if defined(__SSE2__)
-#include "simd/filter.x86-32-sse2.h"
-#else
-#include "simd/filter._C.h"
-#endif
-
-// x86-64
-#elif defined(__x86_64__)
-#if defined(__SSE4_1__)
-#include "simd/filter.x86-64-v2.h"
-#elif defined(__SSE2__)
-#include "simd/filter.x86-64-v1.h"
+#include "simd/filter.x86.h"
 #else
 #include "simd/filter._C.h"
 #endif
