@@ -18,7 +18,7 @@
 
 #ifndef S_SPLINT_S
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-#error "powerpc little-endian is untested; uncomment to be a guinea pig"
+#error "powerpc little-endian is untested; comment to be a guinea pig"
 #endif
 #endif // S_SPLINT_S
 
