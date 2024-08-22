@@ -21,7 +21,7 @@
 #ifndef LIBTTAr_OPT_DISABLE_SIMD_INTRINSICS
 
 // ppc
-#if defined(__powerpc__)
+#if defined(__powerpc__) || defined(__powerpc64__)
 #if defined(__ALTIVEC__)
 #include "simd/filter.ppc.h"
 #else
