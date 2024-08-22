@@ -11,6 +11,8 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
+//      This is a straight port of the x86 version and has not been tuned   //
+//                                                                          //
 //      These functions "should" work no matter the endianness, but have    //
 // only been tested on big-endian (PowerMacG4; POWER9 == $$$$$)             //
 //                                                                          //
@@ -50,7 +52,9 @@
 #include <stdbool.h>	// true
 
 #include <altivec.h>
+#ifndef vector	// gcc
 #define vector	__vector
+#endif
 
 #include "../../bits.h"
 
@@ -183,9 +187,6 @@ tta_filter_dec(
  * @param error the extended error vector
  *
  * @return error != 0 ? x : 0
- *
- * @note the error is 0 often enough that this provides a small speedup.
- *   it should be basically cost-free anyway
 **/
 ALWAYS_INLINE CONST vector i32
 predictz_vi32(const vector i32 x, const vector i32 error)
@@ -326,7 +327,7 @@ update_mb_lo(const vector i32 mb_lo, const vector i32 mb_hi)
 
 //////////////////////////////////////////////////////////////////////////////
 
-// overloading keywords is fucked up
+// overloading keywords is screwed up (gcc Debian 12.2.0-13)
 #undef  bool
 #define bool	_Bool
 
