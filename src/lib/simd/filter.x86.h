@@ -305,7 +305,7 @@ update_m_hi(__m128i b_hi)
 	t2   = _mm_slli_epi32(b_hi, 2);
 
 	b_hi = _mm_and_si128(
-		_mm_set_epi32(0x00000000, 0x00000000, 0x00000000 ,0xFFFFFFFF),
+		_mm_set_epi32(0x00000000, 0x00000000, 0x00000000, 0xFFFFFFFF),
 		b_hi
 	);
 	t1   = _mm_and_si128(
