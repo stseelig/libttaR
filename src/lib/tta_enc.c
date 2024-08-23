@@ -520,8 +520,8 @@ tta_encode_2ch(
 		nbytes_old = nbytes_enc;
 #endif
 		nbytes_enc = rice_encode(
-			dest, curr.u, nbytes_enc, &codec[1u].rice,
-			bitcache, &crc
+			dest, curr.u, nbytes_enc, &codec[1u].rice, bitcache,
+			&crc
 		);
 		assert(nbytes_enc - nbytes_old <= rice_enc_max);
 	}
