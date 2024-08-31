@@ -98,12 +98,12 @@ ALWAYS_INLINE CONST vector i32 update_mb_lo(vector i32, vector i32) /*@*/;
 	vector i32 v_error;
 
 #define FILTER_READ { \
-	a_lo     = vec_ld( 0, filter_a); \
-	a_hi     = vec_ld(16, filter_a); \
-	m_lo     = vec_ld(32, filter_a); \
-	m_hi     = vec_ld(48, filter_a); \
-	b_lo     = vec_ld(64, filter_a); \
-	b_hi     = vec_ld(80, filter_a); \
+	a_lo     = vec_ld( 0LL, filter_a); \
+	a_hi     = vec_ld(16LL, filter_a); \
+	m_lo     = vec_ld(32LL, filter_a); \
+	m_hi     = vec_ld(48LL, filter_a); \
+	b_lo     = vec_ld(64LL, filter_a); \
+	b_hi     = vec_ld(80LL, filter_a); \
 	v_error  = vec_splats(*error); \
 }
 
@@ -130,12 +130,12 @@ ALWAYS_INLINE CONST vector i32 update_mb_lo(vector i32, vector i32) /*@*/;
 }
 
 #define FILTER_WRITE { \
-	vec_st(a_lo    ,  0, filter_a); \
-	vec_st(a_hi    , 16, filter_a); \
-	vec_st(m_lo_out, 32, filter_a); \
-	vec_st(m_hi_out, 48, filter_a); \
-	vec_st(b_lo_out, 64, filter_a); \
-	vec_st(b_hi_out, 80, filter_a); \
+	vec_st(a_lo    ,  0LL, filter_a); \
+	vec_st(a_hi    , 16LL, filter_a); \
+	vec_st(m_lo_out, 32LL, filter_a); \
+	vec_st(m_hi_out, 48LL, filter_a); \
+	vec_st(b_lo_out, 64LL, filter_a); \
+	vec_st(b_hi_out, 80LL, filter_a); \
 }
 
 ///@see "../filter.h"
