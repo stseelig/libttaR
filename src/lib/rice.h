@@ -635,7 +635,7 @@ loop_entr:
 	return nbytes_enc;
 }
 
-/**@fn rice_write_unary
+/**@fn rice_write_unary_zero
  * @brief write the 'cache' to 'dest' and put a zero unary code in the 'cache'
  *
  * @param dest[out] destination buffer
