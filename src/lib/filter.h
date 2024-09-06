@@ -64,8 +64,7 @@
 **/
 ALWAYS_INLINE i32
 tta_filter_enc(
-	struct Filter *const restrict filter, const i32 value, i32 round,
-	const bitcnt k
+	struct Filter *const restrict filter, i32 value, i32 round, bitcnt k
 )
 /*@modifies	*filter@*/
 ;
@@ -86,8 +85,7 @@ tta_filter_enc(
 **/
 ALWAYS_INLINE i32
 tta_filter_dec(
-	struct Filter *const restrict filter, const i32 value, i32 round,
-	const bitcnt k
+	struct Filter *const restrict filter, i32 value, i32 round, bitcnt k
 )
 /*@modifies	*filter@*/
 ;
