@@ -20,8 +20,16 @@
 
 #ifndef LIBTTAr_OPT_DISABLE_SIMD_INTRINSICS
 
+// arm
+#if defined(__aarch__) || defined(__aarch64__)
+#if defined(__ARM_NEON)
+#include "simd/filter.arm.h"
+#else
+#include "simd/filter._C.h"
+#endif
+
 // ppc
-#if defined(__powerpc__) || defined(__powerpc64__)
+#elif defined(__powerpc__) || defined(__powerpc64__)
 #if defined(__ALTIVEC__)
 #include "simd/filter.ppc.h"
 #else
