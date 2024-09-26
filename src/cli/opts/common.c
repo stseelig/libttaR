@@ -18,7 +18,7 @@
 
 #include "../debug.h"
 #include "../formats.h"
-#include "../main.h"	// PATH_DELIM
+#include "../system.h"	// PATH_DELIM
 
 #include "optsget.h"
 

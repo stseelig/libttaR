@@ -17,13 +17,13 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>	// strerror_r
 
 #include "../splint.h"
 
 #include "debug.h"
 #include "formats.h"	// FileCheck, FileStats, guid128_format
 #include "main.h"
+#include "system.h"
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -130,26 +130,20 @@ print_error_sys(
 	char buf[128u];
 	union {	int d; } t;
 
-	// XSI-compliant version returns an int
-	t.d = strerror_r(errnum, buf, sizeof buf);
-	if ( t.d != 0 ){
-		buf[0] = '\0';
-	}
-
-	flockfile(stdout);
-	flockfile(stderr);
+	file_lock(stdout);
+	file_lock(stderr);
 	//
 	(void) fprintf(stderr, T_B_DEFAULT "%s: ", g_progname);
 	(void) fputs(T_RED "error:" T_DEFAULT " ", stderr);
 	(void) fprintf(stderr, "%s: (%d) ", name, errnum);
-	(void) fputs(buf, stderr);
+	(void) fputs(strerror_ts(errnum, buf, sizeof buf), stderr);
 	if ( extra != NULL ){
 		(void) fprintf(stderr, ": %s", extra);
 	}
 	(void) fputs(" " T_RED "!" T_RESET "\n", stderr);
 	//
-	funlockfile(stdout);
-	funlockfile(stderr);
+	file_unlock(stdout);
+	file_unlock(stderr);
 
 	t.d = inc_nwarnings();
 	if ( fatality == FATAL ){
@@ -227,16 +221,16 @@ print_error_tta(
 {
 	union {	int d; } t;
 
-	flockfile(stdout);
-	flockfile(stderr);
+	file_lock(stdout);
+	file_lock(stderr);
 	//
 	(void) fprintf(stderr, T_B_DEFAULT "%s: ", g_progname);
 	(void) fputs(T_RED "error:" T_DEFAULT " ", stderr);
 	(void) vfprintf(stderr, format, args);
 	(void) fputs(" " T_RED "!" T_RESET "\n", stderr);
 	//
-	funlockfile(stdout);
-	funlockfile(stderr);
+	file_unlock(stdout);
+	file_unlock(stderr);
 
 	t.d = inc_nwarnings();
 	if ( fatality == FATAL ){
@@ -265,16 +259,16 @@ warning_tta(const char *const format, ...)
 
 	va_start(args, format);
 
-	flockfile(stdout);
-	flockfile(stderr);
+	file_lock(stdout);
+	file_lock(stderr);
 	//
 	(void) fprintf(stderr, T_B_DEFAULT "%s: ", g_progname);
 	(void) fputs(T_YELLOW "warning:" T_DEFAULT " ", stderr);
 	(void) vfprintf(stderr, format, args);
 	(void) fputs(" " T_YELLOW "!" T_RESET "\n", stderr);
 	//
-	funlockfile(stdout);
-	funlockfile(stderr);
+	file_unlock(stdout);
+	file_unlock(stderr);
 
 	va_end(args);
 

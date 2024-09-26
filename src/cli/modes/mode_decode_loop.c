@@ -84,7 +84,7 @@ NOINLINE COLD void dec_frame_zeropad(
 
 #undef arg
 /*@null@*/
-static HOT void *decmt_io(struct MTArg_DecIO *restrict arg)
+static HOT start_routine_ret decmt_io(struct MTArg_DecIO *restrict arg)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -104,7 +104,7 @@ static HOT void *decmt_io(struct MTArg_DecIO *restrict arg)
 
 #undef arg
 /*@null@*/
-static HOT void *decmt_decoder(struct MTArg_Decoder *restrict arg)
+static HOT start_routine_ret decmt_decoder(struct MTArg_Decoder *restrict arg)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -327,10 +327,14 @@ decmt_loop(
 	}
 
 	// create
-	thread_create(&thread_io, (void *(*)(void *)) decmt_io, &state_io);
+	thread_create(
+		&thread_io,
+		(start_routine_ret (*)(void *)) decmt_io, &state_io
+	);
 	for ( i = 0; i < nthreads - 1u; ++i ){
 		thread_create(
-			&thread_decoder[i], (void *(*)(void *)) decmt_decoder,
+			&thread_decoder[i],
+			(start_routine_ret (*)(void *)) decmt_decoder,
 			&state_decoder
 		);
 	}
@@ -578,10 +582,10 @@ dec_frame_zeropad(
  *
  * @pre arg->frames->nmemb > the number of decoder threads
  *
- * @retval NULL
+ * @retval (start_routine_ret) 0
 **/
 /*@null@*/
-static HOT void *
+static HOT start_routine_ret
 decmt_io(struct MTArg_DecIO *const restrict arg)
 /*@globals	fileSystem,
 		internalState
@@ -760,7 +764,7 @@ loop1_not_tiny:
 	while ( i != last );
 
 	*arg->dstat_out = dstat;
-	return NULL;
+	return (start_routine_ret) 0;
 }
 
 /**@fn decmt_decoder
@@ -768,10 +772,10 @@ loop1_not_tiny:
  *
  * @param arg state for the thread
  *
- * @retval NULL
+ * @retval (start_routine_ret) 0
 **/
 /*@null@*/
-static HOT void *
+static HOT start_routine_ret
 decmt_decoder(struct MTArg_Decoder *const restrict arg)
 /*@globals	fileSystem,
 		internalState
@@ -844,7 +848,7 @@ loop_entr:
 	free(i32buf);
 	free(priv);
 
-	return NULL;
+	return (start_routine_ret) 0;
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////

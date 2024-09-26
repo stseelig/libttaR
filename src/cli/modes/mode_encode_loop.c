@@ -93,7 +93,7 @@ NOINLINE COLD uint enc_frame_zeropad(
 
 #undef arg
 /*@null@*/
-static HOT void *encmt_io(struct MTArg_EncIO *restrict arg)
+static HOT start_routine_ret encmt_io(struct MTArg_EncIO *restrict arg)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -112,7 +112,7 @@ static HOT void *encmt_io(struct MTArg_EncIO *restrict arg)
 
 #undef arg
 /*@null@*/
-static HOT void *encmt_encoder(struct MTArg_Encoder *restrict arg)
+static HOT start_routine_ret encmt_encoder(struct MTArg_Encoder *restrict arg)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -320,10 +320,14 @@ encmt_loop(
 	}
 
 	// create
-	thread_create(&thread_io, (void *(*)(void *)) encmt_io, &state_io);
+	thread_create(
+		&thread_io,
+		(start_routine_ret (*)(void *)) encmt_io, &state_io
+	);
 	for ( i = 0; i < nthreads - 1u; ++i ){
 		thread_create(
-			&thread_encoder[i], (void *(*)(void *)) encmt_encoder,
+			&thread_encoder[i],
+			(start_routine_ret (*)(void *)) encmt_encoder,
 			&state_encoder
 		);
 	}
@@ -556,10 +560,10 @@ enc_frame_zeropad(
  *
  * @pre arg->frames->nmemb > the number of encoder threads
  *
- * @retval NULL
+ * @retval (start_routine_ret) 0
 **/
 /*@null@*/
-static HOT void *
+static HOT start_routine_ret
 encmt_io(struct MTArg_EncIO *const restrict arg)
 /*@globals	fileSystem,
 		internalState
@@ -702,7 +706,7 @@ loop1_not_tiny:
 	while ( i != last );
 
 	*arg->estat_out = estat;
-	return NULL;
+	return (start_routine_ret) 0;
 }
 
 /**@fn decmt_encoder
@@ -710,10 +714,10 @@ loop1_not_tiny:
  *
  * @param arg state for the thread
  *
- * @retval NULL
+ * @retval (start_routine_ret) 0
 **/
 /*@null@*/
-static HOT void *
+static HOT start_routine_ret
 encmt_encoder(struct MTArg_Encoder *const restrict arg)
 /*@globals	fileSystem,
 		internalState
@@ -777,7 +781,7 @@ loop_entr:
 	free(i32buf);
 	free(priv);
 
-	return NULL;
+	return (start_routine_ret) 0;
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////

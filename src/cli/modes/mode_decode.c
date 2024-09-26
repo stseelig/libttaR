@@ -16,9 +16,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <time.h>
-#include <unistd.h>
-
 #include "../../bits.h"
 #include "../../splint.h"
 
@@ -28,6 +25,7 @@
 #include "../main.h"
 #include "../open.h"
 #include "../opts.h"
+#include "../system.h"
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -106,7 +104,7 @@ mode_decode(const uint optind, const uint argc, char *const *const argv)
 {
 	struct OpenedFiles openedfiles;
 	uint nerrors_file = 0;
-	struct timespec ts_start, ts_stop;
+	timestamp_p ts_start, ts_finish;
 		size_t i;
 		union {	int	d;
 			bool	b;
@@ -114,8 +112,7 @@ mode_decode(const uint optind, const uint argc, char *const *const argv)
 
 	memset(&openedfiles, 0x00, sizeof openedfiles);
 
-	t.d = clock_gettime(CLOCK_MONOTONIC, &ts_start);
-	assert(t.d == 0);
+	timestamp_get(&ts_start);
 
 	// process opts/args
 	nerrors_file = optargs_process(
@@ -172,11 +169,10 @@ mode_decode(const uint optind, const uint argc, char *const *const argv)
 
 	// print multifile stats
 	if ( (! g_flag.quiet) && (openedfiles.nmemb > (size_t) 1u) ){
-		t.d = clock_gettime(CLOCK_MONOTONIC, &ts_stop);
-		assert(t.d == 0);
+		timestamp_get(&ts_finish);
 		errprint_runtime(
-			timediff(&ts_start, &ts_stop), openedfiles.nmemb,
-			MODE_DECODE
+			timestamp_diff(&ts_start, &ts_finish),
+			openedfiles.nmemb, MODE_DECODE
 		);
 	}
 
@@ -212,13 +208,13 @@ dec_loop(struct OpenedFilesMember *const restrict ofm)
 	);
 	//
 	const uint nthreads = (g_nthreads != 0
-		? g_nthreads : (uint) sysconf(_SC_NPROCESSORS_ONLN)
+		? g_nthreads : get_nprocessors_onln()
 	);
 	//
 	struct DecStats dstat;
 	struct SeekTable seektable;
 	bool ignore_seektable = false;
-	struct timespec ts_start, ts_stop;
+	timestamp_p ts_start, ts_finish;
 	union {	size_t		z;
 		int		d;
 		enum FileCheck	fc;
@@ -287,8 +283,7 @@ dec_loop(struct OpenedFilesMember *const restrict ofm)
 	// already there for TTA1
 
 	if ( ! g_flag.quiet ){
-		t.d = clock_gettime(CLOCK_MONOTONIC, &ts_start);
-		assert(t.d == 0);
+		timestamp_get(&ts_start);
 	}
 
 	// decode
@@ -354,9 +349,8 @@ encode_multi:
 	g_rm_on_sigint = NULL;
 
 	if ( ! g_flag.quiet ){
-		t.d = clock_gettime(CLOCK_MONOTONIC, &ts_stop);
-		assert(t.d == 0);
-		dstat.decodetime += timediff(&ts_start, &ts_stop);
+		timestamp_get(&ts_finish);
+		dstat.decodetime += timestamp_diff(&ts_start, &ts_finish);
 	}
 
 	// post-decode stats

@@ -17,8 +17,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <sys/resource.h>
-
 #include "../libttaR.h"
 
 #include "alloc.h"
@@ -26,19 +24,11 @@
 #include "main.h"
 #include "open.h"
 #include "opts.h"
+#include "system.h"
 
 //////////////////////////////////////////////////////////////////////////////
 
 static bool try_fdlimit(void)
-/*@globals	fileSystem,
-		internalState
-@*/
-/*@modifies	fileSystem,
-		internalState
-@*/
-;
-
-static void fdlimit_check(void)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -141,36 +131,6 @@ try_fdlimit(void)
 		return true;
 	}
 	return false;
-}
-
-/**@fn fdlimit_check
- * @brief attempt to increase the open-file limit with error checking
-**/
-static void
-fdlimit_check(void)
-/*@globals	fileSystem,
-		internalState
-@*/
-/*@modifies	fileSystem,
-		internalState
-@*/
-{
-	struct rlimit limit;
-	union {	int d; } t;
-
-	t.d = getrlimit((int) RLIMIT_NOFILE, &limit);
-	if UNLIKELY ( t.d != 0 ){
-		error_sys(errno, "getrlimit", NULL);
-	}
-
-	limit.rlim_cur = limit.rlim_max;
-
-	t.d = setrlimit((int) RLIMIT_NOFILE, &limit);
-	if UNLIKELY ( t.d != 0 ){
-		error_sys(errno, "setrlimit", NULL);
-	}
-
-	return;
 }
 
 //==========================================================================//
