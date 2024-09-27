@@ -14,9 +14,8 @@ edit then run ./make.sh
 I recommend compiling with clang.
 
 ### Platforms
-The library is platform agnostic, but the program uses a lot of POSIX stuff.
-
-I have only tested on Linux.
+The library is platform agnostic. 
+The program has a mostly native Win32 port via MinGW.
 
 ### Processors
 2's complement integers are assumed.
