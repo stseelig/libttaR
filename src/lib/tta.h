@@ -42,14 +42,13 @@ enum LibTTAr_RetVal {
 	LIBTTAr_RET_MISCONFIG	 = -1
 };
 
-// max unary r/w size:		read	write
-//	8/16-bit:		  34u	  40u
-//	  24-bit:		4098u	4104u
-// max binary r/w size:		   3u	   0u
-// max cacheflush w size: 		   8u
-// rounded up to the nearest (power of 2) + (power of 2)
-#define TTABUF_SAFETY_MARGIN_1_2	((size_t)   48u)
-#define TTABUF_SAFETY_MARGIN_3		((size_t) 4112u)
+// max unary r/w size:		read		write
+//	8/16-bit:		   8194u	   8200u
+//	  24-bit:		2097154uL	2097160uL
+// max binary r/w size:		      3u	      0u
+// max cacheflush w size: 		  	      8u
+#define TTABUF_SAFETY_MARGIN_1_2	((size_t)    8208u)
+#define TTABUF_SAFETY_MARGIN_3		((size_t) 2097168uL)
 
 //////////////////////////////////////////////////////////////////////////////
 
