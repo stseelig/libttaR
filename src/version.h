@@ -28,7 +28,7 @@
 #define CLI_VERSION_NUM_MAJOR	1u
 #define CLI_VERSION_NUM_MINOR	7u
 #define CLI_VERSION_NUM_REVIS	0u
-#define CLI_VERSION_STR_EXTRA	""
+#define CLI_VERSION_STR_EXTRA	"win32-wip"
 #define CLI_VERSION_STR_DATE	"2024-09-27"
 #define CLI_COPYRIGHT_STR	\
 	"Copyright (C) 2023-2024, Shane Seelig"
