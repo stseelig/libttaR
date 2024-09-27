@@ -27,6 +27,8 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
+#define START_ROUTINE_ABI	__attribute__((stdcall))
+
 typedef DWORD			start_routine_ret;
 typedef HANDLE			thread_p;
 typedef HANDLE			semaphore_p;
@@ -38,7 +40,7 @@ typedef CRITICAL_SECTION	spinlock_p;
 INLINE void
 thread_create(
 	/*@out@*/ thread_p *const restrict thread,
-	start_routine_ret (*const start_routine) (void *),
+	start_routine_ret (*const start_routine) (void *) START_ROUTINE_ABI,
 	/*@null@*/ void *const restrict arg
 )
 /*@globals	fileSystem,

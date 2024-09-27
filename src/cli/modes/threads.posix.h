@@ -24,7 +24,9 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-typedef void *			start_routine_ret;
+#define START_ROUTINE_ABI
+
+typedef /*@null@*/ void *	start_routine_ret;
 typedef pthread_t		thread_p;
 typedef sem_t			semaphore_p;
 typedef pthread_spinlock_t	spinlock_p;
@@ -35,7 +37,7 @@ typedef pthread_spinlock_t	spinlock_p;
 INLINE void
 thread_create(
 	/*@out@*/ thread_p *const restrict thread,
-	start_routine_ret (*const start_routine) (void *),
+	start_routine_ret (*const start_routine) (void *) START_ROUTINE_ABI,
 	/*@null@*/ void *const restrict arg
 )
 /*@globals	fileSystem,

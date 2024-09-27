@@ -83,7 +83,7 @@ NOINLINE COLD void dec_frame_zeropad(
 //--------------------------------------------------------------------------//
 
 #undef arg
-/*@null@*/
+START_ROUTINE_ABI
 static HOT start_routine_ret decmt_io(struct MTArg_DecIO *restrict arg)
 /*@globals	fileSystem,
 		internalState
@@ -103,7 +103,7 @@ static HOT start_routine_ret decmt_io(struct MTArg_DecIO *restrict arg)
 ;
 
 #undef arg
-/*@null@*/
+START_ROUTINE_ABI
 static HOT start_routine_ret decmt_decoder(struct MTArg_Decoder *restrict arg)
 /*@globals	fileSystem,
 		internalState
@@ -329,13 +329,14 @@ decmt_loop(
 	// create
 	thread_create(
 		&thread_io,
-		(start_routine_ret (*)(void *)) decmt_io, &state_io
+		(START_ROUTINE_ABI start_routine_ret (*)(void *)) decmt_io,
+		&state_io
 	);
 	for ( i = 0; i < nthreads - 1u; ++i ){
 		thread_create(
 			&thread_decoder[i],
-			(start_routine_ret (*)(void *)) decmt_decoder,
-			&state_decoder
+			(START_ROUTINE_ABI start_routine_ret (*)(void *))
+			decmt_decoder, &state_decoder
 		);
 	}
 	(void) decmt_decoder(&state_decoder);
@@ -512,7 +513,7 @@ dec_frame_write(
 
 	// write frame
 	t.z = fwrite(decbuf->pcmbuf, samplebytes, user.ni32_total, outfile);
-	if UNLIKELY ( t.z != user.ni32 ){
+	if UNLIKELY ( t.z != user.ni32_total ){
 		error_sys(errno, "fwrite", outfile_name);
 	}
 
@@ -584,7 +585,7 @@ dec_frame_zeropad(
  *
  * @retval (start_routine_ret) 0
 **/
-/*@null@*/
+START_ROUTINE_ABI
 static HOT start_routine_ret
 decmt_io(struct MTArg_DecIO *const restrict arg)
 /*@globals	fileSystem,
@@ -774,7 +775,7 @@ loop1_not_tiny:
  *
  * @retval (start_routine_ret) 0
 **/
-/*@null@*/
+START_ROUTINE_ABI
 static HOT start_routine_ret
 decmt_decoder(struct MTArg_Decoder *const restrict arg)
 /*@globals	fileSystem,

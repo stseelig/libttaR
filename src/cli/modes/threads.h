@@ -36,7 +36,8 @@
  * @param arg[in] the argument for the thread function
 **/
 INLINE void thread_create(
-	/*@out@*/ thread_p *restrict thread, start_routine_ret (*) (void *),
+	/*@out@*/ thread_p *restrict thread,
+	start_routine_ret (*) (void *) START_ROUTINE_ABI,
 	/*@null@*/ void *restrict
 )
 /*@globals	fileSystem,
