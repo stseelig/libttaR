@@ -24,18 +24,15 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-// max unary size:
-//	8/16-bit :   32u bytes + 7u bits + terminator
-//	  24-bit : 4096u bytes + 7u bits + terminator
 // the lax_limit has an extra byte to make handling invalid data faster/easier
-#define UNARY_LAX_LIMIT_1_2	((rice24_dec) ((8u *   34u) - 1u))
-#define UNARY_LAX_LIMIT_3	((rice24_dec) ((8u * 4098u) - 1u))
+#define UNARY_LAX_LIMIT_1_2	((rice24_dec) ((8u *    8194u) - 1u))
+#define UNARY_LAX_LIMIT_3	((rice24_dec) ((8u * 2097154uL) - 1u))
 
 // max unary + binary r/w size for one value
-#define RICE_ENC_MAX_1_2	((size_t)   40u)
-#define RICE_ENC_MAX_3		((size_t) 4104u)
-#define RICE_DEC_MAX_1_2	((size_t)   37u)
-#define RICE_DEC_MAX_3		((size_t) 4101u)
+#define RICE_ENC_MAX_1_2	((size_t)    8200u)
+#define RICE_ENC_MAX_3		((size_t) 2097160uL)
+#define RICE_DEC_MAX_1_2	((size_t)    8197u)
+#define RICE_DEC_MAX_3		((size_t) 2097157uL)
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -455,7 +452,7 @@ rice_update(
  * @return number of bytes written to 'dest' + 'nbytes_enc'
  *
  * @note max write size (unary + binary):
- *     8/16-bit :   40u
+ *     8/16-bit :   8200u
  *       24-bit : 4104u
  * @note affected by LIBTTAr_OPT_NO_FAT_RICE_ENCODER
 **/
@@ -600,8 +597,8 @@ rice_encode_cacheflush(
  * @post *count <= (bitcnt) 40u	// 39u in practice
  *
  * @note max write size (unary + cache):
- *	 8/16-bit :   32u + 8u ==   40u
- *	   24-bit : 4096u + 8u == 4104u
+ *	 8/16-bit :    8192u + 8u ==    8200u
+ *	   24-bit : 2097152u + 8u == 2097160u
  * @note affected by LIBTTAr_OPT_PREFER_LOOKUP_TABLES
 **/
 ALWAYS_INLINE size_t
@@ -772,8 +769,8 @@ rice_write_cache(
  * @return number of bytes read from 'src' + 'nbytes_dec'
  *
  * @note max read size (unary + binary):
- *     8/16-bit :   37u
- *       24-bit : 4101u
+ *     8/16-bit :    8197u
+ *       24-bit : 2097157u
  * @note affected by LIBTTAr_OPT_NO_FAT_RICE_DECODER
 **/
 ALWAYS_INLINE size_t
@@ -892,8 +889,8 @@ rice_decode(
  * @post *count <= (bitcnt) 7u
  *
  * @note max read size:
- *     8/16-bit :   34u
- *       24-bit : 4098u
+ *     8/16-bit :    8194u
+ *       24-bit : 2097154u
  * @note affected by LIBTTAr_OPT_PREFER_LOOKUP_TABLES
 **/
 ALWAYS_INLINE size_t

@@ -1,6 +1,13 @@
 
 # libttaR ####################################################################
 
+1.2.13 (2024-09-27):----------------------------------------------------------
+
+	- safety-margin bugfix
+		- should be completely fixed now. I was trying to use a
+	    practical worst case instead of the theoretical one. The only real
+	    difference is that 24-bit uses orders more memory now.
+
 1.2.12 (2024-09-12):----------------------------------------------------------
 
 	- aarch SIMD intrinsics (filter)
@@ -116,7 +123,7 @@
 
 next:-------------------------------------------------------------------------
 
-	- MSWIN stuff
+	- windows stuff
 
 1.1.6 (2024-07-30):-----------------------------------------------------------
 
