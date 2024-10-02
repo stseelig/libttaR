@@ -392,10 +392,7 @@ dec_frame_decode(
 	int r;
 	struct LibTTAr_CodecState_User user = LIBTTAr_CODECSTATE_USER_INIT;
 	size_t pad_target = 0;
-	union {	size_t z; } t;
-#ifdef NDEBUG
-	(void) t.z;	// gcc
-#endif
+	UNUSED union {	size_t z; } t;
 
 	assert(decbuf->i32buf != NULL);
 

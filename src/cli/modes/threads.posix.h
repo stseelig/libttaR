@@ -61,11 +61,8 @@ thread_join(const thread_p *const restrict thread)
 /*@globals	internalState@*/
 /*@modifies	internalState@*/
 {
-	const int rv = pthread_join(*thread, NULL);
+	UNUSED const int rv = pthread_join(*thread, NULL);
 	assert(rv == 0);
-#ifdef NDEBUG
-	(void) rv;
-#endif
 	return;
 }
 
@@ -97,11 +94,8 @@ semaphore_destroy(semaphore_p *const restrict sem)
 		*sem
 @*/
 {
-	const int rv = sem_destroy(sem);
+	UNUSED const int rv = sem_destroy(sem);
 	assert(rv == 0);
-#ifdef NDEBUG
-	(void) rv;
-#endif
 	return;
 }
 
@@ -113,11 +107,8 @@ semaphore_post(semaphore_p *const restrict sem)
 		*sem
 @*/
 {
-	const int rv = sem_post(sem);
+	UNUSED const int rv = sem_post(sem);
 	assert(rv == 0);
-#ifdef NDEBUG
-	(void) rv;
-#endif
 	return;
 }
 
@@ -129,11 +120,8 @@ semaphore_wait(semaphore_p *const restrict sem)
 		*sem
 @*/
 {
-	const int rv = sem_wait(sem);
+	UNUSED const int rv = sem_wait(sem);
 	assert(rv == 0);
-#ifdef NDEBUG
-	(void) rv;
-#endif
 	return;
 }
 
@@ -165,11 +153,8 @@ spinlock_destroy(spinlock_p *const restrict lock)
 		*lock
 @*/
 {
-	const int rv = pthread_spin_destroy(lock);
+	UNUSED const int rv = pthread_spin_destroy(lock);
 	assert(rv == 0);
-#ifdef NDEBUG
-	(void) rv;
-#endif
 	return;
 }
 
@@ -181,11 +166,8 @@ spinlock_lock(spinlock_p *const restrict lock)
 		*lock
 @*/
 {
-	const int rv = pthread_spin_lock(lock);
+	UNUSED const int rv = pthread_spin_lock(lock);
 	assert(rv == 0);
-#ifdef NDEBUG
-	(void) rv;
-#endif
 	return;
 }
 
@@ -197,11 +179,8 @@ spinlock_unlock(spinlock_p *const restrict lock)
 		*lock
 @*/
 {
-	const int rv = pthread_spin_unlock(lock);
+	UNUSED const int rv = pthread_spin_unlock(lock);
 	assert(rv == 0);
-#ifdef NDEBUG
-	(void) rv;
-#endif
 	return;
 }
 

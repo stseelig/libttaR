@@ -27,7 +27,17 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-#define START_ROUTINE_ABI	__attribute__((stdcall))
+#if HAS_ATTRIBUTE(stdcall)
+#define STDCALL			__attribute__((stdcall))
+#else
+#ifndef S_SPLINT_S
+#error "compiler does not support the attribute 'stdcall'"
+#else
+#define STDCALL
+#endif	// S_SPLINT_S
+#endif
+
+#define START_ROUTINE_ABI	STDCALL
 
 typedef DWORD			start_routine_ret;
 typedef HANDLE			thread_p;
@@ -66,11 +76,8 @@ thread_join(const thread_p *const restrict thread)
 /*@globals	internalState@*/
 /*@modifies	internalState@*/
 {
-	const DWORD rv = WaitForSingleObject(*thread, INFINITE);
+	UNUSED const DWORD rv = WaitForSingleObject(*thread, INFINITE);
 	assert(rv == 0);
-#ifdef NDEBUG
-	(void) rv;
-#endif
 	return;
 }
 
@@ -102,11 +109,8 @@ semaphore_destroy(semaphore_p *const restrict sem)
 		*sem
 @*/
 {
-	const BOOL rv = CloseHandle(*sem);
+	UNUSED const BOOL rv = CloseHandle(*sem);
 	assert(rv != 0);
-#ifdef NDEBUG
-	(void) rv;
-#endif
 	return;
 }
 
@@ -118,11 +122,8 @@ semaphore_post(semaphore_p *const restrict sem)
 		*sem
 @*/
 {
-	const BOOL rv = ReleaseSemaphore(*sem, 1L, NULL);
+	UNUSED const BOOL rv = ReleaseSemaphore(*sem, 1L, NULL);
 	assert(rv != 0);
-#ifdef NDEBUG
-	(void) rv;
-#endif
 	return;
 }
 
@@ -134,11 +135,8 @@ semaphore_wait(semaphore_p *const restrict sem)
 		*sem
 @*/
 {
-	const DWORD rv = WaitForSingleObject(*sem, INFINITE);
+	UNUSED const DWORD rv = WaitForSingleObject(*sem, INFINITE);
 	assert(rv == 0);
-#ifdef NDEBUG
-	(void) rv;
-#endif
 	return;
 }
 

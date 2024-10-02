@@ -146,11 +146,8 @@ ALWAYS_INLINE void
 timestamp_get(/*@out@*/ timestamp_p *const restrict out)
 /*@globals	internalState@*/
 {
-	const BOOL rv = QueryPerformanceCounter(out);
+	UNUSED const BOOL rv = QueryPerformanceCounter(out);
 	assert(rv == 0);
-#ifdef NDEBUG
-	(void) rv;
-#endif
 	return;
 }
 

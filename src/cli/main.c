@@ -135,10 +135,8 @@ main(const int argc, char *const *const argv)
 @*/
 {
 	int r = EXIT_FAILURE;
-	union {	int d; } t;
-#ifdef NDEBUG
-	(void) t.d;	// gcc
-#endif
+	UNUSED union {	int d; } t;
+
 	// saved for warning/error printing
 	g_progname = argv[0];
 

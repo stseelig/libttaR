@@ -61,7 +61,8 @@ signals_setup(void)
 /*@modifies	internalState@*/
 {
 	struct sigaction sigact;
-	union {	int d; } t;
+
+	UNUSED union {	int d; } t;
 
 	memset(&sigact, 0x00, sizeof sigact);
 	sigact.sa_handler = sighand_cleanup_exit;
@@ -176,11 +177,8 @@ ALWAYS_INLINE void
 timestamp_get(/*@out@*/ timestamp_p *const restrict out)
 /*@globals	internalState@*/
 {
-	const int rv = clock_gettime(CLOCK_MONOTONIC, out);
+	UNUSED const int rv = clock_gettime(CLOCK_MONOTONIC, out);
 	assert(rv == 0);
-#ifdef NDEBUG
-	(void) rv;
-#endif
 	return;
 }
 
