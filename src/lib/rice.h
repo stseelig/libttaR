@@ -25,7 +25,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 // the lax_limit has an extra byte to make handling invalid data faster/easier
-#define UNARY_LAX_LIMIT_1_2	((rice24_dec) ((8u *    8194u) - 1u))
+#define UNARY_LAX_LIMIT_1_2	((rice24_dec) ((8u *    8194u)  - 1u))
 #define UNARY_LAX_LIMIT_3	((rice24_dec) ((8u * 2097154uL) - 1u))
 
 // max unary + binary r/w size for one value
@@ -443,8 +443,8 @@ rice_update(
  * @brief encode a filtered i32 value into rice codes
  *
  * @param dest[out] destination buffer
- * @param nbytes_enc total number of bytes encoded so far; index of 'dest'
  * @param value value to encode
+ * @param nbytes_enc total number of bytes encoded so far; index of 'dest'
  * @param rice[in out] the rice code data for the current channel
  * @param bitcache[in out] the bitcache data
  * @param crc[in out] the current CRC
@@ -452,8 +452,8 @@ rice_update(
  * @return number of bytes written to 'dest' + 'nbytes_enc'
  *
  * @note max write size (unary + binary):
- *     8/16-bit :   8200u
- *       24-bit : 4104u
+ *     8/16-bit :    8200u
+ *       24-bit : 2097160uL
  * @note affected by LIBTTAr_OPT_NO_FAT_RICE_ENCODER
 **/
 ALWAYS_INLINE size_t
@@ -598,7 +598,7 @@ rice_encode_cacheflush(
  *
  * @note max write size (unary + cache):
  *	 8/16-bit :    8192u + 8u ==    8200u
- *	   24-bit : 2097152u + 8u == 2097160u
+ *	   24-bit : 2097152u + 8u == 2097160uL
  * @note affected by LIBTTAr_OPT_PREFER_LOOKUP_TABLES
 **/
 ALWAYS_INLINE size_t
@@ -770,7 +770,7 @@ rice_write_cache(
  *
  * @note max read size (unary + binary):
  *     8/16-bit :    8197u
- *       24-bit : 2097157u
+ *       24-bit : 2097157uL
  * @note affected by LIBTTAr_OPT_NO_FAT_RICE_DECODER
 **/
 ALWAYS_INLINE size_t
@@ -890,7 +890,7 @@ rice_decode(
  *
  * @note max read size:
  *     8/16-bit :    8194u
- *       24-bit : 2097154u
+ *       24-bit : 2097154uL
  * @note affected by LIBTTAr_OPT_PREFER_LOOKUP_TABLES
 **/
 ALWAYS_INLINE size_t

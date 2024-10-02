@@ -289,12 +289,12 @@ update_m_hi(__m128i b_hi)
 	// _mm_sllv_epi32() is super slow
 	t1 = _mm_slli_epi32(b_hi, 1);
 	t2 = _mm_slli_epi32(b_hi, 2);
-	return _mm_blend_ps(		// SSE4.1
-		_mm_blend_ps(		// SSE4.1
+	return _mm_castps_si128(_mm_blend_ps(	// SSE4.1
+		_mm_blend_ps(			// SSE4.1
 			_mm_castsi128_ps(b_hi), _mm_castsi128_ps(t1), 0x6
 		),
 		_mm_castsi128_ps(t2), 0x8
-	);
+	));
 #else
 	__m128i t1, t2;
 

@@ -16,10 +16,6 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-#define PATH_DELIM	'/'
-
-//--------------------------------------------------------------------------//
-
 enum ProgramMode {
 	MODE_ENCODE,
 	MODE_DECODE
@@ -51,10 +47,10 @@ extern const struct LibTTAr_VersionInfo ttaR_info;
 
 //--------------------------------------------------------------------------//
 
-#ifndef TTA_MAIN_C
+//#ifndef TTA_MAIN_C
 /*@checkmod@*/ /*@temp@*/
-extern const char *const g_progname;
-#endif
+extern const char *g_progname;
+//#endif
 
 /*@checkmod@*/
 extern u8 g_nwarnings;

@@ -96,8 +96,7 @@ extern void decbuf_init(
 
 #undef db
 extern HOT void decbuf_check_adjust(
-	struct DecBuf *const restrict db, size_t, uint,
-	enum TTASampleBytes
+	struct DecBuf *const restrict db, size_t, uint, enum TTASampleBytes
 )
 /*@globals	fileSystem,
 		internalState

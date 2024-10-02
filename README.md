@@ -14,9 +14,9 @@ edit then run ./make.sh
 I recommend compiling with clang.
 
 ### Platforms
-The library is platform agnostic, but the program uses a lot of POSIX stuff.
-
-I have only tested on Linux.
+The library is platform agnostic.
+The program is POSIX native
+and has a mostly native (mostly working) Win32 port via MinGW.
 
 ### Processors
 2's complement integers are assumed.
@@ -24,7 +24,12 @@ I have only tested on Linux.
 While developing, I mostly tested on:
 \
 	- AMD Ryzen 7 1700    (primary tuning)\
-	- Intel Celeron N2830 (secondary tuning)
+	- Intel Celeron N2830 (secondary tuning)\
+
+honorable mentions:
+\
+	- IBM PowerPC 7400 (intrinsics)\
+	- ARM Cortex-A53 (intrinsics)
 
 ### Defines
 NDEBUG\
@@ -59,6 +64,10 @@ Read the man page (./man/ttaR.1) for a full list of the options.
 This project started as a fork of ttaenc 3.4.1-linux (2007).
 Any code from ttaenc was put into the library, and the CLI program was
 completely rewritten.
+
+The library prioritizes speed.
+So, its memory usage is a bit bloated to avoid some unsafe buffer stuff.
+(The safer alternative is 15-20% slower.)
 
 The library is just a collection of functions for reading from one buffer and
 writing to another with some support functions to calculate values.

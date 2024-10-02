@@ -11,7 +11,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
-#include <time.h>	// timespec, size_t
+#include <stddef.h>	// size_t
 
 #include "../splint.h"
 
@@ -23,14 +23,6 @@
 #define	SPINNER_FREQ	((size_t) 64u)
 
 //////////////////////////////////////////////////////////////////////////////
-
-INLINE PURE double timediff(
-	const struct timespec *restrict, const struct timespec *restrict
-)
-/*@*/
-;
-
-//==========================================================================//
 
 extern void errprint_stats_precodec(
 	const struct FileStats *restrict, const char *restrict,
@@ -60,32 +52,6 @@ extern HOT void errprint_spinner(void)
 		internalState
 @*/
 ;
-
-//////////////////////////////////////////////////////////////////////////////
-
-/**@fn timediff
- * @brief turns some timespec structs into a double
- *
- * @param start the first time
- * @param finish the second time
- *
- * @return the difference in seconds
-**/
-INLINE PURE double
-timediff(
-	const struct timespec *const restrict start,
-	const struct timespec *const restrict finish
-)
-/*@*/
-{
-	const double diff_sec  = (double) (
-		finish->tv_sec - start->tv_sec
-	);
-	const double diff_nsec = (
-		((double) (finish->tv_nsec - start->tv_nsec)) / 1000000000.0
-	);
-	return diff_sec + diff_nsec;
-}
 
 // EOF ///////////////////////////////////////////////////////////////////////
 #endif

@@ -110,7 +110,7 @@ typedef uint_fast64_t	u64f;
 #error "compiler does not support the attribute 'aligned'"
 #else
 #define ALIGNED(x)
-#endif
+#endif	// S_SPLINT_S
 #endif
 
 #if HAS_ATTRIBUTE(packed)
@@ -120,7 +120,7 @@ typedef uint_fast64_t	u64f;
 #error "compiler does not support the attribute 'packed'"
 #else
 #define PACKED
-#endif
+#endif	// S_SPLINT_S
 #endif
 
 #if HAS_ATTRIBUTE(visibility)

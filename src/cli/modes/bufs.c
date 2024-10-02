@@ -168,7 +168,7 @@ decbuf_init(
 HOT void
 decbuf_check_adjust(
 	struct DecBuf *const restrict db, size_t newsize, const uint nchan,
-	const enum TTASampleBytes samplebytes
+	enum TTASampleBytes samplebytes
 )
 /*@globals	fileSystem,
 		internalState

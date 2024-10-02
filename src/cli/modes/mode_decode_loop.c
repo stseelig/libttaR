@@ -83,8 +83,8 @@ NOINLINE COLD void dec_frame_zeropad(
 //--------------------------------------------------------------------------//
 
 #undef arg
-/*@null@*/
-static HOT void *decmt_io(struct MTArg_DecIO *restrict arg)
+START_ROUTINE_ABI
+static HOT start_routine_ret decmt_io(struct MTArg_DecIO *restrict arg)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -103,8 +103,8 @@ static HOT void *decmt_io(struct MTArg_DecIO *restrict arg)
 ;
 
 #undef arg
-/*@null@*/
-static HOT void *decmt_decoder(struct MTArg_Decoder *restrict arg)
+START_ROUTINE_ABI
+static HOT start_routine_ret decmt_decoder(struct MTArg_Decoder *restrict arg)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -327,11 +327,16 @@ decmt_loop(
 	}
 
 	// create
-	thread_create(&thread_io, (void *(*)(void *)) decmt_io, &state_io);
+	thread_create(
+		&thread_io,
+		(START_ROUTINE_ABI start_routine_ret (*)(void *)) decmt_io,
+		&state_io
+	);
 	for ( i = 0; i < nthreads - 1u; ++i ){
 		thread_create(
-			&thread_decoder[i], (void *(*)(void *)) decmt_decoder,
-			&state_decoder
+			&thread_decoder[i],
+			(START_ROUTINE_ABI start_routine_ret (*)(void *))
+			decmt_decoder, &state_decoder
 		);
 	}
 	(void) decmt_decoder(&state_decoder);
@@ -387,10 +392,7 @@ dec_frame_decode(
 	int r;
 	struct LibTTAr_CodecState_User user = LIBTTAr_CODECSTATE_USER_INIT;
 	size_t pad_target = 0;
-	union {	size_t z; } t;
-#ifdef NDEBUG
-	(void) t.z;	// gcc
-#endif
+	UNUSED union {	size_t z; } t;
 
 	assert(decbuf->i32buf != NULL);
 
@@ -508,7 +510,7 @@ dec_frame_write(
 
 	// write frame
 	t.z = fwrite(decbuf->pcmbuf, samplebytes, user.ni32_total, outfile);
-	if UNLIKELY ( t.z != user.ni32 ){
+	if UNLIKELY ( t.z != user.ni32_total ){
 		error_sys(errno, "fwrite", outfile_name);
 	}
 
@@ -578,10 +580,10 @@ dec_frame_zeropad(
  *
  * @pre arg->frames->nmemb > the number of decoder threads
  *
- * @retval NULL
+ * @retval (start_routine_ret) 0
 **/
-/*@null@*/
-static HOT void *
+START_ROUTINE_ABI
+static HOT start_routine_ret
 decmt_io(struct MTArg_DecIO *const restrict arg)
 /*@globals	fileSystem,
 		internalState
@@ -760,7 +762,7 @@ loop1_not_tiny:
 	while ( i != last );
 
 	*arg->dstat_out = dstat;
-	return NULL;
+	return (start_routine_ret) 0;
 }
 
 /**@fn decmt_decoder
@@ -768,10 +770,10 @@ loop1_not_tiny:
  *
  * @param arg state for the thread
  *
- * @retval NULL
+ * @retval (start_routine_ret) 0
 **/
-/*@null@*/
-static HOT void *
+START_ROUTINE_ABI
+static HOT start_routine_ret
 decmt_decoder(struct MTArg_Decoder *const restrict arg)
 /*@globals	fileSystem,
 		internalState
@@ -844,7 +846,7 @@ loop_entr:
 	free(i32buf);
 	free(priv);
 
-	return NULL;
+	return (start_routine_ret) 0;
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////
