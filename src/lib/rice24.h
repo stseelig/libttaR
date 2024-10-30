@@ -29,10 +29,10 @@
 #define UNARY_LAX_LIMIT_3	((rice24_dec) ((8u * 2097154uL) - 1u))
 
 // max unary + binary r/w size for one value
-#define RICE_ENC_MAX_1_2	((size_t)    8200u)
-#define RICE_ENC_MAX_3		((size_t) 2097160uL)
-#define RICE_DEC_MAX_1_2	((size_t)    8197u)
-#define RICE_DEC_MAX_3		((size_t) 2097157uL)
+#define RICE24_ENC_MAX_1_2	((size_t)    8200u)
+#define RICE24_ENC_MAX_3	((size_t) 2097160uL)
+#define RICE24_DEC_MAX_1_2	((size_t)    8197u)
+#define RICE24_DEC_MAX_3	((size_t) 2097157uL)
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -267,10 +267,10 @@ get_rice24_enc_max(const enum TTASampleBytes samplebytes)
 	switch ( samplebytes ){
 	case TTASAMPLEBYTES_1:
 	case TTASAMPLEBYTES_2:
-		r = RICE_ENC_MAX_1_2;
+		r = RICE24_ENC_MAX_1_2;
 		break;
 	case TTASAMPLEBYTES_3:
-		r = RICE_ENC_MAX_3;
+		r = RICE24_ENC_MAX_3;
 		break;
 	}
 	return r;
@@ -291,10 +291,10 @@ get_rice24_dec_max(const enum TTASampleBytes samplebytes)
 	switch ( samplebytes ){
 	case TTASAMPLEBYTES_1:
 	case TTASAMPLEBYTES_2:
-		r = RICE_DEC_MAX_1_2;
+		r = RICE24_DEC_MAX_1_2;
 		break;
 	case TTASAMPLEBYTES_3:
-		r = RICE_DEC_MAX_3;
+		r = RICE24_DEC_MAX_3;
 		break;
 	}
 	return r;
@@ -480,59 +480,59 @@ rice24_encode(
 	bitcnt bin_k;
 	const u32 *test0, *test1;
 
-	#define RICE_ENCODE_STATE_0(Xvalue) { \
+	#define RICE24_ENCODE_STATE_0(Xvalue) { \
 		bin_k      = *k0; \
 		test0      = &binexp32p4_table[*k0]; \
 		rice24_update(sum0, k0, (Xvalue), test0); \
 	}
-	#define RICE_ENCODE_STATE_1(Xvalue) { \
+	#define RICE24_ENCODE_STATE_1(Xvalue) { \
 		(Xvalue)  -= binexp32(bin_k); \
 		bin_k      = *k1; \
 		test1      = &binexp32p4_table[*k1]; \
 		rice24_update(sum1, k1, (Xvalue), test1); \
 	}
-	#define RICE_ENCODE_UNARY(Xunary) { \
+	#define RICE24_ENCODE_UNARY(Xunary) { \
 		unary      = (Xunary); \
 		nbytes_enc = rice24_write_unary( \
 			dest, unary, nbytes_enc, cache, count, crc \
 		); \
 	}
-	#define RICE_ENCODE_UNARY_ZERO { \
+	#define RICE24_ENCODE_UNARY_ZERO { \
 		nbytes_enc = rice24_write_unary_zero( \
 			dest, nbytes_enc, cache, count, crc \
 		); \
 	}
-	#define RICE_ENCODE_BINARY(Xbinary) { \
+	#define RICE24_ENCODE_BINARY(Xbinary) { \
 		binary     = (Xbinary); \
 		rice24_cache_binary(binary, cache, count, bin_k); \
 	}
 
 #ifndef LIBTTAr_OPT_NO_FAT_RICE_ENCODER
 	// value + state
-	RICE_ENCODE_STATE_0(value);
+	RICE24_ENCODE_STATE_0(value);
 	if PROBABLE ( value >= binexp32(bin_k), 0.575 ){
-		RICE_ENCODE_STATE_1(value);
+		RICE24_ENCODE_STATE_1(value);
 
 		// unary + binary
-		RICE_ENCODE_UNARY((rice24_enc) ((value >> bin_k) + 1u));
-		RICE_ENCODE_BINARY((rice24_enc) (value & lsmask32(bin_k)));
+		RICE24_ENCODE_UNARY((rice24_enc) ((value >> bin_k) + 1u));
+		RICE24_ENCODE_BINARY((rice24_enc) (value & lsmask32(bin_k)));
 	}
 	else {	// unary-zero + binary
-		RICE_ENCODE_UNARY_ZERO;
-		RICE_ENCODE_BINARY((rice24_enc) (value & lsmask32(bin_k)));
+		RICE24_ENCODE_UNARY_ZERO;
+		RICE24_ENCODE_BINARY((rice24_enc) (value & lsmask32(bin_k)));
 	}
 #else
 	// value + state
 	unary = 0;
-	RICE_ENCODE_STATE_0(value);
+	RICE24_ENCODE_STATE_0(value);
 	if PROBABLE ( value >= binexp32(bin_k), 0.575 ){
-		RICE_ENCODE_STATE_1(value);
+		RICE24_ENCODE_STATE_1(value);
 		unary = (rice24_enc) ((value >> bin_k) + 1u);
 	}
 
 	// unary + binary
-	RICE_ENCODE_UNARY(unary);
-	RICE_ENCODE_BINARY((rice24_enc) (value & lsmask32(bin_k)));
+	RICE24_ENCODE_UNARY(unary);
+	RICE24_ENCODE_BINARY((rice24_enc) (value & lsmask32(bin_k)));
 #endif
 	return nbytes_enc;
 }
@@ -726,7 +726,7 @@ rice24_write_cache(
 		*crc
 @*/
 {
-	#define RICE_WRITE_CACHE(Xcache) { \
+	#define RICE24_WRITE_CACHE(Xcache) { \
 		dest[nbytes_enc++] = rice24_crc32_enc((u8) (Xcache), crc); \
 		(Xcache) >>= 8u; \
 		*count    -= 8u; \
@@ -736,12 +736,12 @@ rice24_write_cache(
 
 #ifndef LIBTTAr_OPT_NO_FAT_RICE_ENCODER
 	if PROBABLE ( *count >= (bitcnt) 8u, 0.9 ){
-		do {	RICE_WRITE_CACHE(*cache);
+		do {	RICE24_WRITE_CACHE(*cache);
 		} while ( *count >= (bitcnt) 8u );
 	}
 #else
 	while PROBABLE ( *count >= (bitcnt) 8u, 0.9 ){
-		RICE_WRITE_CACHE(*cache);
+		RICE24_WRITE_CACHE(*cache);
 	}
 #endif
 	assert(*count <= (bitcnt)  7u);
@@ -792,55 +792,55 @@ rice24_decode(
 	bitcnt bin_k;
 	const u32 *test0, *test1;
 
-	#define RICE_DECODE_UNARY(Xunary) { \
+	#define RICE24_DECODE_UNARY(Xunary) { \
 		nbytes_dec = rice24_read_unary( \
 			(Xunary), src, nbytes_dec, cache, count, crc, \
 			unary_lax_limit \
 		); \
 	}
-	#define RICE_DECODE_BINARY(Xbinary) { \
+	#define RICE24_DECODE_BINARY(Xbinary) { \
 		nbytes_dec = rice24_read_binary( \
 			(Xbinary), src, nbytes_dec, cache, count, crc, bin_k \
 		); \
 	}
-	#define RICE_DECODE_STATE_1(Xvalue) { \
+	#define RICE24_DECODE_STATE_1(Xvalue) { \
 		rice24_update(sum1, k1, (Xvalue), test1); \
 		(Xvalue)  += binexp32(*k0); \
 	}
-	#define RICE_DECODE_STATE_0(Xvalue) { \
+	#define RICE24_DECODE_STATE_0(Xvalue) { \
 		rice24_update(sum0, k0, (Xvalue), test0); \
 	}
 
 #ifndef LIBTTAr_OPT_NO_FAT_RICE_DECODER
 	// unary
-	RICE_DECODE_UNARY(&unary);
+	RICE24_DECODE_UNARY(&unary);
 	if PROBABLE ( unary != 0, 0.575 ){
 		bin_k   = *k1;
 		test1   = &binexp32p4_table[*k1];
 		test0   = &binexp32p4_table[*k0];
 
 		// binary
-		RICE_DECODE_BINARY(&binary);
+		RICE24_DECODE_BINARY(&binary);
 
 		// value + state
 		*value  = (((u32) (unary - 1u)) << bin_k) + ((u32) binary);
-		RICE_DECODE_STATE_1(*value);
-		RICE_DECODE_STATE_0(*value);
+		RICE24_DECODE_STATE_1(*value);
+		RICE24_DECODE_STATE_0(*value);
 	}
 	else {	bin_k   = *k0;
 		test0   = &binexp32p4_table[*k0];
 
 		// binary
-		RICE_DECODE_BINARY(&binary);
+		RICE24_DECODE_BINARY(&binary);
 
 		// value + state
 		*value  = (u32) binary;
-		RICE_DECODE_STATE_0(*value);
+		RICE24_DECODE_STATE_0(*value);
 	}
 #else
 	// unary
 	test1  = NULL;
-	RICE_DECODE_UNARY(&unary);
+	RICE24_DECODE_UNARY(&unary);
 	if PROBABLE ( unary != 0, 0.575 ){
 		unary  -= 1u;
 		bin_k   = *k1;
@@ -850,14 +850,14 @@ rice24_decode(
 	test0  = &binexp32p4_table[*k0];
 
 	// binary
-	RICE_DECODE_BINARY(&binary);
+	RICE24_DECODE_BINARY(&binary);
 
 	// value + state
 	*value = (((u32) unary) << bin_k) + ((u32) binary);
 	if PROBABLE ( test1 != NULL, 0.575 ){
-		RICE_DECODE_STATE_1(*value);
+		RICE24_DECODE_STATE_1(*value);
 	}
-	RICE_DECODE_STATE_0(*value);
+	RICE24_DECODE_STATE_0(*value);
 #endif
 	return nbytes_dec;
 }
