@@ -60,7 +60,6 @@ INLINE CONST bitcnt get_filter_k(enum TTASampleBytes) /*@*/;
 //--------------------------------------------------------------------------//
 
 ALWAYS_INLINE CONST i32 asr32(i32, bitcnt) /*@*/;
-ALWAYS_INLINE CONST i32 signof32(i32) /*@*/;
 
 //--------------------------------------------------------------------------//
 
@@ -195,29 +194,6 @@ asr32(const i32 x, const bitcnt k)
 		);
 	}
 	/*@=shiftimplementation@*/
-}
-
-/**@fn signof32
- * @brief get the sign of a 32-bit integer
- *
- * @param x input value
- *
- * @retval -1, 1, or 0
- *
- * @note affected by LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES
-**/
-ALWAYS_INLINE CONST i32
-signof32(const i32 x)
-/*@*/
-{
-#ifndef LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES
-	const u32 y = (u32) -x;
-	return (i32) (asr32(x, (bitcnt) 31u) | (y >> 31u));
-#else
-	return (UNPREDICTABLE (x != 0)
-		? (UNPREDICTABLE (x < 0) ? (i32) -1 : (i32) 1) : 0
-	);
-#endif
 }
 
 //==========================================================================//

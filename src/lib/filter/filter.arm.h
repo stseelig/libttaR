@@ -1,8 +1,8 @@
-#ifndef TTA_CODEC_SIMD_FILTER_ARM_H
-#define TTA_CODEC_SIMD_FILTER_ARM_H
+#ifndef TTA_CODEC_FILTER_FILTER_ARM_H
+#define TTA_CODEC_FILTER_FILTER_ARM_H
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// codec/simd/filter.arm.h                                                  //
+// codec/filter/filter.arm.h                                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
@@ -52,7 +52,7 @@
 
 #include "../../bits.h"
 
-#include "../tta.h"
+#include "../tta.h"	// asr32
 
 //////////////////////////////////////////////////////////////////////////////
 

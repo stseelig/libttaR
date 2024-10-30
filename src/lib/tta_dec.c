@@ -18,7 +18,7 @@
 
 #include "common.h"
 #include "filter.h"
-#include "rice.h"
+#include "rice24.h"
 #include "tta.h"
 
 //////////////////////////////////////////////////////////////////////////////
@@ -154,7 +154,7 @@ libttaR_tta_decode(
 		? src_len - safety_margin : nbytes_tta_target
 	);
 #ifndef NDEBUG
-	const size_t rice_dec_max    = get_rice_dec_max(samplebytes);
+	const size_t rice_dec_max    = get_rice24_dec_max(samplebytes);
 #endif
 	// initial state setup
 	// see libttaR_tta_encode
@@ -285,6 +285,7 @@ libttaR_tta_decode(
  * @param filter_k arg 'k' for tta_filter
  * @param unary_lax_limit limit for the unary code
  * @param nchan number of audio channels
+ * @param rice_dec_max debug value for theoretical max unary/binary code size
  *
  * @return number of bytes read from 'src'
  *
@@ -331,7 +332,7 @@ tta_decode_mch(
 #ifndef NDEBUG
 			nbytes_old = nbytes_dec;
 #endif
-			nbytes_dec = rice_decode(
+			nbytes_dec = rice24_decode(
 				&curr.u, src, nbytes_dec, &codec[j].rice,
 				bitcache, &crc, unary_lax_limit
 			);
@@ -386,6 +387,7 @@ tta_decode_mch(
  * @param filter_k arg 'k' for tta_filter
  * @param unary_lax_limit limit for the unary code
  * @param nchan unused
+ * @param rice_dec_max debug value for theoretical max unary/binary code size
  *
  * @return number of bytes read from 'src'
 **/
@@ -424,7 +426,7 @@ tta_decode_1ch(
 #ifndef NDEBUG
 		nbytes_old = nbytes_dec;
 #endif
-		nbytes_dec = rice_decode(
+		nbytes_dec = rice24_decode(
 			&curr.u, src, nbytes_dec, &codec[0].rice, bitcache,
 			&crc, unary_lax_limit
 		);
@@ -466,6 +468,7 @@ tta_decode_1ch(
  * @param filter_k arg 'k' for tta_filter
  * @param unary_lax_limit limit for the unary code
  * @param nchan unused
+ * @param rice_dec_max debug value for theoretical max unary/binary code size
  *
  * @return number of bytes read from 'src'
 **/
@@ -505,7 +508,7 @@ tta_decode_2ch(
 #ifndef NDEBUG
 		nbytes_old = nbytes_dec;
 #endif
-		nbytes_dec = rice_decode(
+		nbytes_dec = rice24_decode(
 			&curr.u, src, nbytes_dec, &codec[0u].rice, bitcache,
 			&crc, unary_lax_limit
 		);
@@ -528,7 +531,7 @@ tta_decode_2ch(
 #ifndef NDEBUG
 		nbytes_old = nbytes_dec;
 #endif
-		nbytes_dec = rice_decode(
+		nbytes_dec = rice24_decode(
 			&curr.u, src, nbytes_dec, &codec[1u].rice, bitcache,
 			&crc, unary_lax_limit
 		);

@@ -1,8 +1,8 @@
-#ifndef TTA_CODEC_SIMD_FILTER__C_H
-#define TTA_CODEC_SIMD_FILTER__C_H
+#ifndef TTA_CODEC_FILTER_FILTER__C_H
+#define TTA_CODEC_FILTER_FILTER__C_H
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// codec/simd/filter._C.h                                                   //
+// codec/filter/filter._C.h                                                 //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
@@ -27,7 +27,7 @@ struct Filter {
 //==========================================================================//
 
 #include "../common.h"
-#include "../tta.h"
+#include "../tta.h"	// asr32
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -57,6 +57,8 @@ ALWAYS_INLINE void filter_shift_mb(i32 *restrict m, i32 *restrict b)
 		*b
 @*/
 ;
+
+ALWAYS_INLINE CONST i32 signof32(i32) /*@*/;
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -199,6 +201,29 @@ filter_shift_mb(i32 *const restrict m, i32 *const restrict b)
 	MEMMOVE(m, &m[1u], (size_t) (8u * (sizeof *m)));
 	MEMMOVE(b, &b[1u], (size_t) (8u * (sizeof *b)));
 	return;
+}
+
+/**@fn signof32
+ * @brief get the sign of a 32-bit integer
+ *
+ * @param x input value
+ *
+ * @retval -1, 1, or 0
+ *
+ * @note affected by LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES
+**/
+ALWAYS_INLINE CONST i32
+signof32(const i32 x)
+/*@*/
+{
+#ifndef LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES
+	const u32 y = (u32) -x;
+	return (i32) (asr32(x, (bitcnt) 31u) | (y >> 31u));
+#else
+	return (UNPREDICTABLE (x != 0)
+		? (UNPREDICTABLE (x < 0) ? (i32) -1 : (i32) 1) : 0
+	);
+#endif
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////

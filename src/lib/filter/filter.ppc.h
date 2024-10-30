@@ -1,8 +1,8 @@
-#ifndef TTA_CODEC_SIMD_FILTER_PPC_H
-#define TTA_CODEC_SIMD_FILTER_PPC_H
+#ifndef TTA_CODEC_FILTER_FILTER_PPC_H
+#define TTA_CODEC_FILTER_FILTER_PPC_H
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// codec/simd/filter.ppc.h                                                  //
+// codec/filter/filter.ppc.h                                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
@@ -58,7 +58,7 @@
 
 #include "../../bits.h"
 
-#include "../tta.h"
+#include "../tta.h"	// asr32
 
 //////////////////////////////////////////////////////////////////////////////
 

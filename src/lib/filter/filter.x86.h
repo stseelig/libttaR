@@ -1,8 +1,8 @@
-#ifndef TTA_CODEC_SIMD_FILTER_X86_H
-#define TTA_CODEC_SIMD_FILTER_X86_H
+#ifndef TTA_CODEC_FILTER_FILTER_X86_H
+#define TTA_CODEC_FILTER_FILTER_X86_H
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// codec/simd/filter.x86.h                                                  //
+// codec/filter/filter.x86.h                                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
@@ -30,7 +30,7 @@
 
 #include "../../bits.h"
 
-#include "../tta.h"
+#include "../tta.h"	// asr32
 
 //////////////////////////////////////////////////////////////////////////////
 

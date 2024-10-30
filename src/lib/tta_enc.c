@@ -17,7 +17,7 @@
 
 #include "common.h"
 #include "filter.h"
-#include "rice.h"
+#include "rice24.h"
 #include "tta.h"
 
 //////////////////////////////////////////////////////////////////////////////
@@ -146,7 +146,7 @@ libttaR_tta_encode(
 	const size_t safety_margin    = get_safety_margin(samplebytes, nchan);
 	const size_t write_soft_limit = dest_len - safety_margin;
 #ifndef NDEBUG
-	const size_t rice_enc_max     = get_rice_enc_max(samplebytes);
+	const size_t rice_enc_max     = get_rice24_enc_max(samplebytes);
 #endif
 	// initial state setup
 	// inlining this instead of having it as its own library function is
@@ -239,7 +239,7 @@ libttaR_tta_encode(
 	// post-encode
 	user->ni32_total       += user->ni32;
 	if ( user->ni32_total == ni32_perframe ){
-		nbytes_enc      = rice_encode_cacheflush(
+		nbytes_enc      = rice24_encode_cacheflush(
 			dest, nbytes_enc, &priv->bitcache.enc, &user->crc
 		);
 		user->crc       = CRC32_FINI(user->crc);
@@ -269,6 +269,7 @@ libttaR_tta_encode(
  * @param filter_round arg 'round' for tta_filter
  * @param filter_k arg 'k' for tta_filter
  * @param nchan number of audio channels
+ * @param rice_enc_max debug value for theoretical max unary/binary code size
  *
  * @return number of bytes written to 'dest'
  *
@@ -335,7 +336,7 @@ tta_encode_mch(
 #ifndef NDEBUG
 			nbytes_old = nbytes_enc;
 #endif
-			nbytes_enc = rice_encode(
+			nbytes_enc = rice24_encode(
 				dest, curr.u, nbytes_enc, &codec[j].rice,
 				bitcache, &crc
 			);
@@ -363,6 +364,7 @@ tta_encode_mch(
  * @param predict_k arg 'k' for tta_predict1
  * @param filter_round arg 'round' for tta_filter
  * @param filter_k arg 'k' for tta_filter
+ * @param rice_enc_max debug value for theoretical max unary/binary code size
  *
  * @return number of bytes written to 'dest'
 **/
@@ -415,7 +417,7 @@ tta_encode_1ch(
 #ifndef NDEBUG
 		nbytes_old = nbytes_enc;
 #endif
-		nbytes_enc = rice_encode(
+		nbytes_enc = rice24_encode(
 			dest, curr.u, nbytes_enc, &codec[0].rice, bitcache,
 			&crc
 		);
@@ -442,6 +444,7 @@ tta_encode_1ch(
  * @param predict_k arg 'k' for tta_predict1
  * @param filter_round arg 'round' for tta_filter
  * @param filter_k arg 'k' for tta_filter
+ * @param rice_enc_max debug value for theoretical max unary/binary code size
  *
  * @return number of bytes written to 'dest'
 **/
@@ -495,7 +498,7 @@ tta_encode_2ch(
 #ifndef NDEBUG
 		nbytes_old = nbytes_enc;
 #endif
-		nbytes_enc = rice_encode(
+		nbytes_enc = rice24_encode(
 			dest, curr.u, nbytes_enc, &codec[0u].rice, bitcache,
 			&crc
 		);
@@ -519,7 +522,7 @@ tta_encode_2ch(
 #ifndef NDEBUG
 		nbytes_old = nbytes_enc;
 #endif
-		nbytes_enc = rice_encode(
+		nbytes_enc = rice24_encode(
 			dest, curr.u, nbytes_enc, &codec[1u].rice, bitcache,
 			&crc
 		);

@@ -23,34 +23,34 @@
 // arm
 #if defined(__aarch__) || defined(__aarch64__)
 #if defined(__ARM_NEON)
-#include "simd/filter.arm.h"
+#include "filter/filter.arm.h"
 #else
-#include "simd/filter._C.h"
+#include "filter/filter._C.h"
 #endif
 
 // ppc
 #elif defined(__powerpc__) || defined(__powerpc64__)
 #if defined(__ALTIVEC__)
-#include "simd/filter.ppc.h"
+#include "filter/filter.ppc.h"
 #else
-#include "simd/filter._C.h"
+#include "filter/filter._C.h"
 #endif
 
 // x86
 #elif defined(__i386__) || defined(__x86_64__)
 #if defined(__SSE2__)
-#include "simd/filter.x86.h"
+#include "filter/filter.x86.h"
 #else
-#include "simd/filter._C.h"
+#include "filter/filter._C.h"
 #endif
 
 // C
 #else
-#include "simd/filter._C.h"
+#include "filter/filter._C.h"
 #endif
 
 #else // defined(LIBTTAr_OPT_DISABLE_SIMD_INTRINSICS)
-#include "simd/filter._C.h"
+#include "filter/filter._C.h"
 
 #endif // LIBTTAr_OPT_DISABLE_SIMD_INTRINSICS
 
