@@ -44,15 +44,15 @@ struct Filter{
 
 //////////////////////////////////////////////////////////////////////////////
 
-ALWAYS_INLINE CONST __m128i predictz_m128i(__m128i, __m128i) /*@*/;
-ALWAYS_INLINE CONST __m128i cneg_izaz_m128i_epi32(__m128i, __m128i) /*@*/;
+ALWAYS_INLINE CONST __m128i predictz_vi32(__m128i, __m128i) /*@*/;
+ALWAYS_INLINE CONST __m128i cneg_izaz_vi32(__m128i, __m128i) /*@*/;
 
 #ifndef NDEBUG
-ALWAYS_INLINE CONST i32 disjunct_m128i_epi32(__m128i) /*@*/;
+ALWAYS_INLINE CONST i32 disjunct_vi32(__m128i) /*@*/;
 #endif
 
-ALWAYS_INLINE CONST __m128i mullo_m128i_epi32(__m128i, __m128i) /*@*/;
-ALWAYS_INLINE CONST i32 sum_m128i_epi32(__m128i) /*@*/;
+ALWAYS_INLINE CONST __m128i mullo_vi32(__m128i, __m128i) /*@*/;
+ALWAYS_INLINE CONST i32 sum_vi32(__m128i) /*@*/;
 
 ALWAYS_INLINE CONST __m128i update_m_hi(__m128i) /*@*/;
 ALWAYS_INLINE CONST __m128i update_b_hi(__m128i, i32) /*@*/;
@@ -81,18 +81,18 @@ ALWAYS_INLINE CONST __m128i update_mb_lo(__m128i, __m128i) /*@*/;
 }
 
 #define FILTER_SUM_UPDATE_A { \
-	t_lo     = predictz_m128i(m_lo, v_error); \
-	t_hi     = predictz_m128i(m_hi, v_error); \
+	t_lo     = predictz_vi32(m_lo, v_error); \
+	t_hi     = predictz_vi32(m_hi, v_error); \
 	\
-	t_lo     = cneg_izaz_m128i_epi32(t_lo, v_error); \
+	t_lo     = cneg_izaz_vi32(t_lo, v_error); \
 	a_lo     = _mm_add_epi32(a_lo, t_lo); \
-	t_hi     = cneg_izaz_m128i_epi32(t_hi, v_error); \
+	t_hi     = cneg_izaz_vi32(t_hi, v_error); \
 	a_hi     = _mm_add_epi32(a_hi, t_hi); \
 	\
-	r_lo     = mullo_m128i_epi32(a_lo, b_lo); \
-	r_hi     = mullo_m128i_epi32(a_hi, b_hi); \
-	round   += sum_m128i_epi32(r_lo); \
-	round   += sum_m128i_epi32(r_hi); \
+	r_lo     = mullo_vi32(a_lo, b_lo); \
+	r_hi     = mullo_vi32(a_hi, b_hi); \
+	round   += sum_vi32(r_lo); \
+	round   += sum_vi32(r_hi); \
 }
 
 #define FILTER_UPDATE_MB(Xvalue) { \
@@ -126,7 +126,7 @@ tta_filter_enc(
 	FILTER_UPDATE_MB(value);
 	FILTER_WRITE;
 	retval = value - asr32(round, k);
-	filter->error = retval;
+	*error = retval;
 
 	return retval;
 }
@@ -146,14 +146,14 @@ tta_filter_dec(
 	retval = value + asr32(round, k);
 	FILTER_UPDATE_MB(retval);
 	FILTER_WRITE;
-	filter->error = value;
+	*error = value;
 
 	return retval;
 }
 
 //--------------------------------------------------------------------------//
 
-/**@fn predictz_m128i
+/**@fn predictz_vi32
  * @brief helps the CPU to know if it can skip the next few instructions
  *
  * @param x the input vector
@@ -165,7 +165,7 @@ tta_filter_dec(
  *   it should be basically cost-free anyway
 **/
 ALWAYS_INLINE CONST __m128i
-predictz_m128i(const __m128i x, const __m128i error)
+predictz_vi32(const __m128i x, const __m128i error)
 /*@*/
 {
 	const __m128i v_iseqz = _mm_cmpeq_epi32(error, _mm_setzero_si128());
@@ -173,7 +173,7 @@ predictz_m128i(const __m128i x, const __m128i error)
 	return _mm_andnot_si128(v_iseqz, x);
 }
 
-/**@fn cneg_izaz_m128i_epi32
+/**@fn cneg_izaz_vi32
  * @brief conditional negation. if zero then already zero
  *
  * @param x the input vector
@@ -181,32 +181,28 @@ predictz_m128i(const __m128i x, const __m128i error)
  *
  * @return cmp < 0 ? -x : x
  *
- * @pre disjunct_m128i_epi32(cmp) == 0 ? disjunct_m128i_epi32(x) == 0 : true
+ * @pre disjunct_vi32(cmp) == 0 ? disjunct_vi32(x) == 0 : true
 **/
 ALWAYS_INLINE CONST __m128i
-cneg_izaz_m128i_epi32(const __m128i x, const __m128i cmp)
+cneg_izaz_vi32(const __m128i x, const __m128i cmp)
 /*@*/
 {
 #ifdef __SSSE3__
 
-	assert(disjunct_m128i_epi32(cmp) == 0
-		? disjunct_m128i_epi32(x) == 0 : true
-	);
+	assert(disjunct_vi32(cmp) == 0 ? disjunct_vi32(x) == 0 : true);
 
 	return _mm_sign_epi32(x, cmp);	// SSSE3
 #else
 	const __m128i v_isltz = _mm_cmplt_epi32(cmp, _mm_setzero_si128());
 
-	assert(disjunct_m128i_epi32(cmp) == 0
-		? disjunct_m128i_epi32(x) == 0 : true
-	);
+	assert(disjunct_vi32(cmp) == 0 ? disjunct_vi32(x) == 0 : true);
 
 	return _mm_sub_epi32(_mm_xor_si128(x, v_isltz), v_isltz);
 #endif
 }
 
 #ifndef NDEBUG
-/**@fn disjunct_m128i_epi32
+/**@fn disjunct_vi32
  * @brief ors together every item in the vector
  *
  * @param x the input vector
@@ -216,7 +212,7 @@ cneg_izaz_m128i_epi32(const __m128i x, const __m128i cmp)
  * @note only used in an assertion
 **/
 ALWAYS_INLINE CONST i32
-disjunct_m128i_epi32(__m128i x)
+disjunct_vi32(__m128i x)
 /*@*/
 {
 	x = _mm_or_si128(x, _mm_bsrli_si128(x, 8));
@@ -225,7 +221,7 @@ disjunct_m128i_epi32(__m128i x)
 }
 #endif
 
-/**@fn mullo_m128i_epi32
+/**@fn mullo_vi32
  * @brief multiplies the vectors and only keeps the lower 32 bits
  *
  * @param a the multiplicand
@@ -234,7 +230,7 @@ disjunct_m128i_epi32(__m128i x)
  * @return the lower 32-bit product
 **/
 ALWAYS_INLINE CONST __m128i
-mullo_m128i_epi32(const __m128i a, const __m128i b)
+mullo_vi32(const __m128i a, const __m128i b)
 /*@*/
 {
 #ifdef __SSE4_1__
@@ -252,7 +248,7 @@ mullo_m128i_epi32(const __m128i a, const __m128i b)
 #endif
 }
 
-/**@fn sum_m128i_epi32
+/**@fn sum_vi32
  * @brief adds together every item in the vector
  *
  * @param x the input vector
@@ -260,7 +256,7 @@ mullo_m128i_epi32(const __m128i a, const __m128i b)
  * @return the sum of all items in the vector
 **/
 ALWAYS_INLINE CONST i32
-sum_m128i_epi32(__m128i x)
+sum_vi32(__m128i x)
 /*@*/
 {
 	x = _mm_add_epi32(x, _mm_bsrli_si128(x, 8));
