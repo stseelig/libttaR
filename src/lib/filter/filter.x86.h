@@ -55,6 +55,7 @@ ALWAYS_INLINE CONST __m128i mullo_vi32(__m128i, __m128i) /*@*/;
 ALWAYS_INLINE CONST i32 sum_vi32(__m128i) /*@*/;
 
 ALWAYS_INLINE CONST __m128i update_m_hi(__m128i) /*@*/;
+ALWAYS_INLINE CONST __m128i update_m_hi_shift(__m128i) /*@*/;
 ALWAYS_INLINE CONST __m128i update_b_hi(__m128i, i32) /*@*/;
 ALWAYS_INLINE CONST __m128i update_mb_lo(__m128i, __m128i) /*@*/;
 
@@ -275,44 +276,51 @@ ALWAYS_INLINE CONST __m128i
 update_m_hi(__m128i b_hi)
 /*@*/
 {
-#ifdef __SSE4_1__
-
-	__m128i t1, t2;
-
 	b_hi = _mm_srai_epi32(b_hi, 30);
 	b_hi = _mm_or_si128(b_hi, _mm_set1_epi32(1));
+	return update_m_hi_shift(b_hi);
+}
 
-	// _mm_sllv_epi32() is super slow
-	t1 = _mm_slli_epi32(b_hi, 1);
-	t2 = _mm_slli_epi32(b_hi, 2);
+/**@fn update_m_hi_shift
+ * @brief the shift-left/last part of update_m_hi
+ *
+ * @param x the input
+ *
+ * @return the shifted vector
+ *
+ * @note an AVX2 version with _mm_sllv_epi32() is much slower for some reason
+**/
+ALWAYS_INLINE CONST __m128i
+update_m_hi_shift(__m128i x)
+/*@*/
+{
+#ifdef __SSE4_1__
+	const __m128i t1 = _mm_slli_epi32(x, 1);
+	const __m128i t2 = _mm_slli_epi32(x, 2);
+
 	return _mm_castps_si128(_mm_blend_ps(	// SSE4.1
 		_mm_blend_ps(			// SSE4.1
-			_mm_castsi128_ps(b_hi), _mm_castsi128_ps(t1), 0x6
+			_mm_castsi128_ps(x), _mm_castsi128_ps(t1), 0x6
 		),
 		_mm_castsi128_ps(t2), 0x8
 	));
 #else
-	__m128i t1, t2;
+	__m128i t1 = _mm_slli_epi32(x, 1);
+	__m128i t2 = _mm_slli_epi32(x, 2);
 
-	b_hi = _mm_srai_epi32(b_hi, 30);
-	b_hi = _mm_or_si128(b_hi, _mm_set1_epi32(1));
-
-	t1   = _mm_slli_epi32(b_hi, 1);
-	t2   = _mm_slli_epi32(b_hi, 2);
-
-	b_hi = _mm_and_si128(
+	x  = _mm_and_si128(
 		_mm_set_epi32(0x00000000, 0x00000000, 0x00000000, 0xFFFFFFFF),
-		b_hi
+		x
 	);
-	t1   = _mm_and_si128(
+	t1 = _mm_and_si128(
 		_mm_set_epi32(0x00000000, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000),
 		t1
 	);
-	t2   = _mm_and_si128(
+	t2 = _mm_and_si128(
 		_mm_set_epi32(0xFFFFFFFF, 0x00000000, 0x00000000, 0x00000000),
 		t2
 	);
-	return _mm_or_si128(_mm_or_si128(b_hi, t1), t2);
+	return _mm_or_si128(_mm_or_si128(x, t1), t2);
 #endif
 }
 

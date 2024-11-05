@@ -183,17 +183,15 @@ asr32(const i32 x, const bitcnt k)
 {
 	assert(k <= (bitcnt) 31u);
 
-	/*@-shiftimplementation@*/
-	if ( (i32) (((i32) -1) >> 1u) == (i32) -1 ){
-		// native
+	if ( HAS_ASR(i32) ){
+		/*@-shiftimplementation@*/
 		return (i32) (x >> k);
+		/*@=shiftimplementation@*/
 	}
-	else {	// emulated
-		return (UNPREDICTABLE (x < 0)
-			? (i32) ~((~((u32) x)) >> k) : (i32) (x >> k)
+	else {	return (UNPREDICTABLE (x < 0)
+			? (i32) ~((~((u32) x)) >> k) : (i32) (((u32) x) >> k)
 		);
 	}
-	/*@=shiftimplementation@*/
 }
 
 //==========================================================================//
