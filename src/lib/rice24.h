@@ -546,7 +546,7 @@ rice24_encode(
 
 	// unary + binary
 	RICE24_ENCODE_UNARY(unary);
-	RICE24_ENCODE_BINARY((rice24_enc) BZHI32(value, bin_k)));
+	RICE24_ENCODE_BINARY((rice24_enc) BZHI32(value, bin_k));
 #endif
 	return nbytes_enc;
 }
