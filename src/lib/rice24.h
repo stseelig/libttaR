@@ -345,6 +345,19 @@ lsmask32(const bitcnt k)
 #endif
 }
 
+/**@fn BZHI32
+ * @brief (bit-manip) zero high bits by index 32-bit
+ *   macro'd because of fast types (almost like in TBCNT8)
+ *
+ * @param x input value
+ * @param k bit index
+ *
+ * @return 'x' zero'd from the 'k'th bit to the most significant bit
+ *
+ * @note both clang and gcc understand this.
+**/
+#define BZHI32(x, k)	((x) & lsmask32(k))
+
 /**@fn TBCNT8
  * @brief trailing bit count 8-bit
  *   macro'd because fast types were causing extra casts with inline functions
@@ -354,6 +367,7 @@ lsmask32(const bitcnt k)
  * @return number of trailing bits
  *
  * @note 'x' will never be UINT[32|64]_MAX
+ * @note affected by LIBTTAr_OPT_PREFER_LOOKUP_TABLES
 **/
 #ifndef TBCNT8_TABLE
 #if HAS_BUILTIN(BUILTIN_TZCNT32)
@@ -515,11 +529,11 @@ rice24_encode(
 
 		// unary + binary
 		RICE24_ENCODE_UNARY((rice24_enc) ((value >> bin_k) + 1u));
-		RICE24_ENCODE_BINARY((rice24_enc) (value & lsmask32(bin_k)));
+		RICE24_ENCODE_BINARY((rice24_enc) BZHI32(value, bin_k));
 	}
 	else {	// unary-zero + binary
 		RICE24_ENCODE_UNARY_ZERO;
-		RICE24_ENCODE_BINARY((rice24_enc) (value & lsmask32(bin_k)));
+		RICE24_ENCODE_BINARY((rice24_enc) BZHI32(value, bin_k));
 	}
 #else
 	// value + state
@@ -532,7 +546,7 @@ rice24_encode(
 
 	// unary + binary
 	RICE24_ENCODE_UNARY(unary);
-	RICE24_ENCODE_BINARY((rice24_enc) (value & lsmask32(bin_k)));
+	RICE24_ENCODE_BINARY((rice24_enc) BZHI32(value, bin_k)));
 #endif
 	return nbytes_enc;
 }
@@ -886,7 +900,6 @@ rice24_decode(
  * @note max read size:
  *     8/16-bit :    8194u
  *       24-bit : 2097154uL
- * @note affected by LIBTTAr_OPT_PREFER_LOOKUP_TABLES
 **/
 ALWAYS_INLINE size_t
 rice24_read_unary(
@@ -968,7 +981,7 @@ rice24_read_binary(
 		*cache |= ((cache32) inbyte) << *count;
 		*count += 8u;
 	}
-	*binary  = (rice24_dec) (*cache & lsmask32(bin_k));
+	*binary  = (rice24_dec) BZHI32(*cache, bin_k);
 	*cache >>= bin_k;
 	*count  -= bin_k;
 
