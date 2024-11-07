@@ -19,7 +19,7 @@
 /**@var binexp32p4_table
  * @brief binary exponetiation 32-bit + 4-lshift (2**('k' + 4u)) lookup table
  *   a value with only the ('k' + 4u)th bit set, 0, or 0xFFFFFFFFu
- * @note special cases (for rice_update):
+ * @note special cases (for rice24_update):
  *        0u => 0x00000000u: floors rice.k[] to  0u
  *       25u => 0xFFFFFFFFu:   caps rice.k[] to 24u
 **/
