@@ -13,7 +13,6 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include <assert.h>
-#include <limits.h>	// tbcnt8_32 assert
 #include <stddef.h>	// size_t
 
 #include "../bits.h"
