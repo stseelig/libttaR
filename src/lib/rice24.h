@@ -913,27 +913,27 @@ rice24_read_unary(
 		*crc
 @*/
 {
-	bitcnt nbit;
+	bitcnt nbits;
 	u8 inbyte;
 
 	assert(*count <= (bitcnt) 8u);
 
-	nbit   = TBCNT8(*cache);
-	*unary = (rice24_dec) nbit;
-	if IMPROBABLE ( nbit == *count, 0.25 ){
+	nbits  = TBCNT8(*cache);
+	*unary = (rice24_dec) nbits;
+	if IMPROBABLE ( nbits == *count, 0.25 ){
 		do {	inbyte  = rice24_crc32_dec(src[nbytes_dec++], crc);
 			*cache  = (cache32) inbyte;
-			nbit    = TBCNT8(*cache);
-			*unary += nbit;
+			nbits   = TBCNT8(*cache);
+			*unary += nbits;
 			if UNLIKELY ( *unary > lax_limit ){
-				nbit = 0;	// prevents *count underflow
+				nbits = 0;	// prevents *count underflow
 				break;
 			}
-		} while UNLIKELY ( nbit == (bitcnt) 8u );
+		} while UNLIKELY ( nbits == (bitcnt) 8u );
 		*count = (bitcnt) 8u;
 	}
-	*cache >>= nbit + 1u;	// + terminator
-	*count  -= nbit + 1u;	// ~
+	*cache >>= nbits + 1u;	// + terminator
+	*count  -= nbits + 1u;	// ~
 
 	assert(*count <= (bitcnt) 7u);
 	return nbytes_dec;
