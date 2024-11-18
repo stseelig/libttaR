@@ -66,7 +66,7 @@ Any code from ttaenc was put into the library, and the CLI program was
 completely rewritten.
 
 The library prioritizes speed.
-So, its memory usage is a bit bloated to avoid some unsafe buffer stuff.
+So, its memory usage is a bit bloated to avoid some bounds checks.
 (The safer alternative is 15-20% slower.)
 
 The library is just a collection of functions for reading from one buffer and
