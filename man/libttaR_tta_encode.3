@@ -1,13 +1,13 @@
 .\" t
 .\"     Title: libttaR_tta_encode
 .\"    Author: Shane Seelig
-.\"      Date: 2024-11-18
+.\"      Date: 2024-11-19
 .\"    Source: libttaR 1.2
 .\"  Language: English
 .\"
 .\" ##########################################################################
 
-.TH "LIBTTAr_TTA_ENCODE" "3" "2024\-07\-01" "libttaR 1.2" \
+.TH "LIBTTAr_TTA_ENCODE" "3" "2024\-11\-19" "libttaR 1.2" \
 "LibTTAr Programmer's Manual"
 
 .\" ##########################################################################
@@ -119,7 +119,9 @@ The target number of TTA bytes from the dest/src buffer to encode/decode.
 *\fIpriv\fR
 .RS 8
 The codec's private state.
-The struct is opaque and needs to be allocated with the size from
+The struct is opaque and needs to be allocated and properly aligned
+(malloc() / __BIGGEST_ALIGNMENT__)
+with the size from
 .BR libttaR_codecstate_priv_size ().
 .RE
 
@@ -368,10 +370,7 @@ dec_frame_decode(
     int r;
     struct LibTTAr_CodecState_User user = LIBTTAr_CODECSTATE_USER_INIT;
     size_t pad_target = 0;
-    union { size_t z; } t;
-#ifdef NDEBUG
-    (void) t.z;     // gcc
-#endif
+    UNUSED union { size_t z; } t;
 
     assert(decbuf->i32buf != NULL);
 
