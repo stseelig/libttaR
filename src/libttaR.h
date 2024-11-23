@@ -42,12 +42,12 @@
 #define LIBTTAr_CONST
 #endif
 
-#else // ! defined(__GNUC__)
+#else /* ! defined(__GNUC__) */
 
 #define LIBTTAr_PURE
 #define LIBTTAr_CONST
 
-#endif // __GNUC__
+#endif /* __GNUC__ */
 
 /* //////////////////////////////////////////////////////////////////////// */
 
@@ -264,4 +264,4 @@ extern LIBTTAr_PURE uint32_t libttaR_crc32(const uint8_t *buf, size_t size)
 ;
 
 /* EOF //////////////////////////////////////////////////////////////////// */
-#endif
+#endif /* LIBTTAr_H */
