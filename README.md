@@ -24,7 +24,7 @@ and has a mostly native (mostly working) Win32 port via MinGW.
 While developing, I mostly tested on:
 \
 	- AMD Ryzen 7 1700    (primary tuning)\
-	- Intel Celeron N2830 (secondary tuning)\
+	- Intel Celeron N2830 (secondary tuning)
 
 honorable mentions:
 \
