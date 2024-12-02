@@ -294,8 +294,7 @@ encmt_loop(
 {
 	struct MTArg_EncIO state_io;
 	struct MTArg_Encoder state_encoder;
-	thread_p thread_io;
-	thread_p *thread_encoder = NULL;
+	thread_p thread_io, thread_encoder;
 	struct FileStats_EncMT fstat_c;
 	struct EncStats estat;
 	const size_t samplebuf_len = fstat->buflen;
@@ -312,11 +311,6 @@ encmt_loop(
 		outfile, outfile_name, infile, infile_name, seektable, &estat,
 		&fstat_c
 	);
-	if ( nthreads > 1u ){
-		thread_encoder = calloc_check(
-			(size_t) (nthreads - 1u), sizeof *thread_encoder
-		);
-	}
 
 	// create and detach coders
 	thread_create(
@@ -326,11 +320,11 @@ encmt_loop(
 	);
 	for ( i = 0; i < nthreads - 1u; ++i ){
 		thread_create(
-			&thread_encoder[i],
+			&thread_encoder,
 			(START_ROUTINE_ABI start_routine_ret (*)(void *))
 			encmt_encoder, &state_encoder
 		);
-		thread_detach(&thread_encoder[i]);
+		thread_detach(&thread_encoder);
 	}
 	(void) encmt_encoder(&state_encoder);
 
@@ -339,9 +333,6 @@ encmt_loop(
 
 	// cleanup
 	encmt_state_free(&state_io, &state_encoder, framequeue_len);
-	if ( nthreads > 1u ){
-		free(thread_encoder);
-	}
 
 	*estat_out = estat;
 	return;

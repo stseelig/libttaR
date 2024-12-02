@@ -302,8 +302,7 @@ decmt_loop(
 {
 	struct MTArg_DecIO state_io;
 	struct MTArg_Decoder state_decoder;
-	thread_p thread_io;
-	thread_p *thread_decoder = NULL;
+	thread_p thread_io, thread_decoder;
 	struct FileStats_DecMT fstat_c;
 	struct DecStats dstat;
 	const size_t samplebuf_len = fstat->buflen;
@@ -320,11 +319,6 @@ decmt_loop(
 		outfile, outfile_name, infile, infile_name, seektable, &dstat,
 		&fstat_c
 	);
-	if ( nthreads > 1u ){
-		thread_decoder = calloc_check(
-			(size_t) (nthreads - 1u), sizeof *thread_decoder
-		);
-	}
 
 	// create and detach coders
 	thread_create(
@@ -334,11 +328,11 @@ decmt_loop(
 	);
 	for ( i = 0; i < nthreads - 1u; ++i ){
 		thread_create(
-			&thread_decoder[i],
+			&thread_decoder,
 			(START_ROUTINE_ABI start_routine_ret (*)(void *))
 			decmt_decoder, &state_decoder
 		);
-		thread_detach(&thread_decoder[i]);
+		thread_detach(&thread_decoder);
 	}
 	(void) decmt_decoder(&state_decoder);
 
@@ -347,9 +341,6 @@ decmt_loop(
 
 	// cleanup
 	decmt_state_free(&state_io, &state_decoder, framequeue_len);
-	if ( nthreads > 1u ){
-		free(thread_decoder);
-	}
 
 	*dstat_out = dstat;
 	return;
