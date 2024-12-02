@@ -59,6 +59,16 @@ INLINE void thread_join(const thread_p *restrict)
 /*@modifies	internalState@*/
 ;
 
+/**@fn thread_detach
+ * @brief detach a thread
+ *
+ * @param thread[in] the thread
+**/
+INLINE void thread_detach(const thread_p *restrict)
+/*@globals	internalState@*/
+/*@modifies	internalState@*/
+;
+
 //==========================================================================//
 
 #undef sem

@@ -66,6 +66,18 @@ thread_join(const thread_p *const restrict thread)
 	return;
 }
 
+/// @see "threads.h"
+INLINE void
+thread_detach(const thread_p *const restrict thread)
+/*@globals	internalState@*/
+/*@modifies	internalState@*/
+{
+	UNUSED const int rv = pthread_detach(*thread);;
+	assert(rv == 0);
+	return;
+
+}
+
 //==========================================================================//
 
 /// @see "threads.h"

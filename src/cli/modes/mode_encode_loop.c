@@ -268,10 +268,9 @@ loop_entr:
  * @note threads layout:
  *     - the io thread is created first, so it can get a head start on filling
  *   up the framequeue
- *     - then (nthreads - 1u) coder threads are created
+ *     - then (nthreads - 1u) coder threads are created and detached
  *     - the main thread then becomes the last coder thread
- *     - after the main thread finishes coding, the other coder threads are
- *   joined, and then finally, the io thread is joined
+ *     - after the main thread finishes coding, the io thread is joined
 **/
 void
 encmt_loop(
@@ -303,8 +302,6 @@ encmt_loop(
 	const uint framequeue_len = FRAMEQUEUE_LEN(nthreads);
 	uint i;
 
-	assert(nthreads >= 1u);
-
 	// setup/init
 	memset(&estat, 0x00, sizeof estat);
 	encmt_fstat_init(&fstat_c, fstat);
@@ -319,7 +316,7 @@ encmt_loop(
 		);
 	}
 
-	// create
+	// create and detach coders
 	thread_create(
 		&thread_io,
 		(START_ROUTINE_ABI start_routine_ret (*)(void *)) encmt_io,
@@ -331,13 +328,11 @@ encmt_loop(
 			(START_ROUTINE_ABI start_routine_ret (*)(void *))
 			encmt_encoder, &state_encoder
 		);
+		thread_detach(&thread_encoder[i]);
 	}
 	(void) encmt_encoder(&state_encoder);
 
-	// join
-	for ( i = 0; i < nthreads - 1u; ++i ){
-		thread_join(&thread_encoder[i]);
-	}
+	// wait for i/o
 	thread_join(&thread_io);
 
 	// cleanup
@@ -773,7 +768,9 @@ loop_entr:
 
 		// get frame id from encode queue
 		spinlock_lock(&queue->lock);
-		i = pqueue_pop(&queue->q);
+		{
+			i = pqueue_pop(&queue->q);
+		}
 		spinlock_unlock(&queue->lock);
 	}
 	while ( ni32_perframe[i] != 0 );

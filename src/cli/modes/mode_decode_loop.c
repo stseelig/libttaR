@@ -279,7 +279,7 @@ loop_entr:
  * @param infile_name[in] the name of the source file (warnings/errors)
  * @param nthreads the number of encoder threads to use
  *
- * @see encmt_loop
+ * @see encmt_loop note
 **/
 void
 decmt_loop(
@@ -310,8 +310,6 @@ decmt_loop(
 	const uint framequeue_len = FRAMEQUEUE_LEN(nthreads);
 	uint i;
 
-	assert(nthreads >= 1u);
-
 	// setup/init
 	memset(&dstat, 0x00, sizeof dstat);
 	decmt_fstat_init(&fstat_c, fstat);
@@ -326,7 +324,7 @@ decmt_loop(
 		);
 	}
 
-	// create
+	// create and detach coders
 	thread_create(
 		&thread_io,
 		(START_ROUTINE_ABI start_routine_ret (*)(void *)) decmt_io,
@@ -338,13 +336,11 @@ decmt_loop(
 			(START_ROUTINE_ABI start_routine_ret (*)(void *))
 			decmt_decoder, &state_decoder
 		);
+		thread_detach(&thread_decoder[i]);
 	}
 	(void) decmt_decoder(&state_decoder);
 
-	// join
-	for ( i = 0; i < nthreads - 1u; ++i ){
-		thread_join(&thread_decoder[i]);
-	}
+	// wait for i/o
 	thread_join(&thread_io);
 
 	// cleanup
@@ -837,7 +833,9 @@ loop_entr:
 
 		// get frame id from decode queue
 		spinlock_lock(&queue->lock);
-		i = pqueue_pop(&queue->q);
+		{
+			i = pqueue_pop(&queue->q);
+		}
 		spinlock_unlock(&queue->lock);
 	}
 	while ( nbytes_tta_perframe[i] != 0 );
