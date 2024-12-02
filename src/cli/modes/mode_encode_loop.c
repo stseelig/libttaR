@@ -302,6 +302,8 @@ encmt_loop(
 	const uint framequeue_len = FRAMEQUEUE_LEN(nthreads);
 	uint i;
 
+	assert(nthreads > 0);
+
 	// setup/init
 	memset(&estat, 0x00, sizeof estat);
 	encmt_fstat_init(&fstat_c, fstat);

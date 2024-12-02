@@ -310,6 +310,8 @@ decmt_loop(
 	const uint framequeue_len = FRAMEQUEUE_LEN(nthreads);
 	uint i;
 
+	assert(nthreads > 0);
+
 	// setup/init
 	memset(&dstat, 0x00, sizeof dstat);
 	decmt_fstat_init(&fstat_c, fstat);
