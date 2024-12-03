@@ -25,19 +25,19 @@
 #ifdef __GNUC__
 
 #ifdef __has_attribute
-#define HAS_ATTRIBUTE(x)	__has_attribute(x)
+#define LIBTTAr_HAS_ATTRIBUTE(x)	__has_attribute(x)
 #else
-#define HAS_ATTRIBUTE(x)	0
+#define LIBTTAr_HAS_ATTRIBUTE(x)	0
 #endif
 
-#if HAS_ATTRIBUTE(pure)
-#define LIBTTAr_PURE		__attribute__((pure))
+#if LIBTTAr_HAS_ATTRIBUTE(pure)
+#define LIBTTAr_PURE			__attribute__((pure))
 #else
 #define LIBTTAr_PURE
 #endif
 
-#if HAS_ATTRIBUTE(const)
-#define LIBTTAr_CONST		__attribute__((const))
+#if LIBTTAr_HAS_ATTRIBUTE(const)
+#define LIBTTAr_CONST			__attribute__((const))
 #else
 #define LIBTTAr_CONST
 #endif
