@@ -48,9 +48,9 @@ thread_create(
 		*thread
 @*/
 {
-	const int rv = pthread_create(thread, NULL, start_routine, arg);
-	if UNLIKELY ( rv != 0 ){
-		error_sys(rv, "pthread_create", NULL);
+	const int err = pthread_create(thread, NULL, start_routine, arg);
+	if UNLIKELY ( err != 0 ){
+		error_sys(err, "pthread_create", NULL);
 	}
 	return;
 }
@@ -61,8 +61,8 @@ thread_join(const thread_p *const restrict thread)
 /*@globals	internalState@*/
 /*@modifies	internalState@*/
 {
-	UNUSED const int rv = pthread_join(*thread, NULL);
-	assert(rv == 0);
+	UNUSED const int err = pthread_join(*thread, NULL);
+	assert(err == 0);
 	return;
 }
 
@@ -72,8 +72,8 @@ thread_detach(const thread_p *const restrict thread)
 /*@globals	internalState@*/
 /*@modifies	internalState@*/
 {
-	UNUSED const int rv = pthread_detach(*thread);;
-	assert(rv == 0);
+	UNUSED const int err = pthread_detach(*thread);;
+	assert(err == 0);
 	return;
 
 }
@@ -91,8 +91,8 @@ semaphore_init(/*@out@*/ semaphore_p *const restrict sem, const uint value)
 		*sem
 @*/
 {
-	const int rv = sem_init(sem, 0, value);
-	if UNLIKELY ( rv != 0 ){
+	const int err = sem_init(sem, 0, value);
+	if UNLIKELY ( err != 0 ){
 		error_sys(errno, "sem_init", NULL);
 	}
 	return;
@@ -106,8 +106,8 @@ semaphore_destroy(semaphore_p *const restrict sem)
 		*sem
 @*/
 {
-	UNUSED const int rv = sem_destroy(sem);
-	assert(rv == 0);
+	UNUSED const int err = sem_destroy(sem);
+	assert(err == 0);
 	return;
 }
 
@@ -119,8 +119,8 @@ semaphore_post(semaphore_p *const restrict sem)
 		*sem
 @*/
 {
-	UNUSED const int rv = sem_post(sem);
-	assert(rv == 0);
+	UNUSED const int err = sem_post(sem);
+	assert(err == 0);
 	return;
 }
 
@@ -132,8 +132,10 @@ semaphore_wait(semaphore_p *const restrict sem)
 		*sem
 @*/
 {
-	UNUSED const int rv = sem_wait(sem);
-	assert(rv == 0);
+	int err;
+	do {	err = sem_wait(sem);
+	} while UNLIKELY ( err == EINTR );
+	assert(err == 0);
 	return;
 }
 
@@ -150,9 +152,9 @@ spinlock_init(/*@out@*/ spinlock_p *const restrict lock)
 		*lock
 @*/
 {
-	const int rv = pthread_spin_init(lock, PTHREAD_PROCESS_PRIVATE);
-	if UNLIKELY ( rv != 0 ){
-		error_sys(rv, "pthread_spin_init", NULL);
+	const int err = pthread_spin_init(lock, PTHREAD_PROCESS_PRIVATE);
+	if UNLIKELY ( err != 0 ){
+		error_sys(err, "pthread_spin_init", NULL);
 	}
 	return;
 }
@@ -165,8 +167,8 @@ spinlock_destroy(spinlock_p *const restrict lock)
 		*lock
 @*/
 {
-	UNUSED const int rv = pthread_spin_destroy(lock);
-	assert(rv == 0);
+	UNUSED const int err = pthread_spin_destroy(lock);
+	assert(err == 0);
 	return;
 }
 
@@ -178,8 +180,8 @@ spinlock_lock(spinlock_p *const restrict lock)
 		*lock
 @*/
 {
-	UNUSED const int rv = pthread_spin_lock(lock);
-	assert(rv == 0);
+	UNUSED const int err = pthread_spin_lock(lock);
+	assert(err == 0);
 	return;
 }
 
@@ -191,8 +193,8 @@ spinlock_unlock(spinlock_p *const restrict lock)
 		*lock
 @*/
 {
-	UNUSED const int rv = pthread_spin_unlock(lock);
-	assert(rv == 0);
+	UNUSED const int err = pthread_spin_unlock(lock);
+	assert(err == 0);
 	return;
 }
 
