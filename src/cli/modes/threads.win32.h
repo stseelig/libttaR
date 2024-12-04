@@ -77,7 +77,7 @@ thread_join(const thread_p *const restrict thread)
 /*@modifies	internalState@*/
 {
 	UNUSED const DWORD err = WaitForSingleObject(*thread, INFINITE);
-	assert(err == (DWORD) 0u);
+	assert(err == 0);
 	return;
 }
 
@@ -88,7 +88,7 @@ thread_detach(const thread_p *const restrict thread)
 /*@modifies	internalState@*/
 {
 	UNUSED const BOOL err = CloseHandle(*thread);
-	assert(err != (BOOL) 0);
+	assert(err != 0);
 	return;
 }
 
@@ -121,7 +121,7 @@ semaphore_destroy(semaphore_p *const restrict sem)
 @*/
 {
 	UNUSED const BOOL err = CloseHandle(*sem);
-	assert(err != (BOOL) 0);
+	assert(err != 0);
 	return;
 }
 
@@ -134,7 +134,7 @@ semaphore_post(semaphore_p *const restrict sem)
 @*/
 {
 	UNUSED const BOOL err = ReleaseSemaphore(*sem, 1L, NULL);
-	assert(err != (BOOL) 0);
+	assert(err != 0);
 	return;
 }
 
@@ -147,7 +147,7 @@ semaphore_wait(semaphore_p *const restrict sem)
 @*/
 {
 	UNUSED const DWORD err = WaitForSingleObject(*sem, INFINITE);
-	assert(err == (DWORD) 0u);
+	assert(err == 0);
 	return;
 }
 
