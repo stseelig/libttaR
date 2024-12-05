@@ -133,8 +133,13 @@ semaphore_wait(semaphore_p *const restrict sem)
 @*/
 {
 	int err;
-	do {	err = sem_wait(sem);
-	} while UNLIKELY ( err == EINTR );
+try_again:
+	err = sem_wait(sem);
+	if UNLIKELY ( err != 0 ){
+		if ( errno == EINTR ){
+			goto try_again;
+		}
+	}
 	assert(err == 0);
 	return;
 }
