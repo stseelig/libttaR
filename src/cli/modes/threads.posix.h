@@ -68,11 +68,11 @@ thread_join(const thread_p *const restrict thread)
 
 /// @see "threads.h"
 INLINE void
-thread_detach(const thread_p *const restrict thread)
+thread_detach_self(void)
 /*@globals	internalState@*/
 /*@modifies	internalState@*/
 {
-	UNUSED const int err = pthread_detach(*thread);;
+	UNUSED const int err = pthread_detach(pthread_self());
 	assert(err == 0);
 	return;
 

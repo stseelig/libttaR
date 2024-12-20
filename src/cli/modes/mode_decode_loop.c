@@ -104,7 +104,19 @@ static HOT start_routine_ret decmt_io(struct MTArg_DecIO *restrict arg)
 
 #undef arg
 START_ROUTINE_ABI
-static HOT start_routine_ret decmt_decoder(struct MTArg_Decoder *restrict arg)
+static start_routine_ret decmt_encoder_wrapper(void *const restrict arg)
+/*@globals	fileSystem,
+		internalState
+@*/
+/*@modifies	fileSystem,
+		internalState,
+		*arg
+@*/
+;
+
+#undef arg
+START_ROUTINE_ABI
+static HOT int decmt_decoder(struct MTArg_Decoder *restrict arg)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -320,7 +332,7 @@ decmt_loop(
 		&fstat_c
 	);
 
-	// create and detach coders
+	// create coders
 	thread_create(
 		&thread_io,
 		(START_ROUTINE_ABI start_routine_ret (*)(void *)) decmt_io,
@@ -328,11 +340,8 @@ decmt_loop(
 	);
 	for ( i = 0; i < nthreads - 1u; ++i ){
 		thread_create(
-			&thread_decoder,
-			(START_ROUTINE_ABI start_routine_ret (*)(void *))
-			decmt_decoder, &state_decoder
+			&thread_decoder, decmt_encoder_wrapper, &state_decoder
 		);
-		thread_detach(&thread_decoder);
 	}
 	(void) decmt_decoder(&state_decoder);
 
@@ -754,15 +763,38 @@ loop1_not_tiny:
 	return (start_routine_ret) 0;
 }
 
+/**@fn decmt_encoder_wrapper
+ * @brief wraps the mt-decoder function. the thread detaches itself before
+ *   returning
+ *
+ * @param arg state for the thread
+ *
+ * @return (start_routine_ret) 0
+**/
+START_ROUTINE_ABI
+static start_routine_ret
+decmt_encoder_wrapper(void *const restrict arg)
+/*@globals	fileSystem,
+		internalState
+@*/
+/*@modifies	fileSystem,
+		internalState,
+		*arg
+@*/
+{
+	(void) decmt_decoder(arg);
+	thread_detach_self();
+	return (start_routine_ret) 0;
+}
+
 /**@fn decmt_decoder
  * @brief the decoder thread function for the multi-threaded decoder
  *
  * @param arg state for the thread
  *
- * @retval (start_routine_ret) 0
+ * @return 0
 **/
-START_ROUTINE_ABI
-static HOT start_routine_ret
+static HOT int
 decmt_decoder(struct MTArg_Decoder *const restrict arg)
 /*@globals	fileSystem,
 		internalState
@@ -837,7 +869,7 @@ loop_entr:
 	free(i32buf);
 	free(priv);
 
-	return (start_routine_ret) 0;
+	return 0;
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////

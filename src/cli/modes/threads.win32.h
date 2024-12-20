@@ -83,11 +83,11 @@ thread_join(const thread_p *const restrict thread)
 
 /// @see "threads.h"
 INLINE void
-thread_detach(const thread_p *const restrict thread)
+thread_detach_self(void)
 /*@globals	internalState@*/
 /*@modifies	internalState@*/
 {
-	UNUSED const BOOL err = CloseHandle(*thread);
+	UNUSED const BOOL err = CloseHandle(GetCurrentThread());
 	assert(err != 0);
 	return;
 }
