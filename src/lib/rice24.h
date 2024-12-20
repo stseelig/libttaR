@@ -1,8 +1,8 @@
-#ifndef TTA_CODEC_RICE_H
-#define TTA_CODEC_RICE_H
+#ifndef TTA_CODEC_RICE24_H
+#define TTA_CODEC_RICE24_H
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// codec/rice.h                                                             //
+// codec/rice24.h                                                           //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
