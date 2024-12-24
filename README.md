@@ -78,6 +78,6 @@ has a builtin memset and memmove (both, ie, not gcc).
 So fairly bare-bones as far as codec libraries go.
 
 The two codec functions are reentrant, so you can code as few samples at a
-time with buffers as small as you want.
+time with buffers as small as you want (with some padding).
 ttaR (CLI util) 1.0 did this, but I replaced it with doing the whole frame at
 once in 1.1 because it's a little faster and it simplified the source a bit.
