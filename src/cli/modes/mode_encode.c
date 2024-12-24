@@ -147,7 +147,7 @@ mode_encode(const uint optind, const uint argc, char *const *const argv)
 	// exit if any errors
 	if UNLIKELY ( nerrors_file != 0 ){
 		if ( nerrors_file > (size_t) 255u ){
-			nerrors_file = 255u;
+			nerrors_file = (size_t) 255u;
 		}
 		exit((int) nerrors_file);
 	}
