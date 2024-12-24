@@ -108,7 +108,7 @@ mode_encode(const uint optind, const uint argc, char *const *const argv)
 @*/
 {
 	struct OpenedFiles openedfiles;
-	uint nerrors_file = 0;
+	size_t nerrors_file = 0;
 	timestamp_p ts_start, ts_finish;
 	size_t i;
 	union {	int	d;
@@ -146,6 +146,9 @@ mode_encode(const uint optind, const uint argc, char *const *const argv)
 
 	// exit if any errors
 	if UNLIKELY ( nerrors_file != 0 ){
+		if ( nerrors_file > (size_t) 255u ){
+			nerrors_file = 255u;
+		}
 		exit((int) nerrors_file);
 	}
 
@@ -320,7 +323,7 @@ encode_multi:
 
 	if ( ! g_flag.quiet ){
 		timestamp_get(&ts_finish);
-		estat.encodetime += timestamp_diff(&ts_start, &ts_finish);
+		estat.encodetime = timestamp_diff(&ts_start, &ts_finish);
 	}
 
 	// post-encode stats
