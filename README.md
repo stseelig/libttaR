@@ -8,6 +8,11 @@ It supports 8, 16, and 24-bit PCM.
 
 http://tausoft.org/wiki/True_Audio_Codec_Overview
 
+## Blog
+
+How ttaR is faster than ttaenc (2024-12-28)
+https://gist.github.com/stseelig/0b9afe795a547b5798587db996694f97
+
 ## Building
 edit then run ./make.sh
 
