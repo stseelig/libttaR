@@ -6,14 +6,18 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2024, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
-#include <stddef.h>	// size_t
-
+#ifdef S_SPLINT_S
 #include "../splint.h"
+#endif
+
+/* ------------------------------------------------------------------------ */
+
+#include <stddef.h>	// size_t
 
 #include "formats.h"	// struct FileStats
 #include "main.h"	// enum ProgramMode

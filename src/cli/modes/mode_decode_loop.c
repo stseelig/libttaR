@@ -4,10 +4,16 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2024, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
+
+#ifdef S_SPLINT_S
+#include "../../splint.h"
+#endif
+
+/* ------------------------------------------------------------------------ */
 
 #include <assert.h>
 #include <errno.h>
@@ -18,7 +24,6 @@
 
 #include "../../bits.h"
 #include "../../libttaR.h"
-#include "../../splint.h"
 
 #include "../alloc.h"
 #include "../cli.h"

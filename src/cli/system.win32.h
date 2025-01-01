@@ -6,7 +6,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2024, Shane Seelig                                         //
+// Copyright (C) 2024-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -19,8 +19,6 @@
 
 #include <io.h>
 #include <windows.h>
-//#include <profileapi.h>
-//#include <sysinfoapi.h>
 
 #include "debug.h"
 #include "main.h"	// g_progname

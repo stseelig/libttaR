@@ -228,6 +228,22 @@ extern int pthread_join(pthread_t, /*@null@*/ void **retval)
 /*@=protoparammatch@*/
 
 /*@-protoparammatch@*/
+/*@external@*/ /*@unused@*/
+extern int pthread_detach(pthread_t)
+/*@globals	internalState@*/
+/*@modifies	internalState@*/
+;
+/*@=protoparammatch@*/
+
+/*@-protoparammatch@*/
+/*@external@*/ /*@unused@*/
+extern pthread_t pthread_self(void)
+/*@globals	internalState@*/
+/*@modifies	nothing@*/
+;
+/*@=protoparammatch@*/
+
+/*@-protoparammatch@*/
 #undef lock
 /*@external@*/ /*@unused@*/
 extern int pthread_spin_destroy(pthread_spinlock_t *lock)

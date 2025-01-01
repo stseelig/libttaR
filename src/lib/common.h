@@ -7,17 +7,22 @@
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // Copyright (C) 2007, Aleksander Djuric                                    //
-// Copyright (C) 2023-2024, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
+
+#ifdef S_SPLINT_S
+#include "../splint.h"
+#endif
+
+/* ------------------------------------------------------------------------ */
 
 #include <limits.h>
 #include <stddef.h>	// size_t
 #include <string.h>	// memmove, memset
 
 #include "../bits.h"
-#include "../splint.h"
 
 //////////////////////////////////////////////////////////////////////////////
 
