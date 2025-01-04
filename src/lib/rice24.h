@@ -638,7 +638,7 @@ loop_entr:
 		nbytes_enc = rice24_write_cache(
 			dest, nbytes_enc, cache, count, crc
 		);
-	} while UNLIKELY ( unary >= (rice24_dec) 32u );
+	} while UNLIKELY ( unary >= (rice24_enc) 32u );
 
 	*cache |= ((cache64) lsmask32((bitcnt) unary)) << *count;
 	*count += (bitcnt) (unary + 1u);	// + terminator
@@ -678,6 +678,7 @@ rice24_write_unary_zero(
 	assert(*count <= (bitcnt) 64u);
 
 	nbytes_enc = rice24_write_cache(dest, nbytes_enc, cache, count, crc);
+
 	*count += 1u;	// + terminator
 
 	assert(*count <= (bitcnt)  8u);
