@@ -364,6 +364,7 @@ tta_encode_mch(
  * @param predict_k arg 'k' for tta_predict1
  * @param filter_round arg 'round' for tta_filter
  * @param filter_k arg 'k' for tta_filter
+ * @param nchan unused
  * @param rice_enc_max debug value for theoretical max unary/binary code size
  *
  * @return number of bytes written to 'dest'
@@ -444,6 +445,7 @@ tta_encode_1ch(
  * @param predict_k arg 'k' for tta_predict1
  * @param filter_round arg 'round' for tta_filter
  * @param filter_k arg 'k' for tta_filter
+ * @param nchan unused
  * @param rice_enc_max debug value for theoretical max unary/binary code size
  *
  * @return number of bytes written to 'dest'
