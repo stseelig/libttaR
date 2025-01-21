@@ -59,7 +59,7 @@ INLINE void thread_join(const thread_p *restrict)
 /*@modifies	internalState@*/
 ;
 
-/**@fn thread_detach
+/**@fn thread_detach_self
  * @brief the calling thread detaches itself
  *
  * @param thread[in] the thread
