@@ -5,7 +5,7 @@
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // Copyright (C) 2007, Aleksander Djuric                                    //
-// Copyright (C) 2023-2024, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -262,7 +262,7 @@ libttaR_tta_decode(
 			? LIBTTAr_RET_DONE : LIBTTAr_RET_DECFAIL
 		);
 	}
-	user->ncalls_codec     += 1u;
+	user->ncalls_codec     += (u8) (user->ncalls_codec != UINT32_MAX);
 	return r;
 }
 
