@@ -39,7 +39,7 @@ typedef uint_fast64_t	u64f;
 // checks if the targeted arch has an signed (arithmetic) right shift
 #define HAS_ASR(Xtype)	( \
 	/*@-shiftimplementation@*/ \
-	(Xtype) (((Xtype) -1) >> 1u) == (Xtype) -1 \
+	(Xtype) (((Xtype) UINTMAX_MAX) >> 1u) == (Xtype) UINTMAX_MAX \
 	/*@=shiftimplementation@*/ \
 )
 
