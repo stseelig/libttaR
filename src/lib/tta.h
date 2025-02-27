@@ -7,7 +7,7 @@
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // Copyright (C) 2007, Aleksander Djuric                                    //
-// Copyright (C) 2023-2024, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -236,11 +236,11 @@ tta_postfilter_enc(const i32 x)
 /*@*/
 {
 #ifndef LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES
-	const u32 y     = (u32) -x;
+	const u32 y     = -((u32) x);
 	const u32 xsign = (u32) asr32((i32) y, (bitcnt) 31u);
 	return (u32) ((y << 1u) ^ xsign);
 #else
-	const u32 yp = (u32) x, yn = (u32) -x;
+	const u32 yp = (u32) x, yn = -((u32) x);
 	return (UNPREDICTABLE (x > 0)
 		? (u32) ((yp << 1u) - 1u) : (u32) (yn << 1u)
 	);
@@ -267,12 +267,13 @@ tta_prefilter_dec(const u32 x)
 /*@*/
 {
 #ifndef LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES
-	const u32 xsign = (u32) -((i32) (x & 0x1u));
-	return -((i32) ((x >> 1u) ^ xsign));
+	const u32 xsign = -(x & 0x1u);
+	return (i32) -((x >> 1u) ^ xsign);
 #else
 	const i32 y = (i32) x;
 	return (UNPREDICTABLE ((((u32) x) & 0x1u) != 0)
-		? asr32(y + 1, (bitcnt) 1u) : asr32(-y, (bitcnt) 1u)
+		? asr32(y + 1, (bitcnt) 1u)
+		: asr32((i32) -((u32) y), (bitcnt) 1u)
 	);
 #endif
 }

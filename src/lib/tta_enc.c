@@ -172,7 +172,7 @@ libttaR_tta_encode(
 	    ||
 	     (ni32_target > src_len)
 	    ||
-	     (ni32_target + user->ni32_total > ni32_perframe)
+	     (ni32_target > ni32_perframe - user->ni32_total)
 	    ||
 	     (dest_len < safety_margin)
 	){

@@ -7,7 +7,7 @@
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // Copyright (C) 2007, Aleksander Djuric                                    //
-// Copyright (C) 2023-2024, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -217,14 +217,12 @@ signof32(const i32 x)
 /*@*/
 {
 #ifndef LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES
-	const u32 y = (u32) -x;
+	const u32 y = -((u32) x);
 
 	if ( HAS_ASR(i32) ){
 		return (i32) (((u32) asr32(x, (bitcnt) 31u)) | (y >> 31u));
 	}
-	else {	return (i32) (
-			((u32) (-(i32) (((u32) x) >> 31u))) | (y >> 31u)
-		);
+	else {	return (i32) ((-(((u32) x) >> 31u)) | (y >> 31u));
 	}
 #else
 	return (UNPREDICTABLE (x != 0)

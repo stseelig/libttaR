@@ -176,7 +176,7 @@ libttaR_tta_decode(
 	}
 	if ( (ni32_target > dest_len)
 	    ||
-	     (ni32_target + user->ni32_total > ni32_perframe)
+	     (ni32_target > ni32_perframe - user->ni32_total)
 	    ||
 	     (ni32_target % nchan != 0)
 	    ||
@@ -184,9 +184,9 @@ libttaR_tta_decode(
 	    ||
 	     (src_len < nbytes_tta_target)
 	    ||
-	     (	nbytes_tta_target + user->nbytes_tta_total
+	     (	nbytes_tta_target
 	       >
-	        nbytes_tta_perframe
+	        nbytes_tta_perframe - user->nbytes_tta_total
 	     )
 	){
 		return LIBTTAr_RET_INVAL + 1;
