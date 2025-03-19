@@ -35,7 +35,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 // aligned in 'struct Codec'
-struct Filter{
+struct Filter {
 	i32	qm[8u];
 	i32	dx[8u];
 	i32	dl[8u];
