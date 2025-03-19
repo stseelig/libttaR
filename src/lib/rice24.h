@@ -928,14 +928,14 @@ rice24_read_unary(
 	*unary = (rice24_dec) nbits;
 	if IMPROBABLE ( nbits == *count, 0.25 ){
 		do {	inbyte  = rice24_crc32_dec(src[nbytes_dec++], crc);
-			*cache  = (cache32) inbyte;
-			nbits   = TBCNT8(*cache);
+			nbits   = TBCNT8(inbyte);
 			*unary += nbits;
 			if UNLIKELY ( *unary > lax_limit ){
 				nbits = 0;	// prevents *count underflow
 				break;
 			}
 		} while UNLIKELY ( nbits == (bitcnt) 8u );
+		*cache = (cache32) inbyte;
 		*count = (bitcnt) 8u;
 	}
 	*cache >>= nbits + 1u;	// + terminator
