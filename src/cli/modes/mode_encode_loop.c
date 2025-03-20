@@ -309,9 +309,9 @@ encmt_loop(
 		infile
 @*/
 {
-	struct MTArg_EncIO state_io;
-	struct MTArg_Encoder state_encoder;
-	thread_p thread_io, thread_encoder;
+	struct MTArg_EncIO io_state;
+	struct MTArg_Encoder encoder_state;
+	thread_p io_thread, encoder_thread;
 	struct FileStats_EncMT fstat_c;
 	struct EncStats estat;
 	const size_t samplebuf_len = fstat->buflen;
@@ -324,29 +324,29 @@ encmt_loop(
 	memset(&estat, 0x00, sizeof estat);
 	encmt_fstat_init(&fstat_c, fstat);
 	encmt_state_init(
-		&state_io, &state_encoder, framequeue_len, samplebuf_len,
+		&io_state, &encoder_state, framequeue_len, samplebuf_len,
 		outfile, outfile_name, infile, infile_name, seektable, &estat,
 		&fstat_c
 	);
 
 	// create coders
 	thread_create(
-		&thread_io,
+		&io_thread,
 		(START_ROUTINE_ABI start_routine_ret (*)(void *)) encmt_io,
-		&state_io
+		&io_state
 	);
 	for ( i = 0; i < nthreads - 1u; ++i ){
 		thread_create(
-			&thread_encoder, encmt_encoder_wrapper, &state_encoder
+			&encoder_thread, encmt_encoder_wrapper, &encoder_state
 		);
 	}
-	(void) encmt_encoder(&state_encoder);
+	(void) encmt_encoder(&encoder_state);
 
 	// wait for i/o
-	thread_join(&thread_io);
+	thread_join(&io_thread);
 
 	// cleanup
-	encmt_state_free(&state_io, &state_encoder, framequeue_len);
+	encmt_state_free(&io_state, &encoder_state, framequeue_len);
 
 	*estat_out = estat;
 	return;

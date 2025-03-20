@@ -317,9 +317,9 @@ decmt_loop(
 		infile
 @*/
 {
-	struct MTArg_DecIO state_io;
-	struct MTArg_Decoder state_decoder;
-	thread_p thread_io, thread_decoder;
+	struct MTArg_DecIO io_state;
+	struct MTArg_Decoder decoder_state;
+	thread_p io_thread, decoder_thread;
 	struct FileStats_DecMT fstat_c;
 	struct DecStats dstat;
 	const size_t samplebuf_len = fstat->buflen;
@@ -332,29 +332,29 @@ decmt_loop(
 	memset(&dstat, 0x00, sizeof dstat);
 	decmt_fstat_init(&fstat_c, fstat);
 	decmt_state_init(
-		&state_io, &state_decoder, framequeue_len, samplebuf_len,
+		&io_state, &decoder_state, framequeue_len, samplebuf_len,
 		outfile, outfile_name, infile, infile_name, seektable, &dstat,
 		&fstat_c
 	);
 
 	// create coders
 	thread_create(
-		&thread_io,
+		&io_thread,
 		(START_ROUTINE_ABI start_routine_ret (*)(void *)) decmt_io,
-		&state_io
+		&io_state
 	);
 	for ( i = 0; i < nthreads - 1u; ++i ){
 		thread_create(
-			&thread_decoder, decmt_encoder_wrapper, &state_decoder
+			&decoder_thread, decmt_encoder_wrapper, &decoder_state
 		);
 	}
-	(void) decmt_decoder(&state_decoder);
+	(void) decmt_decoder(&decoder_state);
 
 	// wait for i/o
-	thread_join(&thread_io);
+	thread_join(&io_thread);
 
 	// cleanup
-	decmt_state_free(&state_io, &state_decoder, framequeue_len);
+	decmt_state_free(&io_state, &decoder_state, framequeue_len);
 
 	*dstat_out = dstat;
 	return;
