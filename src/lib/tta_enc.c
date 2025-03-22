@@ -32,7 +32,7 @@ static size_t tta_encode_mch(
 	/*@out@*/ u8 *dest, const i32 *,
 	u32 *restrict crc_inout, /*@out@*/ size_t *restrict ni32_out,
 	struct BitCache_Enc *restrict bitcache, struct Codec *restrict codec,
-	size_t, size_t, bitcnt, i32, bitcnt, uint
+	size_t, size_t, bitcnt_enc, i32, bitcnt_enc, uint
 #ifndef NDEBUG
 	, size_t
 #endif
@@ -56,7 +56,7 @@ static size_t tta_encode_1ch(
 	/*@out@*/ u8 *dest, const i32 *,
 	u32 *restrict crc_inout, /*@out@*/ size_t *restrict ni32_out,
 	struct BitCache_Enc *restrict bitcache, struct Codec *restrict codec,
-	size_t, size_t, bitcnt, i32, bitcnt, uint
+	size_t, size_t, bitcnt_enc, i32, bitcnt_enc, uint
 #ifndef NDEBUG
 	, size_t
 #endif
@@ -80,7 +80,7 @@ static size_t tta_encode_2ch(
 	/*@out@*/ u8 *dest, const i32 *,
 	u32 *restrict crc_inout, /*@out@*/ size_t *restrict ni32_out,
 	struct BitCache_Enc *restrict bitcache, struct Codec *restrict codec,
-	size_t, size_t, bitcnt, i32, bitcnt, uint
+	size_t, size_t, bitcnt_enc, i32, bitcnt_enc, uint
 #ifndef NDEBUG
 	, size_t
 #endif
@@ -140,9 +140,13 @@ libttaR_tta_encode(
 {
 	int r = LIBTTAr_RET_AGAIN;
 	size_t nbytes_enc;
-	const bitcnt predict_k    = get_predict_k(samplebytes);
-	const i32    filter_round = get_filter_round(samplebytes);
-	const bitcnt filter_k     = get_filter_k(samplebytes);
+	const bitcnt_enc predict_k    = (bitcnt_enc) (
+		get_predict_k(samplebytes)
+	);
+	const i32        filter_round = get_filter_round(samplebytes);
+	const bitcnt_enc filter_k     = (bitcnt_enc) (
+		get_filter_k(samplebytes)
+	);
 	const size_t safety_margin    = get_safety_margin(samplebytes, nchan);
 	const size_t write_soft_limit = dest_len - safety_margin;
 #ifndef NDEBUG
@@ -154,7 +158,7 @@ libttaR_tta_encode(
 	//   a frame
 	// faster/smaller binary if this is before the checks
 	if ( user->ncalls_codec == 0 ){
-		state_priv_init(priv, nchan);
+		state_priv_init_enc(priv, nchan);
 	}
 
 	// check for bad parameters
@@ -282,8 +286,8 @@ tta_encode_mch(
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache_Enc *const restrict bitcache,
 	struct Codec *const restrict codec, const size_t ni32_target,
-	const size_t write_soft_limit, const bitcnt predict_k,
-	const i32 filter_round, const bitcnt filter_k, const uint nchan
+	const size_t write_soft_limit, const bitcnt_enc predict_k,
+	const i32 filter_round, const bitcnt_enc filter_k, const uint nchan
 #ifndef NDEBUG
 	, const size_t rice_enc_max
 #endif
@@ -322,13 +326,15 @@ tta_encode_mch(
 
 			// predict
 			prev    = curr.i;
-			curr.i -= tta_predict1(codec[j].prev, predict_k);
+			curr.i -= tta_predict1(
+				codec[j].prev, (bitcnt) predict_k
+			);
 			codec[j].prev   = prev;
 
 			// filter
 			curr.i  = tta_filter_enc(
 				&codec[j].filter, curr.i, filter_round,
-				filter_k
+				(bitcnt) filter_k
 			);
 			curr.u  = tta_postfilter_enc(curr.i);
 
@@ -337,7 +343,7 @@ tta_encode_mch(
 			nbytes_old = nbytes_enc;
 #endif
 			nbytes_enc = rice24_encode(
-				dest, curr.u, nbytes_enc, &codec[j].rice,
+				dest, curr.u, nbytes_enc, &codec[j].rice.enc,
 				bitcache, &crc
 			);
 			assert(nbytes_enc - nbytes_old <= rice_enc_max);
@@ -376,8 +382,9 @@ tta_encode_1ch(
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache_Enc *const restrict bitcache,
 	struct Codec *const restrict codec, const size_t ni32_target,
-	const size_t write_soft_limit, const bitcnt predict_k,
-	const i32 filter_round, const bitcnt filter_k, UNUSED const uint nchan
+	const size_t write_soft_limit, const bitcnt_enc predict_k,
+	const i32 filter_round, const bitcnt_enc filter_k,
+	UNUSED const uint nchan
 #ifndef NDEBUG
 	, const size_t rice_enc_max
 #endif
@@ -405,12 +412,13 @@ tta_encode_1ch(
 
 		// predict
 		prev    = curr.i;
-		curr.i -= tta_predict1(codec[0].prev, predict_k);
+		curr.i -= tta_predict1(codec[0].prev, (bitcnt) predict_k);
 		codec[0].prev = prev;
 
 		// filter
 		curr.i  = tta_filter_enc(
-			&codec[0].filter, curr.i, filter_round, filter_k
+			&codec[0].filter, curr.i, filter_round,
+			(bitcnt) filter_k
 		);
 		curr.u  = tta_postfilter_enc(curr.i);
 
@@ -419,8 +427,8 @@ tta_encode_1ch(
 		nbytes_old = nbytes_enc;
 #endif
 		nbytes_enc = rice24_encode(
-			dest, curr.u, nbytes_enc, &codec[0].rice, bitcache,
-			&crc
+			dest, curr.u, nbytes_enc, &codec[0].rice.enc,
+			bitcache, &crc
 		);
 		assert(nbytes_enc - nbytes_old <= rice_enc_max);
 	}
@@ -457,8 +465,9 @@ tta_encode_2ch(
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache_Enc *const restrict bitcache,
 	struct Codec *const restrict codec, const size_t ni32_target,
-	const size_t write_soft_limit, const bitcnt predict_k,
-	const i32 filter_round, const bitcnt filter_k, UNUSED const uint nchan
+	const size_t write_soft_limit, const bitcnt_enc predict_k,
+	const i32 filter_round, const bitcnt_enc filter_k,
+	UNUSED const uint nchan
 #ifndef NDEBUG
 	, const size_t rice_enc_max
 #endif
@@ -487,12 +496,13 @@ tta_encode_2ch(
 
 		// predict
 		prev    = curr.i;
-		curr.i -= tta_predict1(codec[0u].prev, predict_k);
+		curr.i -= tta_predict1(codec[0u].prev, (bitcnt) predict_k);
 		codec[0u].prev = prev;
 
 		// filter
 		curr.i  = tta_filter_enc(
-			&codec[0u].filter, curr.i, filter_round, filter_k
+			&codec[0u].filter, curr.i, filter_round,
+			(bitcnt) filter_k
 		);
 		curr.u  = tta_postfilter_enc(curr.i);
 
@@ -501,8 +511,8 @@ tta_encode_2ch(
 		nbytes_old = nbytes_enc;
 #endif
 		nbytes_enc = rice24_encode(
-			dest, curr.u, nbytes_enc, &codec[0u].rice, bitcache,
-			&crc
+			dest, curr.u, nbytes_enc, &codec[0u].rice.enc,
+			bitcache, &crc
 		);
 		assert(nbytes_enc - nbytes_old <= rice_enc_max);
 
@@ -511,12 +521,13 @@ tta_encode_2ch(
 
 		// predict
 		prev    = curr.i;
-		curr.i -= tta_predict1(codec[1u].prev, predict_k);
+		curr.i -= tta_predict1(codec[1u].prev, (bitcnt) predict_k);
 		codec[1u].prev = prev;
 
 		// filter
 		curr.i  = tta_filter_enc(
-			&codec[1u].filter, curr.i, filter_round, filter_k
+			&codec[1u].filter, curr.i, filter_round,
+			(bitcnt) filter_k
 		);
 		curr.u  = tta_postfilter_enc(curr.i);
 
@@ -525,8 +536,8 @@ tta_encode_2ch(
 		nbytes_old = nbytes_enc;
 #endif
 		nbytes_enc = rice24_encode(
-			dest, curr.u, nbytes_enc, &codec[1u].rice, bitcache,
-			&crc
+			dest, curr.u, nbytes_enc, &codec[1u].rice.enc,
+			bitcache, &crc
 		);
 		assert(nbytes_enc - nbytes_old <= rice_enc_max);
 	}

@@ -267,7 +267,7 @@ tta_prefilter_dec(const u32 x)
 /*@*/
 {
 #ifndef LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES
-	const u32 xsign = -(x & 0x1u);
+	const u32 xsign = (u32) -(x & 0x1u);
 	return (i32) -((x >> 1u) ^ xsign);
 #else
 	const i32 y = (i32) x;
