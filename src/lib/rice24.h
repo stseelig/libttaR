@@ -50,7 +50,7 @@ extern HIDDEN const u32 lsmask32_table[32u];
 
 #ifdef TBCNT8_TABLE
 /*@unchecked@*/ /*@unused@*/
-extern HIDDEN const  u8 tbcnt8_table[256u];
+extern HIDDEN const bitcnt_dec tbcnt8_table[256u];
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
@@ -380,9 +380,9 @@ lsmask32(const bitcnt k)
 **/
 #ifndef TBCNT8_TABLE
 #if HAS_BUILTIN(BUILTIN_TZCNT32)
-#define TBCNT8(x)	BUILTIN_TZCNT32(~((u32) (x)))
+#define TBCNT8(x)	((bitcnt_dec) BUILTIN_TZCNT32(~((u32) (x))))
 #elif HAS_BUILTIN(BUILTIN_TZCNT64)
-#define TBCNT8(x)	BUILTIN_TZCNT64(~((u64) (x)))
+#define TBCNT8(x)	((bitcnt_dec) BUILTIN_TZCNT64(~((u64) (x))))
 #else
 #error "TBCNT8"
 #endif
@@ -958,7 +958,8 @@ rice24_read_unary(
 		*crc
 @*/
 {
-	u8 nbits, inbyte;
+	bitcnt_dec nbits;
+	u8 inbyte;
 
 	assert(*count <= (bitcnt_dec) 8u);
 
