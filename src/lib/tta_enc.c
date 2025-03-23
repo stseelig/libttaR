@@ -257,6 +257,36 @@ libttaR_tta_encode(
 
 //--------------------------------------------------------------------------//
 
+#define TTAENC_PREDICT(Xchan) { \
+	prev    = curr.i; \
+	curr.i -= tta_predict1(codec[Xchan].prev, (bitcnt) predict_k); \
+	codec[Xchan].prev = prev; \
+}
+#define TTAENC_FILTER(Xchan) { \
+	curr.i  = tta_filter_enc( \
+		&codec[Xchan].filter, curr.i, filter_round, \
+		(bitcnt) filter_k \
+	); \
+	curr.u  = tta_postfilter_enc(curr.i); \
+}
+#ifndef NDEBUG
+#define TTAENC_ENCODE(Xchan) { \
+	size_t Xnbytes_old = nbytes_enc; \
+	nbytes_enc = rice24_encode( \
+		dest, curr.u, nbytes_enc, &codec[Xchan].rice.enc, bitcache, \
+		&crc \
+	); \
+	assert(nbytes_enc - Xnbytes_old <= rice_enc_max); \
+}
+#else
+#define TTAENC_ENCODE(Xchan) { \
+	nbytes_enc = rice24_encode( \
+		dest, curr.u, nbytes_enc, &codec[Xchan].rice.enc, bitcache, \
+		&crc \
+	); \
+}
+#endif	// NDEBUG
+
 #ifndef LIBTTAr_OPT_DISABLE_MCH
 /**@fn tta_encode_mch
  * @brief multichannel/general encode loop
@@ -305,9 +335,7 @@ tta_encode_mch(
 	i32 prev;
 	size_t i;
 	uint j;
-#ifndef NDEBUG
-	size_t nbytes_old;
-#endif
+
 	for ( i = 0; i < ni32_target; i += nchan ){
 		if ( nbytes_enc > write_soft_limit ){ break; }
 #ifdef LIBTTAr_OPT_DISABLE_UNROLLED_1CH
@@ -320,33 +348,14 @@ tta_encode_mch(
 			if ( j < nchan - 1u ){
 				curr.i  = src[i + j + 1u] - curr.i;
 			}
-			/*@-usedef@*/	// prev will be defined for non-mono
-			else {	curr.i -= prev / 2; }
-			/*@=usedef@*/
+			else {	/*@-usedef@*/	// prev defined for non-mono
+				curr.i -= prev / 2;
+				/*@=usedef@*/
+			}
 
-			// predict
-			prev    = curr.i;
-			curr.i -= tta_predict1(
-				codec[j].prev, (bitcnt) predict_k
-			);
-			codec[j].prev   = prev;
-
-			// filter
-			curr.i  = tta_filter_enc(
-				&codec[j].filter, curr.i, filter_round,
-				(bitcnt) filter_k
-			);
-			curr.u  = tta_postfilter_enc(curr.i);
-
-			// encode
-#ifndef NDEBUG
-			nbytes_old = nbytes_enc;
-#endif
-			nbytes_enc = rice24_encode(
-				dest, curr.u, nbytes_enc, &codec[j].rice.enc,
-				bitcache, &crc
-			);
-			assert(nbytes_enc - nbytes_old <= rice_enc_max);
+			TTAENC_PREDICT(j);
+			TTAENC_FILTER(j);
+			TTAENC_ENCODE(j);
 		}
 	}
 	*crc_inout = (u32) crc;
@@ -401,36 +410,14 @@ tta_encode_1ch(
 	union { i32 i; u32 u; } curr;
 	i32 prev;
 	size_t i;
-#ifndef NDEBUG
-	size_t nbytes_old;
-#endif
+
 	for ( i = 0; i < ni32_target; ++i ){
 		if ( nbytes_enc > write_soft_limit ){ break; }
 
-		// get
-		curr.i  = src[i];
-
-		// predict
-		prev    = curr.i;
-		curr.i -= tta_predict1(codec[0].prev, (bitcnt) predict_k);
-		codec[0].prev = prev;
-
-		// filter
-		curr.i  = tta_filter_enc(
-			&codec[0].filter, curr.i, filter_round,
-			(bitcnt) filter_k
-		);
-		curr.u  = tta_postfilter_enc(curr.i);
-
-		// encode
-#ifndef NDEBUG
-		nbytes_old = nbytes_enc;
-#endif
-		nbytes_enc = rice24_encode(
-			dest, curr.u, nbytes_enc, &codec[0].rice.enc,
-			bitcache, &crc
-		);
-		assert(nbytes_enc - nbytes_old <= rice_enc_max);
+		curr.i = src[i];
+		TTAENC_PREDICT(0);
+		TTAENC_FILTER(0);
+		TTAENC_ENCODE(0);
 	}
 	*crc_inout = (u32) crc;
 	*ni32_out  = i;
@@ -484,62 +471,20 @@ tta_encode_2ch(
 	union { i32 i; u32 u; } curr;
 	i32 prev, next;
 	size_t i;
-#ifndef NDEBUG
-	size_t nbytes_old;
-#endif
+
 	for ( i = 0; i < ni32_target; i += (size_t) 2u ){
 		if ( nbytes_enc > write_soft_limit ){ break; }
-
-	// 0	// correlate
-		next    = src[i + 1u];
-		curr.i  = next - src[i + 0u];
-
-		// predict
-		prev    = curr.i;
-		curr.i -= tta_predict1(codec[0u].prev, (bitcnt) predict_k);
-		codec[0u].prev = prev;
-
-		// filter
-		curr.i  = tta_filter_enc(
-			&codec[0u].filter, curr.i, filter_round,
-			(bitcnt) filter_k
-		);
-		curr.u  = tta_postfilter_enc(curr.i);
-
-		// encode
-#ifndef NDEBUG
-		nbytes_old = nbytes_enc;
-#endif
-		nbytes_enc = rice24_encode(
-			dest, curr.u, nbytes_enc, &codec[0u].rice.enc,
-			bitcache, &crc
-		);
-		assert(nbytes_enc - nbytes_old <= rice_enc_max);
-
-	// 1	// correlate
-		curr.i  = next - (prev / 2);
-
-		// predict
-		prev    = curr.i;
-		curr.i -= tta_predict1(codec[1u].prev, (bitcnt) predict_k);
-		codec[1u].prev = prev;
-
-		// filter
-		curr.i  = tta_filter_enc(
-			&codec[1u].filter, curr.i, filter_round,
-			(bitcnt) filter_k
-		);
-		curr.u  = tta_postfilter_enc(curr.i);
-
-		// encode
-#ifndef NDEBUG
-		nbytes_old = nbytes_enc;
-#endif
-		nbytes_enc = rice24_encode(
-			dest, curr.u, nbytes_enc, &codec[1u].rice.enc,
-			bitcache, &crc
-		);
-		assert(nbytes_enc - nbytes_old <= rice_enc_max);
+	// 0
+		next   = src[i + 1u];
+		curr.i = next - src[i + 0u];
+		TTAENC_PREDICT(0u);
+		TTAENC_FILTER(0u);
+		TTAENC_ENCODE(0u);
+	// 1
+		curr.i = next - (prev / 2);
+		TTAENC_PREDICT(1u);
+		TTAENC_FILTER(1u);
+		TTAENC_ENCODE(1u);
 	}
 	*crc_inout = (u32) crc;
 	*ni32_out  = i;

@@ -11,7 +11,6 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include <assert.h>
-#include <stdbool.h>	// true
 #include <stddef.h>	// size_t
 
 #include "../bits.h"
@@ -272,6 +271,35 @@ libttaR_tta_decode(
 
 //--------------------------------------------------------------------------//
 
+#ifndef NDEBUG
+#define TTADEC_DECODE(Xchan) { \
+	size_t Xnbytes_old = nbytes_dec; \
+	nbytes_dec = rice24_decode( \
+		&curr.u, src, nbytes_dec, &codec[Xchan].rice.dec, bitcache, \
+		&crc, unary_lax_limit \
+	); \
+	assert(nbytes_dec - Xnbytes_old <= rice_dec_max); \
+}
+#else
+#define TTADEC_DECODE(Xchan) { \
+	nbytes_dec = rice24_decode( \
+		&curr.u, src, nbytes_dec, &codec[Xchan].rice.dec, bitcache, \
+		&crc, unary_lax_limit \
+	); \
+}
+#endif	// NDEBUG
+#define TTADEC_FILTER(Xchan) { \
+	curr.i  = tta_prefilter_dec(curr.u); \
+	curr.i  = tta_filter_dec( \
+		&codec[Xchan].filter, curr.i, filter_round, \
+		(bitcnt) filter_k \
+	); \
+}
+#define TTADEC_PREDICT(Xchan) { \
+	curr.i += tta_predict1(codec[Xchan].prev, (bitcnt) predict_k); \
+	codec[Xchan].prev = curr.i; \
+}
+
 #ifndef LIBTTAr_OPT_DISABLE_MCH
 /**@fn tta_decode_mch
  * @brief multichannel/general decode loop
@@ -322,52 +350,32 @@ tta_decode_mch(
 	i32 prev;
 	size_t i;
 	uint j;
-#ifndef NDEBUG
-	size_t nbytes_old;
-#endif
+
 	for ( i = 0; i < ni32_target; i += nchan ){
 		if ( nbytes_dec > read_soft_limit ){ break; }
 #ifdef LIBTTAr_OPT_DISABLE_UNROLLED_1CH
 		prev = 0;
 #endif
-		for ( j = 0; true; ++j ){
+		for ( j = 0; /*TRUE*/; ++j ){
 
-			// decode
-#ifndef NDEBUG
-			nbytes_old = nbytes_dec;
-#endif
-			nbytes_dec = rice24_decode(
-				&curr.u, src, nbytes_dec, &codec[j].rice.dec,
-				bitcache, &crc, unary_lax_limit
-			);
-			assert(nbytes_dec - nbytes_old <= rice_dec_max);
+			TTADEC_DECODE(j);
+			TTADEC_FILTER(j);
+			TTADEC_PREDICT(j);
 
-			// filter
-			curr.i  = tta_prefilter_dec(curr.u);
-			curr.i  = tta_filter_dec(
-				&codec[j].filter, curr.i, filter_round,
-				(bitcnt) filter_k
-			);
-
-			// predict
-			curr.i += tta_predict1(
-				codec[j].prev, (bitcnt) predict_k
-			);
-			codec[j].prev = curr.i;
-
-			// decorrelate
-			if ( j + 1u < nchan ){
+			// decorrelate (1st pass, forwards)
+			if PROBABLE ( j + 1u < nchan, 0.9 ){
 				dest[i + j] = curr.i;
 				prev = curr.i;
 			}
-			/*@-usedef@*/	// prev will be defined for non-mono
-			else {	dest[i + j] = (curr.i += prev / 2);
-			/*@=usedef@*/
-				while ( j-- != 0 ){
-					dest[i + j] = (curr.i -= dest[i + j]);
-				}
+			else {	/*@-usedef@*/	// prev defined for non-mono
+				dest[i + j] = (curr.i += prev / 2);
+				/*@=usedef@*/
 				/*@innerbreak@*/ break;
 			}
+		}
+		// decorrelate (2nd pass, backwards)
+		while ( j-- != 0 ){
+			dest[i + j] = (curr.i -= dest[i + j]);
 		}
 	}
 	*crc_inout = (u32) crc;
@@ -422,34 +430,13 @@ tta_decode_1ch(
 	crc32_dec crc = (crc32_dec) *crc_inout;
 	union { i32 i; u32 u; } curr;
 	size_t i;
-#ifndef NDEBUG
-	size_t nbytes_old;
-#endif
+
 	for ( i = 0; i < ni32_target; ++i ){
 		if ( nbytes_dec > read_soft_limit ){ break; }
 
-		// decode
-#ifndef NDEBUG
-		nbytes_old = nbytes_dec;
-#endif
-		nbytes_dec = rice24_decode(
-			&curr.u, src, nbytes_dec, &codec[0].rice.dec,
-			bitcache, &crc, unary_lax_limit
-		);
-		assert(nbytes_dec - nbytes_old <= rice_dec_max);
-
-		// filter
-		curr.i  = tta_prefilter_dec(curr.u);
-		curr.i  = tta_filter_dec(
-			&codec[0].filter, curr.i, filter_round,
-			(bitcnt) filter_k
-		);
-
-		// predict
-		curr.i += tta_predict1(codec[0].prev, (bitcnt) predict_k);
-		codec[0].prev = curr.i;
-
-		// put
+		TTADEC_DECODE(0);
+		TTADEC_FILTER(0);
+		TTADEC_PREDICT(0);
 		dest[i] = curr.i;
 	}
 	*crc_inout = (u32) crc;
@@ -505,58 +492,19 @@ tta_decode_2ch(
 	union { i32 i; u32 u; } curr;
 	i32 prev;
 	size_t i;
-#ifndef NDEBUG
-	size_t nbytes_old;
-#endif
+
 	for ( i = 0; i < ni32_target; i += (size_t) 2u ){
 		if ( nbytes_dec > read_soft_limit ){ break; }
+	// 0
+		TTADEC_DECODE(0u);
+		TTADEC_FILTER(0u);
+		TTADEC_PREDICT(0u);
+		prev = curr.i;
+	// 1
+		TTADEC_DECODE(1u);
+		TTADEC_FILTER(1u);
+		TTADEC_PREDICT(1u);
 
-	// 0	// decode
-#ifndef NDEBUG
-		nbytes_old = nbytes_dec;
-#endif
-		nbytes_dec = rice24_decode(
-			&curr.u, src, nbytes_dec, &codec[0u].rice.dec,
-			bitcache, &crc, unary_lax_limit
-		);
-		assert(nbytes_dec - nbytes_old <= rice_dec_max);
-
-		// filter
-		curr.i  = tta_prefilter_dec(curr.u);
-		curr.i  = tta_filter_dec(
-			&codec[0u].filter, curr.i, filter_round,
-			(bitcnt) filter_k
-		);
-
-		// predict
-		curr.i += tta_predict1(codec[0u].prev, (bitcnt) predict_k);
-		codec[0u].prev = curr.i;
-
-		// save for decorrelation
-		prev  = curr.i;
-
-	// 1	// decode
-#ifndef NDEBUG
-		nbytes_old = nbytes_dec;
-#endif
-		nbytes_dec = rice24_decode(
-			&curr.u, src, nbytes_dec, &codec[1u].rice.dec,
-			bitcache, &crc, unary_lax_limit
-		);
-		assert(nbytes_dec - nbytes_old <= rice_dec_max);
-
-		// filter
-		curr.i  = tta_prefilter_dec(curr.u);
-		curr.i  = tta_filter_dec(
-			&codec[1u].filter, curr.i, filter_round,
-			(bitcnt) filter_k
-		);
-
-		// predict
-		curr.i += tta_predict1(codec[1u].prev, (bitcnt) predict_k);
-		codec[1u].prev = curr.i;
-
-		// decorrelate
 		dest[i + 1u] = (curr.i += prev / 2);
 		dest[i + 0u] = curr.i - prev;
 	}
