@@ -79,7 +79,7 @@ static void dec_frame_write(
 static CONST size_t dec_ni32_perframe(size_t, size_t, size_t, uint) /*@*/;
 
 #undef pcmbuf
-NOINLINE COLD void dec_frame_zeropad(
+static NOINLINE COLD void dec_frame_zeropad(
 	u8 *restrict pcmbuf, size_t, size_t, enum TTASampleBytes
 )
 /*@modifies	*pcmbuf@*/
@@ -559,7 +559,7 @@ dec_ni32_perframe(
  * @param nsamples_flat_2pad total number of samples to pad
  * @param samplebytes number of bytes per PCM sample
 **/
-NOINLINE COLD void
+static NOINLINE COLD void
 dec_frame_zeropad(
 	u8 *const restrict pcmbuf, const size_t pcmbuf_nsamples_flat,
 	const size_t nsamples_flat_2pad, const enum TTASampleBytes samplebytes

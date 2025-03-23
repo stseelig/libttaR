@@ -88,7 +88,7 @@ static CONST size_t enc_readlen(
 ;
 
 #undef pcmbuf
-NOINLINE COLD uint enc_frame_zeropad(
+static NOINLINE COLD uint enc_frame_zeropad(
 	u8 *restrict pcmbuf, size_t, uint, enum TTASampleBytes, uint
 )
 /*@modifies	*pcmbuf@*/
@@ -541,7 +541,7 @@ enc_readlen(
  *
  * @return the total number of samples in the PCM buffer zero-padded
 **/
-NOINLINE COLD uint
+static NOINLINE COLD uint
 enc_frame_zeropad(
 	u8 *const restrict pcmbuf, const size_t nmemb_read, const uint diff,
 	enum TTASampleBytes samplebytes, const uint nchan

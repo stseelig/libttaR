@@ -31,7 +31,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-NOINLINE COLD void print_error_tta(
+static NOINLINE COLD void print_error_tta(
 	enum Fatality fatality, const char *, va_list args
 )
 /*@globals	fileSystem,
@@ -211,7 +211,7 @@ error_tta_nf(const char *const format, ...)
  * @param args[in] args for 'format'
 **/
 /*@maynotreturn@*/
-NOINLINE COLD void
+static NOINLINE COLD void
 print_error_tta(
 	const enum Fatality fatality, const char *const format, va_list args
 )

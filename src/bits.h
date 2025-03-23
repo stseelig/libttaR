@@ -71,9 +71,9 @@ typedef uint_fast64_t	u64f;
 #endif
 
 #if HAS_ATTRIBUTE(noinline)
-#define NOINLINE		static __attribute__((noinline))
+#define NOINLINE		__attribute__((noinline))
 #else
-#define NOINLINE		static
+#define NOINLINE
 #endif
 
 #if HAS_ATTRIBUTE(hot)
