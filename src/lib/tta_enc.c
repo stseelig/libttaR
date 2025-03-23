@@ -191,6 +191,21 @@ libttaR_tta_encode(
 
 	// encode
 	switch ( nchan ){
+	default:
+#ifndef LIBTTAr_OPT_DISABLE_MCH
+		nbytes_enc = tta_encode_mch(
+			dest, src, &user->crc, &user->ni32,
+			&priv->bitcache.enc, priv->codec, ni32_target,
+			write_soft_limit, predict_k, filter_round, filter_k,
+			nchan
+#ifndef NDEBUG
+			, rice_enc_max
+#endif
+		);
+		break;
+#else
+		return LIBTTAr_RET_MISCONFIG;
+#endif
 #ifndef LIBTTAr_OPT_DISABLE_UNROLLED_1CH
 	case 1u:
 		nbytes_enc = tta_encode_1ch(
@@ -217,28 +232,12 @@ libttaR_tta_encode(
 		);
 		break;
 #endif
-	default:
-#ifndef LIBTTAr_OPT_DISABLE_MCH
-		nbytes_enc = tta_encode_mch(
-			dest, src, &user->crc, &user->ni32,
-			&priv->bitcache.enc, priv->codec, ni32_target,
-			write_soft_limit, predict_k, filter_round, filter_k,
-			nchan
-#ifndef NDEBUG
-			, rice_enc_max
-#endif
-		);
-		break;
-#else
-		return LIBTTAr_RET_MISCONFIG;
-#endif
-
+	}
 #if defined(LIBTTAr_OPT_DISABLE_UNROLLED_1CH) \
  && defined(LIBTTAr_OPT_DISABLE_UNROLLED_2CH) \
  && defined(LIBTTAr_OPT_DISABLE_MCH)
 #error "misconfigured codec functions, all channel counts disabled"
 #endif
-	}
 
 	// post-encode
 	user->ni32_total       += user->ni32;

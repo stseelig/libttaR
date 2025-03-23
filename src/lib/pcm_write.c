@@ -23,17 +23,17 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #undef dest
-NOINLINE size_t pcm_write_u8(/*@out@*/ u8 *dest, const i32 *, size_t)
+static NOINLINE size_t pcm_write_u8(/*@out@*/ u8 *dest, const i32 *, size_t)
 /*@modifies	*dest@*/
 ;
 
 #undef dest
-NOINLINE size_t pcm_write_i16le(/*@out@*/ u8 *dest, const i32 *, size_t)
+static NOINLINE size_t pcm_write_i16le(/*@out@*/ u8 *dest, const i32 *, size_t)
 /*@modifies	*dest@*/
 ;
 
 #undef dest
-NOINLINE size_t pcm_write_i24le(/*@out@*/ u8 *dest, const i32 *, size_t)
+static NOINLINE size_t pcm_write_i24le(/*@out@*/ u8 *dest, const i32 *, size_t)
 /*@modifies	*dest@*/
 ;
 
@@ -96,7 +96,7 @@ libttaR_pcm_write(
  *
  * @return 'nsamples'
 **/
-NOINLINE size_t
+static NOINLINE size_t
 pcm_write_u8(
 	/*@out@*/ u8 *const dest, const i32 *const src, const size_t nsamples
 )
@@ -118,7 +118,7 @@ pcm_write_u8(
  *
  * @return 'nsamples'
 **/
-NOINLINE size_t
+static NOINLINE size_t
 pcm_write_i16le(
 	/*@out@*/ u8 *const dest, const i32 *const src, const size_t nsamples
 )
@@ -140,7 +140,7 @@ pcm_write_i16le(
  *
  * @return 'nsamples'
 **/
-NOINLINE size_t
+static NOINLINE size_t
 pcm_write_i24le(
 	/*@out@*/ u8 *const dest, const i32 *const src, const size_t nsamples
 )

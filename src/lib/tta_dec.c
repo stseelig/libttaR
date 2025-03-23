@@ -203,6 +203,21 @@ libttaR_tta_decode(
 
 	// decode
 	switch ( nchan ){
+	default:
+#ifndef LIBTTAr_OPT_DISABLE_MCH
+		nbytes_dec = tta_decode_mch(
+			dest, src, &user->crc, &user->ni32,
+			&priv->bitcache.dec, priv->codec, ni32_target,
+			read_soft_limit, predict_k, filter_round, filter_k,
+			unary_lax_limit, nchan
+#ifndef NDEBUG
+			, rice_dec_max
+#endif
+		);
+		break;
+#else
+		return LIBTTAr_RET_MISCONFIG;
+#endif
 #ifndef LIBTTAr_OPT_DISABLE_UNROLLED_1CH
 	case 1u:
 		nbytes_dec = tta_decode_1ch(
@@ -229,28 +244,12 @@ libttaR_tta_decode(
 		);
 		break;
 #endif
-	default:
-#ifndef LIBTTAr_OPT_DISABLE_MCH
-		nbytes_dec = tta_decode_mch(
-			dest, src, &user->crc, &user->ni32,
-			&priv->bitcache.dec, priv->codec, ni32_target,
-			read_soft_limit, predict_k, filter_round, filter_k,
-			unary_lax_limit, nchan
-#ifndef NDEBUG
-			, rice_dec_max
-#endif
-		);
-		break;
-#else
-		return LIBTTAr_RET_MISCONFIG;
-#endif
-
+	}
 #if defined(LIBTTAr_OPT_DISABLE_UNROLLED_1CH) \
  && defined(LIBTTAr_OPT_DISABLE_UNROLLED_2CH) \
  && defined(LIBTTAr_OPT_DISABLE_MCH)
 #error "misconfigured codec functions, all channel counts disabled"
 #endif
-	}
 
 	// post-decode
 	user->ni32_total       += user->ni32;
@@ -356,25 +355,22 @@ tta_decode_mch(
 #ifdef LIBTTAr_OPT_DISABLE_UNROLLED_1CH
 		prev = 0;
 #endif
-		for ( j = 0; /*TRUE*/; ++j ){
-
+		j = 0;
+		goto loop_entr;
+		do {	// decorrelate (1st pass, forwards)
+			dest[i + j++] = (prev = curr.i);
+loop_entr:
 			TTADEC_DECODE(j);
 			TTADEC_FILTER(j);
 			TTADEC_PREDICT(j);
-
-			// decorrelate (1st pass, forwards)
-			if PROBABLE ( j + 1u < nchan, 0.9 ){
-				dest[i + j] = curr.i;
-				prev = curr.i;
-			}
-			else {	/*@-usedef@*/	// prev defined for non-mono
-				dest[i + j] = (curr.i += prev / 2);
-				/*@=usedef@*/
-				/*@innerbreak@*/ break;
-			}
 		}
+		while PROBABLE ( j + 1u < nchan, 0.9 );
+
 		// decorrelate (2nd pass, backwards)
-		while ( j-- != 0 ){
+		/*@-usedef@*/	// prev defined for non-mono
+		dest[i + j] = (curr.i += prev / 2);
+		/*@=usedef@*/
+		for ( j = nchan - 1u; j-- != 0; ){
 			dest[i + j] = (curr.i -= dest[i + j]);
 		}
 	}
