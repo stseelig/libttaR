@@ -28,7 +28,7 @@
 #undef ni32_out
 #undef bitcache
 #undef codec
-static size_t tta_decode_mch(
+static HOT size_t tta_decode_mch(
 	/*@out@*/ i32 *const dest, const u8 *,
 	u32 *restrict crc_inout, /*@out@*/ size_t *restrict ni32_out,
 	struct BitCache_Dec *restrict bitcache, struct Codec *restrict codec,
@@ -52,7 +52,7 @@ static size_t tta_decode_mch(
 #undef ni32_out
 #undef bitcache
 #undef codec
-static size_t tta_decode_1ch(
+static HOT size_t tta_decode_1ch(
 	/*@out@*/ i32 *const dest, const u8 *,
 	u32 *restrict crc_inout, /*@out@*/ size_t *restrict ni32_out,
 	struct BitCache_Dec *restrict bitcache, struct Codec *restrict codec,
@@ -76,7 +76,7 @@ static size_t tta_decode_1ch(
 #undef ni32_out
 #undef bitcache
 #undef codec
-static size_t tta_decode_2ch(
+static HOT size_t tta_decode_2ch(
 	/*@out@*/ i32 *dest, const u8 *,
 	u32 *restrict crc_inout, /*@out@*/ size_t *restrict ni32_out,
 	struct BitCache_Dec *restrict bitcache, struct Codec *restrict codec,
@@ -127,7 +127,7 @@ static size_t tta_decode_2ch(
  *     LIBTTAr_OPT_DISABLE_UNROLLED_2CH,
  *     LIBTTAr_OPT_DISABLE_MCH
 **/
-int
+HOT int
 libttaR_tta_decode(
 	/*@out@*/ i32 *const dest, const u8 *const src,
 	const size_t dest_len, const size_t src_len,
@@ -322,7 +322,7 @@ libttaR_tta_decode(
  *
  * @note affected by LIBTTAr_OPT_DISABLE_UNROLLED_1CH
 **/
-static size_t
+static HOT size_t
 tta_decode_mch(
 	/*@out@*/ i32 *const dest, const u8 *const src,
 	u32 *const restrict crc_inout,
@@ -401,7 +401,7 @@ loop_entr:
  *
  * @return number of bytes read from 'src'
 **/
-static size_t
+static HOT size_t
 tta_decode_1ch(
 	/*@out@*/ i32 *const dest, const u8 *const src,
 	u32 *const restrict crc_inout,
@@ -462,7 +462,7 @@ tta_decode_1ch(
  *
  * @return number of bytes read from 'src'
 **/
-static size_t
+static HOT size_t
 tta_decode_2ch(
 	/*@out@*/ i32 *const dest, const u8 *const src,
 	u32 *const restrict crc_inout,
