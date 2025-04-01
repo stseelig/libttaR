@@ -12,13 +12,15 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
+#include <limits.h>	// UINT32_MAX
+
 #include "../bits.h"
 
 #include "common.h"
 
 //////////////////////////////////////////////////////////////////////////////
 
-#define CRC32_INIT	((u32) 0xFFFFFFFFu)
+#define CRC32_INIT	UINT32_MAX
 #define CRC32_FINI(x)	(~(x))
 
 //////////////////////////////////////////////////////////////////////////////
@@ -51,10 +53,7 @@ crc32_cont(const u8 x, const u32 crc)
 /**@fn crc32_cont_enc
  * @brief continue a CRC calculation; encode version
  *
- * @param x the byte to add to the CRC
- * @param crc the current CRC
- *
- * @return the updated CRC
+ * @see crc32_cont()
 **/
 ALWAYS_INLINE CONST crc32_enc
 crc32_cont_enc(const u8 x, const crc32_enc crc)
@@ -68,10 +67,7 @@ crc32_cont_enc(const u8 x, const crc32_enc crc)
 /**@fn crc32_cont_dec
  * @brief continue a CRC calculation; decode version
  *
- * @param x the byte to add to the CRC
- * @param crc the current CRC
- *
- * @return the updated CRC
+ * @see crc32_cont()
 **/
 ALWAYS_INLINE CONST crc32_dec
 crc32_cont_dec(const u8 x, const crc32_dec crc)

@@ -6,7 +6,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2024, Shane Seelig                                         //
+// Copyright (C) 2024-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -30,17 +30,17 @@
 //////////////////////////////////////////////////////////////////////////////
 
 struct FileStats_EncMT {
-	uint			nchan;
-	enum TTASampleBytes	samplebytes;
-	size_t			nsamples_perframe;
-	size_t			decpcm_size;
+	uint				nchan;
+	enum LibTTAr_SampleBytes	samplebytes;
+	size_t				nsamples_perframe;
+	size_t				decpcm_size;
 };
 
 struct FileStats_DecMT {
-	uint			nchan;
-	enum TTASampleBytes	samplebytes;
-	size_t			nsamples_perframe;
-	size_t			nsamples_enc;
+	uint				nchan;
+	enum LibTTAr_SampleBytes	samplebytes;
+	size_t				nsamples_perframe;
+	size_t				nsamples_enc;
 };
 
 //==========================================================================//

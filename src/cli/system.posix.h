@@ -6,7 +6,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2024, Shane Seelig                                         //
+// Copyright (C) 2024-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -62,23 +62,23 @@ signals_setup(void)
 {
 	struct sigaction sigact;
 
-	UNUSED union {	int d; } t;
+	UNUSED union {	int d; } result;
 
 	memset(&sigact, 0x00, sizeof sigact);
 	sigact.sa_handler = sighand_cleanup_exit;
-	t.d = sigfillset(&sigact.sa_mask);
-	assert(t.d == 0);
+	result.d = sigfillset(&sigact.sa_mask);
+	assert(result.d == 0);
 
-	t.d = sigaction(SIGABRT, &sigact, NULL);
-	assert(t.d == 0);
-	t.d = sigaction(SIGHUP , &sigact, NULL);
-	assert(t.d == 0);
-	t.d = sigaction(SIGINT , &sigact, NULL);
-	assert(t.d == 0);
-	t.d = sigaction(SIGQUIT, &sigact, NULL);
-	assert(t.d == 0);
-	t.d = sigaction(SIGTERM, &sigact, NULL);
-	assert(t.d == 0);
+	result.d = sigaction(SIGABRT, &sigact, NULL);
+	assert(result.d == 0);
+	result.d = sigaction(SIGHUP , &sigact, NULL);
+	assert(result.d == 0);
+	result.d = sigaction(SIGINT , &sigact, NULL);
+	assert(result.d == 0);
+	result.d = sigaction(SIGQUIT, &sigact, NULL);
+	assert(result.d == 0);
+	result.d = sigaction(SIGTERM, &sigact, NULL);
+	assert(result.d == 0);
 
 	return;
 }
@@ -105,7 +105,7 @@ sighand_cleanup_exit(const int signum)
 	const char intro2[]       = T_DEFAULT " ";
 	const char outro[]        = T_PURPLE "!" T_RESET "\n";
 	//
-	union {	int d; } t;
+	union {	int d; } result;
 
 	(void) write(STDERR_FILENO, intro0, (sizeof intro0) - 1u);
 	(void) write(STDERR_FILENO, g_progname, strlen(g_progname));
@@ -116,11 +116,11 @@ sighand_cleanup_exit(const int signum)
 	// remove any incomplete file(s)
 	if ( g_rm_on_sigint != NULL ){
 		errwrite_action_start();
-		t.d = unlink(g_rm_on_sigint);
-		if ( (t.d != 0) && (errno == EACCES) ){	// /dev/null
-			t.d = 0;
+		result.d = unlink(g_rm_on_sigint);
+		if ( (result.d != 0) && (errno == EACCES) ){	// /dev/null
+			result.d = 0;
 		}
-		errwrite_action_end(t.d);
+		errwrite_action_end(result.d);
 	}
 
 	(void) write(STDERR_FILENO, outro, (sizeof outro) - 1u);
@@ -238,17 +238,17 @@ fdlimit_check(void)
 @*/
 {
 	struct rlimit limit;
-	union {	int d; } t;
+	union {	int d; } result;
 
-	t.d = getrlimit((int) RLIMIT_NOFILE, &limit);
-	if UNLIKELY ( t.d != 0 ){
+	result.d = getrlimit((int) RLIMIT_NOFILE, &limit);
+	if UNLIKELY ( result.d != 0 ){
 		error_sys(errno, "getrlimit", NULL);
 	}
 
 	limit.rlim_cur = limit.rlim_max;
 
-	t.d = setrlimit((int) RLIMIT_NOFILE, &limit);
-	if UNLIKELY ( t.d != 0 ){
+	result.d = setrlimit((int) RLIMIT_NOFILE, &limit);
+	if UNLIKELY ( result.d != 0 ){
 		error_sys(errno, "setrlimit", NULL);
 	}
 
@@ -276,11 +276,11 @@ strerror_ts(
 )
 /*@modifies	*buf@*/
 {
-	union {	int d; } t;
+	union {	int d; } result;
 
 	// XSI-compliant version returns an int
-	t.d = strerror_r(errnum, buf, buflen);
-	if ( t.d != 0 ){
+	result.d = strerror_r(errnum, buf, buflen);
+	if ( result.d != 0 ){
 		buf[0] = '\0';
 	}
 	return buf;

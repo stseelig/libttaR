@@ -178,7 +178,7 @@ opt_encode_rawpcm(
 {
 	char *const opt = &argv[optind0][optind1];
 	char *subopt;
-	union {	longlong ll; } t;
+	union {	longlong ll; } tmp;
 
 	memset(&f_rpstat, 0x00, sizeof f_rpstat);
 
@@ -216,13 +216,13 @@ opt_encode_rawpcm(
 	}
 	assert(subopt != NULL);
 
-	t.ll = atoll(subopt);
-	if UNLIKELY ( (t.ll <= 0) || (t.ll > (longlong) UINT32_MAX) ){
+	tmp.ll = atoll(subopt);
+	if UNLIKELY ( (tmp.ll <= 0) || (tmp.ll > (longlong) UINT32_MAX) ){
 		error_tta("%s: %s out of range: %lld",
-			"--rawpcm", "samplerate", t.ll
+			"--rawpcm", "samplerate", tmp.ll
 		);
 	}
-	f_rpstat.samplerate = (u32) t.ll;
+	f_rpstat.samplerate = (u32) tmp.ll;
 
 	// nchan
 	subopt = strtok(NULL, ",");
@@ -231,13 +231,13 @@ opt_encode_rawpcm(
 	}
 	assert(subopt != NULL);
 
-	t.ll = atoll(subopt);
-	if UNLIKELY ( (t.ll <= 0) || (t.ll > (longlong) UINT16_MAX) ){
+	tmp.ll = atoll(subopt);
+	if UNLIKELY ( (tmp.ll <= 0) || (tmp.ll > (longlong) UINT16_MAX) ){
 		error_tta("%s: %s out of range: %lld",
-			"--rawpcm", "nchan", t.ll
+			"--rawpcm", "nchan", tmp.ll
 		);
 	}
-	f_rpstat.nchan = (u16) t.ll;
+	f_rpstat.nchan = (u16) tmp.ll;
 
 	// decfmt
 	f_rpstat.decfmt = DECFMT_RAWPCM;

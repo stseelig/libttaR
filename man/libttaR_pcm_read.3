@@ -1,13 +1,13 @@
 .\" t
 .\"     Title: libttaR_pcm_read
 .\"    Author: Shane Seelig
-.\"      Date: 2024-11-18
-.\"    Source: libttaR 1.2
+.\"      Date: 2025-04-01
+.\"    Source: libttaR 2.0
 .\"  Language: English
 .\"
 .\" ##########################################################################
 
-.TH "LIBTTAr_PCM_READ" "3" "2024\-07\-01" "libttaR 1.2" \
+.TH "LIBTTAr_PCM_READ" "3" "2025\-04\-01" "libttaR 2.0" \
 "LibTTAr Programmer's Manual"
 
 .\" ##########################################################################
@@ -24,15 +24,15 @@ libttaR_pcm_read, libttaR_pcm_write \- convert PCM to int32_t or vice versa
 
 .BI "size_t libttaR_pcm_read("
 .RS 8
-.BI "int32_t *" dest ", const uint8_t *" src ", size_t " nsamples ",
-.BI "enum TTASampleBytes " samplebytes
+.BI "int32_t *restrict " dest ", const uint8_t *restrict " src ",
+.BI "size_t " nsamples ", enum LibTTAr_SampleBytes " samplebytes "
 .RE
 .BI ");"
 
 .BI "size_t libttaR_pcm_write("
 .RS 8
-.BI "uint8_t *" dest ", const int32_t *" src ", size_t " nsamples ",
-.BI "enum TTASampleBytes " samplebytes
+.BI "uint8_t *restrict " dest ", const int32_t *restrict " src ",
+.BI "size_t " nsamples ", enum LibTTAr_SampleBytes " samplebytes "
 .RE
 .BI ");"
 .fi
@@ -77,10 +77,10 @@ The number of PCM samples.
 The number of bytes per samples in the originally sized PCM.
 
 .nf
-enum TTASampleBytes {
-    TTASAMPLEBYTES_1 = 1u,
-    TTASAMPLEBYTES_2 = 2u,
-    TTASAMPLEBYTES_3 = 3u
+\fBenum LibTTAr_SampleBytes\fR {
+    LIBTTAr_SAMPLEBYTES_1   = 1u,
+    LIBTTAr_SAMPLEBYTES_2   = 2u,
+    LIBTTAr_SAMPLEBYTES_3   = 3u
 };
 .fi
 .RE
@@ -89,7 +89,7 @@ enum TTASampleBytes {
 
 .SH "RETURN VALUE"
 
-\fInsamples\fR on success, else 0.
+\fInsamples\fR on success, else 0 on error.
 
 .\" ##########################################################################
 

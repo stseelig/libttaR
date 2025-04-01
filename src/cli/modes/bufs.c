@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2024, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -36,7 +36,7 @@ void
 encbuf_init(
 	/*@out@*/ struct EncBuf *const restrict eb, const size_t ni32_len,
 	const size_t ttabuf_len, const uint nchan,
-	const enum TTASampleBytes samplebytes, enum CodecBufMode mode
+	const enum LibTTAr_SampleBytes samplebytes, enum CodecBufMode mode
 )
 /*@globals	fileSystem,
 		internalState
@@ -61,6 +61,9 @@ encbuf_init(
 	assert(eb->ttabuf_len != 0);
 
 	switch ( mode ){
+	default:
+		assert(false);
+		break;
 	case CBM_SINGLE_THREADED:
 		eb->i32buf = calloc_check(eb->i32buf_len, sizeof *eb->i32buf);
 		break;
@@ -118,7 +121,7 @@ void
 decbuf_init(
 	/*@out@*/ struct DecBuf *const restrict db, const size_t ni32_len,
 	const size_t ttabuf_len, const uint nchan,
-	const enum TTASampleBytes samplebytes, enum CodecBufMode mode
+	const enum LibTTAr_SampleBytes samplebytes, enum CodecBufMode mode
 )
 /*@globals	fileSystem,
 		internalState
@@ -143,6 +146,9 @@ decbuf_init(
 	assert(db->ttabuf_len != 0);
 
 	switch ( mode ){
+	default:
+		assert(false);
+		break;
 	case CBM_SINGLE_THREADED:
 		db->i32buf = calloc_check(ni32_len, sizeof *db->i32buf);
 		break;
@@ -168,7 +174,7 @@ decbuf_init(
 HOT void
 decbuf_check_adjust(
 	struct DecBuf *const restrict db, size_t newsize, const uint nchan,
-	enum TTASampleBytes samplebytes
+	enum LibTTAr_SampleBytes samplebytes
 )
 /*@globals	fileSystem,
 		internalState

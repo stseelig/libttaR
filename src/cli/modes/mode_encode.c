@@ -17,7 +17,6 @@
 
 #include <assert.h>
 #include <errno.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -116,9 +115,7 @@ mode_encode(const uint optind, const uint argc, char *const *const argv)
 	size_t nerrors_file = 0;
 	timestamp_p ts_start, ts_finish;
 	size_t i;
-	union {	int	d;
-		bool	b;
-	} t;
+	union {	int d; } result;
 
 	memset(&openedfiles, 0x00, sizeof openedfiles);
 
@@ -146,7 +143,7 @@ mode_encode(const uint optind, const uint argc, char *const *const argv)
 	}
 	else if UNLIKELY ( openedfiles.nmemb == 0 ){
 		warning_tta("nothing to do");
-		++nerrors_file;
+		nerrors_file += 1u;
 	} else{;}
 
 	// exit if any errors
@@ -165,13 +162,13 @@ mode_encode(const uint optind, const uint argc, char *const *const argv)
 
 		enc_loop(openedfiles.file[i]);
 
-		t.d = fclose(openedfiles.file[i]->infile);
-		assert(t.d == 0);
+		result.d = fclose(openedfiles.file[i]->infile);
+		assert(result.d == 0);
 		openedfiles.file[i]->infile = NULL;
 
 		if ( g_flag.delete_src ){
-			t.d = remove(openedfiles.file[i]->infile_name);
-			if UNLIKELY ( t.d != 0 ){
+			result.d = remove(openedfiles.file[i]->infile_name);
+			if UNLIKELY ( result.d != 0 ){
 				error_sys_nf(
 					errno, "remove",
 					openedfiles.file[i]->infile_name
@@ -227,9 +224,8 @@ enc_loop(const struct OpenedFilesMember *const restrict ofm)
 	struct EncStats estat;
 	struct SeekTable seektable;
 	timestamp_p ts_start, ts_finish;
-	union {	size_t	z;
-		int	d;
-	} t;
+	union {	int	d; } result;
+	union {	size_t	z; } tmp;
 
 	// pre-encode stats
 	if ( ! g_flag.quiet ){
@@ -240,13 +236,16 @@ enc_loop(const struct OpenedFilesMember *const restrict ofm)
 
 	// setup seektable
 	switch ( fstat->encfmt ){
+	default:
+		assert(false);
+		break;
 	case xENCFMT_TTA1:
 		// seektable at start of file, size calculated in advance
-		t.z  = (fstat->decpcm_size + fstat->buflen) / fstat->buflen;
-		t.z -= 1u;
-		t.z  = (size_t) (t.z + fstat->samplebytes);
-		t.z /= (size_t) fstat->samplebytes;
-		seektable_init( &seektable, t.z);
+		tmp.z = seektable_nframes(
+			fstat->decpcm_size, fstat->buflen,
+			(uint) fstat->samplebytes
+		);
+		seektable_init(&seektable, tmp.z);
 		break;
 	}
 	// TODO handle file of unknown size
@@ -266,6 +265,9 @@ enc_loop(const struct OpenedFilesMember *const restrict ofm)
 	// save some space for the outfile header and seektable
 	// TODO handle file of unknown size
 	switch ( fstat->encfmt ){
+	default:
+		assert(false);
+		break;
 	case xENCFMT_TTA1:
 		prewrite_tta1_header_seektable(
 			outfile, &seektable, outfile_name
@@ -274,8 +276,8 @@ enc_loop(const struct OpenedFilesMember *const restrict ofm)
 	}
 
 	// seek to start of pcm
-	t.d = fseeko(infile, fstat->decpcm_off, SEEK_SET);
-	if UNLIKELY ( t.d != 0 ){
+	result.d = fseeko(infile, fstat->decpcm_off, SEEK_SET);
+	if UNLIKELY ( result.d != 0 ){
 		error_sys(errno, "fseeko", infile_name);
 	}
 
@@ -285,8 +287,13 @@ enc_loop(const struct OpenedFilesMember *const restrict ofm)
 
 	// encode
 	switch ( g_flag.threadmode ){
+	default:
+		assert(false);
+		break;
 	case THREADMODE_UNSET:
-		if ( nthreads > 1u ){ goto encode_multi; }
+		if ( nthreads > 1u ){
+			goto encode_multi;
+		}
 		/*@fallthrough@*/
 	case THREADMODE_SINGLE:
 		encst_loop(
@@ -305,6 +312,9 @@ encode_multi:
 
 	// write header and seektable
 	switch ( fstat->encfmt ){
+	default:
+		assert(false);
+		break;
 	case xENCFMT_TTA1:
 		rewind(outfile);
 		seektable.off = write_tta1_header(
@@ -319,8 +329,8 @@ encode_multi:
 	}
 
 	// close outfile
-	t.d = fclose(outfile);
-	if UNLIKELY ( t.d != 0 ){
+	result.d = fclose(outfile);
+	if UNLIKELY ( result.d != 0 ){
 		error_sys_nf(errno, "fclose", outfile_name);
 	}
 	//

@@ -101,15 +101,17 @@ FILE
 		internalState
 @*/
 {
-	FILE *r;
+	FILE *retval;
 
 try_again:
-	r = fopen(pathname, mode);
-	if UNLIKELY ( r == NULL ){
-		if ( try_fdlimit() ){ goto try_again; }
+	retval = fopen(pathname, mode);
+	if UNLIKELY ( retval == NULL ){
+		if ( try_fdlimit() ){
+			goto try_again;
+		}
 		else {	print_error_sys(errno, "fopen", pathname, fatality); }
 	}
-	return r;
+	return retval;
 }
 
 //--------------------------------------------------------------------------//
@@ -165,22 +167,22 @@ openedfiles_add(
 		of->file[]
 @*/
 {
-	int r = 0;
+	int retval = 0;
 	struct OpenedFilesMember **added;
 
-	++(of->nmemb);
-	of->file = realloc_check(of->file, of->nmemb * (sizeof *of->file));
+	of->nmemb += 1u;
+	of->file   = realloc_check(of->file, of->nmemb * (sizeof *of->file));
 
 	 added = &of->file[of->nmemb - 1u];
 	*added = calloc_check((size_t) 1u, sizeof **added);
 
 	(*added)->infile = fopen_check(name, "rb", NONFATAL);
 	if ( (*added)->infile == NULL ){
-		r = errno;
+		retval = errno;
 	}
 	(*added)->infile_name = name;
 
-	return r;
+	return retval;
 }
 
 /**@fn openedfiles_close_free
@@ -233,36 +235,33 @@ filestats_get(
 		ofm->fstat
 @*/
 {
+	uint retval = 0;
 	union {	int		d;
 		enum FileCheck	fc;
-	} t;
+	} result;
 
 	// bad filename check; would have already inc. error count
-	if ( ofm->infile == NULL ){ return 0; }
+	if ( ofm->infile == NULL ){
+		return 0;
+	}
 
 	// check for supported filetypes and fill most of fstat
 	if ( (mode == MODE_ENCODE) && g_flag.rawpcm ){
 		rawpcm_statcopy(&ofm->fstat);
 		// TODO mode for stdin reading
-		t.d = fseeko(ofm->infile, 0, SEEK_END);
-		if UNLIKELY ( t.d != 0 ){
+		result.d = fseeko(ofm->infile, 0, SEEK_END);
+		if UNLIKELY ( result.d != 0 ){
 			error_sys(errno, "fseeko", ofm->infile_name);
 		}
 		ofm->fstat.decpcm_off  = 0;
 		ofm->fstat.decpcm_size = (size_t) ftello(ofm->infile);
 	}
-	else {	t.fc = filecheck_codecfmt(
+	else {	result.fc = filecheck_codecfmt(
 			&ofm->fstat, ofm->infile, ofm->infile_name, mode
 		);
-		if ( t.fc != FILECHECK_OK ){ return 1u; }
-	}
-
-	if UNLIKELY ( ! libttaR_test_nchan((uint)ofm->fstat.nchan) ){
-		error_tta_nf("%s: libttaR built without support for "
-			"%"PRIu16" audio channels", ofm->infile_name,
-			ofm->fstat.nchan
-		);
-		return 1u;
+		if ( result.fc != FILECHECK_OK ){
+			return 1u;
+		}
 	}
 
 	// the rest of fstat
@@ -272,11 +271,28 @@ filestats_get(
 	ofm->fstat.buflen      = (size_t) (
 		ofm->fstat.framelen * ofm->fstat.nchan
 	);
-	ofm->fstat.samplebytes = (enum TTASampleBytes) (
+	ofm->fstat.samplebytes = (enum LibTTAr_SampleBytes) (
 		(ofm->fstat.samplebits + 7u) / 8u
 	);
 
-	return 0;
+	// checks
+	if UNLIKELY ( libttaR_test_nchan((uint)ofm->fstat.nchan) == 0 ){
+		error_tta_nf("%s: libttaR built without support for "
+			"%"PRIu16" audio channels", ofm->infile_name,
+			ofm->fstat.nchan
+		);
+		retval += 1u;;
+	}
+	if UNLIKELY ( ofm->fstat.framelen == 0 ){
+		error_tta_nf("%s: samplerate of 0", ofm->infile_name);
+		retval += 1u;
+	}
+	if UNLIKELY ( ofm->fstat.samplebytes == 0 ){
+		error_tta_nf("%s: 0 bits per sample", ofm->infile_name);
+		retval += 1u;
+	}
+
+	return retval;
 }
 
 //--------------------------------------------------------------------------//
@@ -303,26 +319,36 @@ filecheck_codecfmt(
 		file
 @*/
 {
-	union {	enum FileCheck	fc; } t;
+	union {	enum FileCheck	fc; } result;
 
 	// seek past any metadata on the input file
-	t.fc = metatags_skip(file);
-	if ( t.fc != FILECHECK_MISMATCH ){ goto end_error; }
+	result.fc = metatags_skip(file);
+	if ( result.fc != FILECHECK_MISMATCH ){
+		goto end_error;
+	}
 
 	switch ( mode ){
 	case MODE_ENCODE:
 		// wav
-		t.fc = filecheck_wav(fstat, file);
-		if ( t.fc == FILECHECK_OK ){ break; }
-		if ( t.fc != FILECHECK_MISMATCH ){ goto end_error; }
+		result.fc = filecheck_wav(fstat, file);
+		if ( result.fc == FILECHECK_OK ){
+			break;
+		}
+		if ( result.fc != FILECHECK_MISMATCH ){
+			goto end_error;
+		}
 		// w64
-		t.fc = filecheck_w64(fstat, file);
-		if ( t.fc == FILECHECK_OK ){ break; }
+		result.fc = filecheck_w64(fstat, file);
+		if ( result.fc == FILECHECK_OK ){
+			break;
+		}
 		goto end_error;
 	case MODE_DECODE:
 		// tta1
-		t.fc = filecheck_tta1(fstat, file);
-		if ( t.fc == FILECHECK_OK ){ break; }
+		result.fc = filecheck_tta1(fstat, file);
+		if ( result.fc == FILECHECK_OK ){
+			break;
+		}
 		goto end_error;
 	}
 
@@ -334,13 +360,13 @@ filecheck_codecfmt(
 	    ||
 	     (fstat->samplebits == 0)
 	    ||
-	     (fstat->samplebits > (u16) TTA_SAMPLEBITS_MAX)
+	     (fstat->samplebits > (u16) LIBTTAr_SAMPLEBITS_MAX)
 	){
-		t.fc = FILECHECK_UNSUPPORTED_RESOLUTION;
+		result.fc = FILECHECK_UNSUPPORTED_RESOLUTION;
 end_error:
-		error_filecheck(t.fc, errno, fstat, filename);
+		error_filecheck(result.fc, errno, fstat, filename);
 	}
-	return t.fc;
+	return result.fc;
 }
 
 //==========================================================================//
@@ -398,7 +424,7 @@ get_outfile_name(const char *const infile_name, const char *const sfx)
 		fileSystem
 @*/
 {
-	char *r;
+	char *retval;
 	const char *outfile_name;
 	const char *outfile_dir  = NULL;
 	const char *outfile_sfx  = NULL;
@@ -414,11 +440,11 @@ get_outfile_name(const char *const infile_name, const char *const sfx)
 	else {	outfile_name = infile_name;
 		outfile_sfx = sfx;
 	}
-	r = outfile_name_fmt(
+	retval = outfile_name_fmt(
 		outfile_dir, outfile_name, outfile_sfx
 	);
 
-	return r;
+	return retval;
 }
 
 //--------------------------------------------------------------------------//
@@ -445,21 +471,25 @@ outfile_name_fmt(
 		internalState
 @*/
 {
-	char *r;
+	char *retval;
 	size_t in_len = strlen(infile_name);
 	size_t dir_len = 0, suffix_len = 0;
 	size_t base_len;
 	char *fxdot = NULL;
-	union {	uintptr_t p; } t;
+	union {	uintptr_t p; } tmp;
 
 	if ( outfile_dir != NULL ){
 		dir_len = strlen(outfile_dir);
 		// remove any directory paths from infile_name
-		t.p = (uintptr_t) findrchar(infile_name, PATH_DELIM, in_len);
-		if ( t.p != 0 ){
-			++t.p;
-			in_len -= (size_t) (t.p - ((uintptr_t) infile_name));
-			infile_name = (char *) t.p;
+		tmp.p = (uintptr_t) findrchar(
+			infile_name, PATH_DELIM, in_len
+		);
+		if ( tmp.p != 0 ){
+			tmp.p  += 1u;
+			in_len -= (size_t) (
+				tmp.p - ((uintptr_t) infile_name)
+			);
+			infile_name = (char *) tmp.p;
 		}
 	}
 	if ( suffix != NULL ){
@@ -472,18 +502,20 @@ outfile_name_fmt(
 	}
 	else {	base_len = (size_t) (fxdot - infile_name); }
 
-	r = malloc_check(dir_len + base_len + suffix_len + 1u);
+	retval = malloc_check(dir_len + base_len + suffix_len + 1u);
 
 	if ( outfile_dir != NULL ){
-		(void) memcpy(r, outfile_dir, dir_len);
+		(void) memcpy(retval, outfile_dir, dir_len);
 	}
-	(void) memcpy(&r[dir_len], infile_name, base_len);
+	(void) memcpy(&retval[dir_len], infile_name, base_len);
 	if ( suffix != NULL ){
-		(void) memcpy(&r[dir_len + base_len], suffix, suffix_len);
+		(void) memcpy(
+			&retval[dir_len + base_len], suffix, suffix_len
+		);
 	}
-	r[dir_len + base_len + suffix_len] = '\0';
+	retval[dir_len + base_len + suffix_len] = '\0';
 
-	return r;
+	return retval;
 }
 
 /**@fn findrchar
@@ -502,7 +534,9 @@ findrchar(const char *const restrict s, const char c, size_t n)
 /*@*/
 {
 	while ( n-- != 0 ){
-		if ( s[n] == c ){ return (char *) &s[n]; }
+		if ( s[n] == c ){
+			return (char *) &s[n];
+		}
 	}
 	return NULL;
 }

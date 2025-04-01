@@ -15,6 +15,7 @@
 
 /* ------------------------------------------------------------------------ */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <inttypes.h>
@@ -159,9 +160,12 @@ errprint_runtime(
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 {
-	const char *mode_str;
+	const char *mode_str = NULL;
 
 	switch ( mode ){
+	default:
+		assert(false);
+		break;
 	case MODE_ENCODE:
 		mode_str = "encoded";
 		break;
@@ -244,9 +248,12 @@ errprint_stats_format(
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 {
-	const char *inname, *outname;
+	const char *inname = NULL, *outname = NULL;
 
 	switch ( mode ){
+	default:
+		assert(false);
+		break;
 	case MODE_ENCODE:
 		inname	= decfmt_name(fstat->decfmt);
 		outname	= encfmt_name(fstat->encfmt);

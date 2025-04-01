@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2024, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -36,12 +36,12 @@ malloc_check(const size_t size)
 		internalState
 @*/
 {
-	const void *const restrict r = malloc(size);
-	if UNLIKELY ( r == NULL ){
+	const void *const restrict retval = malloc(size);
+	if UNLIKELY ( retval == NULL ){
 		error_sys(errno, "malloc", NULL);
 	}
-	assert(r != NULL);
-	return (void *) r;
+	assert(retval != NULL);
+	return (void *) retval;
 }
 
 /**@fn calloc_check
@@ -62,12 +62,12 @@ calloc_check(const size_t nmemb, const size_t size)
 		internalState
 @*/
 {
-	const void *const restrict r = calloc(nmemb, size);
-	if UNLIKELY ( r == NULL ){
+	const void *const restrict retval = calloc(nmemb, size);
+	if UNLIKELY ( retval == NULL ){
 		error_sys(errno, "calloc", NULL);
 	}
-	assert(r != NULL);
-	return (void *) r;
+	assert(retval != NULL);
+	return (void *) retval;
 }
 
 /**@fn realloc_check
@@ -91,12 +91,12 @@ realloc_check(
 		*ptr
 @*/
 {
-	const void *const r = realloc(ptr, size);
-	if UNLIKELY ( r == NULL ){
+	const void *const retval = realloc(ptr, size);
+	if UNLIKELY ( retval == NULL ){
 		error_sys(errno, "realloc", NULL);
 	}
-	assert(r != NULL);
-	return (void *) r;
+	assert(retval != NULL);
+	return (void *) retval;
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////

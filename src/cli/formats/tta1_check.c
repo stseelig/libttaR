@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2024, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -47,10 +47,10 @@ filecheck_tta1(
 		int		d;
 		u32		u_32;
 		enum FileCheck	fc;
-	} t;
+	} result;
 
-	t.z = fread(&hdr, sizeof hdr, (size_t) 1u, file);
-	if ( t.z != (size_t) 1u ){
+	result.z = fread(&hdr, sizeof hdr, (size_t) 1u, file);
+	if ( result.z != (size_t) 1u ){
 		if ( feof(file) != 0 ){
 			return FILECHECK_MALFORMED;
 		}
@@ -58,15 +58,17 @@ filecheck_tta1(
 	}
 	if ( memcmp(hdr.preamble, TTA1_PREAMBLE, sizeof hdr.preamble) != 0 ){
 		// reset file stream and return
-		t.d = fseeko(file, start, SEEK_SET);
-		if ( t.d != 0 ){
+		result.d = fseeko(file, start, SEEK_SET);
+		if ( result.d != 0 ){
 			return FILECHECK_SEEK_ERROR;
 		}
 		return FILECHECK_MISMATCH;
 	}
 
-	t.u_32 = libttaR_crc32((u8 *) &hdr, (sizeof hdr) - (sizeof hdr.crc));
-	if ( t.u_32 != letoh32(hdr.crc) ){
+	result.u_32 = libttaR_crc32(
+		(u8 *) &hdr, (sizeof hdr) - (sizeof hdr.crc)
+	);
+	if ( result.u_32 != letoh32(hdr.crc) ){
 		return FILECHECK_CORRUPTED;
 	}
 

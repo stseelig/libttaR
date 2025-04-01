@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2024, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -18,13 +18,15 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-#define APETAG_PREAMBLE	((char[]) {'A','P','E','T','A','G','E','X'})
-#define ID3_PREAMBLE	((char[]) {'I','D','3'})
+#define APETAG_PREAMBLE	((u8[]) \
+	{(u8)'A',(u8)'P',(u8)'E',(u8)'T',(u8)'A',(u8)'G',(u8)'E',(u8)'X'} \
+)
+#define ID3_PREAMBLE	((u8[]) {(u8)'I',(u8)'D',(u8)'3'})
 
 //////////////////////////////////////////////////////////////////////////////
 
 struct ApeTagHF {
-	char	preamble[8u];	// .ascii "APETAGEX"
+	u8	preamble[8u];	// .ascii "APETAGEX"
 	u32	version;	// 2000 for apetag 2.0
 	u32	size;		// length of the items-blob + footer in bytes
 	u32	nmemb;		// number of items in the tag
@@ -33,7 +35,7 @@ struct ApeTagHF {
 } PACKED;
 
 struct ID3TagHeader {
-	char	preamble[3u];	// .ascii "ID3"
+	u8	preamble[3u];	// .ascii "ID3"
 	u16	version;
 	u8	flags;
 	u8	size[4u];	// length of the tag - header
@@ -76,24 +78,24 @@ metatags_skip(FILE *const restrict file)
 		file
 @*/
 {
-	enum FileCheck r, fc0, fc1;
+	enum FileCheck retval, fc0, fc1;
 
 	do {	fc0 = apetag_skip(file);
 		fc1 = id3tag_skip(file);
 
 		if ( (fc0 == FILECHECK_OK) || (fc1 == FILECHECK_OK) ){
-			r = FILECHECK_OK;
+			retval = FILECHECK_OK;
 		}
 		else if ( fc0 != FILECHECK_MISMATCH ){
-			r = fc0;
+			retval = fc0;
 		}
 		else if ( fc1 != FILECHECK_MISMATCH ){
-			r = fc1;
+			retval = fc1;
 		}
-		else {	r = fc0; }
-	} while ( r == FILECHECK_OK );
+		else {	retval = fc0; }
+	} while ( retval == FILECHECK_OK );
 
-	return r;
+	return retval;
 }
 
 //==========================================================================//
@@ -116,12 +118,12 @@ apetag_skip(FILE *const restrict file)
 	off_t start;
 	union {	size_t	z;
 		int	d;
-	} t;
+	} result;
 
 	start = ftello(file);
 
-	t.z = fread(&h, sizeof h, (size_t) 1u, file);
-	if ( t.z != (size_t) 1u ){
+	result.z = fread(&h, sizeof h, (size_t) 1u, file);
+	if ( result.z != (size_t) 1u ){
 		if ( feof(file) != 0 ){
 			return FILECHECK_MALFORMED;
 		}
@@ -129,19 +131,19 @@ apetag_skip(FILE *const restrict file)
 	}
 
 	// check for tag
-	t.d = memcmp(&h.preamble, APETAG_PREAMBLE, sizeof h.preamble);
-	if ( t.d != 0 ){
+	result.d = memcmp(&h.preamble, APETAG_PREAMBLE, sizeof h.preamble);
+	if ( result.d != 0 ){
 		// reset file if no tag
-		t.d = fseeko(file, start, SEEK_SET);
-		if ( t.d != 0 ){
+		result.d = fseeko(file, start, SEEK_SET);
+		if ( result.d != 0 ){
 			return FILECHECK_SEEK_ERROR;
 		}
 		return FILECHECK_MISMATCH;
 	}
 
 	// seek to end of tag
-	t.d = fseeko(file, (off_t) h.size, SEEK_CUR);
-	if ( t.d != 0 ){
+	result.d = fseeko(file, (off_t) h.size, SEEK_CUR);
+	if ( result.d != 0 ){
 		return FILECHECK_SEEK_ERROR;
 	}
 	return FILECHECK_OK;
@@ -167,14 +169,15 @@ id3tag_skip(FILE *const restrict file)
 {
 	struct ID3TagHeader h;
 	off_t start;
-	union {	size_t	z;
-		int	d;
-	} t;
+	u32 tag_size;
+	union {	int	d;
+		size_t	z;
+	} result;
 
 	start = ftello(file);
 
-	t.z = fread(&h, sizeof h, (size_t) 1u, file);
-	if ( t.z != (size_t) 1u ){
+	result.z = fread(&h, sizeof h, (size_t) 1u, file);
+	if ( result.z != (size_t) 1u ){
 		if ( feof(file) != 0 ){
 			return FILECHECK_MALFORMED;
 		}
@@ -182,20 +185,22 @@ id3tag_skip(FILE *const restrict file)
 	}
 
 	// check for tag
-	t.d = memcmp(&h.preamble, ID3_PREAMBLE, sizeof h.preamble);
-	if ( t.d != 0 ){
+	result.d = memcmp(&h.preamble, ID3_PREAMBLE, sizeof h.preamble);
+	if ( result.d != 0 ){
 		// reset file if no tag
-		t.d = fseeko(file, start, SEEK_SET);
-		if ( t.d != 0 ){
+		result.d = fseeko(file, start, SEEK_SET);
+		if ( result.d != 0 ){
 			return FILECHECK_SEEK_ERROR;
 		}
 		return FILECHECK_MISMATCH;
 	}
 
 	// seek to end of tag
-	t.z = id3syncsafeint(h.size[0], h.size[1u], h.size[2u], h.size[3u]);
-	t.d = fseeko(file, (off_t) t.z, SEEK_CUR);
-	if ( t.d != 0 ){
+	tag_size = id3syncsafeint(
+		h.size[0], h.size[1u], h.size[2u], h.size[3u]
+	);
+	result.d = fseeko(file, (off_t) tag_size, SEEK_CUR);
+	if ( result.d != 0 ){
 		return FILECHECK_SEEK_ERROR;
 	}
 	return FILECHECK_OK;
@@ -209,18 +214,20 @@ id3tag_skip(FILE *const restrict file)
  * @param x2 third byte
  * @param x3 fourth byte
  *
+ * @return the u32
+ *
  * @note IMO, it is an over-engineered solution to a non-existent problem.
 **/
 static CONST u32
 id3syncsafeint(const u8 x0, const u8 x1, const u8 x2, const u8 x3)
 /*@*/
 {
-	u32 r = 0;
-	r |= (x0 & 0x7Fu);
-	r |= (x1 & 0x7Fu) <<  7u;
-	r |= (x2 & 0x7Fu) << 14u;
-	r |= (x3 & 0x7Fu) << 21u;
-	return r;
+	u32 retval = 0;
+	retval |= (x0 & 0x7Fu);
+	retval |= (x1 & 0x7Fu) <<  7u;
+	retval |= (x2 & 0x7Fu) << 14u;
+	retval |= (x3 & 0x7Fu) << 21u;
+	return retval;
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////

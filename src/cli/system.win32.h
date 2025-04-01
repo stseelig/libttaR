@@ -78,7 +78,7 @@ sighand_cleanup_exit(const int signum)
 	const char intro2[]  = T_DEFAULT " ";
 	const char outro[]   = T_PURPLE "!" T_RESET "\n";
 	//
-	union {	int d; } t;
+	union {	int d; } result;
 
 	(void) _write(STD_ERROR_HANDLE, intro0, (sizeof intro0) - 1u);
 	(void) _write(STD_ERROR_HANDLE, g_progname, strlen(g_progname));
@@ -89,11 +89,11 @@ sighand_cleanup_exit(const int signum)
 	// remove any incomplete file(s)
 	if ( g_rm_on_sigint != NULL ){
 		errwrite_action_start();
-		t.d = _unlink(g_rm_on_sigint);
-		if ( (t.d != 0) && (errno == EACCES) ){	// /dev/null
-			t.d = 0;
+		result.d = _unlink(g_rm_on_sigint);
+		if ( (result.d != 0) && (errno == EACCES) ){	// /dev/null
+			result.d = 0;
 		}
-		errwrite_action_end(t.d);
+		errwrite_action_end(result.d);
 	}
 
 	(void) _write(STD_ERROR_HANDLE, outro, (sizeof outro) - 1u);
@@ -206,10 +206,10 @@ fdlimit_check(void)
 		internalState
 @*/
 {
-	union {	int d; } t;
+	union {	int d; } result;
 
-	do {	t.d = _setmaxstdio(2 * _getmaxstdio());
-	} while ( t.d > 0 );
+	do {	result.d = _setmaxstdio(2 * _getmaxstdio());
+	} while ( result.d > 0 );
 	return;
 }
 
@@ -238,10 +238,10 @@ strerror_ts(
 )
 /*@modifies	*buf@*/
 {
-	union {	errno_t e; } t;
+	union {	errno_t e; } result;
 
-	t.e = strerror_s(buf, buflen, errnum);
-	if ( t.e != 0 ){
+	result.e = strerror_s(buf, buflen, errnum);
+	if ( result.e != 0 ){
 		buf[0] = '\0';
 	}
 	return buf;

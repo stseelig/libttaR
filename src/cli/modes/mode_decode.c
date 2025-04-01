@@ -17,7 +17,6 @@
 
 #include <assert.h>
 #include <errno.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -111,9 +110,7 @@ mode_decode(const uint optind, const uint argc, char *const *const argv)
 	size_t nerrors_file = 0;
 	timestamp_p ts_start, ts_finish;
 		size_t i;
-		union {	int	d;
-			bool	b;
-		} t;
+		union {	int d; } result;
 
 	memset(&openedfiles, 0x00, sizeof openedfiles);
 
@@ -141,7 +138,7 @@ mode_decode(const uint optind, const uint argc, char *const *const argv)
 	}
 	else if UNLIKELY ( openedfiles.nmemb == 0 ){
 		warning_tta("nothing to do");
-		++nerrors_file;
+		nerrors_file += 1u;
 	} else{;}
 
 	// exit if any errors
@@ -160,13 +157,13 @@ mode_decode(const uint optind, const uint argc, char *const *const argv)
 
 		dec_loop(openedfiles.file[i]);
 
-		t.d = fclose(openedfiles.file[i]->infile);
-		assert(t.d == 0);
+		result.d = fclose(openedfiles.file[i]->infile);
+		assert(result.d == 0);
 		openedfiles.file[i]->infile = NULL;
 
 		if ( g_flag.delete_src ){
-			t.d = remove(openedfiles.file[i]->infile_name);
-			if UNLIKELY ( t.d != 0 ){
+			result.d = remove(openedfiles.file[i]->infile_name);
+			if UNLIKELY ( result.d != 0 ){
 				error_sys_nf(
 					errno, "remove",
 					openedfiles.file[i]->infile_name
@@ -223,19 +220,22 @@ dec_loop(struct OpenedFilesMember *const restrict ofm)
 	struct SeekTable seektable;
 	bool ignore_seektable = false;
 	timestamp_p ts_start, ts_finish;
-	union {	size_t		z;
-		int		d;
+	union {	int		d;
 		enum FileCheck	fc;
-	} t;
+	} result;
+	union {	size_t z; } tmp;
 
 	fstat->decfmt = g_flag.decfmt;
 	//
 	switch ( fstat->samplebytes ){
-	case TTASAMPLEBYTES_1:
+	default:
+		assert(false);
+		break;
+	case LIBTTAr_SAMPLEBYTES_1:
 		fstat->inttype = INT_UNSIGNED;
 		break;
-	case TTASAMPLEBYTES_2:
-	case TTASAMPLEBYTES_3:
+	case LIBTTAr_SAMPLEBYTES_2:
+	case LIBTTAr_SAMPLEBYTES_3:
 		fstat->inttype = INT_SIGNED;
 		break;
 	}
@@ -253,15 +253,16 @@ dec_loop(struct OpenedFilesMember *const restrict ofm)
 	// already there for TTA1
 
 	// copy/check seektable
-	t.z = (fstat->nsamples_enc + fstat->framelen - 1u) / fstat->framelen;
-	t.fc = filecheck_tta_seektable(&seektable, t.z, infile);
-	if UNLIKELY ( t.fc != FILECHECK_OK ){
-		if ( t.fc == FILECHECK_CORRUPTED ){
+	tmp.z  = fstat->nsamples_enc + fstat->framelen - 1u;
+	tmp.z /= fstat->framelen;
+	result.fc = filecheck_tta_seektable(&seektable, tmp.z, infile);
+	if UNLIKELY ( result.fc != FILECHECK_OK ){
+		if ( result.fc == FILECHECK_CORRUPTED ){
 			ignore_seektable = true;
 			warning_tta("%s: corrupted seektable", infile_name);
 		}
-		else {	error_filecheck(t.fc, errno, fstat, infile_name);
-			exit(t.fc);
+		else {	error_filecheck(result.fc, errno, fstat, infile_name);
+			exit(result.fc);
 		}
 	}
 	// MAYBE check that the combined seektable entries matches filesize
@@ -277,6 +278,9 @@ dec_loop(struct OpenedFilesMember *const restrict ofm)
 
 	// save some space for the outfile header
 	switch ( fstat->decfmt ){
+	default:
+		assert(false);
+		break;
 	case DECFMT_RAWPCM:
 		break;
 	case DECFMT_WAV:
@@ -296,8 +300,13 @@ dec_loop(struct OpenedFilesMember *const restrict ofm)
 
 	// decode
 	switch ( g_flag.threadmode ){
+	default:
+		assert(false);
+		break;
 	case THREADMODE_UNSET:
-		if ( nthreads > 1u ){ goto encode_multi; }
+		if ( nthreads > 1u ){
+			goto encode_multi;
+		}
 		/*@fallthrough@*/
 	case THREADMODE_SINGLE:
 		decst_loop(
@@ -324,6 +333,9 @@ encode_multi:
 
 	// update header
 	switch ( fstat->decfmt ){
+	default:
+		assert(false);
+		break;
 	case DECFMT_RAWPCM:
 		break;
 	case DECFMT_W64:
@@ -349,8 +361,8 @@ encode_multi:
 	}
 
 	// close outfile
-	t.d = fclose(outfile);
-	if UNLIKELY ( t.d != 0 ){
+	result.d = fclose(outfile);
+	if UNLIKELY ( result.d != 0 ){
 		error_sys_nf(errno, "fclose", outfile_name);
 	}
 	//

@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2024, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -60,11 +60,11 @@ filecheck_wav(
 	union {	size_t		z;
 		int		d;
 		enum FileCheck	fc;
-	} t;
+	} result;
 
 	// RIFF chunk
-	t.z = fread(&chunk.wave, sizeof chunk.wave, (size_t) 1u, file);
-	if ( t.z != (size_t) 1u ){
+	result.z = fread(&chunk.wave, sizeof chunk.wave, (size_t) 1u, file);
+	if ( result.z != (size_t) 1u ){
 		if ( feof(file) != 0 ){
 			return FILECHECK_MALFORMED;
 		}
@@ -79,34 +79,34 @@ filecheck_wav(
 	     ) != 0)
 	){
 		// reset file stream and return
-		t.d = fseeko(file, start, SEEK_SET);
-		if ( t.d != 0 ){
+		result.d = fseeko(file, start, SEEK_SET);
+		if ( result.d != 0 ){
 			return FILECHECK_SEEK_ERROR;
 		}
 		return FILECHECK_MISMATCH;
 	}
 
 	// search for format subchunk
-	t.fc = filecheck_wav_find_subchunk(file, RIFF_ID_FMT);
-	if ( t.fc != FILECHECK_OK ){
-		return t.fc;
+	result.fc = filecheck_wav_find_subchunk(file, RIFF_ID_FMT);
+	if ( result.fc != FILECHECK_OK ){
+		return result.fc;
 	}
-	t.d = fseeko(file, (off_t) (sizeof chunk.rh), SEEK_CUR);
-	if ( t.d != 0 ){
+	result.d = fseeko(file, (off_t) (sizeof chunk.rh), SEEK_CUR);
+	if ( result.d != 0 ){
 		return FILECHECK_SEEK_ERROR;
 	}
-	t.fc = filecheck_wav_read_subchunk_fmt(fstat, file);
-	if ( t.fc != FILECHECK_OK ){
-		return t.fc;
+	result.fc = filecheck_wav_read_subchunk_fmt(fstat, file);
+	if ( result.fc != FILECHECK_OK ){
+		return result.fc;
 	}
 
 	// search for data subchunk header
-	t.fc = filecheck_wav_find_subchunk(file, RIFF_ID_DATA);
-	if ( t.fc != FILECHECK_OK ){
-		return t.fc;
+	result.fc = filecheck_wav_find_subchunk(file, RIFF_ID_DATA);
+	if ( result.fc != FILECHECK_OK ){
+		return result.fc;
 	}
-	t.z = fread(&chunk.rh, sizeof chunk.rh, (size_t) 1u, file);
-	if ( t.z != (size_t) 1u ){
+	result.z = fread(&chunk.rh, sizeof chunk.rh, (size_t) 1u, file);
+	if ( result.z != (size_t) 1u ){
 		if ( feof(file) != 0 ){
 			return FILECHECK_MALFORMED;
 		}
@@ -148,10 +148,10 @@ filecheck_wav_read_subchunk_fmt(
 	union {	size_t	z;
 		off_t	o;
 		int	d;
-	} t;
+	} result;
 
-	t.z = fread(&chunk.fmt, sizeof chunk.fmt, (size_t) 1u, file);
-	if ( t.z != (size_t) 1u ){
+	result.z = fread(&chunk.fmt, sizeof chunk.fmt, (size_t) 1u, file);
+	if ( result.z != (size_t) 1u ){
 		if ( feof(file) != 0 ){
 			return FILECHECK_MALFORMED;
 		}
@@ -173,8 +173,10 @@ filecheck_wav_read_subchunk_fmt(
 	);
 
 	if ( format == WAVE_FMT_EXTENSIBLE ){
-		t.z = fread(&chunk.wfx, sizeof chunk.wfx, (size_t) 1u, file);
-		if ( t.z != (size_t) 1u ){
+		result.z = fread(
+			&chunk.wfx, sizeof chunk.wfx, (size_t) 1u, file
+		);
+		if ( result.z != (size_t) 1u ){
 			if ( feof(file) != 0 ){
 				return FILECHECK_MALFORMED;
 			}
@@ -187,11 +189,11 @@ filecheck_wav_read_subchunk_fmt(
 			sizeof chunk.wfx.subformat
 		);
 
-		t.d = memcmp(
+		result.d = memcmp(
 			&chunk.wfx.subformat, &WAVE_SUBFMT_PCM,
 			sizeof chunk.wfx.subformat
 		);
-		if ( t.d != 0 ){
+		if ( result.d != 0 ){
 			return FILECHECK_UNSUPPORTED_DATATYPE;
 		}
 
@@ -199,12 +201,12 @@ filecheck_wav_read_subchunk_fmt(
 		if ( letoh16(chunk.wfx.size) == 0 ){
 			return FILECHECK_MALFORMED;
 		}
-		t.o = (off_t) (
+		result.o = (off_t) (
 			  (sizeof chunk.wfx)
 			- (letoh16(chunk.wfx.size) + (sizeof chunk.wfx.size))
 		);
-		t.d = fseeko(file, t.o, SEEK_CUR);
-		if ( t.d != 0 ){
+		result.d = fseeko(file, result.o, SEEK_CUR);
+		if ( result.d != 0 ){
 			return FILECHECK_SEEK_ERROR;
 		}
 	}
@@ -236,19 +238,19 @@ filecheck_wav_find_subchunk(
 	struct RiffHeader rh;
 	union {	size_t	z;
 		int	d;
-	} t;
+	} result;
 
 	// check subchunks until target is found
 	goto loop_entr;
 	do {
 		// seek to end of current subchunk
-		t.d = fseeko(file, (off_t) letoh32(rh.size), SEEK_CUR);
-		if ( t.d != 0 ){
+		result.d = fseeko(file, (off_t) letoh32(rh.size), SEEK_CUR);
+		if ( result.d != 0 ){
 			return FILECHECK_SEEK_ERROR;
 		}
 loop_entr:
-		t.z = fread(&rh, sizeof rh, (size_t) 1u, file);
-		if ( t.z != (size_t) 1u ){
+		result.z = fread(&rh, sizeof rh, (size_t) 1u, file);
+		if ( result.z != (size_t) 1u ){
 			if ( feof(file) != 0 ){
 				return FILECHECK_MALFORMED;
 			}
@@ -262,8 +264,8 @@ loop_entr:
 	while ( memcmp(&rh.id, target, sizeof rh.id) != 0 );
 
 	// seek to start of subchunk before returning
-	t.d = fseeko(file, -((off_t) (sizeof rh)), SEEK_CUR);
-	if ( t.d != 0 ){
+	result.d = fseeko(file, -((off_t) (sizeof rh)), SEEK_CUR);
+	if ( result.d != 0 ){
 		return FILECHECK_SEEK_ERROR;
 	}
 	return FILECHECK_OK;

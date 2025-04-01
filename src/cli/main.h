@@ -32,12 +32,12 @@ enum ThreadMode {
 struct GlobalFlags {
 	/*@dependent@*/ /*@null@*/
 	char		*outfile;	// from argv
-	bool		outfile_is_dir;
-	bool		quiet;
-	bool		delete_src;
-	bool		rawpcm;
-	enum ThreadMode	threadmode:8u;
-	enum DecFormat	decfmt:8u;
+	bool		 outfile_is_dir;
+	bool		 quiet;
+	bool		 delete_src;
+	bool		 rawpcm;
+	enum ThreadMode	 threadmode:8u;
+	enum DecFormat	 decfmt:8u;
 };
 
 //////////////////////////////////////////////////////////////////////////////

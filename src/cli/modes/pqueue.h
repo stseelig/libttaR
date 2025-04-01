@@ -6,7 +6,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2024, Shane Seelig                                         //
+// Copyright (C) 2024-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -81,9 +81,9 @@ ALWAYS_INLINE uint
 pqueue_pop(struct PQueue *const restrict q)
 /*@modifies	q->next@*/
 {
-	const uint r = q->next;
+	const uint retval = q->next;
 	q->next = pqueue_next(q->next, q->limit);
-	return r;
+	return retval;
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////

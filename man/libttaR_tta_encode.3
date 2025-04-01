@@ -1,13 +1,13 @@
 .\" t
 .\"     Title: libttaR_tta_encode
 .\"    Author: Shane Seelig
-.\"      Date: 2024-11-19
-.\"    Source: libttaR 1.2
+.\"      Date: 2025-04-01
+.\"    Source: libttaR 2.0
 .\"  Language: English
 .\"
 .\" ##########################################################################
 
-.TH "LIBTTAr_TTA_ENCODE" "3" "2024\-11\-19" "libttaR 1.2" \
+.TH "LIBTTAr_TTA_ENCODE" "3" "2025\-04\-01" "libttaR 2.0" \
 "LibTTAr Programmer's Manual"
 
 .\" ##########################################################################
@@ -22,25 +22,23 @@ libttaR_tta_encode, libttaR_tta_decode \- a reentrant TTA codec
 .nf
 .B #include <libttaR.h>
 
-.BI "int libttaR_tta_encode("
+.BI "enum LibTTAr_EncRetVal libttaR_tta_encode("
 .RS 8
-.BI "uint8_t *" dest ", const int32_t *" src ", size_t " dest_len ",
-.BI "size_t " src_len ", size_t " ni32_target ",
-.BI "struct LibTTAr_CodecState_Priv *" priv ",
-.BI "struct LibTTAr_CodecState_User *" user ",
-.BI "enum TTASampleBytes " samplebytes ", unsigned int " nchan ",
-.BI "size_t " ni32_perframe
+.BI "uint8_t *restrict " dest ",
+.BI "const int32_t *restrict " src ",
+.BI "struct LibTTAr_CodecState_Priv *restrict " priv ",
+.BI "struct LibTTAr_CodecState_User *restrict " user ",
+.BI "const struct LibTTAr_EncMisc *restrict " misc "
 .RE
 .BI ");"
 
-.BI "int libttaR_tta_decode("
+.BI "enum LibTTAr_DecRetVal libttaR_tta_decode("
 .RS 8
-.BI "int32_t *" dest ", const uint8_t *" src ", size_t " dest_len ",
-.BI "size_t " src_len ", size_t " ni32_target ", size_t " nbytes_tta_target ",
-.BI "struct LibTTAr_CodecState_Priv *" priv ",
-.BI "struct LibTTAr_CodecState_User *" user ",
-.BI "enum TTASampleBytes " samplebytes ", unsigned int " nchan ",
-.BI "size_t " ni32_perframe ", size_t " nbytes_tta_perframe
+.BI "int32_t *restrict " dest ",
+.BI "const uint8_t *restrict " src ",
+.BI "struct LibTTAr_CodecState_Priv *restrict " priv ",
+.BI "struct LibTTAr_CodecState_User *restrict " user ",
+.BI "const struct LibTTAr_EncMisc *restrict " misc "
 .RE
 .BI ");"
 .fi
@@ -50,30 +48,10 @@ libttaR_tta_encode, libttaR_tta_decode \- a reentrant TTA codec
 .SH "DESCRIPTION"
 
 .BR libttaR_tta_encode ()
-encodes at most \fIni32_target\fR signed 32-bit PCM samples
-of originally \fIsamplebytes\fR\-sized PCM
-with \fInchan\fR channels
-into TTA with \fIni32_perframe\fR total PCM samples per TTA frame
-from buffer \fIsrc\fR
-of length \fIsrc_len\fR
-into buffer \fIdest\fR
-of size \fIdest_len\fR
-while reading and writing the encoder's state from/to
-\fIpriv\fR and \fIuser\fR.
+encodes a whole or partial TTA frame.
 
 .BR libttaR_tta_decode ()
-decodes at most \fInbytes_tta_target\fR bytes of TTA
-with \fIni32_perframe\fR total signed 32-bit PCM samples per TTA frame
-and an encoded frame size of \fInbytes_tta_perframe\fR
-into at most \fIni32_target\fR total samples of signed 32-bit PCM
-of originally \fIsamplebytes\fR\-sized PCM
-with \fInchan\fR channels
-from buffer \fIsrc\fR
-of size \fIsrc_len\fR
-into buffer \fIdest\fR
-of length \fIdest_len\fR
-while reading and writing the decoder's state from/to
-\fIpriv\fR and \fIuser\fR.
+decodes a whole or partial TTA frame.
 
 .\" -------------------------------------------------------------------------#
 
@@ -95,27 +73,6 @@ Needs to be padded with at least
 bytes when decoding.
 .RE
 
-\fIdest_len\fR
-.RS 8
-The length of the destination buffer.
-.RE
-
-\fIsrc_len\fR
-.RS 8
-The length of the source buffer.
-.RE
-
-\fIni32_target\fR
-.RS 8
-The target number of int32_t PCM from the src/dest buffer to encode/decode.
-Must be evenly divisible by \fInchan\fR.
-.RE
-
-\fInbytes_tta_target\fR
-.RS 8
-The target number of TTA bytes from the dest/src buffer to encode/decode.
-.RE
-
 *\fIpriv\fR
 .RS 8
 The codec's private state.
@@ -133,7 +90,7 @@ Must be initialized with
 before the first call for a new frame.
 
 .nf
-struct LibTTAr_CodecState_User {
+\fBstruct LibTTAr_CodecState_User\fR {
     uint32_t    ncalls_codec;
     uint32_t    crc;
     size_t      ni32;
@@ -145,70 +102,118 @@ struct LibTTAr_CodecState_User {
 
 ncalls_codec:
 .RS 8
-number of successful calls to the codec function
+The number of successful calls to the codec function.
 .RE
 
 crc:
 .RS 8
-frame CRC
+The frame CRC.
 .RE
 
 ni32:
 .RS 8
-number of int32_t PCM read/written for the last call
+The number of int32_t PCM read/written for the last call.
 .RE
 
 ni32_total:
 .RS 8
-total number of int32_t PCM read/written across all calls for the current
-frame
+The total number of int32_t PCM read/written across all calls
+for the current frame.
 .RE
 
 nbytes_tta:
 .RS 8
-number of TTA bytes written/read for the last call
+The number of TTA bytes written/read for the last call.
 .RE
 
 nbytes_tta_total:
 .RS 8
-total number of TTA bytes written/read across all calls for the current frame
+The total number of TTA bytes written/read across all calls
+for the current frame.
 .RE
 
 .RE
 
-\fIsamplebytes\fR
+*\fImisc\fR
 .RS 8
-The number of bytes per samples in the originally sized PCM.
+Other values/properties.
 
 .nf
-enum TTASampleBytes {
-    TTASAMPLEBYTES_1 = 1u,
-    TTASAMPLEBYTES_2 = 2u,
-    TTASAMPLEBYTES_3 = 3u
+\fBstruct LibTTAr_EncMisc\fR {
+    size_t                      dest_len;
+    size_t                      src_len;
+    size_t                      ni32_target;
+    size_t                      ni32_perframe;
+    enum LibTTAr_SampleBytes    samplebytes;
+    unsigned int                nchan;
+};
+
+\fBstruct LibTTAr_DecMisc\fR {
+    size_t                      dest_len;
+    size_t                      src_len;
+    size_t                      ni32_target;
+    size_t                      nbytes_tta_target;
+    size_t                      ni32_perframe;
+    size_t                      nbytes_tta_perframe;
+    enum LibTTAr_SampleBytes    samplebytes;
+    unsigned int                nchan;
 };
 .fi
-.RE
 
-\fInchan\fR
+dest_len:
 .RS 8
-The number of audio channels in the PCM.
+The length of the destination buffer.
 .RE
 
-\fIni32_perframe\fR
+src_len:
+.RS 8
+The length of the source buffer.
+.RE
+
+ni32_target:
+.RS 8
+The target number of int32_t PCM from the src/dest buffer to encode/decode.
+Must be evenly divisible by \fImisc\fR->nchan.
+.RE
+
+nbytes_tta_target:
+.RS 8
+The target number of TTA bytes from the dest/src buffer to encode/decode.
+.RE
+
+ni32_perframe:
 .RS 8
 The number of uncoded int32_t per TTA frame.
 .RE
 
-\fInbytes_tta_perframe\fR
+nbytes_tta_perframe:
 .RS 8
 The number of encoded bytes in the current TTA frame.
+.RE
+
+samplebytes:
+.RS 8
+The number of bytes per samples in the originally sized PCM.
+
+.nf
+\fBenum LibTTAr_SampleBytes\fR {
+    LIBTTAr_SAMPLEBYTES_1   = 1u,
+    LIBTTAr_SAMPLEBYTES_2   = 2u,
+    LIBTTAr_SAMPLEBYTES_3   = 3u
+};
+.fi
+.RE
+
+nchan:
+.RS 8
+The number of audio channels in the PCM.
 .RE
 
 .\" -------------------------------------------------------------------------#
 
 .SS Warning
-*\fIpriv\fR, *\fIuser\fR, \fInchan\fR, \fIni32_perframe\fR, and
-\fInbytes_tta_perframe\fR
+*\fIpriv\fR, *\fIuser\fR, \fImisc\fR->nchan, \fImisc\fR->ni32_perframe, and
+\fImisc\fR->nbytes_tta_perframe
 should not be modified between consecutive calls for the same frame,
 unless you know what you are doing.
 
@@ -216,26 +221,47 @@ unless you know what you are doing.
 
 .SH "RETURN VALUE"
 
-On success:
+.nf
+\fBenum LibTTAr_EncRetVal\fR {
+    LIBTTAr_ERV_DONE            = /* =0 */,
+    LIBTTAr_ERV_AGAIN           = /* >0 */,
+    LIBTTAr_ERV_INVAL_RANGE     = /* <0 */,
+    LIBTTAr_ERV_INVAL_TRUNC     = /* <0 */,
+    LIBTTAr_ERV_INVAL_BOUNDS    = /* <0 */,
+    LIBTTAr_ERV_MISCONFIG       = /* <0 */
+};
+
+\fBenum LibTTAr_DecRetVal\fR {
+    LIBTTAr_DRV_DONE            = /* =0 */,
+    LIBTTAr_DRV_AGAIN           = /* >0 */,
+    LIBTTAr_DRV_FAIL            = /* >0 */,
+    LIBTTAr_DRV_INVAL_RANGE     = /* <0 */,
+    LIBTTAr_DRV_INVAL_TRUNC     = /* <0 */,
+    LIBTTAr_DRV_INVAL_BOUNDS    = /* <0 */,
+    LIBTTAr_DRV_MISCONFIG       = /* <0 */
+};
+.fi
+
+.SH Success (>= 0)
 
 .RS 4
 
-.B LIBTTAr_RET_DONE
+\fBLIBTTAr_ERV_DONE\fR, \fBLIBTTAr_DRV_DONE\fR
 .RS 8
 The frame finished coding.
 .RE
 
-.B LIBTTAr_RET_AGAIN
+\fBLIBTTAr_ERV_AGAIN\fR, \fBLIBTTAr_DRV_AGAIN\fR
 .RS 8
 The frame did not finish coding.
 .RE
 
-.B LIBTTAr_RET_DECFAIL
+\fBLIBTTAr_DRV_FAIL\fR
 .RS 8
 The frame finished decoding, but
-(\fIuser\fR->nbytes_tta_total !\= \fInbytes_tta_perframe\fR), or
+(\fIuser\fR->nbytes_tta_total !\= \fImisc\fR->nbytes_tta_perframe), or
 the frame did not finish decoding, but
-(\fIuser\fR->nbytes_tta_total > \fInbytes_tta_perframe\fR).
+(\fIuser\fR->nbytes_tta_total > \fImisc\fR->nbytes_tta_perframe).
 This would be caused by either corrupted or malformed TTA data.
 
 The absense of this value does not guarantee that the data was correctly
@@ -249,21 +275,27 @@ could get the decoder to read the "correct" number of bytes.
 
 .RE
 
-.\" ##########################################################################
-
-.SH "ERRORS"
+.SH Error (< 0)
 
 .RS 4
 
->\=\fBLIBTTAr_RET_INVAL\fR
+\fBLIBTTAr_ERV_INVAL_RANGE\fR, \fBLIBTTAr_DRV_INVAL_RANGE\fR
 .RS 8
-(\fIni32_target\fR % \fInchan\fR !\= 0) or other bad parameter,
-such as a size_t argument that could cause a bounds error.
-.B LIBTTAr_RET_INVAL
-is used as the base value; the functions can return greater values.
+Some \fImisc\fR value is 0 or a bad enum value.
 .RE
 
-.B LIBTTAr_RET_MISCONFIG
+\fBLIBTTAr_ERV_INVAL_TRUNC\fR, \fBLIBTTAr_DRV_INVAL_TRUNC\fR
+.RS 8
+The last sample is truncated.
+(\fImisc\fR->ni32_target % \fImisc\fR->nchan != 0)
+.RE
+
+\fBLIBTTAr_ERV_INVAL_BOUNDS\fR, \fBLIBTTAr_DRV_INVAL_BOUNDS\fR
+.RS 8
+Some \fImisc\fR value would cause a bounds issue.
+.RE
+
+\fBLIBTTAr_ERV_MISCONFIG\fR, \fBLIBTTAr_DRV_MISCONFIG\fR
 .RS 8
 The library was misconfigured when built; see \fBlibttaR_test_nchan\fR().
 .RE
@@ -287,11 +319,11 @@ Both are MT-Safe.
 // may be older code
 static void
 enc_frame_encode(
-    struct EncBuf *const restrict encbuf,
-    /*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
-    /*@out@*/ struct LibTTAr_CodecState_User *const restrict user_out,
-    const enum TTASampleBytes samplebytes, const uint nchan,
-    const size_t ni32_perframe
+        struct EncBuf *const restrict encbuf,
+        /*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
+        /*@out@*/ struct LibTTAr_CodecState_User *const restrict user_out,
+        const enum TTASampleBytes samplebytes, const uint nchan,
+        const size_t ni32_perframe
 )
 /*@globals      fileSystem,
                 internalState
@@ -306,43 +338,45 @@ enc_frame_encode(
                 *user_out
 @*/
 {
-    struct LibTTAr_CodecState_User user = LIBTTAr_CODECSTATE_USER_INIT;
-    size_t ni32_target = ni32_perframe;
-    union { size_t  z;
-            int     d;
-    } t;
+        enum LibTTAr_EncRetVal status;
+        struct LibTTAr_CodecState_User user = LIBTTAr_CODECSTATE_USER_INIT;
+        struct LibTTAr_EncMisc misc;
+        UNUSED union {  size_t z; } result;
 
-    assert(encbuf->i32buf != NULL);
+        assert(encbuf->i32buf != NULL);
 
-    // convert pcm to i32
-    t.z = libttaR_pcm_read(
-            encbuf->i32buf, encbuf->pcmbuf, ni32_target, samplebytes
-    );
-    assert(t.z == ni32_target);
+        // convert pcm to i32
+        result.z = libttaR_pcm_read(
+                encbuf->i32buf, encbuf->pcmbuf, ni32_perframe, samplebytes
+        );
+        assert(result.z != 0);
 
-    // encode i32 to tta
-    goto loop_entr;
-    do {
-           encbuf_adjust(encbuf, TTABUF_LEN_DEFAULT, nchan);
-           ni32_target = ni32_perframe - user.ni32_total;
+        // encode i32 to tta
+        misc.ni32_perframe = ni32_perframe;
+        misc.samplebytes   = samplebytes;
+        misc.nchan         = nchan;
+        goto loop_entr;
+	do {
+                encbuf_adjust(encbuf, TTABUF_LEN_DEFAULT, nchan);
 loop_entr:
-           t.d = libttaR_tta_encode(
-                   &encbuf->ttabuf[user.nbytes_tta_total],
-                   &encbuf->i32buf[user.ni32_total],
-                   encbuf->ttabuf_len - user.nbytes_tta_total,
-                   encbuf->i32buf_len - user.ni32_total,
-                   ni32_target, priv, &user, samplebytes, nchan,
-                   ni32_perframe
-           );
-           assert((t.d == LIBTTAr_RET_DONE)
-                 ||
-                  (t.d == LIBTTAr_RET_AGAIN)
-           );
-    }
-    while ( t.d == LIBTTAr_RET_AGAIN );
+                misc.dest_len    = encbuf->ttabuf_len - user.nbytes_tta_total;
+                misc.src_len     = encbuf->i32buf_len - user.ni32_total;
+                misc.ni32_target = ni32_perframe - user.ni32_total;
 
-    *user_out = user;
-    return;
+                status = libttaR_tta_encode(
+                        &encbuf->ttabuf[user.nbytes_tta_total],
+                        &encbuf->i32buf[user.ni32_total],
+                        priv, &user, &misc
+                );
+                assert((status == LIBTTAr_ERV_DONE)
+                      ||
+                       (status == LIBTTAr_ERV_AGAIN)
+                );
+        }
+        while ( status == LIBTTAr_ERV_AGAIN );
+
+        *user_out = user;
+        return;
 }
 .EE
 
@@ -353,12 +387,12 @@ loop_entr:
 // may be older code
 static int
 dec_frame_decode(
-    struct DecBuf *const restrict decbuf,
-    /*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
-    /*@out@*/ struct LibTTAr_CodecState_User *const restrict user_out,
-    const enum TTASampleBytes samplebytes, const uint nchan,
-    size_t ni32_perframe, const size_t nbytes_tta_perframe,
-    /*@out@*/ size_t *const restrict nsamples_flat_2pad
+        struct DecBuf *const restrict decbuf,
+        /*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
+        /*@out@*/ struct LibTTAr_CodecState_User *const restrict user_out,
+        const enum TTASampleBytes samplebytes, const uint nchan,
+        size_t ni32_perframe, const size_t nbytes_tta_perframe,
+        /*@out@*/ size_t *const restrict nsamples_flat_2pad
 )
 /*@modifies     *decbuf->i32buf,
                 *decbuf->pcmbuf,
@@ -367,53 +401,53 @@ dec_frame_decode(
                 *nsamples_flat_2pad
 @*/
 {
-    int r;
-    struct LibTTAr_CodecState_User user = LIBTTAr_CODECSTATE_USER_INIT;
-    size_t pad_target = 0;
-    UNUSED union { size_t z; } t;
+        enum LibTTAr_DecRetVal status;
+        struct LibTTAr_CodecState_User user = LIBTTAr_CODECSTATE_USER_INIT;
+        struct LibTTAr_DecMisc misc;
+        size_t pad_target;
+        UNUSED union {  size_t z; } result;
 
-    assert(decbuf->i32buf != NULL);
+        assert(decbuf->i32buf != NULL);
 
-    goto loop_entr;
-    do {
-           // frame has a truncated last sample; needs zero-padding later
-           pad_target     = (size_t) (nchan - (ni32_perframe % nchan));
-           ni32_perframe += pad_target;
-loop_entr:
-           // decode tta to i32
-           r = libttaR_tta_decode(
-                   decbuf->i32buf, decbuf->ttabuf, decbuf->i32buf_len,
-                   decbuf->ttabuf_len, ni32_perframe,
-                   nbytes_tta_perframe, priv, &user, samplebytes, nchan,
-                   ni32_perframe, nbytes_tta_perframe
-           );
+        // check for truncated sample
+        pad_target     = (ni32_perframe % nchan == 0
+                ? 0 : (size_t) (nchan - (ni32_perframe % nchan))
+        );
+        ni32_perframe += pad_target;
 
-           // with the way the decoding is setup, RET_AGAIN shouldn't
-           //   happen
-           // >=RET_INVAL may happen if the last sample is truncated
-           assert((r == LIBTTAr_RET_DONE)
-                 ||
-                  (r == LIBTTAr_RET_DECFAIL)
-                 ||
-                  (r >= LIBTTAr_RET_INVAL)
-           );
-    }
-    while UNLIKELY ( r >= LIBTTAr_RET_INVAL );
+        // decode tta to i32
+        misc.dest_len            = decbuf->i32buf_len;
+        misc.src_len             = decbuf->ttabuf_len;
+        misc.ni32_target         = ni32_perframe;
+        misc.nbytes_tta_target   = nbytes_tta_perframe;
+        misc.ni32_perframe       = ni32_perframe;
+        misc.nbytes_tta_perframe = nbytes_tta_perframe;
+        misc.samplebytes         = samplebytes;
+        misc.nchan               = nchan;
+        //
+        status = libttaR_tta_decode(
+                decbuf->i32buf, decbuf->ttabuf, priv, &user, &misc
+        );
+        // with the way the decoding is setup, _AGAIN shouldn't happen
+        assert((status == LIBTTAr_DRV_DONE)
+              ||
+               (status == LIBTTAr_DRV_FAIL)
+        );
 
-    if UNLIKELY ( r == LIBTTAr_RET_DECFAIL ){
-           pad_target     += ni32_perframe - user.ni32_total;
-           user.ni32_total = ni32_perframe;
-    }
+        if UNLIKELY ( status == LIBTTAr_DRV_FAIL ){
+                pad_target     += ni32_perframe - user.ni32_total;
+                user.ni32_total = ni32_perframe;
+        }
 
-    // convert i32 to pcm
-    t.z = libttaR_pcm_write(
-           decbuf->pcmbuf, decbuf->i32buf, user.ni32_total, samplebytes
-    );
-    assert(t.z == user.ni32);
+        // convert i32 to pcm
+        result.z = libttaR_pcm_write(
+                decbuf->pcmbuf, decbuf->i32buf, user.ni32_total, samplebytes
+        );
+        assert(result.z != 0);
 
-    *user_out           = user;
-    *nsamples_flat_2pad = pad_target;
-    return r;
+        *user_out           = user;
+        *nsamples_flat_2pad = pad_target;
+        return (int) status;
 }
 .EE
 

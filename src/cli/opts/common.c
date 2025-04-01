@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2024, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -149,29 +149,28 @@ opt_common_threads(
 		**argv
 @*/
 {
-	int r;
+	int retval = 0;
 	char *const opt = &argv[optind0][optind1];
-	char *subopt;
+	char *subopt = NULL;
 	size_t i;
-	union {	int	d;
-		size_t	z;
-	} t;
+	union {	int	d; } result;
+	union {	size_t	z; } tmp;
 
 	switch ( mode ){
 	case OPTMODE_SHORT:
 		if ( opt[1u] == '\0' ){
 			optsget_argcheck(optind0, argc, 1u, opt);
 			subopt = argv[optind0 + 1u];
-			r = -1;
+			retval = -1;
 		}
 		else {	subopt = &opt[1u];
-			t.z = strlen(subopt);
-			r = 0;
-			for ( i = 0; i < t.z; ++i ){
+			tmp.z = strlen(subopt);
+			retval = 0;
+			for ( i = 0; i < tmp.z; ++i ){
 				if ( isdigit(subopt[i]) == 0 ){
 					/*@loopbreak@*/ break;
 				}
-				++r;
+				retval += 1;
 			}
 		}
 		break;
@@ -181,20 +180,22 @@ opt_common_threads(
 		if UNLIKELY ( subopt == NULL ){
 			error_tta("%s: missing argument", "--threads");
 		}
-		r = 0;
+		retval = 0;
 		break;
 	}
 	assert(subopt != NULL);
 
-	t.d = atoi(subopt);
-	if UNLIKELY ( t.d <= 0 ){
-		error_tta("%s: argument out of range: %d", "--threads", t.d);
+	result.d = atoi(subopt);
+	if UNLIKELY ( result.d <= 0 ){
+		error_tta("%s: argument out of range: %d", "--threads",
+			result.d
+		);
 	}
 
-	g_nthreads = (uint) t.d;
+	g_nthreads = (uint) result.d;
 	g_flag.threadmode = THREADMODE_MULTI;
 
-	return r;
+	return retval;
 }
 
 /**@fn opt_common_outfile
@@ -224,19 +225,22 @@ opt_common_outfile(
 		**argv
 @*/
 {
-	int r;
+	int retval = 0;
 	char *const opt = &argv[optind0][optind1];
-	char *subopt;
+	char *subopt    = NULL;
 
 	switch ( mode ){
+	default:
+		assert(false);
+		break;
 	case OPTMODE_SHORT:
 		if ( opt[1u] == '\0' ){
 			optsget_argcheck(optind0, argc, 1u, opt);
 			subopt = argv[optind0 + 1u];
-			r = -1;
+			retval = -1;
 		}
 		else {	subopt = &opt[1u];
-			r = (int) strlen(subopt);
+			retval = (int) strlen(subopt);
 		}
 		break;
 	case OPTMODE_LONG:
@@ -245,7 +249,7 @@ opt_common_outfile(
 		if UNLIKELY ( subopt == NULL ){
 			error_tta("%s: missing argument", "--outfile");
 		}
-		r = 0;
+		retval = 0;
 		break;
 	}
 	assert(subopt != NULL);
@@ -257,7 +261,7 @@ opt_common_outfile(
 	else {	g_flag.outfile_is_dir = false;}
 
 	g_flag.outfile = subopt;
-	return r;
+	return retval;
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////

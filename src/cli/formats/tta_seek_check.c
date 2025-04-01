@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2024, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -54,31 +54,31 @@ filecheck_tta_seektable(
 	union {	size_t	z;
 		int	d;
 		u32	u_32;
-	} t;
+	} result;
 
 	st->nmemb = nframes;
 	st->table = calloc_check(st->nmemb, sizeof *st->table);
 
-	t.z = fread(st->table, sizeof *st->table, st->nmemb, file);
-	if ( t.z != st->nmemb ){
+	result.z = fread(st->table, sizeof *st->table, st->nmemb, file);
+	if ( result.z != st->nmemb ){
 		if ( feof(file) != 0 ){
 			return FILECHECK_MALFORMED;
 		}
 		return FILECHECK_READ_ERROR;
 	}
 
-	t.z = fread(&crc, sizeof crc, (size_t) 1u, file);
-	if ( t.z != (size_t) 1u ){
+	result.z = fread(&crc, sizeof crc, (size_t) 1u, file);
+	if ( result.z != (size_t) 1u ){
 		if ( feof(file) != 0 ){
 			return FILECHECK_MALFORMED;
 		}
 		return FILECHECK_READ_ERROR;
 	}
 
-	t.u_32 = libttaR_crc32(
+	result.u_32 = libttaR_crc32(
 		(u8 *) st->table, st->nmemb * (sizeof *st->table)
 	);
-	if ( t.u_32 != letoh32(crc) ){
+	if ( result.u_32 != letoh32(crc) ){
 		return FILECHECK_CORRUPTED;
 	}
 

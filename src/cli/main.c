@@ -5,7 +5,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2024, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -134,8 +134,8 @@ main(const int argc, char *const *const argv)
 		g_progname
 @*/
 {
-	int r = EXIT_FAILURE;
-	UNUSED union {	int d; } t;
+	int retval = EXIT_FAILURE;
+	UNUSED union {	int d; } result;
 
 	// saved for warning/error printing
 	g_progname = argv[0];
@@ -149,15 +149,15 @@ main(const int argc, char *const *const argv)
 	signals_setup();
 
 	// atexit
-	t.d = atexit(atexit_cleanup);
-	assert(t.d == 0);
+	result.d = atexit(atexit_cleanup);
+	assert(result.d == 0);
 
 	// enter a mode
 	if ( strcmp(argv[1u], "encode") == 0 ){
-		r = mode_encode(2u, (uint) argc, argv);
+		retval = mode_encode(2u, (uint) argc, argv);
 	}
 	else if ( strcmp(argv[1u], "decode") == 0 ){
-		r = mode_decode(2u, (uint) argc, argv);
+		retval = mode_decode(2u, (uint) argc, argv);
 	}
 	else if UNLIKELY ( true ) {
 		error_tta_nf("bad mode '%s'", argv[1u]);
@@ -165,7 +165,7 @@ print_main_help:
 		errprint_help_main();
 	} else{;}
 
-	return r;
+	return retval;
 }
 
 //--------------------------------------------------------------------------//
@@ -178,10 +178,10 @@ atexit_cleanup(void)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 {
-	union {	int d; } t;
+	union {	int d; } result;
 	if UNLIKELY ( g_rm_on_sigint != NULL ){
-		t.d = remove(g_rm_on_sigint);
-		if ( (t.d != 0) && (errno != EACCES) ){	// /dev/null
+		result.d = remove(g_rm_on_sigint);
+		if ( (result.d != 0) && (errno != EACCES) ){	// /dev/null
 			error_sys_nf(errno, "remove", g_rm_on_sigint);
 		}
 	}

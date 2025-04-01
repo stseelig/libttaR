@@ -5,7 +5,7 @@
 #                                                                            #
 ##############################################################################
 #                                                                            #
-# Copyright (C) 2023-2024, Shane Seelig                                      #
+# Copyright (C) 2023-2025, Shane Seelig                                      #
 # SPDX-License-Identifier: GPL-3.0-or-later                                  #
 #                                                                            #
 ##############################################################################
@@ -26,8 +26,7 @@ readonly PROGRAM='ttaR';
 # because of Debian, but still.
 #
 #   main reasons that gcc is slower:
-#       - gcc doesn't have a builtin memmove (this is extra funny considering
-# the glibc memcpy backwards fiasco from last decade)
+#       - gcc doesn't have a builtin memmove (if not using SIMD intrinsics)
 #       - clang is better at SIMDing and inlining
 #       - gcc can do dumb stuff if you don't use gcc-isms, like the example in
 # the previous paragraph
@@ -65,11 +64,6 @@ CFLAGS_COMMON="$CFLAGS_COMMON -DNDEBUG";
 CFLAGS_COMMON="$CFLAGS_COMMON -Wall";
 CFLAGS_COMMON="$CFLAGS_COMMON -Wextra";
 CFLAGS_COMMON="$CFLAGS_COMMON -Wpedantic";
-
-if [ "$CC" = 'gcc' ]; then
-# gcc complaining about enum switches
-CFLAGS_COMMON="$CFLAGS_COMMON -Wno-maybe-uninitialized";
-fi
 
 readonly CFLAGS_COMMON;
 
@@ -160,11 +154,23 @@ readonly DIR6="$OBJ/lib";
 readonly HEADER="$SRC/libttaR.h";
 
 readonly L_C00='lib/misc';
-readonly L_C01='lib/pcm_read';
-readonly L_C02='lib/pcm_write';
-readonly L_C03='lib/tables';
-readonly L_C04='lib/tta_dec';
-readonly L_C05='lib/tta_enc';
+readonly L_C01='lib/pcm_read_0';
+readonly L_C02='lib/pcm_read_a_u8';
+readonly L_C03='lib/pcm_read_b_i16le';
+readonly L_C04='lib/pcm_read_c_i24le';
+readonly L_C05='lib/pcm_write_0';
+readonly L_C06='lib/pcm_write_a_u8';
+readonly L_C07='lib/pcm_write_b_i16le';
+readonly L_C08='lib/pcm_write_c_i24le';
+readonly L_C09='lib/tables';
+readonly L_C10='lib/tta_dec_0';
+readonly L_C11='lib/tta_dec_a_mch';
+readonly L_C12='lib/tta_dec_b_1ch';
+readonly L_C13='lib/tta_dec_c_2ch';
+readonly L_C14='lib/tta_enc_0';
+readonly L_C15='lib/tta_enc_a_mch';
+readonly L_C16='lib/tta_enc_b_1ch';
+readonly L_C17='lib/tta_enc_c_2ch';
 
 readonly P_C00='cli/alloc';
 readonly P_C01='cli/cli';
@@ -201,6 +207,18 @@ readonly L_O02="$OBJ/$L_C02.o";
 readonly L_O03="$OBJ/$L_C03.o";
 readonly L_O04="$OBJ/$L_C04.o";
 readonly L_O05="$OBJ/$L_C05.o";
+readonly L_O06="$OBJ/$L_C06.o";
+readonly L_O07="$OBJ/$L_C07.o";
+readonly L_O08="$OBJ/$L_C08.o";
+readonly L_O09="$OBJ/$L_C09.o";
+readonly L_O10="$OBJ/$L_C10.o";
+readonly L_O11="$OBJ/$L_C11.o";
+readonly L_O12="$OBJ/$L_C12.o";
+readonly L_O13="$OBJ/$L_C13.o";
+readonly L_O14="$OBJ/$L_C14.o";
+readonly L_O15="$OBJ/$L_C15.o";
+readonly L_O16="$OBJ/$L_C16.o";
+readonly L_O17="$OBJ/$L_C17.o";
 
 readonly P_O00="$OBJ/$P_C00.o";
 readonly P_O01="$OBJ/$P_C01.o";
@@ -442,7 +460,9 @@ _cd "$ROOT";
 _mkdir "$DIR0" "$DIR1" "$DIR2" "$DIR3" "$DIR4" "$DIR5" "$DIR6";
 
 _cc_mp	"$CFLAGS_COMMON $CFLAGS_LIB" \
-	"$L_C00" "$L_C01" "$L_C02" "$L_C03" "$L_C04" "$L_C05";
+	"$L_C00" "$L_C01" "$L_C02" "$L_C03" "$L_C04" "$L_C05" "$L_C06" \
+	"$L_C07" "$L_C08" "$L_C09" "$L_C10" "$L_C11" "$L_C12" "$L_C13" \
+	"$L_C14" "$L_C15" "$L_C16" "$L_C17";
 _cc_mp	"$CFLAGS_COMMON $CFLAGS_CLI" \
 	"$P_C00" "$P_C01" "$P_C02" "$P_C03" "$P_C04" "$P_C05" "$P_C06" \
 	"$P_C07" "$P_C08" "$P_C09" "$P_C10" "$P_C11" "$P_C12" "$P_C13" \
@@ -451,7 +471,9 @@ _cc_mp	"$CFLAGS_COMMON $CFLAGS_CLI" \
 wait;
 
 _ld "$LDFLAGS_LIB" "$LDFLAGS_LIB_END" "$BUILD/$LIBRARY" \
-	"$L_O00" "$L_O01" "$L_O02" "$L_O03" "$L_O04" "$L_O05";
+	"$L_O00" "$L_O01" "$L_O02" "$L_O03" "$L_O04" "$L_O05" "$L_O06" \
+	"$L_O07" "$L_O08" "$L_O09" "$L_O10" "$L_O11" "$L_O12" "$L_O13" \
+	"$L_O14" "$L_O15" "$L_O16" "$L_O17";
 _ld "$LDFLAGS_CLI" "$LDFLAGS_CLI_END" "$BUILD/$PROGRAM" \
 	"$P_O00" "$P_O01" "$P_O02" "$P_O03" "$P_O04" "$P_O05" "$P_O06" \
 	"$P_O07" "$P_O08" "$P_O09" "$P_O10" "$P_O11" "$P_O12" "$P_O13" \

@@ -57,70 +57,40 @@ HIDDEN const u32 lsmask32_table[32u] = {
 **/
 /*@unchecked@*/
 HIDDEN const bitcnt_dec tbcnt8_table[256u] = {
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 2u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 3u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 2u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 4u,	// 0F
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 2u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 3u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 2u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 5u,	// 1F
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 2u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 3u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 2u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 4u,	// 2F
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 2u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 3u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 2u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 6u,	// 3F
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 2u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 3u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 2u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 4u,	// 4F
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 2u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 3u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 2u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 5u,	// 5F
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 2u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 3u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 2u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 4u,	// 6F
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 2u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 3u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 2u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 7u,	// 7F
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 2u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 3u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 2u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 4u,	// 8F
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 2u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 3u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 2u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 5u,	// 9F
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 2u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 3u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 2u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 4u,	// AF
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 2u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 3u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 2u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 6u,	// BF
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 2u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 3u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 2u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 4u,	// CF
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 2u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 3u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 2u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 5u,	// DF
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 2u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 3u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 2u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 4u,	// EF
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 2u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 3u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 2u,
-(bitcnt_dec) 0u, (bitcnt_dec) 1u, (bitcnt_dec) 0u, (bitcnt_dec) 8u	// FF
+#define T	bitcnt_dec
+(T) 0u, (T) 1u, (T) 0u, (T) 2u, (T) 0u, (T) 1u, (T) 0u, (T) 3u,
+(T) 0u, (T) 1u, (T) 0u, (T) 2u, (T) 0u, (T) 1u, (T) 0u, (T) 4u,	// 0F
+(T) 0u, (T) 1u, (T) 0u, (T) 2u, (T) 0u, (T) 1u, (T) 0u, (T) 3u,
+(T) 0u, (T) 1u, (T) 0u, (T) 2u, (T) 0u, (T) 1u, (T) 0u, (T) 5u,	// 1F
+(T) 0u, (T) 1u, (T) 0u, (T) 2u, (T) 0u, (T) 1u, (T) 0u, (T) 3u,
+(T) 0u, (T) 1u, (T) 0u, (T) 2u, (T) 0u, (T) 1u, (T) 0u, (T) 4u,	// 2F
+(T) 0u, (T) 1u, (T) 0u, (T) 2u, (T) 0u, (T) 1u, (T) 0u, (T) 3u,
+(T) 0u, (T) 1u, (T) 0u, (T) 2u, (T) 0u, (T) 1u, (T) 0u, (T) 6u,	// 3F
+(T) 0u, (T) 1u, (T) 0u, (T) 2u, (T) 0u, (T) 1u, (T) 0u, (T) 3u,
+(T) 0u, (T) 1u, (T) 0u, (T) 2u, (T) 0u, (T) 1u, (T) 0u, (T) 4u,	// 4F
+(T) 0u, (T) 1u, (T) 0u, (T) 2u, (T) 0u, (T) 1u, (T) 0u, (T) 3u,
+(T) 0u, (T) 1u, (T) 0u, (T) 2u, (T) 0u, (T) 1u, (T) 0u, (T) 5u,	// 5F
+(T) 0u, (T) 1u, (T) 0u, (T) 2u, (T) 0u, (T) 1u, (T) 0u, (T) 3u,
+(T) 0u, (T) 1u, (T) 0u, (T) 2u, (T) 0u, (T) 1u, (T) 0u, (T) 4u,	// 6F
+(T) 0u, (T) 1u, (T) 0u, (T) 2u, (T) 0u, (T) 1u, (T) 0u, (T) 3u,
+(T) 0u, (T) 1u, (T) 0u, (T) 2u, (T) 0u, (T) 1u, (T) 0u, (T) 7u,	// 7F
+(T) 0u, (T) 1u, (T) 0u, (T) 2u, (T) 0u, (T) 1u, (T) 0u, (T) 3u,
+(T) 0u, (T) 1u, (T) 0u, (T) 2u, (T) 0u, (T) 1u, (T) 0u, (T) 4u,	// 8F
+(T) 0u, (T) 1u, (T) 0u, (T) 2u, (T) 0u, (T) 1u, (T) 0u, (T) 3u,
+(T) 0u, (T) 1u, (T) 0u, (T) 2u, (T) 0u, (T) 1u, (T) 0u, (T) 5u,	// 9F
+(T) 0u, (T) 1u, (T) 0u, (T) 2u, (T) 0u, (T) 1u, (T) 0u, (T) 3u,
+(T) 0u, (T) 1u, (T) 0u, (T) 2u, (T) 0u, (T) 1u, (T) 0u, (T) 4u,	// AF
+(T) 0u, (T) 1u, (T) 0u, (T) 2u, (T) 0u, (T) 1u, (T) 0u, (T) 3u,
+(T) 0u, (T) 1u, (T) 0u, (T) 2u, (T) 0u, (T) 1u, (T) 0u, (T) 6u,	// BF
+(T) 0u, (T) 1u, (T) 0u, (T) 2u, (T) 0u, (T) 1u, (T) 0u, (T) 3u,
+(T) 0u, (T) 1u, (T) 0u, (T) 2u, (T) 0u, (T) 1u, (T) 0u, (T) 4u,	// CF
+(T) 0u, (T) 1u, (T) 0u, (T) 2u, (T) 0u, (T) 1u, (T) 0u, (T) 3u,
+(T) 0u, (T) 1u, (T) 0u, (T) 2u, (T) 0u, (T) 1u, (T) 0u, (T) 5u,	// DF
+(T) 0u, (T) 1u, (T) 0u, (T) 2u, (T) 0u, (T) 1u, (T) 0u, (T) 3u,
+(T) 0u, (T) 1u, (T) 0u, (T) 2u, (T) 0u, (T) 1u, (T) 0u, (T) 4u,	// EF
+(T) 0u, (T) 1u, (T) 0u, (T) 2u, (T) 0u, (T) 1u, (T) 0u, (T) 3u,
+(T) 0u, (T) 1u, (T) 0u, (T) 2u, (T) 0u, (T) 1u, (T) 0u, (T) 8u	// FF
+#undef T
 };
 #endif // TBCNT8_TABLE
 

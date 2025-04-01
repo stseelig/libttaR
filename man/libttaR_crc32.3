@@ -1,13 +1,13 @@
 .\" t
 .\"     Title: libttaR_crc32
 .\"    Author: Shane Seelig
-.\"      Date: 2024-11-18
-.\"    Source: libttaR 1.2
+.\"      Date: 2025-04-01
+.\"    Source: libttaR 2.0
 .\"  Language: English
 .\"
 .\" ##########################################################################
 
-.TH "LIBTTAr_CRC32" "3" "2024\-07\-01" "libttaR 1.2" \
+.TH "LIBTTAr_CRC32" "3" "2025\-04\-01" "libttaR 2.0" \
 "LibTTAr Programmer's Manual"
 
 .\" ##########################################################################
@@ -22,7 +22,7 @@ libttaR_crc32 \- calculate the CRC used by TTA
 .nf
 .B #include <libttaR.h>
 
-.BI "uint32_t libttaR_crc32(const uint8_t *" buf ", size_t " size ");
+.BI "uint32_t libttaR_crc32(const uint8_t *restrict " buf ", size_t " size ");
 .fi
 
 .\" ##########################################################################

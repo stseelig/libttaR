@@ -5,12 +5,11 @@
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // Copyright (C) 2007, Aleksander Djuric                                    //
-// Copyright (C) 2023-2024, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
-#include <stdbool.h>
 #include <stddef.h>
 
 #include "../bits.h"
@@ -62,7 +61,7 @@ const struct LibTTAr_VersionInfo libttaR_info = {
  *
  * @param nchan number of audio channels
  *
- * @return true or false
+ * @retval 0 - not supported
  *
  * @note read the manpage for more info
  * @note affected by:
@@ -70,34 +69,102 @@ const struct LibTTAr_VersionInfo libttaR_info = {
  *     LIBTTAr_OPT_DISABLE_UNROLLED_2CH,
  *     LIBTTAr_OPT_DISABLE_MCH
 **/
-CONST bool
+/*@unused@*/
+CONST int
 libttaR_test_nchan(const uint nchan)
 /*@*/
 {
-	bool r = false;
+	int retval = 0;
 	switch ( nchan ){
 #ifndef LIBTTAr_OPT_DISABLE_MCH
 	case 0:
 		break;
 	default:
-		r = true;
+		retval = (int) nchan;
 		break;
 #else
 #ifndef LIBTTAr_OPT_DISABLE_UNROLLED_1CH
 	case 1u:
-		r = true;
+		retval = (int) nchan;
 		break;
 #endif
 #ifndef LIBTTAr_OPT_DISABLE_UNROLLED_2CH
 	case 2u:
-		r = true;
+		retval = (int) nchan;
 		break;
 #endif
 	default:
 		break;
 #endif // LIBTTAr_OPT_DISABLE_MCH
 	}
-	return r;
+	return retval;
+}
+
+/**@fn libttaR_nsamples_perframe_tta1
+ * @brief calculates the number of audio samples per TTA1 frame
+ *
+ * @param samplerate the audio sampling frequency in samples-per-second
+ *
+ * @return the number of samples in a TTA1 frame for a given 'samplerate'
+ *
+ * @note read the manpage for more info
+**/
+/*@unused@*/
+CONST size_t
+libttaR_nsamples_perframe_tta1(const size_t samplerate)
+/*@*/
+{
+	return (256u * samplerate) / 245u;
+}
+
+/**@fn libttaR_ttabuf_safety_margin_size
+ * @brief calculates the size of safety margin for the TTA buffer
+ *
+ * @param samplebytes number of bytes per PCM sample
+ * @param nchan number of audio channels
+ *
+ * @return size of safety margin
+ * @retval 0 error
+ *
+ * @note read the manpage for more info
+**/
+/*@unused@*/
+CONST size_t
+libttaR_ttabuf_safety_margin(
+	const enum LibTTAr_SampleBytes samplebytes, const uint nchan
+)
+/*@*/
+{
+	if ( ((uint) samplebytes == 0)
+	    ||
+	     ((uint) samplebytes > LIBTTAr_SAMPLEBYTES_MAX)
+	){
+		return 0;
+	}
+	return get_safety_margin(samplebytes, nchan);
+}
+
+/**@fn libttaR_codecstate_priv_size
+ * @brief calculates the size of the private state struct
+ *
+ * @param nchan number of audio channels
+ *
+ * @return size of the private state struct
+ * @retval 0 error
+ *
+ * @note read the manpage for more info
+**/
+/*@unused@*/
+CONST size_t
+libttaR_codecstate_priv_size(const uint nchan)
+/*@*/
+{
+	if ( nchan == 0 ){
+		return 0;
+	}
+	return (sizeof(struct LibTTAr_CodecState_Priv)
+	     + ((size_t) (nchan * sizeof(struct Codec)))
+	);
 }
 
 /**@fn libttaR_crc32
@@ -120,6 +187,7 @@ libttaR_test_nchan(const uint nchan)
  *   runtime, size is more important. Frame CRC calculation is inlined into
  *   the rice coder.
 **/
+/*@unused@*/
 PURE u32
 libttaR_crc32(const u8 *const restrict buf, const size_t size)
 /*@*/
@@ -131,54 +199,6 @@ libttaR_crc32(const u8 *const restrict buf, const size_t size)
 		crc = crc32_cont(buf[i], crc);
 	}
 	return CRC32_FINI(crc);
-}
-
-/**@fn libttaR_codecstate_priv_size
- * @brief calculates the size of the private state struct
- *
- * @param nchan number of audio channels
- *
- * @return size of the private state struct
- * @retval 0 error
- *
- * @note read the manpage for more info
-**/
-CONST size_t
-libttaR_codecstate_priv_size(const uint nchan)
-/*@*/
-{
-	if ( nchan == 0 ){
-		return 0;
-	}
-	return (sizeof(struct LibTTAr_CodecState_Priv)
-	     + ((size_t) (nchan * sizeof(struct Codec)))
-	);
-}
-
-/**@fn libttaR_ttabuf_safety_margin_size
- * @brief calculates the size of safety margin for the TTA buffer
- *
- * @param samplebytes number of bytes per PCM sample
- * @param nchan number of audio channels
- *
- * @return size of safety margin
- * @retval 0 error
- *
- * @note read the manpage for more info
-**/
-CONST size_t
-libttaR_ttabuf_safety_margin(
-	const enum TTASampleBytes samplebytes, const uint nchan
-)
-/*@*/
-{
-	if ( ((uint) samplebytes == 0)
-	    ||
-	     ((uint) samplebytes > TTA_SAMPLEBYTES_MAX)
-	){
-		return 0;
-	}
-	return get_safety_margin(samplebytes, nchan);
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////

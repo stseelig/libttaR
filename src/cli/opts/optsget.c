@@ -28,7 +28,6 @@
 #include <assert.h>
 #include <errno.h>
 #include <limits.h>
-#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -112,8 +111,8 @@ optargs_process(
 		**argv
 @*/
 {
-	uint r = 0;
-	int optrv = 0;
+	uint retval = 0;
+	int  optrv  = 0;
 
 	while ( optind < argc ){
 		if ( (optrv >= 0) && (argv[optind][0] == '-') ){
@@ -122,13 +121,13 @@ optargs_process(
 			optind += (optrv >= 0 ? optrv : -optrv);
 		}
 		else {	// filename
-			r += (uint) (
-				(bool) openedfiles_add(of, argv[optind])
+			retval += (uint) (
+				openedfiles_add(of, argv[optind]) != 0
 			);
-			++optind;
+			optind += 1u;
 		}
 	}
-	return r;
+	return retval;
 }
 
 /**@fn optsget
@@ -155,9 +154,9 @@ optsget(
 @*/
 {
 	char *arg;
-	int i;
 	int optrv = 0;
-	union {	char *s; } t;
+	int i;
+	union {	char *s; } tmp;
 
 	for ( i = 0; optind + i < argc; i += optrv + 1 ){
 		arg = argv[optind + i];
@@ -172,13 +171,13 @@ optsget(
 		}
 		else if ( (arg[0] == '-') && (arg[1u] == '-') ){
 			if ( arg[2u] == '\0' ){	// "--" stops opt processing
-				return -(++i);
+				return -(i + 1u);
 			}
 			optrv = longoptget(optind + i, argc, argv, optdict);
 			if UNLIKELY ( optrv < 0 ){
-				t.s = strtok(arg, "=");
-				assert(t.s != NULL);
-				error_tta("bad longopt: %s", t.s);
+				tmp.s = strtok(arg, "=");
+				assert(tmp.s != NULL);
+				error_tta("bad longopt: %s", tmp.s);
 			}
 		} else{;}
 	}
@@ -225,7 +224,9 @@ shortoptsget(
 					optind, i + 1u, argc, argv,
 					OPTMODE_SHORT
 				);
-				if ( optrv < 0 ){ return -optrv; }// args used
+				if ( optrv < 0 ){
+					return -optrv;	// args used
+				}
 				goto cont_outer_loop;	// onto next char
 			}
 		}

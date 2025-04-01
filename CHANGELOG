@@ -1,6 +1,22 @@
 
 # libttaR ####################################################################
 
+2.0.0 (2025-04-01):===========================================================
+
+	- libttaR_tta_encode/libttaR_tta_decode
+		- parameter changes and enum return types
+		- INVAL returns are now negative instead of positive
+	- libttaR_test_nchan returns int instead of bool
+		- still acts like a boolean
+	- libttaR_nsamples_perframe_tta1 is no longer a macro
+	- added some structs/enums/defines and changed the names of others
+		- all now start with 'LibTTAr_'/'LIBTTAr_'
+	- all pointer parameters in all functions are now restict'd
+		- practically only affects libttaR_pcm_read/libttaR_pcm_write
+	- header should be completely C89-friendly now
+	- possible small performance improvements
+		- gcc build is much faster now (still slower than clang)
+
 1.2.14 (2025-03-22):----------------------------------------------------------
 
 	- encoder performance improvement (~2%)
@@ -124,8 +140,10 @@
 
 # ttaR #######################################################################
 
-next:-------------------------------------------------------------------------
+1.1.9 (2025-04-01):-----------------------------------------------------------
 
+	- updated to use libttaR 2.0
+	- some extra error/file checks
 	- bugfix: program could exit with a 0 ($?) on error
 
 1.1.8 (2024-12-20):-----------------------------------------------------------

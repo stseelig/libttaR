@@ -6,7 +6,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2024, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -30,20 +30,11 @@ typedef uint64_t	u64;
 typedef   int8_t	 i8;
 typedef  int32_t	i32;
 
-typedef uint_fast8_t	 u8f;
+typedef  uint_fast8_t	 u8f;
 typedef uint_fast32_t	u32f;
 typedef uint_fast64_t	u64f;
 
 //////////////////////////////////////////////////////////////////////////////
-
-// checks if the targeted arch has an signed (arithmetic) right shift
-#define HAS_ASR(Xtype)	( \
-	/*@-shiftimplementation@*/ \
-	(Xtype) (((Xtype) UINTMAX_MAX) >> 1u) == (Xtype) UINTMAX_MAX \
-	/*@=shiftimplementation@*/ \
-)
-
-//==========================================================================//
 
 #ifdef __GNUC__
 
@@ -296,10 +287,10 @@ bswap16(const u16 x)
 #elif HAS_BUILTIN(BUILTIN_BSWAP64)
 	return (u16) BUILTIN_BSWAP64(((u64) x) << 48u);
 #else
-	u16 r = 0;
-	r |= (x & 0xFF00u) >> 8u;
-	r |= (x & 0x00FFu) << 8u;
-	return r;
+	u16 retval = 0;
+	retval |= (x & 0xFF00u) >> 8u;
+	retval |= (x & 0x00FFu) << 8u;
+	return retval;
 #endif
 }
 
@@ -319,12 +310,12 @@ bswap32(const u32 x)
 #elif HAS_BUILTIN(BUILTIN_BSWAP64)
 	return (u32) BUILTIN_BSWAP64(((u64) x) << 32u);
 #else
-	u32 r = 0;
-	r |= (x & 0xFF000000u) >> 24u;
-	r |= (x & 0x00FF0000u) >>  8u;
-	r |= (x & 0x0000FF00u) <<  8u;
-	r |= (x & 0x000000FFu) << 24u;
-	return r;
+	u32 retval = 0;
+	retval |= (x & 0xFF000000u) >> 24u;
+	retval |= (x & 0x00FF0000u) >>  8u;
+	retval |= (x & 0x0000FF00u) <<  8u;
+	retval |= (x & 0x000000FFu) << 24u;
+	return retval;
 #endif
 }
 
@@ -342,16 +333,16 @@ bswap64(const u64 x)
 #if HAS_BUILTIN(BUILTIN_BSWAP64)
 	return (u64) BUILTIN_BSWAP64(x);
 #else
-	u64 r = 0;
-	r |= (x & 0xFF00000000000000u) >> 56u;
-	r |= (x & 0x00FF000000000000u) >> 40u;
-	r |= (x & 0x0000FF0000000000u) >> 24u;
-	r |= (x & 0x000000FF00000000u) >>  8u;
-	r |= (x & 0x00000000FF000000u) <<  8u;
-	r |= (x & 0x0000000000FF0000u) << 24u;
-	r |= (x & 0x000000000000FF00u) << 40u;
-	r |= (x & 0x00000000000000FFu) << 56u;
-	return r;
+	u64 retval = 0;
+	retval |= (x & 0xFF00000000000000u) >> 56u;
+	retval |= (x & 0x00FF000000000000u) >> 40u;
+	retval |= (x & 0x0000FF0000000000u) >> 24u;
+	retval |= (x & 0x000000FF00000000u) >>  8u;
+	retval |= (x & 0x00000000FF000000u) <<  8u;
+	retval |= (x & 0x0000000000FF0000u) << 24u;
+	retval |= (x & 0x000000000000FF00u) << 40u;
+	retval |= (x & 0x00000000000000FFu) << 56u;
+	return retval;
 #endif
 }
 

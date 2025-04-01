@@ -13,6 +13,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include <assert.h>
+#include <limits.h>	// INT_MIN
 #include <stddef.h>	// size_t
 
 #include "../bits.h"
@@ -22,24 +23,46 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-enum LibTTAr_RetVal {
-	// frame finished
-	LIBTTAr_RET_DONE	 =  0,
+// frame finished
+#define LIBTTAr_RET_DONE		 0
 
-	// frame not finished
-	LIBTTAr_RET_AGAIN	 =  1,
+// frame not finished
+#define LIBTTAr_RET_AGAIN		 1
 
-	// frame finished, but (nbytes_tta_total != nbytes_tta_perframe)
-	//||
-	// frame not finished, but (nbytes_tta_total > nbytes_tta_perframe)
-	LIBTTAr_RET_DECFAIL      =  2,
+// frame finished, but (nbytes_tta_total != nbytes_tta_perframe)
+//||
+// frame not finished, but (nbytes_tta_total > nbytes_tta_perframe)
+#define LIBTTAr_RET_DECFAIL		 2
 
-	// (ni32_target % nchan != 0) or other bad parameter
-	// used as the base value, can return greater values
-	LIBTTAr_RET_INVAL,
+// some misc value is 0 or a bad enum value
+#define LIBTTAr_RET_INVAL_RANGE		-1
 
-	// library was misconfigured; see libttaR_test_nchan
-	LIBTTAr_RET_MISCONFIG	 = -1
+// (ni32_target % nchan != 0)
+#define LIBTTAr_RET_INVAL_TRUNC		-2
+
+// some misc value would cause a bounds issue
+#define LIBTTAr_RET_INVAL_BOUNDS	-3
+
+// library was misconfigured; @see libttaR_test_nchan()
+#define LIBTTAr_RET_MISCONFIG	SCHAR_MIN
+
+enum LibTTAr_EncRetVal {
+	LIBTTAr_ERV_DONE		= LIBTTAr_RET_DONE,
+	LIBTTAr_ERV_AGAIN		= LIBTTAr_RET_AGAIN,
+	LIBTTAr_ERV_INVAL_RANGE		= LIBTTAr_RET_INVAL_RANGE,
+	LIBTTAr_ERV_INVAL_TRUNC		= LIBTTAr_RET_INVAL_TRUNC,
+	LIBTTAr_ERV_INVAL_BOUNDS	= LIBTTAr_RET_INVAL_BOUNDS,
+	LIBTTAr_ERV_MISCONFIG		= LIBTTAr_RET_MISCONFIG
+};
+
+enum LibTTAr_DecRetVal {
+	LIBTTAr_DRV_DONE		= LIBTTAr_RET_DONE,
+	LIBTTAr_DRV_AGAIN		= LIBTTAr_RET_AGAIN,
+	LIBTTAr_DRV_FAIL		= LIBTTAr_RET_DECFAIL,
+	LIBTTAr_DRV_INVAL_RANGE		= LIBTTAr_RET_INVAL_RANGE,
+	LIBTTAr_DRV_INVAL_TRUNC		= LIBTTAr_RET_INVAL_TRUNC,
+	LIBTTAr_DRV_INVAL_BOUNDS	= LIBTTAr_RET_INVAL_BOUNDS,
+	LIBTTAr_DRV_MISCONFIG		= LIBTTAr_RET_MISCONFIG
 };
 
 // max unary r/w size:		read		write
@@ -52,10 +75,17 @@ enum LibTTAr_RetVal {
 
 //////////////////////////////////////////////////////////////////////////////
 
-INLINE CONST size_t get_safety_margin(enum TTASampleBytes, uint) /*@*/;
-INLINE CONST bitcnt get_predict_k(enum TTASampleBytes) /*@*/;
-INLINE CONST i32 get_filter_round(enum TTASampleBytes) /*@*/;
-INLINE CONST bitcnt get_filter_k(enum TTASampleBytes) /*@*/;
+ALWAYS_INLINE CONST
+size_t get_safety_margin(enum LibTTAr_SampleBytes, uint) /*@*/;
+
+ALWAYS_INLINE CONST
+bitcnt get_predict_k(enum LibTTAr_SampleBytes) /*@*/;
+
+ALWAYS_INLINE CONST
+i32 get_filter_round(enum LibTTAr_SampleBytes) /*@*/;
+
+ALWAYS_INLINE CONST
+bitcnt get_filter_k(enum LibTTAr_SampleBytes) /*@*/;
 
 //--------------------------------------------------------------------------//
 
@@ -73,24 +103,24 @@ ALWAYS_INLINE CONST i32 tta_prefilter_dec(u32) /*@*/;
  * @brief safety margin for the TTA buffer
  *
  * @param samplebytes number of bytes per PCM sample
+ * @param nchan number of audio channels
  *
  * @return safety margin
 **/
-INLINE CONST size_t
-get_safety_margin(const enum TTASampleBytes samplebytes, const uint nchan)
+ALWAYS_INLINE CONST size_t
+get_safety_margin(
+	const enum LibTTAr_SampleBytes samplebytes, const uint nchan
+)
 /*@*/
 {
-	size_t r;
 	switch ( samplebytes ){
-	case TTASAMPLEBYTES_1:
-	case TTASAMPLEBYTES_2:
-		r = TTABUF_SAFETY_MARGIN_1_2;
-		break;
-	case TTASAMPLEBYTES_3:
-		r = TTABUF_SAFETY_MARGIN_3;
-		break;
+	case LIBTTAr_SAMPLEBYTES_1:
+	case LIBTTAr_SAMPLEBYTES_2:
+		return (size_t) (nchan * TTABUF_SAFETY_MARGIN_1_2);
+	case LIBTTAr_SAMPLEBYTES_3:
+		return (size_t) (nchan * TTABUF_SAFETY_MARGIN_3);
 	}
-	return (size_t) (r * nchan);
+	UNREACHABLE;
 }
 
 /**@fn get_predict_k
@@ -100,21 +130,18 @@ get_safety_margin(const enum TTASampleBytes samplebytes, const uint nchan)
  *
  * @return arg 'k' for tta_predict1
 **/
-INLINE CONST bitcnt
-get_predict_k(const enum TTASampleBytes samplebytes)
+ALWAYS_INLINE CONST bitcnt
+get_predict_k(const enum LibTTAr_SampleBytes samplebytes)
 /*@*/
 {
-	bitcnt r;
 	switch ( samplebytes ){
-	case TTASAMPLEBYTES_1:
-		r = (bitcnt) 4u;
-		break;
-	case TTASAMPLEBYTES_2:
-	case TTASAMPLEBYTES_3:
-		r = (bitcnt) 5u;
-		break;
+	case LIBTTAr_SAMPLEBYTES_2:
+	case LIBTTAr_SAMPLEBYTES_3:
+		return (bitcnt) 5u;
+	case LIBTTAr_SAMPLEBYTES_1:
+		return (bitcnt) 4u;
 	}
-	return r;
+	UNREACHABLE;
 }
 
 /**@fn get_filter_round
@@ -124,21 +151,18 @@ get_predict_k(const enum TTASampleBytes samplebytes)
  *
  * @return arg 'round' for tta_filter
 **/
-INLINE CONST i32
-get_filter_round(const enum TTASampleBytes samplebytes)
+ALWAYS_INLINE CONST i32
+get_filter_round(const enum LibTTAr_SampleBytes samplebytes)
 /*@*/
 {
-	i32 r;
 	switch ( samplebytes ){
-	case TTASAMPLEBYTES_1:
-	case TTASAMPLEBYTES_3:
-		r = (i32) 0x00000200;	// binexp32(filter_k - 1u)
-		break;
-	case TTASAMPLEBYTES_2:
-		r = (i32) 0x00000100;	// ~
-		break;
+	case LIBTTAr_SAMPLEBYTES_1:
+	case LIBTTAr_SAMPLEBYTES_3:
+		return (i32) 0x00000200;	// binexp32(filter_k - 1u)
+	case LIBTTAr_SAMPLEBYTES_2:
+		return (i32) 0x00000100;	// ~
 	}
-	return r;
+	UNREACHABLE;
 }
 
 /**@fn get_filter_k
@@ -148,24 +172,28 @@ get_filter_round(const enum TTASampleBytes samplebytes)
  *
  * @return arg 'k' for tta_filter
 **/
-INLINE CONST bitcnt
-get_filter_k(const enum TTASampleBytes samplebytes)
+ALWAYS_INLINE CONST bitcnt
+get_filter_k(const enum LibTTAr_SampleBytes samplebytes)
 /*@*/
 {
-	bitcnt r;
 	switch ( samplebytes ){
-	case TTASAMPLEBYTES_1:
-	case TTASAMPLEBYTES_3:
-		r = (bitcnt) 10u;
-		break;
-	case TTASAMPLEBYTES_2:
-		r = (bitcnt)  9u;
-		break;
+	case LIBTTAr_SAMPLEBYTES_1:
+	case LIBTTAr_SAMPLEBYTES_3:
+		return (bitcnt) 10u;
+	case LIBTTAr_SAMPLEBYTES_2:
+		return (bitcnt)  9u;
 	}
-	return r;
+	UNREACHABLE;
 }
 
 //==========================================================================//
+
+// checks if the targeted arch has an signed (arithmetic) right shift
+#define HAS_ASR(Xtype)	( \
+	/*@-shiftimplementation@*/ \
+	(Xtype) (((Xtype) UINTMAX_MAX) >> 1u) == (Xtype) UINTMAX_MAX \
+	/*@=shiftimplementation@*/ \
+)
 
 /**@fn asr32
  * @brief arithmetic shift right 32-bit

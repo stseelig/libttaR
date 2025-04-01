@@ -7,7 +7,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023, Shane Seelig                                         //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -57,6 +57,10 @@ typedef int	sem_t;
 
 #ifndef UINT64_MAX
 #define UINT64_MAX	((uint64_t) 0xFFFFFFFFFFFFFFFFu)
+#endif
+
+#ifndef UINTMAX_MAX
+#define UINTMAX_MAX	((uintmax_t) 0xFFFFFFFFFFFFFFFFu)
 #endif
 
 #ifndef SIZE_MAX

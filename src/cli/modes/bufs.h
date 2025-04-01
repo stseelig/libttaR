@@ -6,7 +6,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2024, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -47,7 +47,7 @@ struct CodecBuf {
 #undef eb
 extern void encbuf_init(
 	/*@out@*/ struct EncBuf *const restrict eb, size_t, size_t, uint,
-	enum TTASampleBytes, enum CodecBufMode
+	enum LibTTAr_SampleBytes, enum CodecBufMode
 )
 /*@globals	fileSystem,
 		internalState
@@ -79,7 +79,7 @@ extern HOT void encbuf_adjust(struct EncBuf *const restrict eb, size_t, uint)
 #undef db
 extern void decbuf_init(
 	/*@out@*/ struct DecBuf *const restrict db, size_t, size_t, uint,
-	enum TTASampleBytes, enum CodecBufMode
+	enum LibTTAr_SampleBytes, enum CodecBufMode
 )
 /*@globals	fileSystem,
 		internalState
@@ -96,7 +96,8 @@ extern void decbuf_init(
 
 #undef db
 extern HOT void decbuf_check_adjust(
-	struct DecBuf *const restrict db, size_t, uint, enum TTASampleBytes
+	struct DecBuf *const restrict db, size_t, uint,
+	enum LibTTAr_SampleBytes
 )
 /*@globals	fileSystem,
 		internalState

@@ -6,7 +6,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2024, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -86,11 +86,11 @@ struct FileStats {
 	size_t			framelen;	// nsamples_peridealframe
 	size_t			buflen;		// framelen * nchan
 	size_t			nsamples_enc;	// for decode
-	enum EncFormat		encfmt:8u;
-	enum DecFormat		decfmt:8u;
-	enum IntType		inttype:8u;
-	enum Endian		endian:8u;
-	enum TTASampleBytes	samplebytes;
+	enum EncFormat		encfmt  : 8u;
+	enum DecFormat		decfmt  : 8u;
+	enum IntType		inttype : 8u;
+	enum Endian		endian  : 8u;
+	enum LibTTAr_SampleBytes	samplebytes;
 	u16			samplebits;
 	u16			nchan;
 	u32			samplerate;
@@ -159,6 +159,8 @@ extern enum FileCheck filecheck_tta1(
 //--------------------------------------------------------------------------//
 
 // tta_seek.c
+
+extern CONST size_t seektable_nframes(size_t, size_t, uint) /*@*/;
 
 #undef st
 extern void seektable_init(/*@out@*/ struct SeekTable *restrict st, size_t)

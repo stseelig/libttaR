@@ -7,7 +7,7 @@
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // Copyright (C) 2007, Aleksander Djuric                                    //
-// Copyright (C) 2023-2024, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -56,6 +56,8 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
+#ifndef S_SPLINT_S
+
 #undef filter
 #undef value
 #undef round
@@ -84,12 +86,7 @@ tta_filter_enc(
 /**@fn tta_filter_dec
  * @brief adaptive decoding filter
  *
- * @param filter[in out] the filter data for the current channel
- * @param value the input value to filter
- * @param round the intial filter sum
- * @param k amount to shift the sum by before adding to 'value'
- *
- * @return the filtered value
+ * @see tta_filter_enc()
 **/
 ALWAYS_INLINE i32
 tta_filter_dec(
@@ -97,6 +94,8 @@ tta_filter_dec(
 )
 /*@modifies	*filter@*/
 ;
+
+#endif	// S_SPLINT_S
 
 // EOF ///////////////////////////////////////////////////////////////////////
 #endif

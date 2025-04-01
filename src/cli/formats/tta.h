@@ -6,7 +6,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2024, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -21,18 +21,6 @@
 #include "wav.h"		// WAV_FORMAT_PCM
 
 //////////////////////////////////////////////////////////////////////////////
-
-#ifndef LIBTTAr_H
-enum TTASampleBytes {
-	TTASAMPLEBYTES_1 = 1u,
-	TTASAMPLEBYTES_2 = 2u,
-	TTASAMPLEBYTES_3 = 3u
-};
-#define TTA_SAMPLEBYTES_MAX	((uint) TTASAMPLEBYTES_3)
-#define TTA_SAMPLEBITS_MAX	((uint) (8u*TTA_SAMPLEBYTES_MAX))
-
-#define TTA_FRAME_TIME		((double) 1.04489795918367346939)
-#endif
 
 #define TTA1_PREAMBLE		((char[]) {'T','T','A','1'})
 #define TTA2_PREAMBLE		((char[]) {'T','T','A','2'})

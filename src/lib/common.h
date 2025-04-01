@@ -20,7 +20,6 @@
 
 #include <limits.h>
 #include <stddef.h>	// size_t
-#include <string.h>	// memmove, memset
 
 #include "../bits.h"
 
@@ -28,28 +27,19 @@
 
 #ifdef LIBTTAr_OPT_SLOW_CPU
 
-#define LIBTTAr_OPT_NO_FAT_RICE_ENCODER
 #define LIBTTAr_OPT_NO_NATIVE_TZCNT
-#define LIBTTAr_OPT_ONLY_NECESSARY_FAST_TYPES
+#define LIBTTAr_OPT_FEWER_FAST_TYPES
 #define LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES
 #define LIBTTAr_OPT_PREFER_LOOKUP_TABLES
 
 #else // ! defined(LIBTTAr_OPT_SLOW_CPU)
 
-//#define LIBTTAr_OPT_NO_FAT_RICE_ENCODER
 //#define LIBTTAr_OPT_NO_NATIVE_TZCNT
-//#define LIBTTAr_OPT_ONLY_NECESSARY_FAST_TYPES
+//#define LIBTTAr_OPT_FEWER_FAST_TYPES
 //#define LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES
 //#define LIBTTAr_OPT_PREFER_LOOKUP_TABLES
 
 #endif // LIBTTAr_OPT_SLOW_CPU
-
-//--------------------------------------------------------------------------//
-
-// this tested much slower even when NO_FAT_RICE_ENCODER was faster
-//   - Intel Celeron N2830, clang 11
-
-//#define LIBTTAr_OPT_NO_FAT_RICE_DECODER;
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -118,6 +108,7 @@
 #else
 // gcc will not reach here, even though it does not have a builtin memmove
 #pragma message "compiler does not have a builtin 'memmove'"
+#include <string.h>
 #define MEMMOVE(dest, src, n)	((void) memmove((dest), (src), (n)))
 #endif
 
@@ -127,24 +118,26 @@
 #define MEMSET(s, c, n)		BUILTIN_MEMSET((s), (c), (n))
 #else
 #pragma message "compiler does not have a builtin 'memset'"
+#include <string.h>
 #define MEMSET(s, c, n)		memset((s), (c), (n))
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
 
-enum TTASampleBytes {
-	TTASAMPLEBYTES_1 = 1u,
-	TTASAMPLEBYTES_2 = 2u,
-	TTASAMPLEBYTES_3 = 3u
+enum LibTTAr_SampleBytes {
+	LIBTTAr_SAMPLEBYTES_1	= 1u,
+	LIBTTAr_SAMPLEBYTES_2	= 2u,
+	LIBTTAr_SAMPLEBYTES_3	= 3u
 };
-#define TTA_SAMPLEBYTES_MAX	((uint) TTASAMPLEBYTES_3)
-#define TTA_SAMPLEBITS_MAX	((uint) (8u * TTA_SAMPLEBYTES_MAX))
+#define LIBTTAr_SAMPLEBYTES_MAX	((uint) LIBTTAr_SAMPLEBYTES_3)
+#define LIBTTAr_SAMPLEBITS_MAX	((uint) (8u * LIBTTAr_SAMPLEBYTES_MAX))
 
 //////////////////////////////////////////////////////////////////////////////
 
-// fast types specifically tuned for the AMD Ryzen 7 1700 & clang 11
-#ifndef LIBTTAr_OPT_ONLY_NECESSARY_FAST_TYPES
-typedef u8f		bitcnt;
+// fast types specifically tuned for:
+#ifndef LIBTTAr_OPT_FEWER_FAST_TYPES
+//	- AMD Ryzen 7 1700   , clang 11
+typedef  u8f		bitcnt;
 typedef u32		rice24_enc;
 typedef u32f		rice24_dec;
 typedef u32		crc32_enc;
@@ -153,8 +146,9 @@ typedef u32f		cache32;
 typedef u64f		cache64;
 typedef rice24_enc	bitcnt_enc;
 typedef bitcnt		bitcnt_dec;
-#else // defined(LIBTTAr_OPT_ONLY_NECESSARY_FAST_TYPES)
-typedef u8		bitcnt;
+#else
+//	- Intel Celeron N2830, clang 14
+typedef  u8f		bitcnt;
 typedef u32		rice24_enc;
 typedef u32		rice24_dec;
 typedef u32		crc32_enc;
@@ -163,7 +157,7 @@ typedef u32		cache32;
 typedef u64f		cache64;
 typedef rice24_enc	bitcnt_enc;
 typedef bitcnt		bitcnt_dec;
-#endif // LIBTTAr_OPT_ONLY_NECESSARY_FAST_TYPES
+#endif	// LIBTTAr_OPT_ONLY_NECESSARY_FAST_TYPES
 
 //==========================================================================//
 
@@ -220,46 +214,54 @@ struct LibTTAr_CodecState_User {
 	size_t	nbytes_tta_total;	// ~
 };
 
+struct LibTTAr_EncMisc {
+	size_t				dest_len;
+	size_t				src_len;
+	size_t				ni32_target;
+	size_t				ni32_perframe;
+	enum LibTTAr_SampleBytes	samplebytes;
+	uint				nchan;
+};
+
+struct LibTTAr_DecMisc {
+	size_t				dest_len;
+	size_t				src_len;
+	size_t				ni32_target;
+	size_t				nbytes_tta_target;
+	size_t				ni32_perframe;
+	size_t				nbytes_tta_perframe;
+	enum LibTTAr_SampleBytes	samplebytes;
+	uint				nchan;
+};
+
 //////////////////////////////////////////////////////////////////////////////
 
 #undef priv
-INLINE void state_priv_init_enc(
-	/*@out@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
-	const uint
+ALWAYS_INLINE void state_priv_init_enc(
+	/*@out@*/ struct LibTTAr_CodecState_Priv *restrict priv, uint
 )
 /*@modifies	*priv@*/
 ;
 
 #undef priv
-INLINE void state_priv_init_dec(
-	/*@out@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
-	const uint
+ALWAYS_INLINE void state_priv_init_dec(
+	/*@out@*/ struct LibTTAr_CodecState_Priv *restrict priv, uint
 )
 /*@modifies	*priv@*/
 ;
 
 #undef codec
-INLINE void codec_init_enc(
-	/*@out@*/ struct Codec *const restrict codec, const uint
+ALWAYS_INLINE void codec_init_enc(
+	/*@out@*/ struct Codec *restrict codec, uint
 )
 /*@modifies	*codec@*/
 ;
 
 #undef codec
-INLINE void codec_init_dec(
-	/*@out@*/ struct Codec *const restrict codec, const uint
+ALWAYS_INLINE void codec_init_dec(
+	/*@out@*/ struct Codec *restrict codec, uint
 )
 /*@modifies	*codec@*/
-;
-
-#undef rice
-INLINE void rice_init_enc(/*@out@*/ struct Rice_Enc *const restrict rice)
-/*@modifies	*rice@*/
-;
-
-#undef rice
-INLINE void rice_init_dec(/*@out@*/ struct Rice_Dec *const restrict rice)
-/*@modifies	*rice@*/
 ;
 
 //////////////////////////////////////////////////////////////////////////////
@@ -270,7 +272,7 @@ INLINE void rice_init_dec(/*@out@*/ struct Rice_Dec *const restrict rice)
  * @param priv[out] the private state struct
  * @param nchan number of audio channels
 **/
-INLINE void
+ALWAYS_INLINE void
 state_priv_init_enc(
 	/*@out@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
 	const uint nchan
@@ -285,10 +287,9 @@ state_priv_init_enc(
 /**@fn state_priv_init_dec
  * @brief initializes a private state struct; decode version
  *
- * @param priv[out] the private state struct
- * @param nchan number of audio channels
+ * @see state_priv_init_enc()
 **/
-INLINE void
+ALWAYS_INLINE void
 state_priv_init_dec(
 	/*@out@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
 	const uint nchan
@@ -302,13 +303,27 @@ state_priv_init_dec(
 
 //--------------------------------------------------------------------------//
 
+#define RICE_INIT_ENC	((struct Rice_Enc) { \
+	{/* binexp32p4((bitcnt) 10u) */ \
+	 (u32) 0x00004000u, (u32) 0x00004000u \
+	}, \
+	{(bitcnt_enc) 10u, (bitcnt_enc) 10u} \
+})
+
+#define RICE_INIT_DEC	((struct Rice_Dec) { \
+	{/* binexp32p4((bitcnt) 10u) */ \
+	 (u32) 0x00004000u, (u32) 0x00004000u \
+	}, \
+	{(bitcnt_dec) 10u, (bitcnt_dec) 10u} \
+})
+
 /**@fn codec_init_enc
  * @brief initializes an array of 'struct Codec'; encode version
  *
  * @param codec[out] the struct array to initialize
  * @param nchan number of audio channels
 **/
-INLINE void
+ALWAYS_INLINE void
 codec_init_enc(
 	/*@out@*/ struct Codec *const restrict codec, const uint nchan
 )
@@ -317,8 +332,8 @@ codec_init_enc(
 	uint i;
 	for ( i = 0; i < nchan; ++i ){
 		MEMSET(&codec[i].filter, 0x00, sizeof codec[i].filter);
-		rice_init_enc(&codec[i].rice.enc);
-		codec[i].prev = 0;
+		codec[i].rice.enc = RICE_INIT_ENC;
+		codec[i].prev     = 0;
 	}
 	return;
 }
@@ -326,10 +341,9 @@ codec_init_enc(
 /**@fn codec_init_dec
  * @brief initializes an array of 'struct Codec'; decode version
  *
- * @param codec[out] the struct array to initialize
- * @param nchan number of audio channels
+ * @see codec_init_enc()
 **/
-INLINE void
+ALWAYS_INLINE void
 codec_init_dec(
 	/*@out@*/ struct Codec *const restrict codec, const uint nchan
 )
@@ -338,41 +352,9 @@ codec_init_dec(
 	uint i;
 	for ( i = 0; i < nchan; ++i ){
 		MEMSET(&codec[i].filter, 0x00, sizeof codec[i].filter);
-		rice_init_dec(&codec[i].rice.dec);
-		codec[i].prev = 0;
+		codec[i].rice.dec = RICE_INIT_DEC;
+		codec[i].prev     = 0;
 	}
-	return;
-}
-
-/**@fn rice_init
- * @brief initializes a 'struct Rice'; encode version
- *
- * @param rice[out] struct to initialize
-**/
-INLINE void
-rice_init_enc(/*@out@*/ struct Rice_Enc *const restrict rice)
-/*@modifies	*rice@*/
-{
-	rice->sum[0u] = (u32) 0x00004000u;	// binexp32p4((bitcnt) 10u)
-	rice->sum[1u] = (u32) 0x00004000u;	// ~
-	rice->k[0u]   = (bitcnt_enc) 10u;
-	rice->k[1u]   = (bitcnt_enc) 10u;
-	return;
-}
-
-/**@fn rice_init
- * @brief initializes a 'struct Rice'; decode version
- *
- * @param rice[out] struct to initialize
-**/
-INLINE void
-rice_init_dec(/*@out@*/ struct Rice_Dec *const restrict rice)
-/*@modifies	*rice@*/
-{
-	rice->sum[0u] = (u32) 0x00004000u;	// binexp32p4((bitcnt) 10u)
-	rice->sum[1u] = (u32) 0x00004000u;	// ~
-	rice->k[0u]   = (bitcnt_dec) 10u;
-	rice->k[1u]   = (bitcnt_dec) 10u;
 	return;
 }
 

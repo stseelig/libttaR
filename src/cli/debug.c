@@ -57,10 +57,7 @@ inc_nwarnings(void)
 /*@globals	g_nwarnings@*/
 /*@modifies	g_nwarnings@*/
 {
-	if ( g_nwarnings < UINT8_MAX ){
-		++g_nwarnings;
-	}
-	return (int) g_nwarnings;
+	return (int) (g_nwarnings += (u8) (g_nwarnings < UINT8_MAX));
 }
 
 //==========================================================================//
@@ -132,7 +129,7 @@ print_error_sys(
 @*/
 {
 	char buf[128u];
-	union {	int d; } t;
+	int  nwarnings;
 
 	file_lock(stdout);
 	file_lock(stderr);
@@ -149,9 +146,9 @@ print_error_sys(
 	file_unlock(stdout);
 	file_unlock(stderr);
 
-	t.d = inc_nwarnings();
+	nwarnings = inc_nwarnings();
 	if ( fatality == FATAL ){
-		exit(t.d);
+		exit(nwarnings);
 	}
 	else {	return; }
 }
@@ -223,7 +220,7 @@ print_error_tta(
 		args
 @*/
 {
-	union {	int d; } t;
+	int nwarnings;
 
 	file_lock(stdout);
 	file_lock(stderr);
@@ -236,9 +233,9 @@ print_error_tta(
 	file_unlock(stdout);
 	file_unlock(stderr);
 
-	t.d = inc_nwarnings();
+	nwarnings = inc_nwarnings();
 	if ( fatality == FATAL ){
-		exit(t.d);
+		exit(nwarnings);
 	}
 	else {	return;	}
 }

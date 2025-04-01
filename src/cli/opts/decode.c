@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2024, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -137,22 +137,25 @@ opt_decode_format(
 		**argv
 @*/
 {
-	int r;
+	int retval = 0;
 	/*@observer@*/
 	const char *const decfmt_name[] = DECFMT_NAME_ARRAY;
 	char *const opt = &argv[optind0][optind1];
-	char *subopt;
+	char *subopt    = NULL;
 	uint i;
 
 	switch ( mode ){
+	default:
+		assert(false);
+		break;
 	case OPTMODE_SHORT:
 		if ( opt[1u] == '\0' ){
 			optsget_argcheck(optind0, argc, 1u, opt);
 			subopt = argv[optind0 + 1u];
-			r = -1;
+			retval = -1;
 		}
 		else {	subopt = &opt[1u];
-			r = (int) strlen(subopt);
+			retval = (int) strlen(subopt);
 		}
 		break;
 	case OPTMODE_LONG:
@@ -161,7 +164,7 @@ opt_decode_format(
 		if UNLIKELY ( subopt == NULL ){
 			error_tta("%s: missing argument", "--format");
 		}
-		r = 0;
+		retval = 0;
 		break;
 	}
 	assert(subopt != NULL);
@@ -179,7 +182,7 @@ opt_decode_format(
 		} else{;}
 	}
 
-	return r;
+	return retval;
 }
 
 /**@fn opt_decode_help

@@ -6,7 +6,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2024, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -18,7 +18,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 /*@only@*/ /*@out@*/
-HOT void *malloc_check(size_t size)
+extern HOT void *malloc_check(size_t size)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -28,7 +28,7 @@ HOT void *malloc_check(size_t size)
 ;
 
 /*@only@*/ /*@in@*/
-HOT void *calloc_check(size_t nmemb, size_t size)
+extern HOT void *calloc_check(size_t nmemb, size_t size)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -38,7 +38,7 @@ HOT void *calloc_check(size_t nmemb, size_t size)
 ;
 
 /*@only@*/ /*@partial@*/
-HOT void *realloc_check(
+extern HOT void *realloc_check(
 	/*@only@*/ /*@null@*/ /*@out@*/ void *ptr, size_t size
 )
 /*@globals	fileSystem,

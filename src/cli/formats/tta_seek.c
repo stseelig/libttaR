@@ -26,6 +26,33 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
+/**@fn seektable_nframes
+ * @brief calculates the number of frames in a seektable
+ *
+ * @param decpcm_size size of the raw PCM
+ * @param buflen (framelen * nchan)
+ * @param samplebytes bytes per PCM sample
+ *
+ * @pre (samplebytes != 0) && (decpcm_size != 0) && (buflen != 0)
+ *
+ * @return the number of frames
+**/
+CONST size_t
+seektable_nframes(
+	const size_t decpcm_size, const size_t buflen, const uint samplebytes
+)
+/*@*/
+{
+	size_t retval;
+
+	assert((samplebytes != 0) && (decpcm_size != 0) && (buflen != 0));
+
+	retval  = (decpcm_size + buflen) / buflen;
+	retval += samplebytes - 1u;
+	retval /= samplebytes;
+	return retval;
+}
+
 /**@fn seektable_init
  * @brief initializes a seektable
  *
@@ -87,7 +114,7 @@ seektable_add(
 		);
 	}
 	st->table[st->nmemb] = htole32((u32) value);
-	++st->nmemb;
+	st->nmemb           += 1u;
 	return;
 }
 
