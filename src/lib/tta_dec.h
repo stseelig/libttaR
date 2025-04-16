@@ -32,7 +32,7 @@
 	const size_t ni32_perframe       = misc->ni32_perframe; \
 	const size_t nbytes_tta_perframe = misc->nbytes_tta_perframe; \
 	const enum LibTTAr_SampleBytes samplebytes = misc->samplebytes; \
-	UNUSED const uint              nchan       = (Xnchan); \
+	const uint                     nchan       = (Xnchan); \
 	\
 	enum LibTTAr_DecRetVal retval = LIBTTAr_DRV_AGAIN; \
 	size_t nbytes_dec; \
@@ -60,7 +60,7 @@
 	TTADEC_PARAMS_BASE((Xnchan))
 #endif	// NDEBUG
 
-#define TTADEC_PARAMCHECKS(Xnchan) { \
+#define TTADEC_PARAMCHECKS { \
 	/* @see TTAENC_PARAMCHECKS */ \
 	if ( (dest_len == 0) || (src_len == 0) \
 	    || \
@@ -68,7 +68,7 @@
 	    || \
 	     (ni32_perframe == 0) || (nbytes_tta_perframe == 0) \
 	    || \
-	     ((Xnchan) == 0) \
+	     (nchan == 0) \
 	){ \
 		return LIBTTAr_DRV_INVAL_RANGE; \
 	} \
@@ -78,7 +78,7 @@
 	){ \
 		return LIBTTAr_DRV_INVAL_RANGE; \
 	} \
-	if ( ni32_target % (Xnchan) != 0 ){ \
+	if ( ni32_target % nchan != 0 ){ \
 		return LIBTTAr_DRV_INVAL_TRUNC; \
 	} \
 	if ( (ni32_target > dest_len) \
@@ -98,17 +98,17 @@
 	} \
 }
 
-#define TTADEC_LOOP_ARGS_BASE(Xnchan) \
+#define TTADEC_LOOP_ARGS_BASE \
 	dest, src, &user->crc, &user->ni32, &priv->bitcache.dec,  \
 	priv->codec, predict_k, filter_round, filter_k, unary_lax_limit,  \
 	nchan, ni32_target, read_soft_limit
 
 #ifndef NDEBUG
-#define TTADEC_LOOP_ARGS(Xnchan) \
-		TTADEC_LOOP_ARGS_BASE((Xnchan)), rice_dec_max
+#define TTADEC_LOOP_ARGS \
+		TTADEC_LOOP_ARGS_BASE, rice_dec_max
 #else
-#define TTADEC_LOOP_ARGS(Xnchan) \
-		TTADEC_LOOP_ARGS_BASE((Xnchan))
+#define TTADEC_LOOP_ARGS \
+		TTADEC_LOOP_ARGS_BASE
 #endif	// NDEBUG
 
 #define TTADEC_POSTLOOP { \

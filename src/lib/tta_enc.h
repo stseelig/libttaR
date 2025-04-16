@@ -30,7 +30,7 @@
 	const size_t ni32_target   = misc->ni32_target; \
 	const size_t ni32_perframe = misc->ni32_perframe; \
 	const enum LibTTAr_SampleBytes samplebytes = misc->samplebytes; \
-	UNUSED const uint              nchan       = (Xnchan); \
+	const uint                     nchan       = (Xnchan); \
 	\
 	enum LibTTAr_EncRetVal retval = LIBTTAr_ERV_AGAIN; \
 	size_t nbytes_enc; \
@@ -42,7 +42,7 @@
 		get_filter_k(samplebytes) \
 	); \
 	const size_t safety_margin    = ( \
-		get_safety_margin(samplebytes, (Xnchan)) \
+		get_safety_margin(samplebytes, nchan) \
 	); \
 	const size_t write_soft_limit = dest_len - safety_margin;
 
@@ -55,14 +55,14 @@
 	TTAENC_PARAMS_BASE((Xnchan))
 #endif	// NDEBUG
 
-#define TTAENC_PARAMCHECKS(Xnchan) { \
+#define TTAENC_PARAMCHECKS { \
 	/* having these checks makes it faster, and the order and    */ \
 	/*   different return values matter. not completely sure why */ \
 	if ( (dest_len == 0) || (src_len == 0) \
 	    || \
 	     (ni32_target == 0) || (ni32_perframe == 0) \
 	    || \
-	     ((Xnchan) == 0) \
+	     (nchan == 0) \
 	){ \
 		return LIBTTAr_ERV_INVAL_RANGE; \
 	} \
@@ -72,7 +72,7 @@
 	){ \
 		return LIBTTAr_ERV_INVAL_RANGE; \
 	} \
-	if ( ni32_target % (Xnchan) != 0 ){ \
+	if ( ni32_target % nchan != 0 ){ \
 		return LIBTTAr_ERV_INVAL_TRUNC; \
 	} \
 	if ( dest_len < safety_margin ){ \
@@ -86,17 +86,17 @@
 	} \
 }
 
-#define TTAENC_LOOP_ARGS_BASE(Xnchan) \
+#define TTAENC_LOOP_ARGS_BASE \
 	dest, src, &user->crc, &user->ni32, &priv->bitcache.enc, \
-	priv->codec, predict_k, filter_round, filter_k, (Xnchan), \
+	priv->codec, predict_k, filter_round, filter_k, nchan, \
 	ni32_target, write_soft_limit
 
 #ifndef NDEBUG
-#define TTAENC_LOOP_ARGS(Xnchan) \
-		TTAENC_LOOP_ARGS_BASE((Xnchan)), rice_enc_max
+#define TTAENC_LOOP_ARGS \
+		TTAENC_LOOP_ARGS_BASE, rice_enc_max
 #else
-#define TTAENC_LOOP_ARGS(Xnchan) \
-		TTAENC_LOOP_ARGS_BASE((Xnchan))
+#define TTAENC_LOOP_ARGS \
+		TTAENC_LOOP_ARGS_BASE
 #endif	// NDEBUG
 
 #define TTAENC_POSTLOOP { \

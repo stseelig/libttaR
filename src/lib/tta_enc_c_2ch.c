@@ -67,9 +67,9 @@ tta_encode_2ch(
 {
 	TTAENC_PARAMS(2u);
 
-	TTAENC_PARAMCHECKS(2u);
+	TTAENC_PARAMCHECKS;
 
-	nbytes_enc = tta_encode_2ch_loop(TTAENC_LOOP_ARGS(2u));
+	nbytes_enc = tta_encode_2ch_loop(TTAENC_LOOP_ARGS);
 
 	TTAENC_POSTLOOP;
 	return retval;

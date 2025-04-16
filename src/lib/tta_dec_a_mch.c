@@ -67,9 +67,9 @@ tta_decode_mch(
 {
 	TTADEC_PARAMS(misc->nchan);
 
-	TTADEC_PARAMCHECKS(nchan);
+	TTADEC_PARAMCHECKS;
 
-	nbytes_dec = tta_decode_mch_loop(TTADEC_LOOP_ARGS(nchan));
+	nbytes_dec = tta_decode_mch_loop(TTADEC_LOOP_ARGS);
 
 	TTADEC_POSTLOOP;
 	return retval;

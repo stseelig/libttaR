@@ -67,9 +67,9 @@ tta_decode_2ch(
 {
 	TTADEC_PARAMS(2u);
 
-	TTADEC_PARAMCHECKS(2u);
+	TTADEC_PARAMCHECKS;
 
-	nbytes_dec = tta_decode_2ch_loop(TTADEC_LOOP_ARGS(2u));
+	nbytes_dec = tta_decode_2ch_loop(TTADEC_LOOP_ARGS);
 
 	TTADEC_POSTLOOP;
 	return retval;
