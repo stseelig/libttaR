@@ -1,7 +1,7 @@
 .\" t
 .\"     Title: libttaR_tta_encode
 .\"    Author: Shane Seelig
-.\"      Date: 2025-04-01
+.\"      Date: 2025-04-25
 .\"    Source: libttaR 2.0
 .\"  Language: English
 .\"
@@ -282,6 +282,11 @@ could get the decoder to read the "correct" number of bytes.
 \fBLIBTTAr_ERV_INVAL_RANGE\fR, \fBLIBTTAr_DRV_INVAL_RANGE\fR
 .RS 8
 Some \fImisc\fR value is 0 or a bad enum value.
+
+The source code allows the compiler to consider a bad enum value
+to be undefined behavior.
+A cute compiler could cause funny things to happen in such a situation,
+but an error will likely just be returned instead.
 .RE
 
 \fBLIBTTAr_ERV_INVAL_TRUNC\fR, \fBLIBTTAr_DRV_INVAL_TRUNC\fR
