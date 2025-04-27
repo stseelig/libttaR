@@ -10,6 +10,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
+#include <assert.h>
 #include <stddef.h>
 
 #include "../bits.h"
@@ -74,6 +75,8 @@ CONST int
 libttaR_test_nchan(const uint nchan)
 /*@*/
 {
+	assert(nchan != 0);
+
 	int retval = 0;
 	switch ( nchan ){
 #ifndef LIBTTAr_OPT_DISABLE_MCH
@@ -114,7 +117,9 @@ CONST size_t
 libttaR_nsamples_perframe_tta1(const size_t samplerate)
 /*@*/
 {
-	return (256u * samplerate) / 245u;
+	assert(samplerate != 0);
+
+	return (size_t) ((256u * samplerate) / 245u);
 }
 
 /**@fn libttaR_ttabuf_safety_margin_size
@@ -135,6 +140,9 @@ libttaR_ttabuf_safety_margin(
 )
 /*@*/
 {
+	SAMPLEBYTES_RANGE_ASSERT(samplebytes);
+	assert(nchan != 0);
+
 	if ( ((uint) samplebytes == 0)
 	    ||
 	     ((uint) samplebytes > LIBTTAr_SAMPLEBYTES_MAX)
@@ -159,6 +167,8 @@ CONST size_t
 libttaR_codecstate_priv_size(const uint nchan)
 /*@*/
 {
+	assert(nchan != 0);
+
 	if ( nchan == 0 ){
 		return 0;
 	}
@@ -194,6 +204,8 @@ libttaR_crc32(const u8 *const restrict buf, const size_t size)
 {
 	u32 crc = CRC32_INIT;
 	size_t i;
+
+	assert(size != 0);
 
 	for ( i = 0; i < size; ++i ){
 		crc = crc32_cont(buf[i], crc);

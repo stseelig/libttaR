@@ -10,6 +10,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
+#include <assert.h>
 #include <stddef.h>	// size_t
 
 #include "../bits.h"
@@ -42,6 +43,9 @@ pcm_write_i24le(
 /*@modifies	*dest@*/
 {
 	size_t i, j;
+
+	assert(nsamples != 0);
+
 	for ( i = 0, j = 0; i < nsamples; ++i, j += 3u ){
 		write_i32h_to_i24le(&dest[j], src[i]);
 	}

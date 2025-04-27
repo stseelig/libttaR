@@ -10,6 +10,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
+#include <assert.h>
 #include <stddef.h>	// size_t
 
 #include "../bits.h"
@@ -39,6 +40,9 @@ pcm_read_i16le(
 /*@modifies	*dest@*/
 {
 	size_t i, j;
+
+	assert(nsamples != 0);
+
 	for ( i = 0, j = 0; i < nsamples; ++i, j += 2u ){
 		dest[i] = read_i16le_to_i32h(&src[j]);
 	}

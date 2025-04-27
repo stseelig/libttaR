@@ -18,6 +18,7 @@
 
 /* ------------------------------------------------------------------------ */
 
+#include <assert.h>
 #include <limits.h>
 #include <stddef.h>	// size_t
 
@@ -132,6 +133,13 @@ enum LibTTAr_SampleBytes {
 #define LIBTTAr_SAMPLEBYTES_MAX	((uint) LIBTTAr_SAMPLEBYTES_3)
 #define LIBTTAr_SAMPLEBITS_MAX	((uint) (8u * LIBTTAr_SAMPLEBYTES_MAX))
 
+#define SAMPLEBYTES_RANGE_ASSERT(Xsamplebytes) { \
+	assert(((Xsamplebytes) >= LIBTTAr_SAMPLEBYTES_1) \
+	      && \
+	       ((Xsamplebytes) <= LIBTTAr_SAMPLEBYTES_3) \
+	); \
+}
+
 //////////////////////////////////////////////////////////////////////////////
 
 // fast types specifically tuned for:
@@ -199,6 +207,7 @@ struct ALIGNED(16u) Codec {	// alignment necessary for intrinsics (filter)
 	union Rice	rice;
 	i32		prev;
 };
+#define STRUCT_CODEC_ALIGNMENT		16u
 
 struct LibTTAr_CodecState_Priv {
 	union BitCache	bitcache;

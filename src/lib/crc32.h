@@ -30,6 +30,15 @@ extern HIDDEN const u32 crc32_table[256u];
 
 //////////////////////////////////////////////////////////////////////////////
 
+// having the variable instead of just having a one line return is important.
+//   otherwise it does (on x86) a xor against memory, which can be much slower
+//   (I think it has to do with dependency chains and pipelining). probably a
+//   compiler bug.
+#define CRC32_CONT_BODY(Xtype) { \
+	register const u32 lookup = crc32_table[((u8) crc) ^ x]; \
+	return (Xtype) ((crc >> 8u) ^ lookup); \
+}
+
 /**@fn crc32_cont
  * @brief continue a CRC calculation
  *
@@ -42,12 +51,7 @@ ALWAYS_INLINE CONST u32
 crc32_cont(const u8 x, const u32 crc)
 /*@*/
 {
-	// having the variable instead of just having a one line return is
-	//   important. otherwise it does (on x86) a xor against memory, which
-	//   can be much slower (I think it has to do with dependency chains
-	//   and pipelining). probably a compiler bug.
-	register const u32 lookup = crc32_table[((u8) crc) ^ x];
-	return (u32) ((crc >> 8u) ^ lookup);
+	CRC32_CONT_BODY(u32);
 }
 
 /**@fn crc32_cont_enc
@@ -59,9 +63,7 @@ ALWAYS_INLINE CONST crc32_enc
 crc32_cont_enc(const u8 x, const crc32_enc crc)
 /*@*/
 {
-	// see comment in crc32_cont()
-	register const u32 lookup = crc32_table[((u8) crc) ^ x];
-	return (crc32_enc) ((crc >> 8u) ^ lookup);
+	CRC32_CONT_BODY(crc32_enc);
 }
 
 /**@fn crc32_cont_dec
@@ -73,9 +75,7 @@ ALWAYS_INLINE CONST crc32_dec
 crc32_cont_dec(const u8 x, const crc32_dec crc)
 /*@*/
 {
-	// see comment in crc32_cont()
-	register const u32 lookup = crc32_table[((u8) crc) ^ x];
-	return (crc32_dec) ((crc >> 8u) ^ lookup);
+	CRC32_CONT_BODY(crc32_dec);
 }
 
 // EOF ///////////////////////////////////////////////////////////////////////

@@ -99,6 +99,14 @@ ALWAYS_INLINE CONST i32 tta_prefilter_dec(u32) /*@*/;
 
 //////////////////////////////////////////////////////////////////////////////
 
+// undefined behavior assertions for the codec functions
+#define CODEC_UB_ASSERTS_PRE { \
+	assert(((uintptr_t) &priv->codec) % STRUCT_CODEC_ALIGNMENT == 0); \
+	SAMPLEBYTES_RANGE_ASSERT(misc->samplebytes); \
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
 /**@fn get_safety_margin
  * @brief safety margin for the TTA buffer
  *
@@ -113,6 +121,8 @@ get_safety_margin(
 )
 /*@*/
 {
+	SAMPLEBYTES_RANGE_ASSERT(samplebytes);
+
 	switch ( samplebytes ){
 	case LIBTTAr_SAMPLEBYTES_1:
 	case LIBTTAr_SAMPLEBYTES_2:
@@ -134,6 +144,8 @@ ALWAYS_INLINE CONST bitcnt
 get_predict_k(const enum LibTTAr_SampleBytes samplebytes)
 /*@*/
 {
+	SAMPLEBYTES_RANGE_ASSERT(samplebytes);
+
 	switch ( samplebytes ){
 	case LIBTTAr_SAMPLEBYTES_2:
 	case LIBTTAr_SAMPLEBYTES_3:
@@ -155,6 +167,8 @@ ALWAYS_INLINE CONST i32
 get_filter_round(const enum LibTTAr_SampleBytes samplebytes)
 /*@*/
 {
+	SAMPLEBYTES_RANGE_ASSERT(samplebytes);
+
 	switch ( samplebytes ){
 	case LIBTTAr_SAMPLEBYTES_1:
 	case LIBTTAr_SAMPLEBYTES_3:
@@ -176,6 +190,8 @@ ALWAYS_INLINE CONST bitcnt
 get_filter_k(const enum LibTTAr_SampleBytes samplebytes)
 /*@*/
 {
+	SAMPLEBYTES_RANGE_ASSERT(samplebytes);
+
 	switch ( samplebytes ){
 	case LIBTTAr_SAMPLEBYTES_1:
 	case LIBTTAr_SAMPLEBYTES_3:

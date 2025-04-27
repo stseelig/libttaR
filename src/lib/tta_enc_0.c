@@ -110,6 +110,8 @@ libttaR_tta_encode(
 		*user
 @*/
 {
+	CODEC_UB_ASSERTS_PRE;
+
 	// init state
 	if ( user->ncalls_codec == 0 ){
 		state_priv_init_enc(priv, misc->nchan);

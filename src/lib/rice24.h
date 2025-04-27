@@ -262,6 +262,8 @@ ALWAYS_INLINE CONST rice24_dec
 get_unary_lax_limit(const enum LibTTAr_SampleBytes samplebytes)
 /*@*/
 {
+	SAMPLEBYTES_RANGE_ASSERT(samplebytes);
+
 	switch ( samplebytes ){
 	case LIBTTAr_SAMPLEBYTES_1:
 	case LIBTTAr_SAMPLEBYTES_2:
@@ -284,6 +286,8 @@ ALWAYS_INLINE CONST size_t
 get_rice24_enc_max(const enum LibTTAr_SampleBytes samplebytes)
 /*@*/
 {
+	SAMPLEBYTES_RANGE_ASSERT(samplebytes);
+
 	switch ( samplebytes ){
 	case LIBTTAr_SAMPLEBYTES_1:
 	case LIBTTAr_SAMPLEBYTES_2:
@@ -305,6 +309,8 @@ ALWAYS_INLINE CONST size_t
 get_rice24_dec_max(const enum LibTTAr_SampleBytes samplebytes)
 /*@*/
 {
+	SAMPLEBYTES_RANGE_ASSERT(samplebytes);
+
 	switch ( samplebytes ){
 	case LIBTTAr_SAMPLEBYTES_1:
 	case LIBTTAr_SAMPLEBYTES_2:
@@ -323,22 +329,27 @@ get_rice24_dec_max(const enum LibTTAr_SampleBytes samplebytes)
  *
  * @param k bit number
  *
+ * @pre k <= (bitcnt) 31u
+ *
  * @return a 32-bit mask with only the 'k'th bit set
 **/
 ALWAYS_INLINE CONST u32f
 binexp32(const bitcnt k)
 /*@*/
 {
+	assert(k <= (bitcnt) 31u);
+
 	return (((u32f) 0x1u) << k);
 }
 
 /**@fn lsmask32
  * @brief least significant mask 32-bit
- *   macro'd because of fast types (almost like in TBCNT8)
  *
  * @param k number of bits in the mask
  *
  * @return a mask with 'k' low bits set
+ *
+ * @pre k <= (bitcnt) 31u
  *
  * @note affected by LIBTTAr_OPT_PREFER_LOOKUP_TABLES
 **/
@@ -347,6 +358,8 @@ ALWAYS_INLINE CONST u32f
 lsmask32(const bitcnt k)
 /*@*/
 {
+	assert(k <= (bitcnt) 31u);
+
 	return (u32f) (((0x1u) << k) - 1u);
 }
 #else
@@ -354,6 +367,8 @@ ALWAYS_INLINE CONST u32
 lsmask32(const bitcnt k)
 /*@*/
 {
+	assert(k <= (bitcnt) 31u);
+
 	return lsmask32_table[k];
 }
 #endif	// LIBTTAr_OPT_PREFER_LOOKUP_TABLES
@@ -367,9 +382,24 @@ lsmask32(const bitcnt k)
  *
  * @return 'x' zero'd from the 'k'th bit to the most significant bit
  *
+ * @pre k <= (bitcnt) 31u
+ *
  * @note both clang and gcc understand this.
 **/
-#define BZHI32(x, k)	((x) & lsmask32((bitcnt) (k)))
+#define X_BZHI32(x, k)		((x) & lsmask32((bitcnt) (k)))
+//
+#ifdef NDEBUG
+#define BZHI32(x, k)		X_BZHI32(x, k)
+#else
+ALWAYS_INLINE CONST u32f
+BZHI32(const u32f x, const bitcnt k)
+/*@*/
+{
+	assert(k <= (bitcnt) 31u);
+
+	return (u32f) (x & lsmask32((bitcnt) k));
+}
+#endif
 
 /**@fn TBCNT8
  * @brief trailing bit count 8-bit
@@ -379,20 +409,34 @@ lsmask32(const bitcnt k)
  *
  * @return number of trailing bits
  *
- * @note 'x' will never be UINT[32|64]_MAX
+ * @pre x <= UINT8_MAX
+ *
  * @note affected by LIBTTAr_OPT_PREFER_LOOKUP_TABLES
 **/
 #ifndef TBCNT8_TABLE
 #if HAS_BUILTIN(BUILTIN_TZCNT32)
-#define TBCNT8(x)	BUILTIN_TZCNT32(~((u32) (x)))
+#define X_TBCNT8(x)		BUILTIN_TZCNT32(~((u32) (x)))
 #elif HAS_BUILTIN(BUILTIN_TZCNT64)
-#define TBCNT8(x)	BUILTIN_TZCNT64(~((u64) (x)))
+#define X_TBCNT8(x)		BUILTIN_TZCNT64(~((u64) (x)))
 #else
 #error "TBCNT8"
 #endif
-#else // defined(TBCNT8_TABLE)
-#define TBCNT8(x)	tbcnt8_table[(x)]
-#endif // TBCNT8_TABLE
+#else	// defined(TBCNT8_TABLE)
+#define X_TBCNT8(x)		tbcnt8_table[(x)]
+#endif	// TBCNT8_TABLE
+//
+#ifdef NDEBUG
+#define TBCNT8(x)		X_TBCNT8(x)
+#else
+ALWAYS_INLINE CONST bitcnt
+TBCNT8(const u8 x)
+/*@*/
+{
+	assert(x <= UINT8_MAX);
+
+	return (bitcnt) X_TBCNT8(x);
+}
+#endif
 
 //==========================================================================//
 

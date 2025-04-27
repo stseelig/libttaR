@@ -14,6 +14,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
+#include <assert.h>
 #include <stddef.h>	// size_t
 
 #include "../bits.h"
@@ -66,6 +67,9 @@ libttaR_pcm_read(
 )
 /*@modifies	*dest@*/
 {
+	SAMPLEBYTES_RANGE_ASSERT(samplebytes);
+	assert(nsamples != 0);
+
 	switch ( samplebytes ){
 	case LIBTTAr_SAMPLEBYTES_1:
 		return pcm_read_u8(dest, src, nsamples);
