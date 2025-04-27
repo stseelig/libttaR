@@ -87,7 +87,7 @@ tta_decode_2ch(
 **/
 ALWAYS_INLINE size_t
 tta_decode_2ch_loop(
-	/*@out@*/ i32 *const dest, const u8 *const src,
+	/*@reldef@*/ i32 *const dest, const u8 *const src,
 	u32 *const restrict crc_inout,
 	/*@out@*/ size_t *const restrict ni32_out,
 	struct BitCache_Dec *const restrict bitcache,
@@ -118,13 +118,9 @@ tta_decode_2ch_loop(
 		}
 	// 0
 		TTADEC_DECODE(0u);
-		TTADEC_FILTER(0u);
-		TTADEC_PREDICT(0u);
 		prev = curr.i;
 	// 1
 		TTADEC_DECODE(1u);
-		TTADEC_FILTER(1u);
-		TTADEC_PREDICT(1u);
 
 		dest[i + 1u] = (curr.i += prev / 2);
 		dest[i + 0u] = curr.i - prev;

@@ -137,8 +137,6 @@ tta_decode_mch_loop(
 			dest[i + j++] = (prev = curr.i);
 loop1_entr:
 			TTADEC_DECODE(j);
-			TTADEC_FILTER(j);
-			TTADEC_PREDICT(j);
 		}
 		while PROBABLE ( j + 1u < nchan, 0.9 );
 

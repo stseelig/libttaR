@@ -6,7 +6,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2024, Shane Seelig                                         //
+// Copyright (C) 2024-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -31,6 +31,8 @@
 #include "../../bits.h"
 
 #include "../tta.h"	// asr32
+
+#include "asserts.h"
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -122,6 +124,8 @@ tta_filter_enc(
 {
 	FILTER_VARIABLES;
 
+	FILTER_ASSERTS_PRE;
+
 	FILTER_READ;
 	FILTER_SUM_UPDATE_A;
 	FILTER_UPDATE_MB(value);
@@ -141,6 +145,8 @@ tta_filter_dec(
 /*@modifies	*filter@*/
 {
 	FILTER_VARIABLES;
+
+	FILTER_ASSERTS_PRE;
 
 	FILTER_READ;
 	FILTER_SUM_UPDATE_A;

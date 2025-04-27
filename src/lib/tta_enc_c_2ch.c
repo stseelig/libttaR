@@ -117,13 +117,9 @@ tta_encode_2ch_loop(
 		}
 	// 0
 		curr.i = (next = src[i + 1u]) - src[i + 0u];
-		TTAENC_PREDICT(0u);
-		TTAENC_FILTER(0u);
 		TTAENC_ENCODE(0u);
 	// 1
 		curr.i = next - (prev / 2);
-		TTAENC_PREDICT(1u);
-		TTAENC_FILTER(1u);
 		TTAENC_ENCODE(1u);
 	}
 	*crc_inout = (u32) crc;

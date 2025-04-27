@@ -116,8 +116,6 @@ tta_encode_1ch_loop(
 			break;
 		}
 		curr.i = src[i];
-		TTAENC_PREDICT(0);
-		TTAENC_FILTER(0);
 		TTAENC_ENCODE(0);
 	}
 	*crc_inout = (u32) crc;

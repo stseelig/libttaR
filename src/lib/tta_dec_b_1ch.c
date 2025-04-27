@@ -115,8 +115,6 @@ tta_decode_1ch_loop(
 			break;
 		}
 		TTADEC_DECODE(0);
-		TTADEC_FILTER(0);
-		TTADEC_PREDICT(0);
 		dest[i] = curr.i;
 	}
 	*crc_inout = (u32) crc;

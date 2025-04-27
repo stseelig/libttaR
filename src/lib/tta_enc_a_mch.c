@@ -137,13 +137,9 @@ tta_encode_mch_loop(
 		for ( j = 0; j < nchan - 1u; ++j ){
 			curr.i = src[i + j];
 			curr.i = src[i + j + 1u] - curr.i;
-			TTAENC_PREDICT(j);
-			TTAENC_FILTER(j);
 			TTAENC_ENCODE(j);
 		}
 		curr.i = src[i + (nchan - 1u)] - (prev / 2);
-		TTAENC_PREDICT(j);
-		TTAENC_FILTER(j);
 		TTAENC_ENCODE(j);
 	}
 	*crc_inout = (u32) crc;

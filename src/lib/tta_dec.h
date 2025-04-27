@@ -130,7 +130,7 @@
 //==========================================================================//
 
 #ifndef NDEBUG
-#define TTADEC_DECODE(Xchan) { \
+#define TTADEC_RICE(Xchan) { \
 	size_t Xnbytes_old = nbytes_dec; \
 	nbytes_dec = rice24_decode( \
 		&curr.u, src, nbytes_dec, &codec[(Xchan)].rice.dec, \
@@ -139,7 +139,7 @@
 	assert(nbytes_dec - Xnbytes_old <= rice_dec_max); \
 }
 #else
-#define TTADEC_DECODE(Xchan) { \
+#define TTADEC_RICE(Xchan) { \
 	nbytes_dec = rice24_decode( \
 		&curr.u, src, nbytes_dec, &codec[(Xchan)].rice.dec, \
 		bitcache, &crc, unary_lax_limit \
@@ -159,6 +159,11 @@
 	curr.i += tta_predict1(codec[(Xchan)].prev, (bitcnt) predict_k); \
 	codec[(Xchan)].prev = curr.i; \
 }
+
+#define TTADEC_DECODE(Xchan) \
+	TTADEC_RICE(Xchan); \
+	TTADEC_FILTER(Xchan); \
+	TTADEC_PREDICT(Xchan); \
 
 // EOF ///////////////////////////////////////////////////////////////////////
 #endif

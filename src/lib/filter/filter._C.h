@@ -29,6 +29,8 @@ struct Filter {
 #include "../common.h"
 #include "../tta.h"	// asr32
 
+#include "asserts.h"
+
 //////////////////////////////////////////////////////////////////////////////
 
 #undef a
@@ -77,6 +79,8 @@ tta_filter_enc(
 
 	i32 retval;
 
+	FILTER_ASSERTS_PRE;
+
 	round  = filter_sum_update_a(a, m, b, e[0u], round);
 	filter_update_m(m, b);
 	b[8u]  = value;
@@ -102,6 +106,8 @@ tta_filter_dec(
 	i32 *const restrict e = ASSUME_ALIGNED(&filter->error,  4u);
 
 	i32 retval;
+
+	FILTER_ASSERTS_PRE;
 
 	round  = filter_sum_update_a(a, m, b, e[0u], round);
 	retval = value + asr32(round, k);

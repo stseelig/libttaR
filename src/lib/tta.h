@@ -66,12 +66,12 @@ enum LibTTAr_DecRetVal {
 };
 
 // max unary r/w size:		read		write
-//	8/16-bit:		   8194u	   8200u
-//	  24-bit:		2097154uL	2097160uL
+//	8/16-bit:		   8194u	   8199u
+//	  24-bit:		2097154uL	2097159uL
 // max binary r/w size:		      3u	      0u
 // max cacheflush w size: 		  	      8u
-#define TTABUF_SAFETY_MARGIN_1_2	((size_t)    8208u)
-#define TTABUF_SAFETY_MARGIN_3		((size_t) 2097168uL)
+#define TTABUF_SAFETY_MARGIN_1_2	((size_t)    8207u)
+#define TTABUF_SAFETY_MARGIN_3		((size_t) 2097167uL)
 
 //////////////////////////////////////////////////////////////////////////////
 

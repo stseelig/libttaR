@@ -130,7 +130,7 @@
 }
 
 #ifndef NDEBUG
-#define TTAENC_ENCODE(Xchan) { \
+#define TTAENC_RICE(Xchan) { \
 	size_t Xnbytes_old = nbytes_enc; \
 	nbytes_enc = rice24_encode( \
 		dest, curr.u, nbytes_enc, &codec[(Xchan)].rice.enc, \
@@ -139,13 +139,19 @@
 	assert(nbytes_enc - Xnbytes_old <= rice_enc_max); \
 }
 #else
-#define TTAENC_ENCODE(Xchan) { \
+#define TTAENC_RICE(Xchan) { \
 	nbytes_enc = rice24_encode( \
 		dest, curr.u, nbytes_enc, &codec[(Xchan)].rice.enc, \
 		bitcache, &crc \
 	); \
 }
 #endif	// NDEBUG
+
+#define TTAENC_ENCODE(Xchan) \
+	TTAENC_PREDICT(Xchan); \
+	TTAENC_FILTER(Xchan); \
+	TTAENC_RICE(Xchan);
+
 
 // EOF ///////////////////////////////////////////////////////////////////////
 #endif

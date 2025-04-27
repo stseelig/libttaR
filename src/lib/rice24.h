@@ -29,13 +29,15 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
+#define UINT24_MAX		0xFFFFFFu
+
 // the lax_limit has an extra byte to make handling invalid data faster/easier
 #define UNARY_LAX_LIMIT_1_2	((rice24_dec) ((8u *    8194u)  - 1u))
 #define UNARY_LAX_LIMIT_3	((rice24_dec) ((8u * 2097154uL) - 1u))
 
 // max unary + binary r/w size for one value
-#define RICE24_ENC_MAX_1_2	((size_t)    8200u)
-#define RICE24_ENC_MAX_3	((size_t) 2097160uL)
+#define RICE24_ENC_MAX_1_2	((size_t)    8199u)
+#define RICE24_ENC_MAX_3	((size_t) 2097159uL)
 #define RICE24_DEC_MAX_1_2	((size_t)    8197u)
 #define RICE24_DEC_MAX_3	((size_t) 2097157uL)
 
@@ -173,8 +175,8 @@ ALWAYS_INLINE size_t rice24_write_unary_zero(
 #undef cache
 #undef count
 ALWAYS_INLINE void rice24_cache_binary(
-	rice24_enc, cache64 *restrict cache, bitcnt_enc *restrict count,
-	bitcnt_enc
+	rice24_enc, bitcnt_enc, cache64 *restrict cache,
+	bitcnt_enc *restrict count
 )
 /*@modifies	*cache,
 		*count
@@ -187,7 +189,7 @@ ALWAYS_INLINE void rice24_cache_binary(
 #undef crc
 ALWAYS_INLINE size_t rice24_write_cache(
 	/*@reldef@*/ u8 *restrict dest, size_t, cache64 *restrict cache,
-	bitcnt_enc *restrict count, crc32_enc *restrict crc
+	bitcnt_enc *restrict count, crc32_enc *restrict crc, bitcnt_enc
 )
 /*@modifies	*dest,
 		*cache,
@@ -425,6 +427,21 @@ rice24_crc32_dec(const u8 x, crc32_dec *const restrict crc)
 
 //==========================================================================//
 
+#define RICE24_UPDATE_BODY(Xtype) { \
+	assert(*k <= (Xtype) 24u); \
+	\
+	*sum += value - (*sum >> 4u);	/* may wrap */ \
+	if IMPROBABLE ( *sum < test[0u], 0.027 ){ \
+		*k -= 1u; \
+	} \
+	else if IMPROBABLE ( *sum > test[1u], 0.027 ){ \
+		*k += 1u; \
+	} else{;} \
+	\
+	assert(*k <= (Xtype) 24u); \
+	return; \
+}
+
 /**@fn rice24_update_enc
  * @brief update the rice state; encode version
  *
@@ -445,18 +462,7 @@ rice24_update_enc(
 		*k
 @*/
 {
-	assert(*k <= (bitcnt_enc) 24u);
-
-	*sum += value - (*sum >> 4u);	// may wrap
-	if IMPROBABLE ( *sum < test[0u], 0.027 ){
-		*k -= 1u;
-	}
-	else if IMPROBABLE ( *sum > test[1u], 0.027 ){
-		*k += 1u;
-	} else{;}
-
-	assert(*k <= (bitcnt_enc) 24u);
-	return;
+	RICE24_UPDATE_BODY(bitcnt_enc);
 }
 
 /**@fn rice24_update_dec
@@ -473,18 +479,7 @@ rice24_update_dec(
 		*k
 @*/
 {
-	assert(*k <= (bitcnt_dec) 24u);
-
-	*sum += value - (*sum >> 4u);	// may wrap
-	if IMPROBABLE ( *sum < test[0u], 0.027 ){
-		*k -= 1u;
-	}
-	else if IMPROBABLE ( *sum > test[1u], 0.027 ){
-		*k += 1u;
-	} else{;}
-
-	assert(*k <= (bitcnt_dec) 24u);
-	return;
+	RICE24_UPDATE_BODY(bitcnt_dec);
 }
 
 //==========================================================================//
@@ -502,8 +497,8 @@ rice24_update_dec(
  * @return number of bytes written to 'dest' + 'nbytes_enc'
  *
  * @note max write size (unary + binary):
- *     8/16-bit :    8200u
- *       24-bit : 2097160uL
+ *     8/16-bit :    8199u
+ *       24-bit : 2097159uL
 **/
 ALWAYS_INLINE size_t
 rice24_encode(
@@ -553,7 +548,7 @@ rice24_encode(
 	}
 	#define RICE24_ENCODE_BINARY(Xbinary) { \
 		binary     = (Xbinary); \
-		rice24_cache_binary(binary, cache, count, bin_k); \
+		rice24_cache_binary(binary, bin_k, cache, count); \
 	}
 
 	// value + state
@@ -583,7 +578,7 @@ rice24_encode(
  *
  * @return number of bytes written to 'dest' + 'nbytes_enc'
  *
- * @pre bitcache->count <= (bitcnt_enc) 64u	// 63u in practice
+ * @pre bitcache->count <= (bitcnt_enc) 63u
  *
  * @note max write size: 8u
 **/
@@ -602,11 +597,12 @@ rice24_encode_cacheflush(
 	bitcnt_enc *const restrict count = &bitcache->count;
 	crc32_enc crc = (crc32_enc) *crc_inout;
 
-	assert(*count <= (bitcnt_enc) 64u);
+	assert(*count <= (bitcnt_enc) 63u);
 
-	*count += 7u;
-	nbytes_enc = rice24_write_cache(dest, nbytes_enc, cache, count, &crc);
-	*count  = 0u;
+	nbytes_enc = rice24_write_cache(
+		dest, nbytes_enc, cache, count, &crc, (bitcnt_enc) 7u
+	);
+	*count = 0u;
 
 	*crc_inout = (u32) crc;
 	return nbytes_enc;
@@ -626,12 +622,12 @@ rice24_encode_cacheflush(
  *
  * @return number of bytes written to 'dest' + 'nbytes_enc'
  *
- * @pre  *count <= (bitcnt_enc) 64u	// 63u in practice
- * @post *count <= (bitcnt_enc) 40u	// 39u in practice
+ * @pre  *count <= (bitcnt_enc) 63u
+ * @post *count <= (bitcnt_enc) 39u
  *
  * @note max write size (unary + cache):
- *	 8/16-bit :    8192u + 8u ==    8200u
- *	   24-bit : 2097152u + 8u == 2097160uL
+ *	 8/16-bit :    8192u + 7u ==    8199u
+ *	   24-bit : 2097152u + 7u == 2097159uL
 **/
 ALWAYS_INLINE size_t
 rice24_write_unary(
@@ -645,7 +641,7 @@ rice24_write_unary(
 		*crc
 @*/
 {
-	assert(*count <= (bitcnt_enc) 64u);
+	assert(*count <= (bitcnt_enc) 63u);
 
 	goto loop_entr;
 	do {	unary  -= 32u;
@@ -653,14 +649,14 @@ rice24_write_unary(
 		*count += 32u;
 loop_entr:
 		nbytes_enc = rice24_write_cache(
-			dest, nbytes_enc, cache, count, crc
+			dest, nbytes_enc, cache, count, crc, 0
 		);
 	} while UNLIKELY ( unary >= (rice24_enc) 32u );
 
 	*cache |= ((cache64) lsmask32((bitcnt) unary)) << *count;
 	*count += (bitcnt_enc) (unary + 1u);	// + terminator
 
-	assert(*count <= (bitcnt_enc) 40u);
+	assert(*count <= (bitcnt_enc) 39u);
 	return nbytes_enc;
 }
 
@@ -675,10 +671,10 @@ loop_entr:
  *
  * @return number of bytes written to 'dest' + 'nbytes_enc'
  *
- * @pre  *count <= (bitcnt_enc) 64u	// 63u in practice
+ * @pre  *count <= (bitcnt_enc) 63u
  * @post *count <= (bitcnt_enc)  8u
  *
- * @note max write size: 8u
+ * @note max write size: 7u
 **/
 ALWAYS_INLINE size_t
 rice24_write_unary_zero(
@@ -692,9 +688,11 @@ rice24_write_unary_zero(
 		*crc
 @*/
 {
-	assert(*count <= (bitcnt_enc) 64u);
+	assert(*count <= (bitcnt_enc) 63u);
 
-	nbytes_enc = rice24_write_cache(dest, nbytes_enc, cache, count, crc);
+	nbytes_enc = rice24_write_cache(
+		dest, nbytes_enc, cache, count, crc, 0
+	);
 
 	*count += 1u;	// + terminator
 
@@ -706,30 +704,34 @@ rice24_write_unary_zero(
  * @brief write a binary code to the 'cache'
  *
  * @param binary the binary code
+ * @param bin_k number of bits in the binary code
  * @param cache[in out] the bitcache
  * @param count[in out] number of active bits in the 'cache'
- * @param bin_k number of bits in the binary code
  *
- * @pre  *count <= (bitcnt_enc) 40u	// 39u in practice
- * @post *count <= (bitcnt_enc) 64u	// 63u in practice
+ * @pre  binary <= (bitcnt_enc) UINT24_MAX
+ * @pre   bin_k <= (bitcnt_enc) 24u
+ * @pre  *count <= (bitcnt_enc) 39u	// 39u unary, 8u unary-zero
+ * @post *count <= (bitcnt_enc) 63u
  *
  * @note max bitcache write size: 3u
 **/
 ALWAYS_INLINE void
 rice24_cache_binary(
-	const rice24_enc binary, cache64 *const restrict cache,
-	bitcnt_enc *const restrict count, const bitcnt_enc bin_k
+	const rice24_enc binary, const bitcnt_enc bin_k,
+	cache64 *const restrict cache, bitcnt_enc *const restrict count
 )
 /*@modifies	*cache,
 		*count
 @*/
 {
-	assert(*count <= (bitcnt_enc) 40u);
+	assert(binary <= (rice24_enc) UINT24_MAX);
+	assert( bin_k <= (bitcnt_enc) 24u);
+	assert(*count <= (bitcnt_enc) 39u);
 
 	*cache |= ((cache64) binary) << *count;
 	*count += bin_k;
 
-	assert(*count <= (bitcnt_enc) 64u);
+	assert(*count <= (bitcnt_enc) 63u);
 	return;
 }
 
@@ -742,7 +744,8 @@ rice24_cache_binary(
  * @param count[in out] number of active bits in the 'cache'
  * @param crc[in out] the current CRC
  *
- * @pre  *count <= (bitcnt_enc) 71u	// 70u in practice (cacheflush)
+ * @pre  *count <= (bitcnt_enc) 70u
+ * @pre  (extra == (bitcnt_enc)  0u) || (extra == (bitcnt_enc)  7u)
  * @post *count <= (bitcnt_enc)  7u
  *
  * @return number of bytes written to 'dest' + 'nbytes_enc'
@@ -753,7 +756,7 @@ ALWAYS_INLINE size_t
 rice24_write_cache(
 	/*@reldef@*/ u8 *const restrict dest, size_t nbytes_enc,
 	cache64 *const restrict cache, bitcnt_enc *const restrict count,
-	crc32_enc *const restrict crc
+	crc32_enc *const restrict crc, const bitcnt_enc extra
 )
 /*@modifies	*dest,
 		*cache,
@@ -761,8 +764,10 @@ rice24_write_cache(
 		*crc
 @*/
 {
-	assert(*count <= (bitcnt_enc) 71u);
+	assert(*count <= (bitcnt_enc) 70u);
+	assert((extra == (bitcnt_enc)  0u) || (extra == (bitcnt_enc)  7u));
 
+	*count += extra;
 	while PROBABLE ( *count >= (bitcnt_enc) 8u, 0.9 ){
 		dest[nbytes_enc++] = rice24_crc32_enc((u8) *cache, crc);
 		*cache >>= 8u;
@@ -882,7 +887,7 @@ rice24_decode(
  *
  * @return number of bytes read from 'src' + 'nbytes_dec'
  *
- * @pre  *count <= (bitcnt_dec) 8u	// 7u in practice
+ * @pre  *count <= (bitcnt_dec) 7u
  * @post *count <= (bitcnt_dec) 7u
  *
  * @note max read size:
@@ -905,7 +910,7 @@ rice24_read_unary(
 	bitcnt_dec nbits;
 	u8 inbyte;
 
-	assert(*count <= (bitcnt_dec) 8u);
+	assert(*count <= (bitcnt_dec) 7u);
 
 	nbits  = (bitcnt_dec) TBCNT8(*cache);
 	*unary = (rice24_dec) nbits;
@@ -941,8 +946,10 @@ rice24_read_unary(
  *
  * @return number of bytes read from 'src' + 'nbytes_dec'
  *
- * @pre  *count <= (bitcnt_dec) 8u	// 7u in practice
- * @post *count <= (bitcnt_dec) 8u	// ~
+ * @pre  *count  <= (bitcnt_dec)  7u
+ * @pre   bin_k  <= (bitcnt_dec) 24u
+ * @post *binary <= (rice24_enc) UINT24_MAX
+ * @post *count  <= (bitcnt_dec)  7u
  *
  * @note max read size: 3u
  *   a check like in the unary reader is unnecessary
@@ -962,7 +969,8 @@ rice24_read_binary(
 {
 	u8 inbyte;
 
-	assert(*count <= (bitcnt_dec) 8u);
+	assert( bin_k  <= (bitcnt_dec) 24u);
+	assert(*count  <= (bitcnt_dec)  7u);
 
 	while PROBABLE ( *count < bin_k, 0.9 ){
 		inbyte  = rice24_crc32_dec(src[nbytes_dec++], crc);
@@ -973,7 +981,8 @@ rice24_read_binary(
 	*cache >>= bin_k;
 	*count  -= bin_k;
 
-	assert(*count <= (bitcnt_dec) 8u);
+	assert(*binary <= (rice24_enc) UINT24_MAX);
+	assert(*count  <= (bitcnt_dec) 7u);
 	return nbytes_dec;
 }
 
