@@ -397,7 +397,7 @@ BZHI32(const u32f x, const bitcnt k)
 {
 	assert(k <= (bitcnt) 31u);
 
-	return (u32f) (x & lsmask32((bitcnt) k));
+	return (u32f) X_BZHI32(x, k);
 }
 #endif
 
