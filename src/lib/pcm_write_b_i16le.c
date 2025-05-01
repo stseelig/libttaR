@@ -44,8 +44,6 @@ pcm_write_i16le(
 {
 	size_t i, j;
 
-	assert(nsamples != 0);
-
 	for ( i = 0, j = 0; i < nsamples; ++i, j += 2u ){
 		write_i32h_to_i16le(&dest[j], src[i]);
 	}

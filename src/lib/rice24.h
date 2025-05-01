@@ -690,11 +690,12 @@ rice24_write_unary(
 	goto loop_entr;
 	do {	unary  -= 32u;
 		*cache |= ((cache64) UINT32_MAX) << *count;
-		*count += 32u;
+		*count |= 0x20u;	// += 32u; (*count <= 0x07u)
 loop_entr:
 		nbytes_enc = rice24_write_cache(
 			dest, nbytes_enc, cache, count, crc, 0
 		);
+		assert(*count <= (bitcnt_enc) 7u);
 	} while UNLIKELY ( unary >= (rice24_enc) 32u );
 
 	*cache |= ((cache64) lsmask32((bitcnt) unary)) << *count;
@@ -737,6 +738,7 @@ rice24_write_unary_zero(
 	nbytes_enc = rice24_write_cache(
 		dest, nbytes_enc, cache, count, crc, 0
 	);
+	assert(*count <= (bitcnt_enc)  7u);
 
 	*count += 1u;	// + terminator
 
@@ -788,7 +790,7 @@ rice24_cache_binary(
  * @param count[in out] number of active bits in the 'cache'
  * @param crc[in out] the current CRC
  *
- * @pre  *count <= (bitcnt_enc) 70u
+ * @pre  *count <= (bitcnt_enc) 63u
  * @pre  (extra == (bitcnt_enc)  0u) || (extra == (bitcnt_enc)  7u)
  * @post *count <= (bitcnt_enc)  7u
  *
@@ -808,7 +810,7 @@ rice24_write_cache(
 		*crc
 @*/
 {
-	assert(*count <= (bitcnt_enc) 70u);
+	assert(*count <= (bitcnt_enc) 63u);
 	assert((extra == (bitcnt_enc)  0u) || (extra == (bitcnt_enc)  7u));
 
 	*count += extra;
@@ -887,26 +889,26 @@ rice24_decode(
 	// unary
 	RICE24_DECODE_UNARY(&unary);
 	if PROBABLE ( unary != 0, 0.575 ){
-		bin_k   = *k1;
-		test1   = &binexp32p4_table[*k1];
-		test0   = &binexp32p4_table[*k0];
+		bin_k  = *k1;
+		test1  = &binexp32p4_table[*k1];
+		test0  = &binexp32p4_table[*k0];
 
 		// binary
 		RICE24_DECODE_BINARY(&binary);
 
 		// value + state
-		*value  = (u32) (((unary - 1u) << bin_k) + binary);
+		*value = (u32) (((unary - 1u) << bin_k) + binary);
 		RICE24_DECODE_STATE_1(*value);
 		RICE24_DECODE_STATE_0(*value);
 	}
-	else {	bin_k   = *k0;
-		test0   = &binexp32p4_table[*k0];
+	else {	bin_k  = *k0;
+		test0  = &binexp32p4_table[*k0];
 
 		// binary
 		RICE24_DECODE_BINARY(&binary);
 
 		// value + state
-		*value  = (u32) binary;
+		*value = (u32) binary;
 		RICE24_DECODE_STATE_0(*value);
 	}
 
@@ -992,7 +994,7 @@ rice24_read_unary(
  *
  * @pre  *count  <= (bitcnt_dec)  7u
  * @pre   bin_k  <= (bitcnt_dec) 24u
- * @post *binary <= (rice24_enc) UINT24_MAX
+ * @post *binary <= (rice24_dec) UINT24_MAX
  * @post *count  <= (bitcnt_dec)  7u
  *
  * @note max read size: 3u
@@ -1025,8 +1027,8 @@ rice24_read_binary(
 	*cache >>= bin_k;
 	*count  -= bin_k;
 
-	assert(*binary <= (rice24_enc) UINT24_MAX);
-	assert(*count  <= (bitcnt_dec) 7u);
+	assert(*binary <= (rice24_dec) UINT24_MAX);
+	assert(*count  <= (bitcnt_dec)  7u);
 	return nbytes_dec;
 }
 

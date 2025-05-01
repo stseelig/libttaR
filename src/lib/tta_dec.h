@@ -44,59 +44,85 @@
 		get_filter_k(samplebytes) \
 	); \
 	const rice24_dec unary_lax_limit = get_unary_lax_limit(samplebytes); \
-	const size_t safety_margin   = ( \
+	const size_t safety_margin    = ( \
 		get_safety_margin(samplebytes, nchan) \
 	); \
-	const size_t read_soft_limit = (nbytes_tta_target < safety_margin \
+	const size_t read_soft_limit  = (nbytes_tta_target < safety_margin \
 		? src_len - safety_margin : nbytes_tta_target \
 	);
 
 #ifndef NDEBUG
 #define TTADEC_PARAMS(Xnchan) \
 	TTADEC_PARAMS_BASE((Xnchan)) \
-	const size_t rice_dec_max    = get_rice24_dec_max(samplebytes);
+	const size_t rice_dec_max     = get_rice24_dec_max(samplebytes);
 #else
 #define TTADEC_PARAMS(Xnchan) \
 	TTADEC_PARAMS_BASE((Xnchan))
 #endif	// NDEBUG
 
+//--------------------------------------------------------------------------//
+
+// @see TTAENC_PARAMCHECKS
+
+#define TTADEC_PARAMCHECK_0_INVAL_RANGE ( \
+	 (dest_len == 0) || (src_len == 0) \
+	|| \
+	 (ni32_target == 0) || (nbytes_tta_target == 0) \
+	|| \
+	 (ni32_perframe == 0) || (nbytes_tta_perframe == 0) \
+	|| \
+	 (nchan == 0) \
+)
+
+#define TTADEC_PARAMCHECK_1_INVAL_RANGE ( \
+	 ((uint) samplebytes == 0) \
+	|| \
+	 ((uint) samplebytes > LIBTTAr_SAMPLEBYTES_MAX) \
+)
+
+#define TTADEC_PARAMCHECK_2_INVAL_TRUNC ( \
+	ni32_target % nchan != 0 \
+)
+
+#define TTADEC_PARAMCHECK_3_INVAL_BOUNDS ( \
+	 (ni32_target > dest_len) \
+	|| \
+	 (ni32_target > ni32_perframe - user->ni32_total) \
+)
+
+#define TTADEC_PARAMCHECK_4_INVAL_BOUNDS ( \
+	 (src_len < safety_margin) || (src_len < nbytes_tta_target) \
+	|| \
+	 ( nbytes_tta_target \
+	  > \
+	   nbytes_tta_perframe - user->nbytes_tta_total \
+	 ) \
+)
+
 #define TTADEC_PARAMCHECKS { \
-	/* @see TTAENC_PARAMCHECKS */ \
-	if ( (dest_len == 0) || (src_len == 0) \
-	    || \
-	     (ni32_target == 0) || (nbytes_tta_target == 0) \
-	    || \
-	     (ni32_perframe == 0) || (nbytes_tta_perframe == 0) \
-	    || \
-	     (nchan == 0) \
-	){ \
+	if ( TTADEC_PARAMCHECK_0_INVAL_RANGE ){ \
+		assert(! TTADEC_PARAMCHECK_0_INVAL_RANGE); \
 		return LIBTTAr_DRV_INVAL_RANGE; \
 	} \
-	if ( ((uint) samplebytes == 0) \
-	    || \
-	     ((uint) samplebytes > LIBTTAr_SAMPLEBYTES_MAX) \
-	){ \
+	if ( TTADEC_PARAMCHECK_1_INVAL_RANGE ){ \
+		assert(! TTADEC_PARAMCHECK_1_INVAL_RANGE); \
 		return LIBTTAr_DRV_INVAL_RANGE; \
 	} \
-	if ( ni32_target % nchan != 0 ){ \
+	if ( TTADEC_PARAMCHECK_2_INVAL_TRUNC ){ \
+		assert(! TTADEC_PARAMCHECK_2_INVAL_TRUNC); \
 		return LIBTTAr_DRV_INVAL_TRUNC; \
 	} \
-	if ( (ni32_target > dest_len) \
-	    || \
-	     (ni32_target > ni32_perframe - user->ni32_total) \
-	){ \
+	if ( TTADEC_PARAMCHECK_3_INVAL_BOUNDS ){ \
+		assert(! TTADEC_PARAMCHECK_3_INVAL_BOUNDS); \
 		return LIBTTAr_DRV_INVAL_BOUNDS; \
 	} \
-	if ( (src_len < safety_margin) || (src_len < nbytes_tta_target) \
-	    || \
-	     ( nbytes_tta_target \
-	      > \
-	       nbytes_tta_perframe - user->nbytes_tta_total \
-	     ) \
-	){ \
+	if ( TTADEC_PARAMCHECK_4_INVAL_BOUNDS ){ \
+		assert(! TTADEC_PARAMCHECK_4_INVAL_BOUNDS); \
 		return LIBTTAr_DRV_INVAL_BOUNDS; \
 	} \
 }
+
+//--------------------------------------------------------------------------//
 
 #define TTADEC_LOOP_ARGS_BASE \
 	dest, src, &user->crc, &user->ni32, &priv->bitcache.dec,  \
@@ -110,6 +136,8 @@
 #define TTADEC_LOOP_ARGS \
 		TTADEC_LOOP_ARGS_BASE
 #endif	// NDEBUG
+
+//--------------------------------------------------------------------------//
 
 #define TTADEC_POSTLOOP { \
 	user->ni32_total       += user->ni32; \

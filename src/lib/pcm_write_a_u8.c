@@ -41,8 +41,6 @@ pcm_write_u8(
 {
 	size_t i;
 
-	assert(nsamples != 0);
-
 	for ( i = 0; i < nsamples; ++i ){
 		dest[i] = i32h_to_u8(src[i]);
 	}

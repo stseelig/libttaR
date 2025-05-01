@@ -1,7 +1,7 @@
 .\" t
 .\"     Title: libttaR_crc32
 .\"    Author: Shane Seelig
-.\"      Date: 2025-04-01
+.\"      Date: 2025-05-01
 .\"    Source: libttaR 2.0
 .\"  Language: English
 .\"
@@ -34,7 +34,6 @@ calculates the CRC
 of the data in \fIbuf\fR
 with a size of \fIsize\fR.
 
-
 .\" -------------------------------------------------------------------------#
 
 .SS Arguments
@@ -54,6 +53,12 @@ The size of the buffer.
 .SH "RETURN VALUE"
 
 the CRC
+
+.\" ##########################################################################
+
+.SH "ERRORS"
+
+The debug build of the library may abort.
 
 .\" ##########################################################################
 

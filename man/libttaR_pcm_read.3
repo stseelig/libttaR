@@ -1,7 +1,7 @@
 .\" t
 .\"     Title: libttaR_pcm_read
 .\"    Author: Shane Seelig
-.\"      Date: 2025-04-01
+.\"      Date: 2025-05-01
 .\"    Source: libttaR 2.0
 .\"  Language: English
 .\"
@@ -89,7 +89,13 @@ The number of bytes per samples in the originally sized PCM.
 
 .SH "RETURN VALUE"
 
-\fInsamples\fR on success, else 0 on error.
+\fInsamples\fR on success.
+
+.\" ##########################################################################
+
+.SH "ERRORS"
+
+The debug build of the library may abort instead of returning an error.
 
 .\" ##########################################################################
 

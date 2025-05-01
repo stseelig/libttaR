@@ -55,36 +55,63 @@
 	TTAENC_PARAMS_BASE((Xnchan))
 #endif	// NDEBUG
 
+//--------------------------------------------------------------------------//
+
+// having these checks makes it faster, and the order and different return
+//   values matter. not completely sure why
+
+#define TTAENC_PARAMCHECK_0_INVAL_RANGE ( \
+	 (dest_len == 0) || (src_len == 0) \
+	|| \
+	 (ni32_target == 0) || (ni32_perframe == 0) \
+	|| \
+	 (nchan == 0) \
+)
+
+#define TTAENC_PARAMCHECK_1_INVAL_RANGE ( \
+	 ((uint) samplebytes == 0) \
+	|| \
+	 ((uint) samplebytes > LIBTTAr_SAMPLEBYTES_MAX) \
+)
+
+#define TTAENC_PARAMCHECK_2_INVAL_TRUNC ( \
+	ni32_target % nchan != 0 \
+)
+
+#define TTAENC_PARAMCHECK_3_INVAL_BOUNDS ( \
+	dest_len < safety_margin \
+)
+
+#define TTAENC_PARAMCHECK_4_INVAL_BOUNDS ( \
+	 (ni32_target > src_len) \
+	|| \
+	 (ni32_target > ni32_perframe - user->ni32_total) \
+)
+
 #define TTAENC_PARAMCHECKS { \
-	/* having these checks makes it faster, and the order and    */ \
-	/*   different return values matter. not completely sure why */ \
-	if ( (dest_len == 0) || (src_len == 0) \
-	    || \
-	     (ni32_target == 0) || (ni32_perframe == 0) \
-	    || \
-	     (nchan == 0) \
-	){ \
+	if ( TTAENC_PARAMCHECK_0_INVAL_RANGE ){ \
+		assert(! TTAENC_PARAMCHECK_0_INVAL_RANGE); \
 		return LIBTTAr_ERV_INVAL_RANGE; \
 	} \
-	if ( ((uint) samplebytes == 0) \
-	    || \
-	     ((uint) samplebytes > LIBTTAr_SAMPLEBYTES_MAX) \
-	){ \
+	if ( TTAENC_PARAMCHECK_1_INVAL_RANGE ){ \
+		assert(! TTAENC_PARAMCHECK_1_INVAL_RANGE); \
 		return LIBTTAr_ERV_INVAL_RANGE; \
 	} \
-	if ( ni32_target % nchan != 0 ){ \
+	if ( TTAENC_PARAMCHECK_2_INVAL_TRUNC ){ \
+		assert(! TTAENC_PARAMCHECK_2_INVAL_TRUNC); \
 		return LIBTTAr_ERV_INVAL_TRUNC; \
 	} \
-	if ( dest_len < safety_margin ){ \
+	if ( TTAENC_PARAMCHECK_3_INVAL_BOUNDS ){ \
+		assert(! TTAENC_PARAMCHECK_3_INVAL_BOUNDS); \
 		return LIBTTAr_ERV_INVAL_BOUNDS; \
 	} \
-	if ( (ni32_target > src_len) \
-	    || \
-	     (ni32_target > ni32_perframe - user->ni32_total) \
-	){ \
+	if ( TTAENC_PARAMCHECK_4_INVAL_BOUNDS ){ \
+		assert(! TTAENC_PARAMCHECK_4_INVAL_BOUNDS); \
 		return LIBTTAr_ERV_INVAL_BOUNDS; \
 	} \
 }
+
+//--------------------------------------------------------------------------//
 
 #define TTAENC_LOOP_ARGS_BASE \
 	dest, src, &user->crc, &user->ni32, &priv->bitcache.enc, \
@@ -98,6 +125,8 @@
 #define TTAENC_LOOP_ARGS \
 		TTAENC_LOOP_ARGS_BASE
 #endif	// NDEBUG
+
+//--------------------------------------------------------------------------//
 
 #define TTAENC_POSTLOOP { \
 	user->ni32_total       += user->ni32; \

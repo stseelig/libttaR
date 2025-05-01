@@ -135,8 +135,7 @@ tta_encode_mch_loop(
 		prev = 0;
 #endif
 		for ( j = 0; j < nchan - 1u; ++j ){
-			curr.i = src[i + j];
-			curr.i = src[i + j + 1u] - curr.i;
+			curr.i = src[i + j + 1u] - src[i + j + 0u];
 			TTAENC_ENCODE(j);
 		}
 		curr.i = src[i + (nchan - 1u)] - (prev / 2);

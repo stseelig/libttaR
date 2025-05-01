@@ -41,8 +41,6 @@ pcm_read_i24le(
 {
 	size_t i, j;
 
-	assert(nsamples != 0);
-
 	for ( i = 0, j = 0; i < nsamples; ++i, j += 3u ){
 		dest[i] = read_i24le_to_i32h(&src[j]);
 	}
