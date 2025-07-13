@@ -26,10 +26,10 @@
 
 #define CLI_VERSION_NUM		1u
 #define CLI_VERSION_NUM_MAJOR	1u
-#define CLI_VERSION_NUM_MINOR	9u
+#define CLI_VERSION_NUM_MINOR	10u
 #define CLI_VERSION_NUM_REVIS	0u
 #define CLI_VERSION_STR_EXTRA	""
-#define CLI_VERSION_STR_DATE	"2025-04-01"
+#define CLI_VERSION_STR_DATE	"2025-07-13"
 #define CLI_COPYRIGHT_STR	\
 	"Copyright (C) 2023-2025, Shane Seelig"
 #define CLI_LICENSE_STR		"GPL-3.0-or-later"

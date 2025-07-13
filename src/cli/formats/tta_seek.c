@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2024, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -47,9 +47,9 @@ seektable_nframes(
 
 	assert((samplebytes != 0) && (decpcm_size != 0) && (buflen != 0));
 
-	retval  = (decpcm_size + buflen) / buflen;
-	retval += samplebytes - 1u;
-	retval /= samplebytes;
+	retval  = (decpcm_size / samplebytes);
+	retval += (u8) (decpcm_size % samplebytes != 0);
+	retval  = (retval / buflen) + ((u8) (retval % buflen != 0));
 	return retval;
 }
 
