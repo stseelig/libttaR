@@ -144,6 +144,10 @@
 
 # ttaR #######################################################################
 
+next :------------------------------------------------------------------------
+
+	- missing conditional byteswap in the ApeTag skipper
+
 1.1.10 (2025-07-13):----------------------------------------------------------
 
 	- fixed the function that calculates the number of seektable entries

@@ -142,7 +142,7 @@ apetag_skip(FILE *const restrict file)
 	}
 
 	// seek to end of tag
-	result.d = fseeko(file, (off_t) h.size, SEEK_CUR);
+	result.d = fseeko(file, (off_t) letoh32(h.size), SEEK_CUR);
 	if ( result.d != 0 ){
 		return FILECHECK_SEEK_ERROR;
 	}
