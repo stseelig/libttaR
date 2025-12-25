@@ -1,13 +1,13 @@
 .\" t
 .\"     Title: libttaR_pcm_read
 .\"    Author: Shane Seelig
-.\"      Date: 2025-05-01
-.\"    Source: libttaR 2.0
+.\"      Date: 2025-12-24
+.\"    Source: libttaR 2.1
 .\"  Language: English
 .\"
 .\" ##########################################################################
 
-.TH "LIBTTAr_PCM_READ" "3" "2025\-04\-01" "libttaR 2.0" \
+.TH "LIBTTAr_PCM_READ" "3" "2025\-12\-24" "libttaR 2.1" \
 "LibTTAr Programmer's Manual"
 
 .\" ##########################################################################
@@ -41,13 +41,13 @@ libttaR_pcm_read, libttaR_pcm_write \- convert PCM to int32_t or vice versa
 
 .SH "DESCRIPTION"
 
-.BR libttaR_pcm_read ()
+.BR libttaR_pcm_read (3)
 converts \fInsamples\fR
 of \fIsamplebytes\fR\-sized PCM to signed 32-bit PCM
 from the buffer \fIsrc\fR
 to the buffer \fIdest\fR.
 
-.BR libttaR_pcm_write ()
+.BR libttaR_pcm_write (3)
 converts \fInsamples\fR
 of signed 32-bit PCM to \fIsamplebytes\fR\-sized PCM
 from the buffer \fIsrc\fR
@@ -94,6 +94,8 @@ The number of bytes per samples in the originally sized PCM.
 .\" ##########################################################################
 
 .SH "ERRORS"
+
+0 - bad parameter.
 
 The debug build of the library may abort instead of returning an error.
 

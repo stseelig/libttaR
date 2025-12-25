@@ -1,4 +1,4 @@
-//////////////////////////////////////////////////////////////////////////////
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // formats/wav_check.c                                                      //
 //                                                                          //
@@ -7,22 +7,24 @@
 // Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 
+#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
-#include <string.h>	// memcmp
+#include <string.h>
 
-#include "../../bits.h"
-
+#include "../byteswap.h"
+#include "../common.h"
 #include "../formats.h"
 
-#include "wav.h"
+#include "./wav.h"
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 #undef file
 static enum FileCheck filecheck_wav_find_subchunk(
-	FILE *const restrict file, const char *const restrict
+	FILE *const RESTRICT file, const uint8_t *const RESTRICT
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -30,7 +32,7 @@ static enum FileCheck filecheck_wav_find_subchunk(
 @*/
 ;
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 /**@fn filecheck_wav
  * @brief checks if a file is Microsoft RIFF/WAVE
@@ -42,10 +44,10 @@ static enum FileCheck filecheck_wav_find_subchunk(
  *
  * @pre 'file' should be at the appropriate offset before calling
 **/
-enum FileCheck
+BUILD enum FileCheck
 filecheck_wav(
-	/*@out@*/ struct FileStats *const restrict fstat,
-	FILE *const restrict file
+	/*@out@*/ struct FileStats *const RESTRICT fstat,
+	FILE *const RESTRICT file
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -53,18 +55,19 @@ filecheck_wav(
 		file
 @*/
 {
+	const off_t start = ftello(file);
+	/* * */
 	union { struct RiffHeader		rh;
 		struct RiffChunkHeader_Wave	wave;
 	} chunk;
-	const off_t start = ftello(file);
 	union {	size_t		z;
 		int		d;
 		enum FileCheck	fc;
 	} result;
 
-	// RIFF chunk
-	result.z = fread(&chunk.wave, sizeof chunk.wave, (size_t) 1u, file);
-	if ( result.z != (size_t) 1u ){
+	/* RIFF chunk */
+	result.z = fread(&chunk.wave, sizeof chunk.wave, SIZE_C(1), file);
+	if ( result.z != SIZE_C(1) ){
 		if ( feof(file) != 0 ){
 			return FILECHECK_MALFORMED;
 		}
@@ -78,7 +81,7 @@ filecheck_wav(
 		chunk.wave.format, RIFF_ID_WAVE, sizeof chunk.wave.format
 	     ) != 0)
 	){
-		// reset file stream and return
+		/* reset file stream and return */
 		result.d = fseeko(file, start, SEEK_SET);
 		if ( result.d != 0 ){
 			return FILECHECK_SEEK_ERROR;
@@ -86,7 +89,7 @@ filecheck_wav(
 		return FILECHECK_MISMATCH;
 	}
 
-	// search for format subchunk
+	/* search for format subchunk */
 	result.fc = filecheck_wav_find_subchunk(file, RIFF_ID_FMT);
 	if ( result.fc != FILECHECK_OK ){
 		return result.fc;
@@ -100,13 +103,13 @@ filecheck_wav(
 		return result.fc;
 	}
 
-	// search for data subchunk header
+	/* search for data subchunk header */
 	result.fc = filecheck_wav_find_subchunk(file, RIFF_ID_DATA);
 	if ( result.fc != FILECHECK_OK ){
 		return result.fc;
 	}
-	result.z = fread(&chunk.rh, sizeof chunk.rh, (size_t) 1u, file);
-	if ( result.z != (size_t) 1u ){
+	result.z = fread(&chunk.rh, sizeof chunk.rh, SIZE_C(1), file);
+	if ( result.z != SIZE_C(1) ){
 		if ( feof(file) != 0 ){
 			return FILECHECK_MALFORMED;
 		}
@@ -115,7 +118,7 @@ filecheck_wav(
 
 	fstat->decfmt      = DECFMT_WAV;
 	fstat->decpcm_off  = ftello(file);
-	fstat->decpcm_size = (size_t) letoh32(chunk.rh.size);
+	fstat->decpcm_size = (size_t) byteswap_letoh_u32(chunk.rh.size);
 
 	return FILECHECK_OK;
 }
@@ -123,17 +126,17 @@ filecheck_wav(
 /**@fn filecheck_wav_read_subchunk_fmt
  * @brief
  *
- * @param fstat[out] the bloated file stats struct
- * @param file[in] the source file
+ * @param fstat - bloated file stats struct
+ * @param file  - source file
  *
  * @return FILECHECK_OK if no errors
  *
  * @pre must have stream set past the subchunk header
 **/
-enum FileCheck
+BUILD enum FileCheck
 filecheck_wav_read_subchunk_fmt(
-	/*@out@*/ struct FileStats *const restrict fstat,
-	FILE *const restrict file
+	/*@out@*/ struct FileStats *const RESTRICT fstat,
+	FILE *const RESTRICT file
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -144,46 +147,46 @@ filecheck_wav_read_subchunk_fmt(
 	union {	struct RiffSubChunk_WaveFormatEX_Body		fmt;
 		struct RiffSubChunk_WaveFormatExtensible_Tail	wfx;
 	} chunk;
-	u16 format;
+	uint16_t format;
 	union {	size_t	z;
 		off_t	o;
 		int	d;
 	} result;
 
-	result.z = fread(&chunk.fmt, sizeof chunk.fmt, (size_t) 1u, file);
-	if ( result.z != (size_t) 1u ){
+	result.z = fread(&chunk.fmt, sizeof chunk.fmt, SIZE_C(1), file);
+	if ( result.z != SIZE_C(1) ){
 		if ( feof(file) != 0 ){
 			return FILECHECK_MALFORMED;
 		}
 		return FILECHECK_READ_ERROR;
 	}
 
-	format = letoh16(chunk.fmt.format);
+	format = byteswap_letoh_u16(chunk.fmt.format);
 	fstat->wavformat	= format;
 	if ( (format != WAVE_FMT_PCM) && (format != WAVE_FMT_EXTENSIBLE) ){
 		return FILECHECK_UNSUPPORTED_DATATYPE;
 	}
 
 	fstat->endian		= xENDIAN_LITTLE;
-	fstat->nchan		= letoh16(chunk.fmt.nchan);
-	fstat->samplebits	= letoh16(chunk.fmt.samplebits);
-	fstat->samplerate	= letoh32(chunk.fmt.samplerate);
+	fstat->nchan		= byteswap_letoh_u16(chunk.fmt.nchan);
+	fstat->samplebits	= byteswap_letoh_u16(chunk.fmt.samplebits);
+	fstat->samplerate	= byteswap_letoh_u32(chunk.fmt.samplerate);
 	fstat->inttype		= (
-		fstat->samplebits <= (u16) 8u ? INT_UNSIGNED : INT_SIGNED
+		fstat->samplebits <= UINT16_C(8) ? INT_UNSIGNED : INT_SIGNED
 	);
 
 	if ( format == WAVE_FMT_EXTENSIBLE ){
 		result.z = fread(
-			&chunk.wfx, sizeof chunk.wfx, (size_t) 1u, file
+			&chunk.wfx, sizeof chunk.wfx, SIZE_C(1), file
 		);
-		if ( result.z != (size_t) 1u ){
+		if ( result.z != SIZE_C(1) ){
 			if ( feof(file) != 0 ){
 				return FILECHECK_MALFORMED;
 			}
 			return FILECHECK_READ_ERROR;
 		}
 
-		fstat->chanmask_wav = letoh32(chunk.wfx.chanmask);
+		fstat->chanmask_wav = byteswap_letoh_u32(chunk.wfx.chanmask);
 		(void) memcpy(
 			&fstat->wavsubformat, &chunk.wfx.subformat,
 			sizeof chunk.wfx.subformat
@@ -197,30 +200,30 @@ filecheck_wav_read_subchunk_fmt(
 			return FILECHECK_UNSUPPORTED_DATATYPE;
 		}
 
-		// seek to end of Extensible
-		if ( letoh16(chunk.wfx.size) == 0 ){
+		/* seek to end of Extensible */
+		if ( byteswap_letoh_u16(chunk.wfx.size) == 0 ){
 			return FILECHECK_MALFORMED;
 		}
 		result.o = (off_t) (
 			  (sizeof chunk.wfx)
-			- (letoh16(chunk.wfx.size) + (sizeof chunk.wfx.size))
+			- (byteswap_letoh_u16(chunk.wfx.size)
+			+ (sizeof chunk.wfx.size))
 		);
 		result.d = fseeko(file, result.o, SEEK_CUR);
 		if ( result.d != 0 ){
 			return FILECHECK_SEEK_ERROR;
 		}
 	}
-
 	return FILECHECK_OK;
 }
 
-//--------------------------------------------------------------------------//
+/* ------------------------------------------------------------------------ */
 
 /**@fn filecheck_wav_find_subchunk
  * @brief searches for a RIFF subchunk
  *
- * @param file[in] the source file
- * @param target[in] ID of the subchunk we are searching for
+ * @param file   - source file
+ * @param target - ID of the subchunk we are searching for
  *
  * @return FILECHECK_OK if found
  *
@@ -228,7 +231,7 @@ filecheck_wav_read_subchunk_fmt(
 **/
 static enum FileCheck
 filecheck_wav_find_subchunk(
-	FILE *const restrict file, const char *const restrict target
+	FILE *const RESTRICT file, const uint8_t *const RESTRICT target
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -240,30 +243,32 @@ filecheck_wav_find_subchunk(
 		int	d;
 	} result;
 
-	// check subchunks until target is found
+	/* check subchunks until target is found */
 	goto loop_entr;
 	do {
-		// seek to end of current subchunk
-		result.d = fseeko(file, (off_t) letoh32(rh.size), SEEK_CUR);
+		/* seek to end of current subchunk */
+		result.d = fseeko(
+			file, (off_t) byteswap_letoh_u32(rh.size), SEEK_CUR
+		);
 		if ( result.d != 0 ){
 			return FILECHECK_SEEK_ERROR;
 		}
 loop_entr:
-		result.z = fread(&rh, sizeof rh, (size_t) 1u, file);
-		if ( result.z != (size_t) 1u ){
+		result.z = fread(&rh, sizeof rh, SIZE_C(1), file);
+		if ( result.z != SIZE_C(1) ){
 			if ( feof(file) != 0 ){
 				return FILECHECK_MALFORMED;
 			}
 			return FILECHECK_READ_ERROR;
 		}
 
-		if ( letoh32(rh.size) == 0 ){
+		if ( byteswap_letoh_u32(rh.size) == 0 ){
 			return FILECHECK_MALFORMED;
 		}
 	}
 	while ( memcmp(&rh.id, target, sizeof rh.id) != 0 );
 
-	// seek to start of subchunk before returning
+	/* seek to start of subchunk before returning */
 	result.d = fseeko(file, -((off_t) (sizeof rh)), SEEK_CUR);
 	if ( result.d != 0 ){
 		return FILECHECK_SEEK_ERROR;
@@ -271,4 +276,4 @@ loop_entr:
 	return FILECHECK_OK;
 }
 
-// EOF ///////////////////////////////////////////////////////////////////////
+/* EOF //////////////////////////////////////////////////////////////////// */

@@ -1,20 +1,24 @@
-#ifndef TTA_MAIN_H
-#define TTA_MAIN_H
-//////////////////////////////////////////////////////////////////////////////
+#ifndef H_TTA_MAIN_H
+#define H_TTA_MAIN_H
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // main.h                                                                   //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2024, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 
-#include "../bits.h"
+#include <stdbool.h>
+#include <stdint.h>
+
 #include "../libttaR.h"
 
-//////////////////////////////////////////////////////////////////////////////
+#include "./common.h"
+
+/* //////////////////////////////////////////////////////////////////////// */
 
 enum ProgramMode {
 	MODE_ENCODE,
@@ -27,11 +31,11 @@ enum ThreadMode {
 	THREADMODE_MULTI
 };
 
-//==========================================================================//
+/* ======================================================================== */
 
 struct GlobalFlags {
 	/*@dependent@*/ /*@null@*/
-	char		*outfile;	// from argv
+	char		*outfile;		/* from argv */
 	bool		 outfile_is_dir;
 	bool		 quiet;
 	bool		 delete_src;
@@ -40,29 +44,29 @@ struct GlobalFlags {
 	enum DecFormat	 decfmt:8u;
 };
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
+
+/*@-redef@*/
 
 /*@unchecked@*/
-extern const struct LibTTAr_VersionInfo ttaR_info;
+BUILD_EXTERN const struct LibTTAr_VersionInfo ttaR_info;
 
-//--------------------------------------------------------------------------//
-
-//#ifndef TTA_MAIN_C
 /*@checkmod@*/ /*@temp@*/
-extern const char *g_progname;
-//#endif
+BUILD_EXTERN const char *g_progname;
 
 /*@checkmod@*/
-extern u8 g_nwarnings;
+BUILD_EXTERN uint8_t g_nwarnings;
 
 /*@checkmod@*/
-extern struct GlobalFlags g_flag;
+BUILD_EXTERN struct GlobalFlags g_flag;
 
 /*@checkmod@*/
-extern uint g_nthreads;
+BUILD_EXTERN unsigned int g_nthreads;
 
 /*@checkmod@*/ /*@dependent@*/ /*@null@*/
-extern char *g_rm_on_sigint;
+BUILD_EXTERN char *g_rm_on_sigint;
 
-// EOF ///////////////////////////////////////////////////////////////////////
-#endif
+/*@=redef@*/
+
+/* EOF //////////////////////////////////////////////////////////////////// */
+#endif	/* H_TTA_MAIN_H */

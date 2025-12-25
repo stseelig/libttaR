@@ -1,6 +1,6 @@
-//////////////////////////////////////////////////////////////////////////////
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// debug.c                                                                 //
+// debug.c                                                                  //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
@@ -11,27 +11,24 @@
 //                                                                          //
 // errors are macro'd in header to fatal (normal) / non-fatal (_nf suffix)  //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
-
-#ifdef S_SPLINT_S
-#include "../splint.h"
-#endif
-
-/* ------------------------------------------------------------------------ */
+/////////////////////////////////////////////////////////////////////////// */
 
 #include <inttypes.h>
 #include <stdarg.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "debug.h"
-#include "formats.h"	// FileCheck, FileStats, guid128_format
-#include "main.h"
-#include "system.h"
+#include "./common.h"
+#include "./debug.h"
+#include "./formats.h"
+#include "./main.h"
+#include "./system.h"
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
-static NOINLINE COLD void print_error_tta(
+COLD
+static NOINLINE void print_error_tta(
 	enum Fatality fatality, const char *, va_list args
 )
 /*@globals	fileSystem,
@@ -43,7 +40,7 @@ static NOINLINE COLD void print_error_tta(
 @*/
 ;
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 /**@fn int_nwarnings
  * @brief increment the number of error/warnings variable
@@ -57,19 +54,20 @@ inc_nwarnings(void)
 /*@globals	g_nwarnings@*/
 /*@modifies	g_nwarnings@*/
 {
-	return (int) (g_nwarnings += (u8) (g_nwarnings < UINT8_MAX));
+	return (int) (g_nwarnings += (uint8_t) (g_nwarnings < UINT8_MAX));
 }
 
-//==========================================================================//
+/* ======================================================================== */
 
 /**@fn error_sys
  * @brief print a fatal system error
  *
- * @param errnum error number
- * @param name[in] function name
- * @param extra[in] any extra info, probably a filename
+ * @param errnum - error number
+ * @param name   - function name
+ * @param extra  - any extra info, probably a filename
 **/
-NORETURN COLD void
+NORETURN COLD
+BUILD NOINLINE void
 error_sys(
 	const int errnum, const char *const name,
 	/*@null@*/ const char *const extra
@@ -82,17 +80,19 @@ error_sys(
 @*/
 {
 	print_error_sys(errnum, name, extra, FATAL);
+
 	UNREACHABLE;
 }
 
 /**@fn error_sys_nf
  * @brief print a non-fatal system error
  *
- * @param errnum error number
- * @param name[in] function name
- * @param extra[in] any extra info, probably a filename
+ * @param errnum - error number
+ * @param name   - function name
+ * @param extra  - any extra info, probably a filename
 **/
-COLD void
+COLD
+BUILD NOINLINE void
 error_sys_nf(
 	const int errnum, const char *const name,
 	/*@null@*/ const char *const extra
@@ -105,18 +105,21 @@ error_sys_nf(
 @*/
 {
 	print_error_sys(errnum, name, extra, NONFATAL);
+
+	return;
 }
 
 /**@fn print_error_sys
  * @brief print a system error
  *
- * @param errnum error number
- * @param name[in] function name
- * @param extra[in] any extra info, probably a filename
- * @param fatality whether the error is fatal or non-fatal
+ * @param errnum   - error number
+ * @param name     - function name
+ * @param extra    - any extra info, probably a filename
+ * @param fatality - whether the error is fatal or non-fatal
 **/
 /*@maynotreturn@*/
-COLD void
+COLD
+BUILD NOINLINE void
 print_error_sys(
 	const int errnum, const char *const name,
 	/*@null@*/ const char *const extra, const enum Fatality fatality
@@ -133,16 +136,16 @@ print_error_sys(
 
 	file_lock(stdout);
 	file_lock(stderr);
-	//
-	(void) fprintf(stderr, T_B_DEFAULT "%s: ", g_progname);
-	(void) fputs(T_RED "error:" T_DEFAULT " ", stderr);
-	(void) fprintf(stderr, "%s: (%d) ", name, errnum);
-	(void) fputs(strerror_ts(errnum, buf, sizeof buf), stderr);
-	if ( extra != NULL ){
-		(void) fprintf(stderr, ": %s", extra);
+	{
+		(void) fprintf(stderr, T_B_DEFAULT "%s: ", g_progname);
+		(void) fputs(T_RED "error:" T_DEFAULT " ", stderr);
+		(void) fprintf(stderr, "%s: (%d) ", name, errnum);
+		(void) fputs(strerror_ts(errnum, buf, sizeof buf), stderr);
+		if ( extra != NULL ){
+			(void) fprintf(stderr, ": %s", extra);
+		}
+		(void) fputs(" " T_RED "!" T_RESET "\n", stderr);
 	}
-	(void) fputs(" " T_RED "!" T_RESET "\n", stderr);
-	//
 	file_unlock(stdout);
 	file_unlock(stderr);
 
@@ -150,19 +153,20 @@ print_error_sys(
 	if ( fatality == FATAL ){
 		exit(nwarnings);
 	}
-	else {	return; }
+	return;
 }
 
-//--------------------------------------------------------------------------//
+/* ------------------------------------------------------------------------ */
 
 /**@fn error_tta
  * @brief print a fatal program error
  *
- * @param format[in] formatted error string
- * @param ...[in] args for 'format'
+ * @param format - formatted error string
+ * @param ...    - args for 'format'
 **/
 /*@printflike@*/
-NORETURN COLD void
+NORETURN COLD
+BUILD NOINLINE void
 error_tta(const char *const format, ...)
 /*@globals	fileSystem,
 		g_nwarnings
@@ -172,19 +176,22 @@ error_tta(const char *const format, ...)
 @*/
 {
 	va_list args;
+
 	va_start(args, format);
 	print_error_tta(FATAL, format, args);
+
 	UNREACHABLE;
 }
 
 /**@fn error_tta_nf
  * @brief print a non-fatal program error
  *
- * @param format[in] formatted error string
- * @param ...[in] args for 'format'
+ * @param format - formatted error string
+ * @param ...    - args for 'format'
 **/
 /*@printflike@*/
-COLD void
+COLD
+BUILD NOINLINE void
 error_tta_nf(const char *const format, ...)
 /*@globals	fileSystem,
 		g_nwarnings
@@ -194,21 +201,24 @@ error_tta_nf(const char *const format, ...)
 @*/
 {
 	va_list args;
+
 	va_start(args, format);
 	print_error_tta(NONFATAL, format, args);
 	va_end(args);
+
 	return;
 }
 
 /**@fn print_error_tta
  * @brief print a non-fatal program error
  *
- * @param fatality whether the error is fatal or non-fatal
- * @param format[in] formatted error string
- * @param args[in] args for 'format'
+ * @param fatality - whether the error is fatal or non-fatal
+ * @param format   - formatted error string
+ * @param args     - args for 'format'
 **/
 /*@maynotreturn@*/
-static NOINLINE COLD void
+COLD
+static NOINLINE void
 print_error_tta(
 	const enum Fatality fatality, const char *const format, va_list args
 )
@@ -224,12 +234,12 @@ print_error_tta(
 
 	file_lock(stdout);
 	file_lock(stderr);
-	//
-	(void) fprintf(stderr, T_B_DEFAULT "%s: ", g_progname);
-	(void) fputs(T_RED "error:" T_DEFAULT " ", stderr);
-	(void) vfprintf(stderr, format, args);
-	(void) fputs(" " T_RED "!" T_RESET "\n", stderr);
-	//
+	{
+		(void) fprintf(stderr, T_B_DEFAULT "%s: ", g_progname);
+		(void) fputs(T_RED "error:" T_DEFAULT " ", stderr);
+		(void) vfprintf(stderr, format, args);
+		(void) fputs(" " T_RED "!" T_RESET "\n", stderr);
+	}
 	file_unlock(stdout);
 	file_unlock(stderr);
 
@@ -237,17 +247,18 @@ print_error_tta(
 	if ( fatality == FATAL ){
 		exit(nwarnings);
 	}
-	else {	return;	}
+	return;
 }
 
 /**@fn print_error_tta
  * @brief print a non-fatal program warning
  *
- * @param format[in] formatted error string
- * @param ...[in] args for 'format'
+ * @param format - formatted error string
+ * @param ...    - args for 'format'
 **/
 /*@printflike@*/
-COLD void
+COLD
+BUILD NOINLINE void
 warning_tta(const char *const format, ...)
 /*@globals	fileSystem,
 		g_nwarnings
@@ -262,39 +273,41 @@ warning_tta(const char *const format, ...)
 
 	file_lock(stdout);
 	file_lock(stderr);
-	//
-	(void) fprintf(stderr, T_B_DEFAULT "%s: ", g_progname);
-	(void) fputs(T_YELLOW "warning:" T_DEFAULT " ", stderr);
-	(void) vfprintf(stderr, format, args);
-	(void) fputs(" " T_YELLOW "!" T_RESET "\n", stderr);
-	//
+	{
+		(void) fprintf(stderr, T_B_DEFAULT "%s: ", g_progname);
+		(void) fputs(T_YELLOW "warning:" T_DEFAULT " ", stderr);
+		(void) vfprintf(stderr, format, args);
+		(void) fputs(" " T_YELLOW "!" T_RESET "\n", stderr);
+	}
 	file_unlock(stdout);
 	file_unlock(stderr);
 
 	va_end(args);
 
 	(void) inc_nwarnings();
+
 	return;
 }
 
-//--------------------------------------------------------------------------//
+/* ------------------------------------------------------------------------ */
 
 /**@fn error_filecheck
  * @brief print a non-fatal filecheck error
  *
- * @param fc the error type
- * @param errnum error number
- * @param fstat[in] the bloated file stats struct
- * @param filename[in] the name of the source file
+ * @param fc       - error type
+ * @param errnum   - error number
+ * @param fstat    - bloated file stats struct
+ * @param filename - name of the source file
  *
  * @note These eventually lead to a fatal error. I just wanted to print them
  *   all out before exiting.
 **/
-COLD void
+COLD
+BUILD NOINLINE void
 error_filecheck(
 	const enum FileCheck fc, const int errnum,
-	const struct FileStats *const restrict fstat,
-	const char *const restrict filename
+	const struct FileStats *const RESTRICT fstat,
+	const char *const RESTRICT filename
 )
 /*@globals	fileSystem,
 		g_nwarnings
@@ -350,4 +363,4 @@ error_filecheck(
 	return;
 }
 
-// EOF ///////////////////////////////////////////////////////////////////////
+/* EOF //////////////////////////////////////////////////////////////////// */

@@ -1,19 +1,20 @@
-#ifndef TTA_SYSTEM_POSIX_H
-#define TTA_SYSTEM_POSIX_H
-//////////////////////////////////////////////////////////////////////////////
+#ifndef H_TTA_SYSTEM_POSIX_H
+#define H_TTA_SYSTEM_POSIX_H
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // system.posix.h                                                           //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2024-2025, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 
 #include <assert.h>
 #include <errno.h>
 #include <signal.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -21,18 +22,17 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "../bits.h"
+#include "./common.h"
+#include "./debug.h"
+#include "./main.h"
 
-#include "debug.h"
-#include "main.h"	// g_progname
-
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 #define PATH_DELIM	'/'
 
 typedef struct timespec	timestamp_p;
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 /*@unused@*/
 static NORETURN COLD void sighand_cleanup_exit(int)
@@ -52,9 +52,9 @@ static void errwrite_action_end(int)
 /*@modifies	fileSystem@*/
 ;
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
-/// @see "system.h"
+/**@see "system.h" **/
 INLINE void
 signals_setup(void)
 /*@globals	internalState@*/
@@ -83,12 +83,12 @@ signals_setup(void)
 	return;
 }
 
-//--------------------------------------------------------------------------//
+/* ------------------------------------------------------------------------ */
 
 /**@fn sighand_cleanup_exit
  * @brief signal handler that removes any incomplete file(s) then _exits
  *
- * @param signum signal number
+ * @param signum - signal number
  *
  * @note only async-signal-safe functions should be used (man 7 signal-safety)
 **/
@@ -100,11 +100,11 @@ sighand_cleanup_exit(const int signum)
 {
 	const char intro0[]       = "\n" T_B_DEFAULT;
 	const char intro1[]       = ": " T_PURPLE;
-	// strsignal may not be async-signal-safe, but we are just _exit-ing
+	/* strsignal(3) is not async-signal-safe, but we are just _exit-ing */
 	const char *const signame = strsignal(signum);
 	const char intro2[]       = T_DEFAULT " ";
 	const char outro[]        = T_PURPLE "!" T_RESET "\n";
-	//
+	/* * */
 	union {	int d; } result;
 
 	(void) write(STDERR_FILENO, intro0, (sizeof intro0) - 1u);
@@ -113,17 +113,18 @@ sighand_cleanup_exit(const int signum)
 	(void) write(STDERR_FILENO, signame, strlen(signame));
 	(void) write(STDERR_FILENO, intro2, (sizeof intro2) - 1u);
 
-	// remove any incomplete file(s)
+	/* remove any incomplete file(s) */
 	if ( g_rm_on_sigint != NULL ){
 		errwrite_action_start();
 		result.d = unlink(g_rm_on_sigint);
-		if ( (result.d != 0) && (errno == EACCES) ){	// /dev/null
+		if ( (result.d != 0) && (errno == EACCES) ){ /* /dev/null */
 			result.d = 0;
 		}
 		errwrite_action_end(result.d);
 	}
 
 	(void) write(STDERR_FILENO, outro, (sizeof outro) - 1u);
+
 	_exit(signum);
 }
 
@@ -139,6 +140,7 @@ errwrite_action_start(void)
 	const char act_start[] = "?";
 
 	(void) write(STDERR_FILENO, act_start, (sizeof act_start) - 1u);
+
 	return;
 }
 
@@ -155,7 +157,7 @@ errwrite_action_end(const int result)
 {
 	const char act_ok[]  = "\b. ";
 	const char act_err[] = "\b" T_RED "x" T_DEFAULT " ";
-	//
+	/* * */
 	const char *str;
 	size_t size;
 
@@ -167,67 +169,71 @@ errwrite_action_end(const int result)
 		size = (sizeof act_err) - 1u;
 	}
 	(void) write(STDERR_FILENO, str, size);
+
 	return;
 }
 
-//==========================================================================//
+/* ======================================================================== */
 
-/// @see "system.h"
+/**@see "system.h" **/
 ALWAYS_INLINE void
-timestamp_get(/*@out@*/ timestamp_p *const restrict out)
+timestamp_get(/*@out@*/ timestamp_p *const RESTRICT out)
 /*@globals	internalState@*/
 {
 	UNUSED const int rv = clock_gettime(CLOCK_MONOTONIC, out);
+
 	assert(rv == 0);
+
 	return;
 }
 
-/// @see "system.h"
+/**@see "system.h" **/
 INLINE PURE double
 timestamp_diff(
-	const timestamp_p *const restrict start,
-	const timestamp_p *const restrict finish
+	const timestamp_p *const RESTRICT start,
+	const timestamp_p *const RESTRICT finish
 )
 /*@*/
 {
-	const double diff_sec  = (double) (
-		finish->tv_sec - start->tv_sec
-	);
+	const double diff_sec  = (double) (finish->tv_sec - start->tv_sec);
 	const double diff_nsec = (
 		((double) (finish->tv_nsec - start->tv_nsec)) / 1000000000.0
 	);
+
 	return diff_sec + diff_nsec;
 }
 
-//==========================================================================//
+/* ======================================================================== */
 
-/// @see "system.h"
+/**@see "system.h" **/
 ALWAYS_INLINE void
-file_lock(FILE *const restrict filehandle)
+file_lock(FILE *const RESTRICT filehandle)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
 		filehandle
 @*/
 {
 	flockfile(filehandle);
+
 	return;
 }
 
-/// @see "system.h"
+/**@see "system.h" **/
 ALWAYS_INLINE void
-file_unlock(FILE *const restrict filehandle)
+file_unlock(FILE *const RESTRICT filehandle)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
 		filehandle
 @*/
 {
 	funlockfile(filehandle);
+
 	return;
 }
 
-//==========================================================================//
+/* ======================================================================== */
 
-/// @see "system.h"
+/**@see "system.h" **/
 INLINE void
 fdlimit_check(void)
 /*@globals	fileSystem,
@@ -251,34 +257,33 @@ fdlimit_check(void)
 	if UNLIKELY ( result.d != 0 ){
 		error_sys(errno, "setrlimit", NULL);
 	}
-
 	return;
 }
 
-//==========================================================================//
+/* ======================================================================== */
 
-/// @see "system.h"
-INLINE uint
+/**@see "system.h" **/
+INLINE unsigned int
 get_nprocessors_onln(void)
 /*@globals	internalState*/
 {
-	return (uint) sysconf(_SC_NPROCESSORS_ONLN);
+	return (unsigned int) sysconf(_SC_NPROCESSORS_ONLN);
 }
 
-//==========================================================================//
+/* ======================================================================== */
 
-/// @see "system.h"
+/**@see "system.h" **/
 /*@temp@*/
 INLINE char *
 strerror_ts(
-	const int errnum, /*@out@*/ /*@returned@*/ char *const restrict buf,
+	const int errnum, /*@out@*/ /*@returned@*/ char *const RESTRICT buf,
 	const size_t buflen
 )
 /*@modifies	*buf@*/
 {
 	union {	int d; } result;
 
-	// XSI-compliant version returns an int
+	/* XSI-compliant version returns an int */
 	result.d = strerror_r(errnum, buf, buflen);
 	if ( result.d != 0 ){
 		buf[0] = '\0';
@@ -286,5 +291,5 @@ strerror_ts(
 	return buf;
 }
 
-// EOF ///////////////////////////////////////////////////////////////////////
-#endif
+/* EOF //////////////////////////////////////////////////////////////////// */
+#endif	/* H_TTA_SYSTEM_POSIX_H */

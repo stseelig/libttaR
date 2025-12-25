@@ -1,47 +1,47 @@
-#ifndef TTA_MODES_PQUEUE_H
-#define TTA_MODES_PQUEUE_H
-//////////////////////////////////////////////////////////////////////////////
+#ifndef H_TTA_MODES_PQUEUE_H
+#define H_TTA_MODES_PQUEUE_H
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // modes/pqueue.h                                                           //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2024-2025, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-//      these functions are for keeping track of the index for a set of     //
-// parallel arrays that is used like a ring buffer. at one point, I was     //
+//      These functions are for keeping track of the index for a set of     //
+// parallel arrays that is used like a ring buffer. At one point, I was     //
 // using an actual queue, but the id's were always sequentially ordered, so //
 // I replaced the actual queue with these pseudo-queue functions, hence     //
-// pqueue                                                                   //
+// pqueue.                                                                  //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 
 #include <assert.h>
 
-#include "../../bits.h"
+#include "../common.h"
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 struct PQueue {
-	uint	limit;
-	uint	next;
+	unsigned int	limit;
+	unsigned int	next;
 };
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 /**@fn pqueue_init
  * @brief initializes a pseudo-queue struct
  *
- * @param q[out] the queue
- * @param limit the maximum queue length
- *
- * @pre limit != 0
+ * @param q     - pointer to the queue
+ * @param limit - maximum queue length
 **/
-INLINE void
-pqueue_init(/*@out@*/ struct PQueue *const restrict q, const uint limit)
+ALWAYS_INLINE void
+pqueue_init(
+	/*@out@*/ struct PQueue *const RESTRICT q, const unsigned int limit
+)
 /*@modifies	q->limit,
 		q->next
 @*/
@@ -50,19 +50,21 @@ pqueue_init(/*@out@*/ struct PQueue *const restrict q, const uint limit)
 
 	q->limit = limit;
 	q->next  = 0;
+
 	return;
 }
 
 /**@fn pqueue_next
  * @brief get the next queue id
  *
- * @param curr the current queue id
- * @param limit the maximum queue length
+ * @param curr  - current queue id
+ * @param limit - maximum queue length
  *
- * @return the next queue id
+ * @return next queue id
 **/
-ALWAYS_INLINE CONST uint
-pqueue_next(const uint curr, const uint limit)
+CONST
+ALWAYS_INLINE unsigned int
+pqueue_next(const unsigned int curr, const unsigned int limit)
 /*@*/
 {
 	return (curr + 1u < limit ? curr + 1u : 0);
@@ -71,20 +73,20 @@ pqueue_next(const uint curr, const uint limit)
 /**@fn pqueue_pop
  * @brief pseudo-dequeue
  *
- * @param q[in out] the queue
+ * @param q - pointer to the queue
  *
- * @return the next queue id
- *
- * @note guarded by a spinlock
+ * @return next queue id
 **/
-ALWAYS_INLINE uint
-pqueue_pop(struct PQueue *const restrict q)
+ALWAYS_INLINE unsigned int
+pqueue_pop(struct PQueue *const RESTRICT q)
 /*@modifies	q->next@*/
 {
-	const uint retval = q->next;
+	const unsigned int retval = q->next;
+
 	q->next = pqueue_next(q->next, q->limit);
+
 	return retval;
 }
 
-// EOF ///////////////////////////////////////////////////////////////////////
-#endif
+/* EOF //////////////////////////////////////////////////////////////////// */
+#endif	/* H_TTA_MODES_PQUEUE_H */

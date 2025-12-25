@@ -1,51 +1,54 @@
-#ifndef TTA_OPTS_COMMON_H
-#define TTA_OPTS_COMMON_H
-//////////////////////////////////////////////////////////////////////////////
+#ifndef H_TTA_OPTS_COMMON_H
+#define H_TTA_OPTS_COMMON_H
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // opts/common.h                                                            //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2024, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 
-#include "../../bits.h"
+#include "../common.h"
 
-#include "optsget.h"	// enum OptMode
+#include "./optsget.h"
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
-extern int opt_common_quiet(uint, uint, uint, char *const *, enum OptMode)
+BUILD_EXTERN int opt_common_quiet(
+	unsigned int, unsigned int, unsigned int, char *const *, enum OptMode
+)
 /*@globals	g_flag@*/
 /*@modifies	g_flag.quiet@*/
 ;
 
-extern int opt_common_single_threaded(
-	uint, uint, uint, char *const *, enum OptMode
+BUILD_EXTERN int opt_common_single_threaded(
+	unsigned int, unsigned int, unsigned int, char *const *, enum OptMode
 )
 /*@globals	g_flag@*/
 /*@modifies	g_flag.threadmode@*/
 ;
 
-extern int opt_common_multi_threaded(
-	uint, uint, uint, char *const *, enum OptMode
+BUILD_EXTERN int opt_common_multi_threaded(
+	unsigned int, unsigned int, unsigned int, char *const *, enum OptMode
 )
 /*@globals	g_flag@*/
 /*@modifies	g_flag.threadmode@*/
 ;
 
-extern int opt_common_delete_src(
-	uint, uint, uint, char *const *, enum OptMode
+BUILD_EXTERN int opt_common_delete_src(
+	unsigned int, unsigned int, unsigned int, char *const *, enum OptMode
 )
 /*@globals	g_flag@*/
 /*@modifies	g_flag.delete_src@*/
 ;
 
 #undef argv
-extern int opt_common_threads(
-	uint, uint, uint, char *const *argv, enum OptMode
+BUILD_EXTERN int opt_common_threads(
+	unsigned int, unsigned int, unsigned int, char *const *argv,
+	enum OptMode
 )
 /*@globals	fileSystem,
 		internalState,
@@ -61,8 +64,9 @@ extern int opt_common_threads(
 ;
 
 #undef argv
-extern int opt_common_outfile(
-	uint, uint, uint, char *const *argv, enum OptMode
+BUILD_EXTERN int opt_common_outfile(
+	unsigned int, unsigned int, unsigned int, char *const *argv,
+	enum OptMode
 )
 /*@globals	fileSystem,
 		internalState,
@@ -76,5 +80,5 @@ extern int opt_common_outfile(
 @*/
 ;
 
-// EOF ///////////////////////////////////////////////////////////////////////
-#endif
+/* EOF //////////////////////////////////////////////////////////////////// */
+#endif	/* H_TTA_OPTS_COMMON_H */

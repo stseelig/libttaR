@@ -1,8 +1,8 @@
-#ifndef LIBTTAr_H
-#define LIBTTAr_H
+#ifndef H_LIBTTAr_H
+#define H_LIBTTAr_H
 /* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// libttaR.h - 2.0                                                          //
+// libttaR.h - 2.1                                                          //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
@@ -16,7 +16,6 @@
 //                                                                          //
 /////////////////////////////////////////////////////////////////////////// */
 
-#include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -28,63 +27,69 @@
 #define X_LIBTTAr_RESTRICT		__restrict__
 #else
 #define X_LIBTTAr_RESTRICT
-#endif
+#endif	/* X_LIBTTAr_RESTRICT */
 
 /* ------------------------------------------------------------------------ */
 
 #ifdef __GNUC__
 
 #ifdef __has_attribute
-#define X_LIBTTAr_HAS_ATTRIBUTE(x)	__has_attribute(x)
+#define X_LIBTTAr_HAS_ATTRIBUTE(x_x)	__has_attribute(x_x)
 #else
-#define X_LIBTTAr_HAS_ATTRIBUTE(x)	0
-#endif
-
-#if X_LIBTTAr_HAS_ATTRIBUTE(pure)
-#define X_LIBTTAr_PURE			__attribute__((pure))
-#else
-#define X_LIBTTAr_PURE
-#endif
+#define X_LIBTTAr_HAS_ATTRIBUTE(x_x)	0
+#endif	/* X_LIBTTAr_HAS_ATTRIBUTE */
 
 #if X_LIBTTAr_HAS_ATTRIBUTE(const)
-#define X_LIBTTAr_CONST			__attribute__((const))
+#define X_LIBTTAr_ATTRIBUTE_CONST	__attribute__((const))
 #else
-#define X_LIBTTAr_CONST
-#endif
+#define X_LIBTTAr_ATTRIBUTE_CONST
+#endif	/* X_LIBTTAr_ATTRIBUTE_CONST */
+
+#if X_LIBTTAr_HAS_ATTRIBUTE(pure)
+#define X_LIBTTAr_ATTRIBUTE_PURE	__attribute__((pure))
+#else
+#define X_LIBTTAr_ATTRIBUTE_PURE
+#endif	/* X_LIBTTAr_ATTRIBUTE_PURE */
 
 #else /* ! defined(__GNUC__) */
 
-#define X_LIBTTAr_PURE
-#define X_LIBTTAr_CONST
+#define X_LIBTTAr_ATTRIBUTE_PURE
+#define X_LIBTTAr_ATTRIBUTE_CONST
 
 #endif /* __GNUC__ */
 
 /* //////////////////////////////////////////////////////////////////////// */
 
-#define X_LIBTTAr_RV_DONE		 0
-#define X_LIBTTAr_RV_AGAIN		 1
-#define X_LIBTTAr_RV_FAIL		 2
+#define X_LIBTTAr_RV_OK_DONE		 0
+#define X_LIBTTAr_RV_OK_AGAIN		 1
+#define X_LIBTTAr_RV_FAIL_DECODE	 2
+#define X_LIBTTAr_RV_FAIL_OVERFLOW	 3
 #define X_LIBTTAr_RV_INVAL_RANGE	-1
 #define X_LIBTTAr_RV_INVAL_TRUNC	-2
 #define X_LIBTTAr_RV_INVAL_BOUNDS	-3
-#define X_LIBTTAr_RV_MISCONFIG		SCHAR_MIN
+#define X_LIBTTAr_RV_INVAL_ALIGN	-4
+#define X_LIBTTAr_RV_MISCONFIG		INT8_MIN
 
 enum LibTTAr_EncRetVal {
-	LIBTTAr_ERV_DONE		= X_LIBTTAr_RV_DONE,
-	LIBTTAr_ERV_AGAIN		= X_LIBTTAr_RV_AGAIN,
+	LIBTTAr_ERV_OK_DONE		= X_LIBTTAr_RV_OK_DONE,
+	LIBTTAr_ERV_OK_AGAIN		= X_LIBTTAr_RV_OK_AGAIN,
+	LIBTTAr_ERV_FAIL_OVERFLOW	= X_LIBTTAr_RV_FAIL_OVERFLOW,
 	LIBTTAr_ERV_INVAL_RANGE		= X_LIBTTAr_RV_INVAL_RANGE,
 	LIBTTAr_ERV_INVAL_TRUNC		= X_LIBTTAr_RV_INVAL_TRUNC,
 	LIBTTAr_ERV_INVAL_BOUNDS	= X_LIBTTAr_RV_INVAL_BOUNDS,
+	LIBTTAr_ERV_INVAL_ALIGN		= X_LIBTTAr_RV_INVAL_ALIGN,
 	LIBTTAr_ERV_MISCONFIG		= X_LIBTTAr_RV_MISCONFIG
 };
 
 enum LibTTAr_DecRetVal {
-	LIBTTAr_DRV_DONE		= X_LIBTTAr_RV_DONE,
-	LIBTTAr_DRV_AGAIN		= X_LIBTTAr_RV_AGAIN,
-	LIBTTAr_DRV_FAIL		= X_LIBTTAr_RV_FAIL,
+	LIBTTAr_DRV_OK_DONE		= X_LIBTTAr_RV_OK_DONE,
+	LIBTTAr_DRV_OK_AGAIN		= X_LIBTTAr_RV_OK_AGAIN,
+	LIBTTAr_DRV_FAIL_DECODE		= X_LIBTTAr_RV_FAIL_DECODE,
+	LIBTTAr_DRV_FAIL_OVERFLOW	= X_LIBTTAr_RV_FAIL_OVERFLOW,
 	LIBTTAr_DRV_INVAL_RANGE		= X_LIBTTAr_RV_INVAL_RANGE,
 	LIBTTAr_DRV_INVAL_TRUNC		= X_LIBTTAr_RV_INVAL_TRUNC,
 	LIBTTAr_DRV_INVAL_BOUNDS	= X_LIBTTAr_RV_INVAL_BOUNDS,
+	LIBTTAr_DRV_INVAL_ALIGN		= X_LIBTTAr_RV_INVAL_ALIGN,
 	LIBTTAr_DRV_MISCONFIG		= X_LIBTTAr_RV_MISCONFIG
 };
 
@@ -102,6 +107,8 @@ enum LibTTAr_SampleBytes {
 
 struct LibTTAr_CodecState_Priv;
 
+#define LIBTTAr_CODECSTATE_PRIV_ALIGN	((size_t) 16u)
+
 /* ------------------------------------------------------------------------ */
 
 struct LibTTAr_CodecState_User {
@@ -113,7 +120,12 @@ struct LibTTAr_CodecState_User {
 	size_t		nbytes_tta_total;
 };
 
-#define LIBTTAr_CODECSTATE_USER_INIT	{0, UINT32_MAX, 0, 0, 0, 0}
+#if __STDC_VERSION__ >= 199901L
+#define LIBTTAr_CODECSTATE_USER_INIT	\
+	((struct LibTTAr_CodecState_User) { 0, UINT32_MAX, 0, 0, 0, 0 })
+#else
+#define LIBTTAr_CODECSTATE_USER_INIT	  { 0, UINT32_MAX, 0, 0, 0, 0 }
+#endif	/* LIBTTAr_CODECSTATE_USER_INIT */
 
 /* ------------------------------------------------------------------------ */
 
@@ -245,14 +257,14 @@ extern size_t libttaR_pcm_write(
 
 #undef nchan
 /*@external@*/ /*@unused@*/
-X_LIBTTAr_CONST
+X_LIBTTAr_ATTRIBUTE_CONST
 extern int libttaR_test_nchan(unsigned int nchan)
 /*@*/
 ;
 
 #undef samplerate
 /*@external@*/ /*@unused@*/
-X_LIBTTAr_CONST
+X_LIBTTAr_ATTRIBUTE_CONST
 extern size_t libttaR_nsamples_perframe_tta1(size_t samplerate)
 /*@*/
 ;
@@ -260,7 +272,7 @@ extern size_t libttaR_nsamples_perframe_tta1(size_t samplerate)
 #undef samplebytes
 #undef nchan
 /*@external@*/ /*@unused@*/
-X_LIBTTAr_CONST
+X_LIBTTAr_ATTRIBUTE_CONST
 extern size_t libttaR_ttabuf_safety_margin(
 	enum LibTTAr_SampleBytes samplebytes, unsigned int nchan
 )
@@ -269,7 +281,7 @@ extern size_t libttaR_ttabuf_safety_margin(
 
 #undef nchan
 /*@external@*/ /*@unused@*/
-X_LIBTTAr_CONST
+X_LIBTTAr_ATTRIBUTE_CONST
 extern size_t libttaR_codecstate_priv_size(unsigned int nchan)
 /*@*/
 ;
@@ -277,9 +289,9 @@ extern size_t libttaR_codecstate_priv_size(unsigned int nchan)
 #undef buf
 #undef size
 /*@external@*/ /*@unused@*/
-X_LIBTTAr_PURE
+X_LIBTTAr_ATTRIBUTE_PURE
 extern uint32_t libttaR_crc32(
-	/*@in@*/ const uint8_t *X_LIBTTAr_RESTRICT buf, size_t size
+	/*@in@*/ const void *X_LIBTTAr_RESTRICT buf, size_t size
 )
 /*@*/
 ;
@@ -288,16 +300,18 @@ extern uint32_t libttaR_crc32(
 
 #undef X_LIBTTAr_RESTRICT
 #undef X_LIBTTAr_HAS_ATTRIBUTE
-#undef X_LIBTTAr_PURE
-#undef X_LIBTTAr_CONST
+#undef X_LIBTTAr_ATTRIBUTE_CONST
+#undef X_LIBTTAr_ATTRIBUTE_PURE
 
-#undef X_LIBTTAr_RV_DONE
-#undef X_LIBTTAr_RV_AGAIN
-#undef X_LIBTTAr_RV_FAIL
+#undef X_LIBTTAr_RV_OK_DONE
+#undef X_LIBTTAr_RV_OK_AGAIN
+#undef X_LIBTTAr_RV_FAIL_DECODE
+#undef X_LIBTTAr_RV_FAIL_OVERFLOW
 #undef X_LIBTTAr_RV_INVAL_RANGE
 #undef X_LIBTTAr_RV_INVAL_TRUNC
 #undef X_LIBTTAr_RV_INVAL_BOUNDS
+#undef X_LIBTTAr_RV_INVAL_ALIGN
 #undef X_LIBTTAr_RV_MISCONFIG
 
 /* EOF //////////////////////////////////////////////////////////////////// */
-#endif /* LIBTTAr_H */
+#endif /* H_LIBTTAr_H */

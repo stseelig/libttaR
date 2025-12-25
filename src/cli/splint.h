@@ -1,7 +1,7 @@
+#ifndef H_TTA_SPLINT_H
+#define H_TTA_SPLINT_H
 #ifdef S_SPLINT_S
-#ifndef TTA_SPLINT_H
-#define TTA_SPLINT_H
-//////////////////////////////////////////////////////////////////////////////
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // splint.h                                                                 //
 //                                                                          //
@@ -15,12 +15,17 @@
 //      defines may not be technically correct (for every arch, or just in  //
 // general), but this is just to shutup splint                              //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 
 #include <stdint.h>
 #include <time.h>
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
+
+/*@-namechecks@*/
+#define __off_t		off_t
+#define __off64_t 	off_t
+/*@=namechecks@*/
 
 /*@-redef@*/
 typedef enum clockid_t	clockid_t;
@@ -33,7 +38,7 @@ struct timespec {
 };
 /*@=redef@*/ /*@=matchfields@*/
 
-// these are bogus
+/* these are bogus */
 /*@-redef@*/
 typedef int	pthread_t;
 typedef int	pthread_attr_t;
@@ -41,7 +46,7 @@ typedef int	pthread_spinlock_t;
 typedef int	sem_t;
 /*@=redef@*/
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 #ifndef UINT8_MAX
 #define UINT8_MAX	((uint8_t) 0xFFu)
@@ -67,13 +72,17 @@ typedef int	sem_t;
 #define SIZE_MAX	((size_t) 0xFFFFFFFFFFFFFFFFu)
 #endif
 
-//--------------------------------------------------------------------------//
+/* ------------------------------------------------------------------------ */
 
 #ifndef CLOCK_MONOTONIC
 #define CLOCK_MONOTONIC	((clockid_t) 1)	/* bogus */
 #endif
 
-//--------------------------------------------------------------------------//
+/* ------------------------------------------------------------------------ */
+
+#ifndef PRId8
+#define PRId8	"hhd"
+#endif
 
 #ifndef PRIX8
 #define PRIX8	"hhX"
@@ -91,7 +100,7 @@ typedef int	sem_t;
 #define PRIu32	"u"
 #endif
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 /*@external@*/ /*@unused@*/
 extern long long atoll(const char *) /*@*/;
@@ -149,6 +158,20 @@ extern void funlockfile(FILE *filehandle)
 @*/
 ;
 
+/*@-incondefs@*/
+#undef oldact
+/*@external@*/ /*@unused@*/
+extern int sigaction(
+	int, /*@null@*/ const struct sigaction *,
+	/*@out@*/ /*@null@*/ struct sigaction *oldact
+)
+/*@globals	internalState@*/
+/*@modifies	internalState,
+		*oldact
+@*/
+;
+/*@=incondefs@*/
+
 /*@-protoparammatch@*/
 #undef rlim
 /*@external@*/ /*@unused@*/
@@ -204,7 +227,7 @@ extern int strerror_r(int, /*@out@*/ char *buf, size_t)
 /*@observer@*/
 extern char *strsignal(int sig) /*@*/;
 
-//==========================================================================//
+/* ======================================================================== */
 
 /*@-protoparammatch@*/
 #undef thread
@@ -335,6 +358,6 @@ extern int sem_wait(sem_t *sem)
 ;
 /*@=protoparammatch@*/
 
-// EOF ///////////////////////////////////////////////////////////////////////
-#endif
-#endif
+/* EOF //////////////////////////////////////////////////////////////////// */
+#endif	/* S_SPLINT_S */
+#endif	/* H_TTA_SPLINT_H */

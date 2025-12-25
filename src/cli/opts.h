@@ -1,40 +1,42 @@
-#ifndef TTA_OPTS_H
-#define TTA_OPTS_H
-//////////////////////////////////////////////////////////////////////////////
+#ifndef H_TTA_OPTS_H
+#define H_TTA_OPTS_H
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // opts.h                                                                   //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2024, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 
-#include "../bits.h"
+#include "./formats.h"
+#include "./open.h"
 
-#include "formats.h"		// struct fstat
-#include "open.h"		// struct OpenedFiles
+#include "./opts/optsget.h"
 
-#include "opts/optsget.h"	// struct OptDict
+/* //////////////////////////////////////////////////////////////////////// */
 
-//////////////////////////////////////////////////////////////////////////////
-
-/*@unchecked@*/
-extern const struct OptDict encode_optdict;
+/*@-redef@*/
 
 /*@unchecked@*/
-extern const struct OptDict decode_optdict;
+BUILD_EXTERN const struct OptDict encode_optdict;
 
-//////////////////////////////////////////////////////////////////////////////
+/*@unchecked@*/
+BUILD_EXTERN const struct OptDict decode_optdict;
 
-// optsget.c
+/*@=redef@*/
+
+/* //////////////////////////////////////////////////////////////////////// */
+
+/* optsget.c */
 
 #undef of
 #undef argv
-extern uint optargs_process(
-	struct OpenedFiles *restrict of, uint, uint, char *const *argv,
-	const struct OptDict *restrict
+BUILD_EXTERN NOINLINE unsigned int optargs_process(
+	struct OpenedFiles *RESTRICT of, unsigned int, unsigned int,
+	char *const *argv, const struct OptDict *RESTRICT
 )
 /*@globals	fileSystem,
 		internalState
@@ -46,14 +48,14 @@ extern uint optargs_process(
 @*/
 ;
 
-//--------------------------------------------------------------------------//
+/* ------------------------------------------------------------------------ */
 
-// encode.c
+/* encode.c */
 
 #undef fstat
-extern void rawpcm_statcopy(/*@out@*/ struct FileStats *restrict fstat)
+BUILD_EXTERN void rawpcm_statcopy(/*@out@*/ struct FileStats *RESTRICT fstat)
 /*@modifies	*fstat@*/
 ;
 
-// EOF ///////////////////////////////////////////////////////////////////////
-#endif
+/* EOF //////////////////////////////////////////////////////////////////// */
+#endif	/* H_TTA_OPTS_H */

@@ -1,6 +1,6 @@
-#ifndef TTA_CODEC_FILTER_FILTER__C_H
-#define TTA_CODEC_FILTER_FILTER__C_H
-//////////////////////////////////////////////////////////////////////////////
+#ifndef H_TTA_CODEC_FILTER_FILTER__C_H
+#define H_TTA_CODEC_FILTER_FILTER__C_H
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // codec/filter/filter._C.h                                                 //
 //                                                                          //
@@ -10,74 +10,71 @@
 // Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
-
-#include "../../bits.h"
-
-//==========================================================================//
-
-// aligned in 'struct Codec'
-struct Filter {
-	i32	qm[8u];
-	i32	dx[9u];	// the extra value is for a memmove trick
-	i32	dl[9u];	// ~
-	i32	error;	// sign of the error (-1, 1, or 0)
-};
-
-//==========================================================================//
+/////////////////////////////////////////////////////////////////////////// */
 
 #include "../common.h"
-#include "../tta.h"	// asr32
+#include "../tta.h"
+#include "../types.h"
 
-#include "asserts.h"
+#include "./asserts.h"
+#include "./struct.h"
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 #undef a
-ALWAYS_INLINE i32 filter_sum_update_a(
-	i32 *restrict a, const i32 *restrict, const i32 *restrict , i32, i32
+ALWAYS_INLINE int32_t filter_sum_update_a(
+	int32_t *RESTRICT a, const int32_t *RESTRICT, const int32_t *RESTRICT,
+	int32_t, int32_t
 )
 /*@modifies	*a@*/
 ;
 
 #undef m
-ALWAYS_INLINE void filter_update_m(i32 *restrict m, const i32 *restrict)
+ALWAYS_INLINE void filter_update_m(
+	int32_t *RESTRICT m, const int32_t *RESTRICT
+)
 /*@modifies	*m@*/
 ;
 
-ALWAYS_INLINE CONST i32 updated_m(i32, bitcnt) /*@*/;
+CONST
+ALWAYS_INLINE int32_t updated_m(int32_t, bitcnt) /*@*/;
 
 #undef b
-ALWAYS_INLINE void filter_update_b(i32 *restrict b)
+ALWAYS_INLINE void filter_update_b(int32_t *RESTRICT b)
 /*@modifies	*b@*/
 ;
 
 #undef m
 #undef b
-ALWAYS_INLINE void filter_shift_mb(i32 *restrict m, i32 *restrict b)
+ALWAYS_INLINE void filter_shift_mb(int32_t *RESTRICT m, int32_t *RESTRICT b)
 /*@modifies	*m,
 		*b
 @*/
 ;
 
-ALWAYS_INLINE CONST i32 signof32(i32) /*@*/;
+CONST
+ALWAYS_INLINE int32_t signof32(int32_t) /*@*/;
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
-///@see "../filter.h"
-ALWAYS_INLINE i32
+/**@see "../filter.h" **/
+ALWAYS_INLINE int32_t
 tta_filter_enc(
-	struct Filter *const restrict filter, const i32 value, i32 round,
-	const bitcnt k
+	struct Filter *const RESTRICT filter, const int32_t value,
+	int32_t round, const bitcnt k
 )
 /*@modifies	*filter@*/
 {
-	i32 *const restrict a = ASSUME_ALIGNED( filter->qm   , 16u);
-	i32 *const restrict m = ASSUME_ALIGNED( filter->dx   , 16u);
-	i32 *const restrict b = ASSUME_ALIGNED( filter->dl   ,  4u);
-	i32 *const restrict e = ASSUME_ALIGNED(&filter->error,  4u);
-
-	i32 retval;
+	int32_t *const RESTRICT a = (
+		ASSUME_ALIGNED(filter->qm, LIBTTAr_CODECSTATE_PRIV_ALIGN)
+	);
+	int32_t *const RESTRICT m = (
+		ASSUME_ALIGNED(filter->dx, LIBTTAr_CODECSTATE_PRIV_ALIGN)
+	);
+	int32_t *const RESTRICT b = ASSUME_ALIGNED( filter->dl   , 4u);
+	int32_t *const RESTRICT e = ASSUME_ALIGNED(&filter->error, 4u);
+	/* * */
+	int32_t retval;
 
 	FILTER_ASSERTS_PRE;
 
@@ -92,20 +89,24 @@ tta_filter_enc(
 	return retval;
 }
 
-///@see "../filter.h"
-ALWAYS_INLINE i32
+/**@see "../filter.h" **/
+ALWAYS_INLINE int32_t
 tta_filter_dec(
-	struct Filter *const restrict filter, const i32 value, i32 round,
-	const bitcnt k
+	struct Filter *const RESTRICT filter, const int32_t value,
+	int32_t round, const bitcnt k
 )
 /*@modifies	*filter@*/
 {
-	i32 *const restrict a = ASSUME_ALIGNED( filter->qm   , 16u);
-	i32 *const restrict m = ASSUME_ALIGNED( filter->dx   , 16u);
-	i32 *const restrict b = ASSUME_ALIGNED( filter->dl   ,  4u);
-	i32 *const restrict e = ASSUME_ALIGNED(&filter->error,  4u);
-
-	i32 retval;
+	int32_t *const RESTRICT a = (
+		ASSUME_ALIGNED(filter->qm, LIBTTAr_CODECSTATE_PRIV_ALIGN)
+	);
+	int32_t *const RESTRICT m = (
+		ASSUME_ALIGNED(filter->dx, LIBTTAr_CODECSTATE_PRIV_ALIGN)
+	);
+	int32_t *const RESTRICT b = ASSUME_ALIGNED( filter->dl   , 4u);
+	int32_t *const RESTRICT e = ASSUME_ALIGNED(&filter->error, 4u);
+	/* * */
+	int32_t retval;
 
 	FILTER_ASSERTS_PRE;
 
@@ -120,27 +121,28 @@ tta_filter_dec(
 	return retval;
 }
 
-//--------------------------------------------------------------------------//
+/* ------------------------------------------------------------------------ */
 
 /**@fn filter_sum_update_a
  * @brief updates 'a' and sums the filter
  *
- * @param a[in out] filter->qm
- * @param m[in] filter->dx
- * @param b[in] filter->dl
- * @param error sign of the error (-1, 1, or 0)
- * @param round initial sum
+ * @param a     - filter->qm
+ * @param m     - filter->dx
+ * @param b     - filter->dl
+ * @param error - sign of the error (-1, 1, or 0)
+ * @param round - initial sum
  *
  * @return sum of the filter
 **/
-ALWAYS_INLINE i32
+ALWAYS_INLINE int32_t
 filter_sum_update_a(
-	i32 *const restrict a, const i32 *const restrict m,
-	const i32 *const restrict b, const i32 error, i32 round
+	int32_t *const RESTRICT a, const int32_t *const RESTRICT m,
+	const int32_t *const RESTRICT b, const int32_t error, int32_t round
 )
 /*@modifies	*a@*/
 {
-	uint i;
+	unsigned int i;
+
 	for ( i = 0; i < 8u; ++i ){
 		round += (a[i] += m[i] * error) * b[i];
 	}
@@ -150,92 +152,101 @@ filter_sum_update_a(
 /**@fn filter_update_m
  * @brief updates 'm'
  *
- * @param m[in out] filter->dx
- * @param b[in] filter->dl
+ * @param m - filter->dx
+ * @param b - filter->dl
 **/
 ALWAYS_INLINE void
-filter_update_m(i32 *const restrict m, const i32 *const restrict b)
+filter_update_m(int32_t *const RESTRICT m, const int32_t *const RESTRICT b)
 /*@modifies	*m@*/
 {
 	m[8u] = updated_m(b[7u], (bitcnt) 2u);
 	m[7u] = updated_m(b[6u], (bitcnt) 1u);
 	m[6u] = updated_m(b[5u], (bitcnt) 1u);
 	m[5u] = updated_m(b[4u], (bitcnt) 0u);
+
 	return;
 }
 
 /**@fn updated_m
  * @brief returns an updated 'm' value
  *
- * @param b filter->dl[]
- * @param k final shift amount
+ * @param b - filter->dl[]
+ * @param k - final shift amount
 **/
-ALWAYS_INLINE CONST i32
-updated_m(const i32 b, const bitcnt k)
+CONST
+ALWAYS_INLINE int32_t
+updated_m(const int32_t b, const bitcnt k)
 /*@*/
 {
-	return (i32) ((((u32) asr32(b, (bitcnt) 30u)) | 0x1u) << k);
+	return (int32_t) ((((uint32_t) asr32(b, (bitcnt) 30u)) | 0x1u) << k);
 }
 
 /**@fn filter_update_b
  * @brief updates 'b'
  *
- * @param b[in out] filter->dl
+ * @param b - filter->dl
 **/
 ALWAYS_INLINE void
-filter_update_b(i32 *const restrict b)
+filter_update_b(int32_t *const RESTRICT b)
 /*@modifies	*b@*/
 {
 	b[7u] = b[8u] - b[7u];
 	b[6u] = b[7u] - b[6u];
 	b[5u] = b[6u] - b[5u];
+
 	return;
 }
 
 /**@fn filter_shift_mb
  * @brief shifts the 'm' and 'b' arrays left by 1
  *
- * @param m[in out] filter->dx
- * @param b[in out] filter->dl
+ * @param m - filter->dx
+ * @param b - filter->dl
 **/
 ALWAYS_INLINE void
-filter_shift_mb(i32 *const restrict m, i32 *const restrict b)
+filter_shift_mb(int32_t *const RESTRICT m, int32_t *const RESTRICT b)
 /*@modifies	*m,
 		*b
 @*/
 {
 	MEMMOVE(m, &m[1u], (size_t) (8u * (sizeof *m)));
 	MEMMOVE(b, &b[1u], (size_t) (8u * (sizeof *b)));
+
 	return;
 }
 
 /**@fn signof32
  * @brief get the sign of a 32-bit integer
  *
- * @param x input value
+ * @param x - input value
  *
  * @retval -1, 1, or 0
- *
- * @note affected by LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES
 **/
-ALWAYS_INLINE CONST i32
-signof32(const i32 x)
+CONST
+ALWAYS_INLINE int32_t
+signof32(const int32_t x)
 /*@*/
 {
 #ifndef LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES
-	const u32 y = -((u32) x);
 
-	if ( HAS_ASR(i32) ){
-		return (i32) (((u32) asr32(x, (bitcnt) 31u)) | (y >> 31u));
+	const uint32_t y = -((uint32_t) x);
+
+	if ( HAS_ASR(int32_t) ){
+		return (int32_t) (
+			((uint32_t) asr32(x, (bitcnt) 31u)) | (y >> 31u)
+		);
 	}
-	else {	return (i32) ((-(((u32) x) >> 31u)) | (y >> 31u));
-	}
-#else
+	else {	return (int32_t) ((-(((uint32_t) x) >> 31u)) | (y >> 31u)); }
+
+
+#else	/* defined(LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES) */
+
 	return (UNPREDICTABLE (x != 0)
-		? (UNPREDICTABLE (x < 0) ? (i32) -1 : (i32) 1) : 0
+		? (UNPREDICTABLE (x < 0) ? INT32_C(-1) : INT32_C(1)) : 0
 	);
-#endif
+
+#endif	/* LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES */
 }
 
-// EOF ///////////////////////////////////////////////////////////////////////
-#endif
+/* EOF //////////////////////////////////////////////////////////////////// */
+#endif	/* H_TTA_CODEC_FILTER_FILTER__C_H */

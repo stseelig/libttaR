@@ -1,27 +1,28 @@
-#ifndef TTA_OPEN_H
-#define TTA_OPEN_H
-//////////////////////////////////////////////////////////////////////////////
+#ifndef H_TTA_OPEN_H
+#define H_TTA_OPEN_H
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // open.h                                                                   //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2024, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 
-#include <stddef.h>	// size_t
+#include <stddef.h>
 
-#include "formats.h"	// struct FileStats
+#include "./common.h"
+#include "./formats.h"
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 struct OpenedFilesMember {
 	/*@dependent@*/ /*@relnull@*/
 	FILE			*infile;
 	/*@dependent@*/
-	char			*infile_name;	// from argv, not allocated
+	char			*infile_name;	/* from argv, not allocated */
 	struct FileStats	 fstat;
 };
 typedef /*@only@*/ struct OpenedFilesMember	*op_OpenedFilesMember;
@@ -32,11 +33,11 @@ struct OpenedFiles {
 	op_OpenedFilesMember	*file;
 };
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 /*@dependent@*/ /*@null@*/
-extern FILE *fopen_check(
-	const char *restrict, const char *restrict, enum Fatality
+BUILD_EXTERN FILE *fopen_check(
+	const char *RESTRICT, const char *RESTRICT, enum Fatality
 )
 /*@globals	fileSystem,
 		internalState
@@ -47,9 +48,9 @@ extern FILE *fopen_check(
 ;
 
 #undef of
-extern int openedfiles_add(
-	struct OpenedFiles *const restrict of,
-	/*@dependent@*/ char *const restrict
+BUILD_EXTERN NOINLINE int openedfiles_add(
+	struct OpenedFiles *const RESTRICT of,
+	/*@dependent@*/ char *const RESTRICT
 )
 /*@globals	fileSystem,
 		internalState
@@ -63,8 +64,8 @@ extern int openedfiles_add(
 ;
 
 #undef of
-extern void
-openedfiles_close_free(struct OpenedFiles *const restrict of)
+BUILD_EXTERN NOINLINE void
+openedfiles_close_free(struct OpenedFiles *const RESTRICT of)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -77,8 +78,8 @@ openedfiles_close_free(struct OpenedFiles *const restrict of)
 ;
 
 #undef ofm
-extern uint filestats_get(
-	struct OpenedFilesMember *const restrict ofm, const enum ProgramMode
+BUILD_EXTERN NOINLINE unsigned int filestats_get(
+	struct OpenedFilesMember *const RESTRICT ofm, const enum ProgramMode
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -86,13 +87,16 @@ extern uint filestats_get(
 @*/
 ;
 
+CONST
 /*@observer@*/
-extern CONST const char *get_encfmt_sfx(enum EncFormat) /*@*/;
+BUILD_EXTERN const char *get_encfmt_sfx(enum EncFormat) /*@*/;
+
+CONST
 /*@observer@*/
-extern CONST const char *get_decfmt_sfx(enum DecFormat) /*@*/;
+BUILD_EXTERN const char *get_decfmt_sfx(enum DecFormat) /*@*/;
 
 /*@only@*/
-extern char *get_outfile_name(const char *, const char *)
+BUILD_EXTERN NOINLINE char *get_outfile_name(const char *, const char *)
 /*@globals	internalState,
 		fileSystem
 @*/
@@ -101,5 +105,5 @@ extern char *get_outfile_name(const char *, const char *)
 @*/
 ;
 
-// EOF ///////////////////////////////////////////////////////////////////////
-#endif
+/* EOF //////////////////////////////////////////////////////////////////// */
+#endif	/* H_TTA_OPEN_H */

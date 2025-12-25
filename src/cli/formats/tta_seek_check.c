@@ -1,4 +1,4 @@
-//////////////////////////////////////////////////////////////////////////////
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // formats/tta_seek_check.c                                                 //
 //                                                                          //
@@ -11,49 +11,55 @@
 //                                                                          //
 //  http://tausoft.org/wiki/True_Audio_Codec_Format                         //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 
 #include <assert.h>
 #include <errno.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../bits.h"
-#include "../../libttaR.h"	// crc32
+#include "../../libttaR.h"
 
 #include "../alloc.h"
+#include "../byteswap.h"
+#include "../common.h"
 #include "../debug.h"
 #include "../formats.h"
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 /**@fn filecheck_tta_seektable
  * @brief reads a seektable from a TTA file into a seektable struct
  *
- * @param st[out] the seektable struct
- * @param nframes number of frames in the seektable
- * @param file[in] the source file
+ * @param st      - seektable struct
+ * @param nframes - number of frames in the seektable
+ * @param file    - source file
  *
  * @return FILECHECK_OK if the seektable is good
  *
  * @pre 'file' should be at the appropriate offset before calling
 **/
-enum FileCheck
+BUILD enum FileCheck
 filecheck_tta_seektable(
-	/*@out@*/ struct SeekTable *const restrict st, const size_t nframes,
-	FILE *const restrict file
+	/*@out@*/ struct SeekTable *const RESTRICT st, const size_t nframes,
+	FILE *const RESTRICT file
 )
-/*@globals	fileSystem@*/
+/*@globals	fileSystem,
+		internalState
+@*/
 /*@modifies	fileSystem,
+		internalState,
 		*st,
 		*fstat,
 		file
 @*/
 {
-	u32 crc;	// little-endian
-	union {	size_t	z;
-		int	d;
-		u32	u_32;
+	uint32_t crc;	/* little-endian */
+	union {	size_t		z;
+		int		d;
+		uint32_t	u_32;
 	} result;
 
 	st->nmemb = nframes;
@@ -67,8 +73,8 @@ filecheck_tta_seektable(
 		return FILECHECK_READ_ERROR;
 	}
 
-	result.z = fread(&crc, sizeof crc, (size_t) 1u, file);
-	if ( result.z != (size_t) 1u ){
+	result.z = fread(&crc, sizeof crc, SIZE_C(1), file);
+	if ( result.z != SIZE_C(1) ){
 		if ( feof(file) != 0 ){
 			return FILECHECK_MALFORMED;
 		}
@@ -76,13 +82,12 @@ filecheck_tta_seektable(
 	}
 
 	result.u_32 = libttaR_crc32(
-		(u8 *) st->table, st->nmemb * (sizeof *st->table)
+		st->table, st->nmemb * (sizeof *st->table)
 	);
-	if ( result.u_32 != letoh32(crc) ){
+	if ( result.u_32 != byteswap_letoh_u32(crc) ){
 		return FILECHECK_CORRUPTED;
 	}
-
 	return FILECHECK_OK;
 }
 
-// EOF ///////////////////////////////////////////////////////////////////////
+/* EOF //////////////////////////////////////////////////////////////////// */

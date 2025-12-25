@@ -1,5 +1,4 @@
-#define TTA_MAIN_C
-//////////////////////////////////////////////////////////////////////////////
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // main.c                                                                   //
 //                                                                          //
@@ -8,28 +7,30 @@
 // Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 
 #include <assert.h>
 #include <errno.h>
-#include <stdbool.h>	// true
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "../bits.h"
 #include "../libttaR.h"
 #include "../version.h"
 
-#include "debug.h"
-#include "help.h"
-#include "main.h"
-#include "system.h"
+#include "./common.h"
+#include "./debug.h"
+#include "./help.h"
+#include "./main.h"
+#include "./system.h"
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 #undef argv
-extern int mode_encode(uint, uint, char *const *argv)
+BUILD_EXTERN NOINLINE int mode_encode(
+	unsigned int, unsigned int, char *const *argv
+)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -40,7 +41,9 @@ extern int mode_encode(uint, uint, char *const *argv)
 ;
 
 #undef argv
-extern int mode_decode(uint, uint, char *const *argv)
+BUILD_EXTERN NOINLINE int mode_decode(
+	unsigned int, unsigned int, char *const *argv
+)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -50,20 +53,22 @@ extern int mode_decode(uint, uint, char *const *argv)
 @*/
 ;
 
-//////////////////////////////////////////////////////////////////////////////
+/* ======================================================================== */
 
 static void atexit_cleanup(void)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
-/**@struct ttaR_info
+/*@-redef@*/
+
+/**@var ttaR_info
  * @brief program version, copyright, and license info
 **/
 /*@unchecked@*/
-const struct LibTTAr_VersionInfo ttaR_info = {
+BUILD const struct LibTTAr_VersionInfo ttaR_info = {
 	CLI_VERSION_NUM,
 	CLI_VERSION_NUM_MAJOR,
 	CLI_VERSION_NUM_MINOR,
@@ -74,26 +79,24 @@ const struct LibTTAr_VersionInfo ttaR_info = {
 	CLI_LICENSE_STR
 };
 
-//--------------------------------------------------------------------------//
-
 /**@var g_progname
  * @brief name of the program
 **/
 /*@checkmod@*/ /*@temp@*/
-const char *g_progname;
+BUILD const char *g_progname = NULL;
 
 /**@var g_nwarnings
  * @brief number of warnings and errors; exit status
 **/
 /*@checkmod@*/
-u8 g_nwarnings;
+BUILD uint8_t g_nwarnings = 0;
 
-/**@struct g_flag
+/**@var g_flag
  * @brief global flags struct
 **/
 /*@-fullinitblock@*/
 /*@checkmod@*/
-struct GlobalFlags g_flag = {
+BUILD struct GlobalFlags g_flag = {
 	.threadmode = THREADMODE_UNSET,
 	.decfmt     = DECFMT_W64
 };
@@ -103,22 +106,24 @@ struct GlobalFlags g_flag = {
  * @brief number of coder threads to use
 **/
 /*@checkmod@*/
-uint g_nthreads = 0;
+BUILD unsigned int g_nthreads = 0;
 
 /**@var g_rm_on_sigint
  * @brief name of the currently opened destination file for removal on a
  *   handled signal
 **/
 /*@checkmod@*/ /*@dependent@*/ /*@null@*/
-char *g_rm_on_sigint = NULL;
+BUILD char *g_rm_on_sigint = NULL;
 
-//////////////////////////////////////////////////////////////////////////////
+/*@=redef@*/
+
+/* //////////////////////////////////////////////////////////////////////// */
 
 /**@fn main
  * @brief read a book
  *
- * @param argc argument count
- * @param argv[in out] argument vector
+ * @param argc - argument count
+ * @param argv - argument vector
  *
  * @return program exit status; number of warnings and errors
 **/
@@ -137,38 +142,36 @@ main(const int argc, char *const *const argv)
 	int retval = EXIT_FAILURE;
 	UNUSED union {	int d; } result;
 
-	// saved for warning/error printing
+	/* saved for warning/error printing */
 	g_progname = argv[0];
 
-	// no arguments
+	/* no arguments */
 	if UNLIKELY ( argc == 1 ){
 		goto print_main_help;
 	}
 
-	// signals
+	/* signals */
 	signals_setup();
 
-	// atexit
+	/* atexit */
 	result.d = atexit(atexit_cleanup);
 	assert(result.d == 0);
 
-	// enter a mode
+	/* enter a mode */
 	if ( strcmp(argv[1u], "encode") == 0 ){
-		retval = mode_encode(2u, (uint) argc, argv);
+		retval = mode_encode(2u, (unsigned int) argc, argv);
 	}
 	else if ( strcmp(argv[1u], "decode") == 0 ){
-		retval = mode_decode(2u, (uint) argc, argv);
+		retval = mode_decode(2u, (unsigned int) argc, argv);
 	}
-	else if UNLIKELY ( true ) {
-		error_tta_nf("bad mode '%s'", argv[1u]);
+	else {	error_tta_nf("bad mode '%s'", argv[1u]);
 print_main_help:
 		errprint_help_main();
-	} else{;}
-
+	}
 	return retval;
 }
 
-//--------------------------------------------------------------------------//
+/* ------------------------------------------------------------------------ */
 
 /**@fn atexit_cleanup
  * @brief removes any incomplete file(s) for an early exit on error
@@ -179,13 +182,14 @@ atexit_cleanup(void)
 /*@modifies	fileSystem@*/
 {
 	union {	int d; } result;
-	if UNLIKELY ( g_rm_on_sigint != NULL ){
+
+	if ( g_rm_on_sigint != NULL ){
 		result.d = remove(g_rm_on_sigint);
-		if ( (result.d != 0) && (errno != EACCES) ){	// /dev/null
+		if ( (result.d != 0) && (errno != EACCES) ){ /* /dev/null */
 			error_sys_nf(errno, "remove", g_rm_on_sigint);
 		}
 	}
 	return;
 }
 
-// EOF ///////////////////////////////////////////////////////////////////////
+/* EOF //////////////////////////////////////////////////////////////////// */

@@ -1,6 +1,6 @@
-#ifndef TTA_ALLOC_H
-#define TTA_ALLOC_H
-//////////////////////////////////////////////////////////////////////////////
+#ifndef H_TTA_ALLOC_H
+#define H_TTA_ALLOC_H
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // alloc.h                                                                  //
 //                                                                          //
@@ -9,16 +9,17 @@
 // Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 
-#include <stddef.h>	// size_t
+#include <stddef.h>
 
-#include "../bits.h"	// HOT
+#include "./common.h"
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
+HOT
 /*@only@*/ /*@out@*/
-extern HOT void *malloc_check(size_t size)
+BUILD_EXTERN NOINLINE void *malloc_check(size_t)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -27,8 +28,9 @@ extern HOT void *malloc_check(size_t size)
 @*/
 ;
 
+HOT
 /*@only@*/ /*@in@*/
-extern HOT void *calloc_check(size_t nmemb, size_t size)
+BUILD_EXTERN NOINLINE void *calloc_check(size_t, size_t)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -37,9 +39,11 @@ extern HOT void *calloc_check(size_t nmemb, size_t size)
 @*/
 ;
 
+#undef ptr
+HOT
 /*@only@*/ /*@partial@*/
-extern HOT void *realloc_check(
-	/*@only@*/ /*@null@*/ /*@out@*/ void *ptr, size_t size
+BUILD_EXTERN NOINLINE void *realloc_check(
+	/*@only@*/ /*@null@*/ /*@out@*/ void *ptr, size_t
 )
 /*@globals	fileSystem,
 		internalState
@@ -50,5 +54,5 @@ extern HOT void *realloc_check(
 @*/
 ;
 
-// EOF ///////////////////////////////////////////////////////////////////////
-#endif
+/* EOF //////////////////////////////////////////////////////////////////// */
+#endif	/* H_TTA_ALLOC_H */

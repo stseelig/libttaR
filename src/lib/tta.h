@@ -1,6 +1,6 @@
-#ifndef TTA_CODEC_TTA_H
-#define TTA_CODEC_TTA_H
-//////////////////////////////////////////////////////////////////////////////
+#ifndef H_TTA_CODEC_TTA_H
+#define H_TTA_CODEC_TTA_H
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // codec/tta.h                                                              //
 //                                                                          //
@@ -10,114 +10,125 @@
 // Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 
 #include <assert.h>
-#include <limits.h>	// INT_MIN
-#include <stddef.h>	// size_t
+#include <stddef.h>
+#include <stdint.h>
 
-#include "../bits.h"
+#include "./common.h"
+#include "./types.h"
 
-#include "common.h"
-#include "filter.h"
+/* //////////////////////////////////////////////////////////////////////// */
 
-//////////////////////////////////////////////////////////////////////////////
+/* frame finished */
+#define X_LIBTTAr_RV_OK_DONE		 0
 
-// frame finished
-#define LIBTTAr_RET_DONE		 0
+/* frame not finished */
+#define X_LIBTTAr_RV_OK_AGAIN		 1
 
-// frame not finished
-#define LIBTTAr_RET_AGAIN		 1
+/* frame finished, but (nbytes_tta_total != nbytes_tta_perframe)
+  ||
+   frame not finished, but (nbytes_tta_total > nbytes_tta_perframe)
+*/
+#define X_LIBTTAr_RV_FAIL_DECODE	 2
 
-// frame finished, but (nbytes_tta_total != nbytes_tta_perframe)
-//||
-// frame not finished, but (nbytes_tta_total > nbytes_tta_perframe)
-#define LIBTTAr_RET_DECFAIL		 2
+/* some 'user' value overflowed */
+#define X_LIBTTAr_RV_FAIL_OVERFLOW	 3
 
-// some misc value is 0 or a bad enum value
-#define LIBTTAr_RET_INVAL_RANGE		-1
+/* some misc value is 0 or a bad enum value */
+#define X_LIBTTAr_RV_INVAL_RANGE	-1
 
-// (ni32_target % nchan != 0)
-#define LIBTTAr_RET_INVAL_TRUNC		-2
+/* (ni32_target % nchan != 0) */
+#define X_LIBTTAr_RV_INVAL_TRUNC	-2
 
-// some misc value would cause a bounds issue
-#define LIBTTAr_RET_INVAL_BOUNDS	-3
+/* some misc value would cause a bounds issue */
+#define X_LIBTTAr_RV_INVAL_BOUNDS	-3
 
-// library was misconfigured; @see libttaR_test_nchan()
-#define LIBTTAr_RET_MISCONFIG	SCHAR_MIN
+/* a pointer/buffer is not properly aligned */
+#define X_LIBTTAr_RV_INVAL_ALIGN	-4
+
+/* library was misconfigured; @see libttaR_test_nchan() */
+#define X_LIBTTAr_RV_MISCONFIG		INT8_MIN
 
 enum LibTTAr_EncRetVal {
-	LIBTTAr_ERV_DONE		= LIBTTAr_RET_DONE,
-	LIBTTAr_ERV_AGAIN		= LIBTTAr_RET_AGAIN,
-	LIBTTAr_ERV_INVAL_RANGE		= LIBTTAr_RET_INVAL_RANGE,
-	LIBTTAr_ERV_INVAL_TRUNC		= LIBTTAr_RET_INVAL_TRUNC,
-	LIBTTAr_ERV_INVAL_BOUNDS	= LIBTTAr_RET_INVAL_BOUNDS,
-	LIBTTAr_ERV_MISCONFIG		= LIBTTAr_RET_MISCONFIG
+	LIBTTAr_ERV_OK_DONE		= X_LIBTTAr_RV_OK_DONE,
+	LIBTTAr_ERV_OK_AGAIN		= X_LIBTTAr_RV_OK_AGAIN,
+	LIBTTAr_ERV_FAIL_OVERFLOW	= X_LIBTTAr_RV_FAIL_OVERFLOW,
+	LIBTTAr_ERV_INVAL_RANGE		= X_LIBTTAr_RV_INVAL_RANGE,
+	LIBTTAr_ERV_INVAL_TRUNC		= X_LIBTTAr_RV_INVAL_TRUNC,
+	LIBTTAr_ERV_INVAL_BOUNDS	= X_LIBTTAr_RV_INVAL_BOUNDS,
+	LIBTTAr_ERV_INVAL_ALIGN		= X_LIBTTAr_RV_INVAL_ALIGN,
+	LIBTTAr_ERV_MISCONFIG		= X_LIBTTAr_RV_MISCONFIG
 };
 
 enum LibTTAr_DecRetVal {
-	LIBTTAr_DRV_DONE		= LIBTTAr_RET_DONE,
-	LIBTTAr_DRV_AGAIN		= LIBTTAr_RET_AGAIN,
-	LIBTTAr_DRV_FAIL		= LIBTTAr_RET_DECFAIL,
-	LIBTTAr_DRV_INVAL_RANGE		= LIBTTAr_RET_INVAL_RANGE,
-	LIBTTAr_DRV_INVAL_TRUNC		= LIBTTAr_RET_INVAL_TRUNC,
-	LIBTTAr_DRV_INVAL_BOUNDS	= LIBTTAr_RET_INVAL_BOUNDS,
-	LIBTTAr_DRV_MISCONFIG		= LIBTTAr_RET_MISCONFIG
+	LIBTTAr_DRV_OK_DONE		= X_LIBTTAr_RV_OK_DONE,
+	LIBTTAr_DRV_OK_AGAIN		= X_LIBTTAr_RV_OK_AGAIN,
+	LIBTTAr_DRV_FAIL_DECODE		= X_LIBTTAr_RV_FAIL_DECODE,
+	LIBTTAr_DRV_FAIL_OVERFLOW	= X_LIBTTAr_RV_FAIL_OVERFLOW,
+	LIBTTAr_DRV_INVAL_RANGE		= X_LIBTTAr_RV_INVAL_RANGE,
+	LIBTTAr_DRV_INVAL_TRUNC		= X_LIBTTAr_RV_INVAL_TRUNC,
+	LIBTTAr_DRV_INVAL_BOUNDS	= X_LIBTTAr_RV_INVAL_BOUNDS,
+	LIBTTAr_DRV_INVAL_ALIGN		= X_LIBTTAr_RV_INVAL_ALIGN,
+	LIBTTAr_DRV_MISCONFIG		= X_LIBTTAr_RV_MISCONFIG
 };
 
-// max unary r/w size:		read		write
-//	8/16-bit:		   8194u	   8199u
-//	  24-bit:		2097154uL	2097159uL
-// max binary r/w size:		      3u	      0u
-// max cacheflush w size: 		  	      8u
-#define TTABUF_SAFETY_MARGIN_1_2	((size_t)    8207u)
-#define TTABUF_SAFETY_MARGIN_3		((size_t) 2097167uL)
+/* max unary r/w size:		read		write
+	8/16-bit:		   8194u	   8199u
+	  24-bit:		2097154uL	2097159uL
+   max binary r/w size:		      3u	      0u
+   max cacheflush w size: 		  	      8u
+*/
+#define TTABUF_SAFETY_MARGIN_1_2	SIZE_C(   8207)
+#define TTABUF_SAFETY_MARGIN_3		SIZE_C(2097167)
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
-ALWAYS_INLINE CONST
-size_t get_safety_margin(enum LibTTAr_SampleBytes, uint) /*@*/;
+CONST
+ALWAYS_INLINE size_t get_safety_margin(enum LibTTAr_SampleBytes, unsigned int)
+/*@*/
+;
 
-ALWAYS_INLINE CONST
-bitcnt get_predict_k(enum LibTTAr_SampleBytes) /*@*/;
+CONST
+ALWAYS_INLINE bitcnt get_predict_k(enum LibTTAr_SampleBytes) /*@*/;
 
-ALWAYS_INLINE CONST
-i32 get_filter_round(enum LibTTAr_SampleBytes) /*@*/;
+CONST
+ALWAYS_INLINE int32_t get_filter_round(enum LibTTAr_SampleBytes) /*@*/;
 
-ALWAYS_INLINE CONST
-bitcnt get_filter_k(enum LibTTAr_SampleBytes) /*@*/;
+CONST
+ALWAYS_INLINE bitcnt get_filter_k(enum LibTTAr_SampleBytes) /*@*/;
 
-//--------------------------------------------------------------------------//
+/* ------------------------------------------------------------------------ */
 
-ALWAYS_INLINE CONST i32 asr32(i32, bitcnt) /*@*/;
+CONST
+ALWAYS_INLINE int32_t asr32(int32_t, bitcnt) /*@*/;
 
-//--------------------------------------------------------------------------//
+/* ------------------------------------------------------------------------ */
 
-ALWAYS_INLINE CONST i32 tta_predict1(i32, bitcnt) /*@*/;
-ALWAYS_INLINE CONST u32 tta_postfilter_enc(i32) /*@*/;
-ALWAYS_INLINE CONST i32 tta_prefilter_dec(u32) /*@*/;
+CONST
+ALWAYS_INLINE int32_t tta_predict1(int32_t, bitcnt) /*@*/;
 
-//////////////////////////////////////////////////////////////////////////////
+CONST
+ALWAYS_INLINE uint32_t tta_postfilter_enc(int32_t) /*@*/;
 
-// undefined behavior assertions for the codec functions
-#define CODEC_UB_ASSERTS_PRE { \
-	assert(((uintptr_t) &priv->codec) % STRUCT_CODEC_ALIGNMENT == 0); \
-	SAMPLEBYTES_RANGE_ASSERT(misc->samplebytes); \
-}
+CONST
+ALWAYS_INLINE int32_t tta_prefilter_dec(uint32_t) /*@*/;
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 /**@fn get_safety_margin
  * @brief safety margin for the TTA buffer
  *
- * @param samplebytes number of bytes per PCM sample
- * @param nchan number of audio channels
+ * @param samplebytes - number of bytes per PCM sample
+ * @param nchan       - number of audio channels
  *
  * @return safety margin
 **/
-ALWAYS_INLINE CONST size_t
+CONST
+ALWAYS_INLINE size_t
 get_safety_margin(
-	const enum LibTTAr_SampleBytes samplebytes, const uint nchan
+	const enum LibTTAr_SampleBytes samplebytes, const unsigned int nchan
 )
 /*@*/
 {
@@ -136,11 +147,12 @@ get_safety_margin(
 /**@fn get_predict_k
  * @brief arg for tta_predict1
  *
- * @param samplebytes number of bytes per PCM sample
+ * @param samplebytes - number of bytes per PCM sample
  *
  * @return arg 'k' for tta_predict1
 **/
-ALWAYS_INLINE CONST bitcnt
+CONST
+ALWAYS_INLINE bitcnt
 get_predict_k(const enum LibTTAr_SampleBytes samplebytes)
 /*@*/
 {
@@ -159,11 +171,12 @@ get_predict_k(const enum LibTTAr_SampleBytes samplebytes)
 /**@fn get_filter_round
  * @brief arg for tta_filter
  *
- * @param samplebytes number of bytes per PCM sample
+ * @param samplebytes - number of bytes per PCM sample
  *
  * @return arg 'round' for tta_filter
 **/
-ALWAYS_INLINE CONST i32
+CONST
+ALWAYS_INLINE int32_t
 get_filter_round(const enum LibTTAr_SampleBytes samplebytes)
 /*@*/
 {
@@ -172,9 +185,9 @@ get_filter_round(const enum LibTTAr_SampleBytes samplebytes)
 	switch ( samplebytes ){
 	case LIBTTAr_SAMPLEBYTES_1:
 	case LIBTTAr_SAMPLEBYTES_3:
-		return (i32) 0x00000200;	// binexp32(filter_k - 1u)
+		return INT32_C(0x00000200);	/* binexp32(filter_k - 1u) */
 	case LIBTTAr_SAMPLEBYTES_2:
-		return (i32) 0x00000100;	// ~
+		return INT32_C(0x00000100);	/* ~                       */
 	}
 	UNREACHABLE;
 }
@@ -182,11 +195,12 @@ get_filter_round(const enum LibTTAr_SampleBytes samplebytes)
 /**@fn get_filter_k
  * @brief arg for tta_filter
  *
- * @param samplebytes number of bytes per PCM sample
+ * @param samplebytes - number of bytes per PCM sample
  *
  * @return arg 'k' for tta_filter
 **/
-ALWAYS_INLINE CONST bitcnt
+CONST
+ALWAYS_INLINE bitcnt
 get_filter_k(const enum LibTTAr_SampleBytes samplebytes)
 /*@*/
 {
@@ -202,61 +216,60 @@ get_filter_k(const enum LibTTAr_SampleBytes samplebytes)
 	UNREACHABLE;
 }
 
-//==========================================================================//
+/* ======================================================================== */
 
-// checks if the targeted arch has an signed (arithmetic) right shift
-#define HAS_ASR(Xtype)	( \
+/* checks if the targeted arch has an signed (arithmetic) right shift */
+#define HAS_ASR(x_type)	( \
 	/*@-shiftimplementation@*/ \
-	(Xtype) (((Xtype) UINTMAX_MAX) >> 1u) == (Xtype) UINTMAX_MAX \
+	(x_type) (((x_type) UINTMAX_MAX) >> 1u) == (x_type) UINTMAX_MAX \
 	/*@=shiftimplementation@*/ \
 )
 
 /**@fn asr32
  * @brief arithmetic shift right 32-bit
  *
- * @param x value to shift
- * @param k amount to shift
+ * @param x - value to shift
+ * @param k - amount to shift
  *
  * @return shifted value
- *
- * @pre k <= (bitcnt) 31u
 **/
-ALWAYS_INLINE CONST i32
-asr32(const i32 x, const bitcnt k)
+CONST
+ALWAYS_INLINE int32_t
+asr32(const int32_t x, const bitcnt k)
 /*@*/
 {
 	assert(k <= (bitcnt) 31u);
 
-	if ( HAS_ASR(i32) ){
+	if ( HAS_ASR(int32_t) ){
 		/*@-shiftimplementation@*/
-		return (i32) (x >> k);
+		return (int32_t) (x >> k);
 		/*@=shiftimplementation@*/
 	}
 	else {	return (UNPREDICTABLE (x < 0)
-			? (i32) ~((~((u32) x)) >> k) : (i32) (((u32) x) >> k)
+			? (int32_t) ~((~((uint32_t) x)) >> k)
+			: (int32_t) (((uint32_t) x) >> k)
 		);
 	}
 }
 
-//==========================================================================//
+/* ======================================================================== */
 
 /**@fn tta_predict1
  * @brief fixed order 1 prediction
  *
- * @param x input value
- * @param k how much to shift it by
+ * @param x - input value
+ * @param k - how much to shift it by
  *
  * @return predicted value
- *
- * @pre k <= (bitcnt) 32u
 **/
-ALWAYS_INLINE CONST i32
-tta_predict1(const i32 x, const bitcnt k)
+CONST
+ALWAYS_INLINE int32_t
+tta_predict1(const int32_t x, const bitcnt k)
 /*@*/
 {
 	assert(k <= (bitcnt) 32u);
 
-	return (i32) (((((u64f) x) << k) - x) >> k);
+	return (int32_t) (((((uint_fast64_t) x) << k) - x) >> k);
 }
 
 /**@fn tta_postfilter_enc
@@ -267,28 +280,35 @@ tta_predict1(const i32 x, const bitcnt k)
  *        2 => 3
  *       -2 => 4
  *
- * @param x input value
+ * @param x - input value
  *
  * @return interleaved value
  *
  * @note https://en.wikipedia.org/wiki/Golomb_coding#Overview#\
  *     Use%20with%20signed%20integers
- * @note affected by LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES
 **/
-ALWAYS_INLINE CONST u32
-tta_postfilter_enc(const i32 x)
+CONST
+ALWAYS_INLINE uint32_t
+tta_postfilter_enc(const int32_t x)
 /*@*/
 {
 #ifndef LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES
-	const u32 y     = -((u32) x);
-	const u32 xsign = (u32) asr32((i32) y, (bitcnt) 31u);
-	return (u32) ((y << 1u) ^ xsign);
-#else
-	const u32 yp = (u32) x, yn = -((u32) x);
+
+	const uint32_t y     = -((uint32_t) x);
+	const uint32_t xsign = (uint32_t) asr32((int32_t) y, (bitcnt) 31u);
+
+	return (uint32_t) ((y << 1u) ^ xsign);
+
+#else	/* defined(LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES) */
+
+	const uint32_t yp    =   (uint32_t) x;
+	const uint32_t yn    = -((uint32_t) x);
+
 	return (UNPREDICTABLE (x > 0)
-		? (u32) ((yp << 1u) - 1u) : (u32) (yn << 1u)
+		? (uint32_t) ((yp << 1u) - 1u) : (uint32_t) (yn << 1u)
 	);
-#endif
+
+#endif	/* LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES */
 }
 
 /**@fn tta_prefilter_dec
@@ -299,28 +319,34 @@ tta_postfilter_enc(const i32 x)
  *        3 =>  2
  *        4 => -2
  *
- * @param x input value
+ * @param x - input value
  *
  * @return deinterleaved value
  *
  * @see tta_postfilter_enc
- * @note affected by LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES
 **/
-ALWAYS_INLINE CONST i32
-tta_prefilter_dec(const u32 x)
+CONST
+ALWAYS_INLINE int32_t
+tta_prefilter_dec(const uint32_t x)
 /*@*/
 {
 #ifndef LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES
-	const u32 xsign = (u32) -(x & 0x1u);
-	return (i32) -((x >> 1u) ^ xsign);
-#else
-	const i32 y = (i32) x;
-	return (UNPREDICTABLE ((((u32) x) & 0x1u) != 0)
+
+	const uint32_t xsign = (uint32_t) -(x & 0x1u);
+
+	return (int32_t) -((x >> 1u) ^ xsign);
+
+#else	/* defined(LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES) */
+
+	const int32_t y = (int32_t) x;
+
+	return (UNPREDICTABLE ((((uint32_t) x) & 0x1u) != 0)
 		? asr32(y + 1, (bitcnt) 1u)
-		: asr32((i32) -((u32) y), (bitcnt) 1u)
+		: asr32((int32_t) -((uint32_t) y), (bitcnt) 1u)
 	);
-#endif
+
+#endif	/* LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES */
 }
 
-// EOF ///////////////////////////////////////////////////////////////////////
-#endif
+/* EOF //////////////////////////////////////////////////////////////////// */
+#endif	/* H_TTA_CODEC_TTA_H */

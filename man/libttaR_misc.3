@@ -1,13 +1,13 @@
 .\" t
 .\"     Title: libttaR_misc
 .\"    Author: Shane Seelig
-.\"      Date: 2025-05-01
-.\"    Source: libttaR 2.0
+.\"      Date: 2025-12-24
+.\"    Source: libttaR 2.1
 .\"  Language: English
 .\"
 .\" ##########################################################################
 
-.TH "LIBTTAr_MISC" "3" "2025\-04\-01" "libttaR 2.0" \
+.TH "LIBTTAr_MISC" "3" "2025\-12\-24" "libttaR 2.1" \
 "LibTTAr Programmer's Manual"
 
 .\" ##########################################################################
@@ -38,13 +38,13 @@ libttaR_misc \- miscellaneous functions and objects
 
 .SH "DESCRIPTION"
 
-.BR libttaR_test_nchan ()
+.BR libttaR_test_nchan (3)
 tests whether the library was built to support \fInchan\fR audio channels.
 
-.BR libttaR_nsamples_perframe_tta1 ()
+.BR libttaR_nsamples_perframe_tta1 (3)
 calculates the number of samples in a TTA1 frame for a given \fIsamplerate\fR.
 
-.BR libttaR_ttabuf_safety_margin ()
+.BR libttaR_ttabuf_safety_margin (3)
 calculates a safety-margin size for padding the TTA buffer in order to prevent
 a possible buffer overrun.
 The calculated size is greater than the maximum number of TTA bytes that could
@@ -54,9 +54,31 @@ malformed.
 Not using this function may result in a \fBLIBTTAr_RET_INVAL_BOUNDS\fR
 return from a codec function if the TTA buffer length is too small.
 
-.BR libttaR_codecstate_priv_size ()
-calculates the size of a private state struct with \fInchan\fR audio channels
-(for passing to an allocator).
+.BR libttaR_codecstate_priv_size (3)
+calculates the size of a private state struct with \fInchan\fR audio channels.
+The returned size is suitable for passing to
+.BR aligned_alloc (3).
+
+.RS 4
+.EX
+#include <stdlib.h>
+#include <libttaR.h>
+
+/*@only@*/ /*@null@*/
+LibTTAr_CodecState_Priv *
+priv_alloc(const unsigned int nchan)
+/*@globals	internalState@*/
+/*@modifies	internalState@*/
+{
+	const size_t size = libttaR_codecstate_priv_size(nchan);
+
+	if ( size == 0 ){
+		return NULL;
+	}
+	return aligned_alloc(LIBTTAr_CODECSTATE_PRIV_ALIGN, size);
+}
+.EE
+.RE
 
 .BR libttaR_info
 is a read-only object containing the library's version information.
@@ -65,9 +87,9 @@ is a read-only object containing the library's version information.
 .nf
 \fBstruct LibTTAr_VersionInfo\fR {
     unsigned int       version;
-    unsigned int       version_major;   // API change
-    unsigned int       version_minor;   // bugfix or improvement
-    unsigned int       version_revis;	// inbetween minor versions
+    unsigned int       version_major;   /* API change               */
+    unsigned int       version_minor;   /* bugfix or improvement    */
+    unsigned int       version_revis;	/* inbetween minor versions */
     const char        *version_extra;
     const char        *version_date;
     const char        *copyright;
@@ -107,22 +129,22 @@ The number of bytes per samples in the originally sized PCM.
 
 .SH "RETURN VALUE"
 
-.BR libttaR_test_nchan ()
+.BR libttaR_test_nchan (3)
 .RS 8
 Non-0 on success.
 .RE
 
-.BR libttaR_nsamples_perframe_tta1 ()
+.BR libttaR_nsamples_perframe_tta1 (3)
 .RS 8
 The number of samples in a TTA1 frame.
 .RE
 
-.BR libttaR_ttabuf_safety_margin ()
+.BR libttaR_ttabuf_safety_margin (3)
 .RS 8
 How much to pad the TTA buffer by.
 .RE
 
-.BR libttaR_codecstate_priv_size ()
+.BR libttaR_codecstate_priv_size (3)
 .RS 8
 The size of a private state struct.
 .RE
@@ -131,7 +153,7 @@ The size of a private state struct.
 
 .SH "ERRORS"
 
-0 - bad parameters.
+0 - bad parameter or integer overflow.
 
 The debug build of the library may abort instead of returning an error.
 

@@ -1,6 +1,17 @@
 
 # libttaR ####################################################################
 
+2.1.0 (2025-12-24):-----------------------------------------------------------
+
+	- added some overflow checks to several of the functions
+	- added undefined behavior checks to tta_encode()/tta_decode()
+	- renamed/added some enums to tta_encode()/tta_decode()
+	- codecstate_priv_size() return is now suitable for aligned_alloc(3)
+		- added CODECSTATE_PRIV_ALIGN
+	- crc32() takes a (void *) now
+	- some refactoring
+		- made the library generally more static-library friendly
+
 2.0.1 (2025-05-01):-----------------------------------------------------------
 
 	- debug-version functions may abort instead of returning an error
@@ -144,9 +155,12 @@
 
 # ttaR #######################################################################
 
-next :------------------------------------------------------------------------
+1.1.11 (2025-12-24):----------------------------------------------------------
 
+	- updated for libttaR 2.1.0
 	- missing conditional byteswap in the ApeTag skipper
+	- one or two other minor bugs
+	- some refactoring
 
 1.1.10 (2025-07-13):----------------------------------------------------------
 

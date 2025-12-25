@@ -1,4 +1,4 @@
-//////////////////////////////////////////////////////////////////////////////
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // formats/guid.c                                                           //
 //                                                                          //
@@ -7,40 +7,39 @@
 // Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
-
-#ifdef S_SPLINT_S
-#include "../../splint.h"
-#endif
-
-/* ------------------------------------------------------------------------ */
+/////////////////////////////////////////////////////////////////////////// */
 
 #include <inttypes.h>
+#include <stddef.h>
 #include <stdio.h>
 
-#include "guid.h"
+#include "../common.h"
 
-//////////////////////////////////////////////////////////////////////////////
+#include "./guid.h"
+
+/* //////////////////////////////////////////////////////////////////////// */
 
 /**@fn guid128_format
  * @brief prints a GUID to a buffer: 00000000-1111-2222-3333-444444444444
  *
- * @param buf[out] the destination buffer
- * @param buflen the size of the destination buffer (GUID128_BUFLEN)
- * @param guid[in] the GUID to format
+ * @param buf    - destination buffer
+ * @param buflen - size of the destination buffer (GUID128_BUFLEN)
+ * @param guid   - GUID to format
  *
  * @return 'buf'
  *
  * @note only used for an error message
 **/
-COLD char *
+COLD
+/*@temp@*/
+BUILD char *
 guid128_format(
-	/*@returned@*/ /*@out@*/ char *const restrict buf,
-	const size_t buflen, const struct Guid128 *const restrict guid
+	/*@returned@*/ /*@out@*/ char *const RESTRICT buf,
+	const size_t buflen, const struct Guid128 *const RESTRICT guid
 )
 /*@modifies	*buf@*/
 {
-	// first 3 are little-endian, last 2 are big-endian
+	/* first 3 are little-endian, last 2 are big-endian */
 	(void) snprintf(buf, buflen,
 		"%02"PRIX8"%02"PRIX8"%02"PRIX8"%02"PRIX8
 		"-"
@@ -61,4 +60,4 @@ guid128_format(
 	return buf;
 }
 
-// EOF ///////////////////////////////////////////////////////////////////////
+/* EOF //////////////////////////////////////////////////////////////////// */

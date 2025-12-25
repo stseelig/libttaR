@@ -1,61 +1,62 @@
-//////////////////////////////////////////////////////////////////////////////
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // help.c                                                                   //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2024, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 
-#include <stddef.h>	// ptrdiff_t
+#include <stddef.h>
 #include <stdio.h>
-#include <string.h>	// strchr
+#include <string.h>
 
 #include "../libttaR.h"
 
-#include "cli.h"
-#include "main.h"
+#include "./cli.h"
+#include "./common.h"
+#include "./main.h"
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 static void errprint_program_intro(
-	const struct LibTTAr_VersionInfo *restrict,
-	const struct LibTTAr_VersionInfo *restrict
+	const struct LibTTAr_VersionInfo *RESTRICT,
+	const struct LibTTAr_VersionInfo *RESTRICT
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;
 
 static void errprint_ttaR_version(
-	const char *restrict name,
-	const struct LibTTAr_VersionInfo *restrict info
+	const char *RESTRICT name,
+	const struct LibTTAr_VersionInfo *RESTRICT info
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;
 
-static void errprint_libstr_copyright(const char *restrict)
+static void errprint_libstr_copyright(const char *RESTRICT)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 /*@unchecked@*/
 static const char intro_licence_blurb[] = {
-//1234567012345670123456701234567012345670123456701234567012345670123456701234
+/*12345670123456701234567012345670123456701234567012345670123456701234567012*/
 "    This program is free software released under the terms of the GNU\n"
 " General Public License v3. It is distributed in the hope that it will be\n"
 " useful, but WITHOUT ANY WARRANTY. See the license for details.\n"
 };
 
-//--------------------------------------------------------------------------//
+/* ------------------------------------------------------------------------ */
 
 /*@unchecked@*/
 static const char help_main[] = {
-//1234567012345670123456701234567012345670123456701234567012345670123456701234
+/*12345670123456701234567012345670123456701234567012345670123456701234567012*/
 " Usage:\n"
 "\t"    "ttaR MODE [-options] INFILE... [-o OUTFILE|OUTDIR]\n"
 "\n"
@@ -67,14 +68,14 @@ static const char help_main[] = {
 
 /*@unchecked@*/
 static const char help_mode_usage0_encode[] = {
-//1234567012345670123456701234567012345670123456701234567012345670123456701234
+/*12345670123456701234567012345670123456701234567012345670123456701234567012*/
 " Usage:\n"
 "\t"    "ttaR encode"
 };
 
 /*@unchecked@*/
 static const char help_mode_usage0_decode[] = {
-//1234567012345670123456701234567012345670123456701234567012345670123456701234
+/*12345670123456701234567012345670123456701234567012345670123456701234567012*/
 " Usage:\n"
 "\t"    "ttaR decode"
 };
@@ -85,18 +86,18 @@ static const char help_mode_usage1[] = {
 "\n"
 };
 
-//1234567012345670123456701234567012345670123456701234567012345670123456701234
+/*12345670123456701234567012345670123456701234567012345670123456701234567012*/
 #define OPT_COMMON_HELP \
 "\t"    "-?, --help\t\t\t"              "print this help\n"
 
-//1234567012345670123456701234567012345670123456701234567012345670123456701234
+/*12345670123456701234567012345670123456701234567012345670123456701234567012*/
 #define OPT_COMMON_SINGLE_THREADED \
 "\t"    "-S, --single-threaded\t\t"     "can be more efficient than -M\n"
 #define OPT_COMMON_MULTI_THREADED \
 "    [*]\t" \
         "-M, --multi-threaded\t\t"      "with NPROCESSORS_ONLN threads\n"
 
-//1234567012345670123456701234567012345670123456701234567012345670123456701234
+/*12345670123456701234567012345670123456701234567012345670123456701234567012*/
 #define OPT_COMMON_DELETE_SRC \
 "\t"    "-d, --delete-src\t\t"          "delete each infile after coding\n"
 #define OPT_COMMON_OUTFILE \
@@ -106,12 +107,12 @@ static const char help_mode_usage1[] = {
 #define OPT_COMMON_THREADS \
 "\t"    "-t, --threads=N\t\t\t"         "multi-threaded with N threads\n"
 
-//1234567012345670123456701234567012345670123456701234567012345670123456701234
+/*12345670123456701234567012345670123456701234567012345670123456701234567012*/
 #define OPT_ENCODE_RAWPCM \
 "\t"    "    --rawpcm=FMT,SRATE,NCHAN\t""rawpcm file stats\n" \
 "\t\t"          "FMT: u8, i16le, i24le\n"
 
-//1234567012345670123456701234567012345670123456701234567012345670123456701234
+/*12345670123456701234567012345670123456701234567012345670123456701234567012*/
 #define OPT_DECODE_FORMAT \
 "\t"    "-f, --format=FMT\t\t"          "outfile format\n" \
 "\t\t"          "FMT: raw, [*] w64, wav\n"
@@ -147,25 +148,28 @@ OPT_COMMON_QUIET
 OPT_COMMON_THREADS
 };
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 /**@fn errprint_help_main
  * @brief print main's help to stderr
 **/
-COLD void
+COLD
+BUILD NOINLINE void
 errprint_help_main(void)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 {
 	errprint_program_intro(&ttaR_info, &libttaR_info);
 	(void) fputs(help_main, stderr);
+
 	return;
 }
 
 /**@fn errprint_help_mode_encode
  * @brief print the mode encode's help to stderr
 **/
-COLD void
+COLD
+BUILD NOINLINE void
 errprint_help_mode_encode(void)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
@@ -174,13 +178,15 @@ errprint_help_mode_encode(void)
 	(void) fputs(help_mode_usage0_encode, stderr);
 	(void) fputs(help_mode_usage1, stderr);
 	(void) fputs(help_mode_opts_encode, stderr);
+
 	return;
 }
 
 /**@fn errprint_help_mode_decode
  * @brief print the mode decode's help to stderr
 **/
-COLD void
+COLD
+BUILD NOINLINE void
 errprint_help_mode_decode(void)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
@@ -189,21 +195,22 @@ errprint_help_mode_decode(void)
 	(void) fputs(help_mode_usage0_decode, stderr);
 	(void) fputs(help_mode_usage1, stderr);
 	(void) fputs(help_mode_opts_decode, stderr);
+
 	return;
 }
 
-//--------------------------------------------------------------------------//
+/* ------------------------------------------------------------------------ */
 
 /**@fn errprint_program_intro
  * @brief print the version, copyright, and license info to stderr
  *
- * @param cli[in] the program's info struct
- * @param lib[in] the library's info struct
+ * @param cli - program's info struct
+ * @param lib - library's info struct
 **/
 static void
 errprint_program_intro(
-	const struct LibTTAr_VersionInfo *const restrict cli,
-	const struct LibTTAr_VersionInfo *const restrict lib
+	const struct LibTTAr_VersionInfo *const RESTRICT cli,
+	const struct LibTTAr_VersionInfo *const RESTRICT lib
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
@@ -216,19 +223,20 @@ errprint_program_intro(
 	(void) fputc('\n', stderr);
 	(void) fputs(intro_licence_blurb, stderr);
 	(void) fputc('\n', stderr);
+
 	return;
 }
 
 /**@fn errprint_ttaR_version
  * @brief print the version info to stderr
  *
- * @param name[in] ttaR/libttaR
- * @param info[in] version info struct
+ * @param name - ttaR/libttaR
+ * @param info - version info struct
 **/
 static void
 errprint_ttaR_version(
-	const char *const restrict name,
-	const struct LibTTAr_VersionInfo *const restrict info
+	const char *const RESTRICT name,
+	const struct LibTTAr_VersionInfo *const RESTRICT info
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
@@ -245,15 +253,17 @@ errprint_ttaR_version(
 	}
 	(void) fprintf(stderr, " (%s)", info->version_date);
 	(void) fputc('\n', stderr);
+
+	return;
 }
 
 /**@fn errprint_libstr_copyrigth
  * @brief print the copyright string(s) to stderr
  *
- * @param str[in] the copyright string
+ * @param str - copyright string
 **/
 static void
-errprint_libstr_copyright(const char *restrict str)
+errprint_libstr_copyright(const char *RESTRICT str)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 {
@@ -265,7 +275,7 @@ errprint_libstr_copyright(const char *restrict str)
 		if ( substr != NULL ){
 			diff = (ptrdiff_t) (substr - str);
 			(void) fprintf(stderr, "\t%.*s\n", (int) diff, str);
-			str  = &str[diff + 1u];
+			str  = &str[diff + 1];
 		}
 		else { (void) fprintf(stderr, "\t%s\n", str); }
 	}
@@ -274,4 +284,4 @@ errprint_libstr_copyright(const char *restrict str)
 	return;
 }
 
-// EOF ///////////////////////////////////////////////////////////////////////
+/* EOF //////////////////////////////////////////////////////////////////// */

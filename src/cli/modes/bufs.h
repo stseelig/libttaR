@@ -1,6 +1,6 @@
-#ifndef TTA_MODES_BUFS_H
-#define TTA_MODES_BUFS_H
-//////////////////////////////////////////////////////////////////////////////
+#ifndef H_TTA_MODES_BUFS_H
+#define H_TTA_MODES_BUFS_H
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // modes/bufs.h                                                             //
 //                                                                          //
@@ -9,15 +9,21 @@
 // Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 
+#include <assert.h>
 #include <stddef.h>
+#include <stdint.h>
 
-#include "../../bits.h"
+#include "../../libttaR.h"
 
-#include "../formats.h"	// enum TTASampleBytes
+#include "../alloc.h"
+#include "../common.h"
+#include "../formats.h"
 
-//////////////////////////////////////////////////////////////////////////////
+#include "./align.h"
+
+/* //////////////////////////////////////////////////////////////////////// */
 
 #define TTABUF_LEN_DEFAULT		((size_t) BUFSIZ)
 
@@ -26,28 +32,28 @@ enum CodecBufMode {
 	CBM_MULTI_THREADED
 };
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 struct CodecBuf {
 	size_t	i32buf_len;
 	size_t	ttabuf_len;
-	/*@only@*/ /*@null@*/	// @only@ in -S, @dependent@ in -M
-	i32	*i32buf;	// thread owned in -M for page-fault reduction
+	/*@only@*/ /*@null@*/	/* @only@ in -S, @dependent@ in -M          */
+	int32_t	*i32buf;	/* thread owned in -M; page-fault reduction */
 	/*@only@*/
-	u8	*pcmbuf;
+	uint8_t	*pcmbuf;
 	/*@only@*/
-	u8	*ttabuf;
+	uint8_t	*ttabuf;
 };
 
 #define EncBuf	CodecBuf
 #define DecBuf	CodecBuf
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 #undef eb
-extern void encbuf_init(
-	/*@out@*/ struct EncBuf *const restrict eb, size_t, size_t, uint,
-	enum LibTTAr_SampleBytes, enum CodecBufMode
+BUILD_EXTERN NOINLINE void encbuf_init(
+	/*@out@*/ struct EncBuf *const RESTRICT eb, size_t, size_t,
+	unsigned int, enum LibTTAr_SampleBytes, enum CodecBufMode
 )
 /*@globals	fileSystem,
 		internalState
@@ -63,7 +69,10 @@ extern void encbuf_init(
 ;
 
 #undef eb
-extern HOT void encbuf_adjust(struct EncBuf *const restrict eb, size_t, uint)
+HOT
+BUILD_EXTERN void encbuf_adjust(
+	struct EncBuf *const RESTRICT eb, size_t, unsigned int
+)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -74,12 +83,12 @@ extern HOT void encbuf_adjust(struct EncBuf *const restrict eb, size_t, uint)
 @*/
 ;
 
-//--------------------------------------------------------------------------//
+/* ------------------------------------------------------------------------ */
 
 #undef db
-extern void decbuf_init(
-	/*@out@*/ struct DecBuf *const restrict db, size_t, size_t, uint,
-	enum LibTTAr_SampleBytes, enum CodecBufMode
+BUILD_EXTERN NOINLINE void decbuf_init(
+	/*@out@*/ struct DecBuf *const RESTRICT db, size_t, size_t,
+	unsigned int, enum LibTTAr_SampleBytes, enum CodecBufMode
 )
 /*@globals	fileSystem,
 		internalState
@@ -95,8 +104,9 @@ extern void decbuf_init(
 ;
 
 #undef db
-extern HOT void decbuf_check_adjust(
-	struct DecBuf *const restrict db, size_t, uint,
+HOT
+BUILD_EXTERN void decbuf_check_adjust(
+	struct DecBuf *const RESTRICT db, size_t, unsigned int,
 	enum LibTTAr_SampleBytes
 )
 /*@globals	fileSystem,
@@ -109,11 +119,11 @@ extern HOT void decbuf_check_adjust(
 @*/
 ;
 
-//--------------------------------------------------------------------------//
+/* ------------------------------------------------------------------------ */
 
 #undef cb
-extern void codecbuf_free(
-	const struct CodecBuf *const restrict cb, enum CodecBufMode
+BUILD_EXTERN NOINLINE void codecbuf_free(
+	const struct CodecBuf *const RESTRICT cb, enum CodecBufMode
 )
 /*@globals	internalState@*/
 /*@modifies	internalState@*/
@@ -123,5 +133,22 @@ extern void codecbuf_free(
 @*/
 ;
 
-// EOF ///////////////////////////////////////////////////////////////////////
-#endif
+/* ------------------------------------------------------------------------ */
+
+/*@only@*/
+BUILD_EXTERN struct LibTTAr_CodecState_Priv * priv_alloc(const unsigned int)
+/*@globals	internalState@*/
+/*@modifies	internalState@*/
+;
+
+#undef ptr
+BUILD_EXTERN void priv_free(
+	/*@only@*/ struct LibTTAr_CodecState_Priv *const RESTRICT ptr
+)
+/*@globals	internalState@*/
+/*@modifies	internalState@*/
+/*@releases	*ptr@*/
+;
+
+/* EOF //////////////////////////////////////////////////////////////////// */
+#endif	/* H_TTA_MODES_BUFS_H */

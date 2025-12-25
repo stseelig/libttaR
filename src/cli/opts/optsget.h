@@ -1,40 +1,47 @@
-#ifndef TTA_OPTS_OPTSGET_H
-#define TTA_OPTS_OPTSGET_H
-//////////////////////////////////////////////////////////////////////////////
+#ifndef H_TTA_OPTS_OPTSGET_H
+#define H_TTA_OPTS_OPTSGET_H
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // opts/optsget.h                                                           //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2024, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 
-#include "../../bits.h"
+#include "../common.h"
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 enum OptMode {
 	OPTMODE_LONG,
 	OPTMODE_SHORT
 };
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
+
+typedef int (*x_optdict_fnptr)(
+	unsigned int, unsigned int, unsigned int, char *const *, enum OptMode
+);
+typedef /*@observer@*/ x_optdict_fnptr	optdict_fnptr;
 
 struct OptDict {
-	uint		nmemb;
+	unsigned int	nmemb;
 	const char	**longopt;
-	const int	*shortopt;	// -1: none
-	int (*const *fn)(uint, uint, uint, char *const *, enum OptMode);
+	const int	*shortopt;	/* -1: none */
+	optdict_fnptr	*fn;
 };
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
-extern void optsget_argcheck(uint, uint, uint, const char *restrict)
+extern void optsget_argcheck(
+	unsigned int, unsigned int, unsigned int, const char *RESTRICT
+)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;
 
-// EOF ///////////////////////////////////////////////////////////////////////
-#endif
+/* EOF //////////////////////////////////////////////////////////////////// */
+#endif	/* H_TTA_OPTS_OPTSGET_H */

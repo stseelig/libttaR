@@ -1,30 +1,20 @@
-#ifndef TTA_CODEC_COMMON_H
-#define TTA_CODEC_COMMON_H
-//////////////////////////////////////////////////////////////////////////////
+#ifndef H_TTA_CODEC_COMMON_H
+#define H_TTA_CODEC_COMMON_H
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // codec/common.h                                                           //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2007, Aleksander Djuric                                    //
 // Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 
-#ifdef S_SPLINT_S
-#include "../splint.h"
-#endif
-
-/* ------------------------------------------------------------------------ */
-
-#include <assert.h>
 #include <limits.h>
-#include <stddef.h>	// size_t
+#include <stdint.h>
 
-#include "../bits.h"
-
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 #ifdef LIBTTAr_OPT_SLOW_CPU
 
@@ -33,339 +23,316 @@
 #define LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES
 #define LIBTTAr_OPT_PREFER_LOOKUP_TABLES
 
-#else // ! defined(LIBTTAr_OPT_SLOW_CPU)
+#endif /* LIBTTAr_OPT_SLOW_CPU */
 
-//#define LIBTTAr_OPT_NO_NATIVE_TZCNT
-//#define LIBTTAr_OPT_FEWER_FAST_TYPES
-//#define LIBTTAr_OPT_PREFER_CONDITIONAL_MOVES
-//#define LIBTTAr_OPT_PREFER_LOOKUP_TABLES
+/* //////////////////////////////////////////////////////////////////////// */
 
-#endif // LIBTTAr_OPT_SLOW_CPU
+/* a 16-bit 'size_t' is too small for the library */
+#if SIZE_MAX == UINT32_MAX
+#define SIZE_C(x_x)	UINT32_C(x_x)
+#elif SIZE_MAX == UINT64_MAX
+#define SIZE_C(x_x)	UINT64_C(x_x)
+#else
+#error "SIZE_MAX"
+#endif	/* SIZE_C */
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 #ifdef __GNUC__
 
-#if UINT_MAX == UINT32_MAX
-#define BUILTIN_TZCNT32			__builtin_ctz
-#elif ULONG_MAX == UINT32_MAX
-#define BUILTIN_TZCNT32			__builtin_ctzl
+#ifdef __has_attribute
+#define X_HAS_ATTRIBUTE_GNUC(x_x)	__has_attribute(x_x)
 #else
-#define BUILTIN_TZCNT32			nil
-#endif
+#define X_HAS_ATTRIBUTE_GNUC(x_x)	0
+#endif	/* __has_attribute */
+
+#define X_ATTRIBUTE_GNUC_ALWAYS_INLINE	always_inline
+#define X_ATTRIBUTE_GNUC_NOINLINE	noinline
+#define X_ATTRIBUTE_GNUC_FLATTEN	flatten
+#define X_ATTRIBUTE_GNUC_CONST		const
+#define X_ATTRIBUTE_GNUC_PURE		pure
+#define X_ATTRIBUTE_GNUC_VISIBILITY	visibility
+#define X_ATTRIBUTE_GNUC_UNUSED		unused
+
+#define X_ATTRIBUTE_GNUC_ALIGNED	aligned
+
+#else	/* ! defined(__GNUC__) */
+
+#define X_HAS_ATTRIBUTE_GNUC(xx_)	0
+
+#define X_ATTRIBUTE_GNUC_ALWAYS_INLINE	nil
+#define X_ATTRIBUTE_GNUC_NOINLINE	nil
+#define X_ATTRIBUTE_GNUC_FLATTEN	nil
+#define X_ATTRIBUTE_GNUC_CONST		nil
+#define X_ATTRIBUTE_GNUC_PURE		nil
+#define X_ATTRIBUTE_GNUC_VISIBILITY	nil
+#define X_ATTRIBUTE_GNUC_UNUSED		nil
+
+#define X_ATTRIBUTE_GNUC_ALIGNED	nil
+
+#endif	/* __GNUC__ */
+
+/* ======================================================================== */
+
+#if __STDC_VERSION__ >= 199901L
+#define INLINE		/*@unused@*/ static inline
+#elif defined(__GNUC__)
+#define INLINE		/*@unused@*/ static __inline__
+#else
+#define INLINE		/*@unused@*/ static
+#endif	/* INLINE */
+
+#if X_HAS_ATTRIBUTE_GNUC(X_ATTRIBUTE_GNUC_ALWAYS_INLINE)
+#define ALWAYS_INLINE	INLINE __attribute__((X_ATTRIBUTE_GNUC_ALWAYS_INLINE))
+#else
+#define ALWAYS_INLINE	INLINE
+#endif	/* ALWAYS_INLINE */
+
+#if X_HAS_ATTRIBUTE_GNUC(X_ATTRIBUTE_GNUC_NOINLINE)
+#define NOINLINE	__attribute__((X_ATTRIBUTE_GNUC_NOINLINE))
+#else
+#define NOINLINE
+#endif	/* NOINLINE */
+
+#if X_HAS_ATTRIBUTE_GNUC(X_ATTRIBUTE_GNUC_FLATTEN)
+#define FLATTEN		__attribute__((X_ATTRIBUTE_GNUC_FLATTEN))
+#else
+#define FLATTEN
+#endif	/* FLATTEN */
+
+/* ------------------------------------------------------------------------ */
+
+#if __STDC_VERSION__ >= 201112L
+#define THREAD_LOCAL	_Thread_local
+#elif defined(__GNUC__)
+#define THREAD_LOCAL	__thread
+#else
+#ifdef S_SPLINT_S
+#define THREAD_LOCAL
+#else
+#error "THREAD_LOCAL; compile with '-std=c11'"
+#endif	/* S_SPLINT_S */
+#endif	/* THREAD_LOCAL */
+
+#if __STDC_VERSION__ >= 199901L
+#define RESTRICT	restrict
+#elif defined(__GNUC__)
+#define RESTRICT	__restrict__
+#else
+#define RESTRICT
+#endif	/* RESTRICT */
+
+/* ------------------------------------------------------------------------ */
+
+#if X_HAS_ATTRIBUTE_GNUC(X_ATTRIBUTE_GNUC_CONST)
+#define CONST		__attribute__((X_ATTRIBUTE_GNUC_CONST))
+#else
+#define CONST
+#endif	/* CONST */
+
+#if X_HAS_ATTRIBUTE_GNUC(X_ATTRIBUTE_GNUC_PURE)
+#define PURE		__attribute__((X_ATTRIBUTE_GNUC_PURE))
+#else
+#define PURE
+#endif	/* PURE */
+
+#if X_HAS_ATTRIBUTE_GNUC(X_ATTRIBUTE_GNUC_VISIBILITY)
+#define X_HIDDEN	__attribute__((X_ATTRIBUTE_GNUC_VISIBILITY("hidden")))
+#else
+#define X_HIDDEN
+#endif	/* X_HIDDEN */
+
+#if X_HAS_ATTRIBUTE_GNUC(X_ATTRIBUTE_GNUC_UNUSED)
+#define UNUSED	/*@unused@*/ __attribute__((X_ATTRIBUTE_GNUC_UNUSED))
+#else
+#define UNUSED	/*@unused@*/
+#endif	/* UNUSED */
+
+/* ------------------------------------------------------------------------ */
+
+#if X_HAS_ATTRIBUTE_GNUC(X_ATTRIBUTE_GNUC_ALIGNED)
+#define ALIGNED(x_align)	\
+	__attribute__((X_ATTRIBUTE_GNUC_ALIGNED(x_align)))
+#else
+#ifndef S_SPLINT_S
+#error "compiler does not support the attribute 'aligned'"
+#else
+#define ALIGNED(x_align)
+#endif	/* S_SPLINT_S */
+#endif	/* ALIGNED */
+
+/* //////////////////////////////////////////////////////////////////////// */
+
+#ifdef __GNUC__
+
+#ifdef __has_builtin
+#define X_HAS_BUILTIN_GNUC(x_x)		__has_builtin(x_x)
+#else
+#define X_HAS_BUILTIN_GNUC(x_x)		0
+#endif	/* __has_builtin */
+
+#define X_BUILTIN_GNUC_EXPECT		__builtin_expect
+#define X_BUILTIN_GNUC_EXPECT_WITH_PROB	__builtin_expect_with_probability
+#define X_BUILTIN_GNUC_UNPREDICABLE	__builtin_unpredictable
+
+#define X_BUILTIN_GNUC_UNREACHABLE	__builtin_unreachable
+
+#define X_BUILTIN_GNUC_ASSUME_ALIGNED	__builtin_assume_aligned
+
+/* clang-11 bug:
+	the '_inline's cause clang to panic
+*/
+#define X_BUILTIN_GNUC_MEMMOVE_INLINE	nil
+#define X_BUILTIN_GNUC_MEMSET_INLINE	nil
+#define X_BUILTIN_GNUC_MEMMOVE		__builtin_memmove
+#define X_BUILTIN_GNUC_MEMSET		__builtin_memset
+
+#if UINT_MAX == UINT32_MAX
+#define X_BUILTIN_GNUC_CTZ32		__builtin_ctz
+#elif ULONG_MAX == UINT32_MAX
+#define X_BUILTIN_GNUC_CTZ32		__builtin_ctzl
+#else
+#define X_BUILTIN_GNUC_CTZ32		nil
+#endif	/* X_BUILTIN_GNUC_CTZ32 */
 
 #if UINT_MAX == UINT64_MAX
-#define BUILTIN_TZCNT64			__builtin_ctz
+#define X_BUILTIN_GNUC_CTZ64		__builtin_ctz
 #elif ULONG_MAX == UINT64_MAX
-#define BUILTIN_TZCNT64			__builtin_ctzl
+#define X_BUILTIN_GNUC_CTZ64		__builtin_ctzl
 #elif ULONG_LONG_MAX == UINT64_MAX
-#define BUILTIN_TZCNT64			__builtin_ctzll
+#define X_BUILTIN_GNUC_CTZ64		__builtin_ctzll
 #else
-#define BUILTIN_TZCNT64			nil
-#endif
+#define X_BUILTIN_GNUC_CTZ64		nil
+#endif	/* X_BUILTIN_GNUC_CTZ64 */
 
-// the _inline's cause clang to panic (Debian clang version 11.0.1-2)
-//#define BUILTIN_MEMMOVE_INLINE	__builtin_memmove_inline
-#define BUILTIN_MEMMOVE			__builtin_memmove
-//#define BUILTIN_MEMSET_INLINE		__builtin_memset_inline
-#define BUILTIN_MEMSET			__builtin_memset
+#else	/* ! defined(__GNUC__) */
 
-#else // ! defined(__GNUC__)
+#define X_HAS_BUILTIN_GNUC(x_x)		0
 
-#define BUILTIN_TZCNT32			nil
-#define BUILTIN_TZCNT64			nil
+#define X_BUILTIN_GNUC_EXPECT		nil
+#define X_BUILTIN_GNUC_EXPECT_WITH_PROB	nil
+#define X_BUILTIN_GNUC_UNPREDICABLE	nil
 
-#define BUILTIN_MEMMOVE_INLINE		nil
-#define BUILTIN_MEMMOVE			nil
-#define BUILTIN_MEMSET_INLINE		nil
-#define BUILTIN_MEMSET			nil
+#define X_BUILTIN_GNUC_UNREACHABLE	nil
 
-#endif // __GNUC__
+#define X_BUILTIN_GNUC_ASSUME_ALIGNED	nil
 
+#define X_BUILTIN_GNUC_MEMMOVE_INLINE	nil
+#define X_BUILTIN_GNUC_MEMSET_INLINE	nil
+#define X_BUILTIN_GNUC_MEMMOVE		nil
+#define X_BUILTIN_GNUC_MEMSET		nil
 
-//////////////////////////////////////////////////////////////////////////////
+#define X_BUILTIN_GNUC_CTZ32		nil
+#define X_BUILTIN_GNUC_CTZ64		nil
 
-#if (! defined(LIBTTAr_OPT_PREFER_LOOKUP_TABLES)) \
-&&  (! defined(LIBTTAr_OPT_NO_NATIVE_TZCNT))
-#if (! HAS_BUILTIN(BUILTIN_TZCNT32)) && (! HAS_BUILTIN(BUILTIN_TZCNT64))
-#pragma message "compiler does not have a builtin 'tzcnt'"
-#endif
-#endif
+#endif	/* __GNUC__ */
 
-#if defined(LIBTTAr_OPT_NO_NATIVE_TZCNT) \
- || defined(LIBTTAr_OPT_PREFER_LOOKUP_TABLES) \
- || ((! HAS_BUILTIN(BUILTIN_TZCNT32)) && (! HAS_BUILTIN(BUILTIN_TZCNT64)))
-#define TBCNT8_TABLE
-#endif
+/* ======================================================================== */
 
-//==========================================================================//
-
-// -nolibc; a decent compiler should do this anyway
-
-#if HAS_BUILTIN(BUILTIN_MEMMOVE_INLINE)
-#define MEMMOVE(dest, src, n)	BUILTIN_MEMMOVE_INLINE((dest), (src), (n))
-#elif HAS_BUILTIN(BUILTIN_MEMMOVE)
-#define MEMMOVE(dest, src, n)	BUILTIN_MEMMOVE((dest), (src), (n))
+#if X_HAS_BUILTIN_GNUC(X_BUILTIN_GNUC_EXPECT)
+#define LIKELY(x_cond)		(X_BUILTIN_GNUC_EXPECT((x_cond), 0==0))
+#define UNLIKELY(x_cond)	(X_BUILTIN_GNUC_EXPECT((x_cond), 0!=0))
 #else
-// gcc will not reach here, even though it does not have a builtin memmove
+#define LIKELY(x_cond)		(x_cond)
+#define UNLIKELY(x_cond)	(x_cond)
+#endif	/* (UN)LIKELY */
+
+#if X_HAS_BUILTIN_GNUC(X_BUILTIN_GNUC_EXPECT_WITH_PROB)
+#define PROBABLE(x_cond, x_prob)	\
+	(X_BUILTIN_GNUC_EXPECT_WITH_PROB((x_cond), 0==0, (x_prob)))
+#define IMPROBABLE(x_cond, x_prob)	\
+	(X_BUILTIN_GNUC_EXPECT_WITH_PROB((x_cond), 0!=0, 1.0 - (x_prob)))
+#else
+#define PROBABLE(x_cond, x_prob)	(x_cond)
+#define IMPROBABLE(x_cond, x_prob)	(x_cond)
+#endif	/* (IM)PROBABLE */
+
+#if X_HAS_BUILTIN_GNUC(X_BUILTIN_GNUC_UNPREDICTABLE)
+#define UNPREDICTABLE(x_cond)	(X_BUILTIN_GNUC_UNPREDICTABLE((x_cond))
+#else
+#define UNPREDICTABLE(x_cond)	(x_cond)
+#endif	/* UNPREDICTABLE */
+
+/* ------------------------------------------------------------------------ */
+
+#if X_HAS_BUILTIN_GNUC(X_BUILTIN_GNUC_UNREACHABLE)
+#define UNREACHABLE	/*@notreached@*/ X_BUILTIN_GNUC_UNREACHABLE()
+#else
+#define UNREACHABLE	/*@notreached@*/
+#endif	/* UNREACHABLE */
+
+/* ------------------------------------------------------------------------ */
+
+#if X_HAS_BUILTIN_GNUC(X_BUILTIN_GNUC_ASSUME_ALIGNED)
+#define ASSUME_ALIGNED(x_ptr, x_align)	\
+	X_BUILTIN_GNUC_ASSUME_ALIGNED((x_ptr), (x_align))
+#else
+#define ASSUME_ALIGNED(x_ptr, x_align)	(x_ptr)
+#endif	/* ASSUME_ALIGNED */
+
+/* ------------------------------------------------------------------------ */
+
+/* -nolibc; a decent compiler should do this anyway */
+
+#if X_HAS_BUILTIN_GNUC(X_BUILTIN_GNUC_MEMMOVE_INLINE)
+#define MEMMOVE(dest, src, n)	\
+	X_BUILTIN_GNUC_MEMMOVE_INLINE((dest), (src), (n))
+#elif X_HAS_BUILTIN_GNUC(X_BUILTIN_GNUC_MEMMOVE)
+#define MEMMOVE(dest, src, n)	X_BUILTIN_GNUC_MEMMOVE((dest), (src), (n))
+#else
+/* gcc-12 bug:
+	- will not reach here, even though it does not have a builtin memmove
+*/
 #pragma message "compiler does not have a builtin 'memmove'"
 #include <string.h>
 #define MEMMOVE(dest, src, n)	((void) memmove((dest), (src), (n)))
-#endif
+#endif	/* MEMMOVE */
 
-#if HAS_BUILTIN(BUILTIN_MEMSET_INLINE)
-#define MEMSET(s, c, n)		BUILTIN_MEMSET_INLINE((s), (c), (n))
-#elif HAS_BUILTIN(BUILTIN_MEMSET)
-#define MEMSET(s, c, n)		BUILTIN_MEMSET((s), (c), (n))
+#if X_HAS_BUILTIN_GNUC(X_BUILTIN_GNUC_MEMSET_INLINE)
+#define MEMSET(s, c, n)		X_BUILTIN_GNUC_MEMSET_INLINE((s), (c), (n))
+#elif X_HAS_BUILTIN_GNUC(X_BUILTIN_GNUC_MEMSET)
+#define MEMSET(s, c, n)		X_BUILTIN_GNUC_MEMSET((s), (c), (n))
 #else
 #pragma message "compiler does not have a builtin 'memset'"
 #include <string.h>
 #define MEMSET(s, c, n)		memset((s), (c), (n))
-#endif
+#endif	/* MEMSET */
 
-//////////////////////////////////////////////////////////////////////////////
+/* ------------------------------------------------------------------------ */
 
-enum LibTTAr_SampleBytes {
-	LIBTTAr_SAMPLEBYTES_1	= 1u,
-	LIBTTAr_SAMPLEBYTES_2	= 2u,
-	LIBTTAr_SAMPLEBYTES_3	= 3u
-};
-#define LIBTTAr_SAMPLEBYTES_MAX	((uint) LIBTTAr_SAMPLEBYTES_3)
-#define LIBTTAr_SAMPLEBITS_MAX	((uint) (8u * LIBTTAr_SAMPLEBYTES_MAX))
+#if X_HAS_BUILTIN_GNUC(X_BUILTIN_GNUC_CTZ32)
+#define BUILTIN_CTZ32(x_x)	X_BUILTIN_GNUC_CTZ32(x_x)
+#define HAS_BUILTIN_CTZ32
+#endif	/* BUILTIN_CTZ32 */
 
-#define SAMPLEBYTES_RANGE_ASSERT(Xsamplebytes) { \
-	assert(((Xsamplebytes) >= LIBTTAr_SAMPLEBYTES_1) \
-	      && \
-	       ((Xsamplebytes) <= LIBTTAr_SAMPLEBYTES_3) \
-	); \
-}
+#if X_HAS_BUILTIN_GNUC(X_BUILTIN_GNUC_CTZ64)
+#define BUILTIN_CTZ64(x_x)	X_BUILTIN_GNUC_CTZ64(x_x)
+#define HAS_BUILTIN_CTZ64
+#endif	/* BUILTIN_CTZ64 */
 
-//////////////////////////////////////////////////////////////////////////////
+#if !defined(LIBTTAr_OPT_PREFER_LOOKUP_TABLES) \
+ && !defined(LIBTTAr_OPT_NO_NATIVE_TZCNT) \
+ && (!defined(HAS_BUILTIN_CTZ32) && !defined(HAS_BUILTIN_CTZ64))
+#pragma message "compiler does not have a builtin 'ctz/tzcnt'"
+#endif	/* ctz/tzcnt warning */
 
-// fast types specifically tuned for:
-#ifndef LIBTTAr_OPT_FEWER_FAST_TYPES
-//	- AMD Ryzen 7 1700   , clang 11
-typedef  u8f		bitcnt;
-typedef u32		rice24_enc;
-typedef u32f		rice24_dec;
-typedef u32		crc32_enc;
-typedef u32f		crc32_dec;
-typedef u32f		cache32;
-typedef u64f		cache64;
-typedef rice24_enc	bitcnt_enc;
-typedef bitcnt		bitcnt_dec;
+#if defined(LIBTTAr_OPT_NO_NATIVE_TZCNT) \
+ || defined(LIBTTAr_OPT_PREFER_LOOKUP_TABLES) \
+ || (!defined(HAS_BUILTIN_CTZ32) && !defined(HAS_BUILTIN_CTZ64))
+#define USE_TBCNT8_TABLE
+#endif	/* USE_TBCNT8_TABLE */
+
+/* //////////////////////////////////////////////////////////////////////// */
+
+#ifdef C_BUILD_C
+#define BUILD_HIDDEN		static
+#define BUILD_EXTERN		/*@external@*/ /*@unused@*/
 #else
-//	- Intel Celeron N2830, clang 14
-typedef  u8f		bitcnt;
-typedef u32		rice24_enc;
-typedef u32		rice24_dec;
-typedef u32		crc32_enc;
-typedef u32		crc32_dec;
-typedef u32		cache32;
-typedef u64f		cache64;
-typedef rice24_enc	bitcnt_enc;
-typedef bitcnt		bitcnt_dec;
-#endif	// LIBTTAr_OPT_ONLY_NECESSARY_FAST_TYPES
+#define BUILD_HIDDEN		X_HIDDEN
+#define BUILD_EXTERN		extern /*@external@*/ /*@unused@*/
+#endif	/* C_BUILD_C */
 
-//==========================================================================//
+#define BUILD_EXPORT		/*@unused@*/
 
-struct BitCache_Enc {
-	cache64		cache;
-	bitcnt_enc	count;
-};
-
-struct BitCache_Dec {
-	cache32		cache;
-	bitcnt_dec	count;
-};
-
-union BitCache {
-	struct BitCache_Enc	enc;
-	struct BitCache_Dec	dec;
-};
-
-struct Rice_Enc {
-	u32		sum[2u];	// needs 32-bit wrapping
-	bitcnt_enc	k[2u];
-};
-
-struct Rice_Dec {
-	u32		sum[2u];	// needs 32-bit wrapping
-	bitcnt_dec	k[2u];
-};
-
-union Rice {
-	struct Rice_Enc	enc;
-	struct Rice_Dec	dec;
-};
-
-// struct Filter
-#include "filter.h"
-
-struct ALIGNED(16u) Codec {	// alignment necessary for intrinsics (filter)
-	struct Filter	filter;
-	union Rice	rice;
-	i32		prev;
-};
-#define STRUCT_CODEC_ALIGNMENT		16u
-
-struct LibTTAr_CodecState_Priv {
-	union BitCache	bitcache;
-	struct Codec 	codec[];
-};
-
-struct LibTTAr_CodecState_User {
-	u32	ncalls_codec;
-	u32	crc;
-	size_t	ni32;			// enc: num read, dec: num written
-	size_t	ni32_total;		// ~
-	size_t	nbytes_tta;		// enc: num written, dec: num read
-	size_t	nbytes_tta_total;	// ~
-};
-
-struct LibTTAr_EncMisc {
-	size_t				dest_len;
-	size_t				src_len;
-	size_t				ni32_target;
-	size_t				ni32_perframe;
-	enum LibTTAr_SampleBytes	samplebytes;
-	uint				nchan;
-};
-
-struct LibTTAr_DecMisc {
-	size_t				dest_len;
-	size_t				src_len;
-	size_t				ni32_target;
-	size_t				nbytes_tta_target;
-	size_t				ni32_perframe;
-	size_t				nbytes_tta_perframe;
-	enum LibTTAr_SampleBytes	samplebytes;
-	uint				nchan;
-};
-
-//////////////////////////////////////////////////////////////////////////////
-
-#undef priv
-ALWAYS_INLINE void state_priv_init_enc(
-	/*@out@*/ struct LibTTAr_CodecState_Priv *restrict priv, uint
-)
-/*@modifies	*priv@*/
-;
-
-#undef priv
-ALWAYS_INLINE void state_priv_init_dec(
-	/*@out@*/ struct LibTTAr_CodecState_Priv *restrict priv, uint
-)
-/*@modifies	*priv@*/
-;
-
-#undef codec
-ALWAYS_INLINE void codec_init_enc(
-	/*@out@*/ struct Codec *restrict codec, uint
-)
-/*@modifies	*codec@*/
-;
-
-#undef codec
-ALWAYS_INLINE void codec_init_dec(
-	/*@out@*/ struct Codec *restrict codec, uint
-)
-/*@modifies	*codec@*/
-;
-
-//////////////////////////////////////////////////////////////////////////////
-
-/**@fn state_priv_init_enc
- * @brief initializes a private state struct; encode version
- *
- * @param priv[out] the private state struct
- * @param nchan number of audio channels
-**/
-ALWAYS_INLINE void
-state_priv_init_enc(
-	/*@out@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
-	const uint nchan
-)
-/*@modifies	*priv@*/
-{
-	MEMSET(&priv->bitcache, 0x00, sizeof priv->bitcache);
-	codec_init_enc((struct Codec *) &priv->codec, nchan);
-	return;
-}
-
-/**@fn state_priv_init_dec
- * @brief initializes a private state struct; decode version
- *
- * @see state_priv_init_enc()
-**/
-ALWAYS_INLINE void
-state_priv_init_dec(
-	/*@out@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
-	const uint nchan
-)
-/*@modifies	*priv@*/
-{
-	MEMSET(&priv->bitcache, 0x00, sizeof priv->bitcache);
-	codec_init_dec((struct Codec *) &priv->codec, nchan);
-	return;
-}
-
-//--------------------------------------------------------------------------//
-
-#define RICE_INIT_ENC	((struct Rice_Enc) { \
-	{/* binexp32p4((bitcnt) 10u) */ \
-	 (u32) 0x00004000u, (u32) 0x00004000u \
-	}, \
-	{(bitcnt_enc) 10u, (bitcnt_enc) 10u} \
-})
-
-#define RICE_INIT_DEC	((struct Rice_Dec) { \
-	{/* binexp32p4((bitcnt) 10u) */ \
-	 (u32) 0x00004000u, (u32) 0x00004000u \
-	}, \
-	{(bitcnt_dec) 10u, (bitcnt_dec) 10u} \
-})
-
-/**@fn codec_init_enc
- * @brief initializes an array of 'struct Codec'; encode version
- *
- * @param codec[out] the struct array to initialize
- * @param nchan number of audio channels
-**/
-ALWAYS_INLINE void
-codec_init_enc(
-	/*@out@*/ struct Codec *const restrict codec, const uint nchan
-)
-/*@modifies	*codec@*/
-{
-	uint i;
-	for ( i = 0; i < nchan; ++i ){
-		MEMSET(&codec[i].filter, 0x00, sizeof codec[i].filter);
-		codec[i].rice.enc = RICE_INIT_ENC;
-		codec[i].prev     = 0;
-	}
-	return;
-}
-
-/**@fn codec_init_dec
- * @brief initializes an array of 'struct Codec'; decode version
- *
- * @see codec_init_enc()
-**/
-ALWAYS_INLINE void
-codec_init_dec(
-	/*@out@*/ struct Codec *const restrict codec, const uint nchan
-)
-/*@modifies	*codec@*/
-{
-	uint i;
-	for ( i = 0; i < nchan; ++i ){
-		MEMSET(&codec[i].filter, 0x00, sizeof codec[i].filter);
-		codec[i].rice.dec = RICE_INIT_DEC;
-		codec[i].prev     = 0;
-	}
-	return;
-}
-
-// EOF ///////////////////////////////////////////////////////////////////////
-#endif
+/* EOF //////////////////////////////////////////////////////////////////// */
+#endif	/* H_TTA_CODEC_COMMON_H */

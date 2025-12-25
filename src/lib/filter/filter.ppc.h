@@ -1,12 +1,12 @@
-#ifndef TTA_CODEC_FILTER_FILTER_PPC_H
-#define TTA_CODEC_FILTER_FILTER_PPC_H
-//////////////////////////////////////////////////////////////////////////////
+#ifndef H_TTA_CODEC_FILTER_FILTER_PPC_H
+#define H_TTA_CODEC_FILTER_FILTER_PPC_H
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // codec/filter/filter.ppc.h                                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2024-2025, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -16,88 +16,79 @@
 //      These functions "should" work no matter the endianness, but have    //
 // only been tested on big-endian (PowerMacG4; POWER9 == $$$$$)             //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
-
-#ifndef S_SPLINT_S
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-#error "powerpc little-endian is untested; comment to be a guinea pig"
-#endif
-#endif // S_SPLINT_S
-
-//////////////////////////////////////////////////////////////////////////////
-
-#ifndef S_SPLINT_S
-#ifndef __BYTE_ORDER__
-#error "'__BYTE_ORDER__' not defined"
-#endif
-#ifndef __ORDER_BIG_ENDIAN__
-#error "'__ORDER_BIG_ENDIAN__' not defined"
-#endif
-#ifndef __ORDER_LITTLE_ENDIAN__
-#error "'__ORDER_LITTLE_ENDIAN__' not defined"
-#endif
-#if (__BYTE_ORDER__ != __ORDER_BIG_ENDIAN__) \
- && (__BYTE_ORDER__ != __ORDER_LITTLE_ENDIAN__)
-#error "__BYTE_ORDER__"
-#endif
-
-#ifndef __ALTIVEC__
-#error "no AltiVec"
-#endif
-#endif // S_SPLINT_S
-
-//////////////////////////////////////////////////////////////////////////////
-
-#include <assert.h>
-#include <stdbool.h>	// true
+/////////////////////////////////////////////////////////////////////////// */
 
 #include <altivec.h>
-#ifndef vector	// gcc
+#ifndef vector	/* gcc */
 #define vector	__vector
-#endif
+#endif	/* vector */
 
-#include "../../bits.h"
+#include "../common.h"
+#include "../tta.h"
+#include "../types.h"
 
-#include "../tta.h"	// asr32
+#include "./asserts.h"
+#include "./struct.h"
 
-#include "asserts.h"
+/* ======================================================================== */
+
+#ifndef S_SPLINT_S
+
+#ifndef __ALTIVEC__
+#error "__ALTIVEC__"
+#endif	/* __ALTIVEC__ */
+
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#error "powerpc little-endian is untested; comment to be a guinea pig"
+#endif	/* __BYTE_ORDER__ */
+
+#endif	/* S_SPLINT_S */
 
 //////////////////////////////////////////////////////////////////////////////
 
-// aligned in 'struct Codec'
-struct Filter {
-	i32	qm[8u];
-	i32	dx[8u];
-	i32	dl[8u];
-	i32	error;	// the full error
-};
+CONST
+ALWAYS_INLINE vector int32_t predictz_vi32(vector int32_t, vector int32_t)
+/*@*/
+;
 
-//////////////////////////////////////////////////////////////////////////////
+CONST
+ALWAYS_INLINE vector int32_t cneg_izaz_vi32(vector int32_t, vector int32_t)
+/*@*/
+;
 
-ALWAYS_INLINE CONST vector i32 predictz_vi32(vector i32, vector i32) /*@*/;
-ALWAYS_INLINE CONST vector i32 cneg_izaz_vi32(vector i32, vector i32) /*@*/;
+CONST
+ALWAYS_INLINE int32_t sum_vi32(vector int32_t) /*@*/;
 
-#ifndef NDEBUG
-ALWAYS_INLINE CONST _Bool all_zero_vi32(vector i32) /*@*/;
-#endif
+CONST
+ALWAYS_INLINE vector int32_t update_m_hi(vector int32_t) /*@*/;
 
-ALWAYS_INLINE CONST i32 sum_vi32(vector i32) /*@*/;
+CONST
+ALWAYS_INLINE vector int32_t update_b_hi(vector int32_t, int32_t) /*@*/;
 
-ALWAYS_INLINE CONST vector i32 update_m_hi(vector i32) /*@*/;
-ALWAYS_INLINE CONST vector i32 update_b_hi(vector i32, i32) /*@*/;
-ALWAYS_INLINE CONST vector i32 update_mb_lo(vector i32, vector i32) /*@*/;
+CONST
+ALWAYS_INLINE vector int32_t update_mb_lo(vector int32_t, vector int32_t)
+/*@*/
+;
 
 //////////////////////////////////////////////////////////////////////////////
 
 #define FILTER_VARIABLES \
-	i32 *const restrict filter_a = ASSUME_ALIGNED( filter->qm   , 16u); \
-	i32 *const restrict error    = ASSUME_ALIGNED(&filter->error, 16u); \
-	\
-	i32 retval; \
-	vector i32 a_lo, a_hi, m_lo, m_hi, b_lo, b_hi; \
-	vector i32 r_lo, r_hi, t_lo, t_hi; \
-	vector i32 m_lo_out, m_hi_out, b_lo_out, b_hi_out; \
-	vector i32 v_error;
+	int32_t *const RESTRICT filter_a = ( \
+		ASSUME_ALIGNED( \
+			 filter->qm   , LIBTTAr_CODECSTATE_PRIV_ALIGN \
+		) \
+	); \
+	int32_t *const RESTRICT error    = ( \
+		ASSUME_ALIGNED( \
+			&filter->error, LIBTTAr_CODECSTATE_PRIV_ALIGN \
+		) \
+	); \
+	/* * */ \
+	int32_t retval; \
+	vector int32_t a_lo, a_hi, m_lo, m_hi, b_lo, b_hi; \
+	vector int32_t r_lo, r_hi, t_lo, t_hi; \
+	vector int32_t m_lo_out, m_hi_out, b_lo_out, b_hi_out; \
+	vector int32_t v_error;
 
 #define FILTER_READ { \
 	a_lo     = vec_ld( 0LL, filter_a); \
@@ -124,9 +115,9 @@ ALWAYS_INLINE CONST vector i32 update_mb_lo(vector i32, vector i32) /*@*/;
 	round   += sum_vi32(r_hi); \
 }
 
-#define FILTER_UPDATE_MB(Xvalue) { \
+#define FILTER_UPDATE_MB(x_value) { \
 	m_hi_out = update_m_hi(b_hi); \
-	b_hi_out = update_b_hi(b_hi, (Xvalue)); \
+	b_hi_out = update_b_hi(b_hi, (x_value)); \
 	m_lo_out = update_mb_lo(m_lo, m_hi); \
 	b_lo_out = update_mb_lo(b_lo, b_hi); \
 }
@@ -140,11 +131,11 @@ ALWAYS_INLINE CONST vector i32 update_mb_lo(vector i32, vector i32) /*@*/;
 	vec_st(b_hi_out, 80LL, filter_a); \
 }
 
-///@see "../filter.h"
-ALWAYS_INLINE i32
+/**@see "../filter.h" **/
+ALWAYS_INLINE int32_t
 tta_filter_enc(
-	struct Filter *const restrict filter, const i32 value, i32 round,
-	const bitcnt k
+	struct Filter *const RESTRICT filter, const int32_t value,
+	int32_t round, const bitcnt k
 )
 /*@modifies	*filter@*/
 {
@@ -162,11 +153,11 @@ tta_filter_enc(
 	return retval;
 }
 
-///@see "../filter.h"
-ALWAYS_INLINE i32
+/**@see "../filter.h" **/
+ALWAYS_INLINE int32_t
 tta_filter_dec(
-	struct Filter *const restrict filter, const i32 value, i32 round,
-	const bitcnt k
+	struct Filter *const RESTRICT filter, const int32_t value,
+	int32_t round, const bitcnt k
 )
 /*@modifies	*filter@*/
 {
@@ -189,18 +180,19 @@ tta_filter_dec(
 /**@fn predictz_vi32
  * @brief helps the CPU to know if it can skip the next few instructions
  *
- * @param x the input vector
- * @param error the extended error vector
+ * @param x     - input vector
+ * @param error - extended error vector
  *
  * @return error != 0 ? x : 0
 **/
-ALWAYS_INLINE CONST vector i32
-predictz_vi32(const vector i32 x, const vector i32 error)
+CONST
+ALWAYS_INLINE vector int32_t
+predictz_vi32(const vector int32_t x, const vector int32_t error)
 /*@*/
 {
-	const vector i32 v_zero  = (const vector i32) { 0, 0, 0, 0 };
-	const vector i32 v_isnez = (const vector i32) vec_cmpne(
-		error, v_zero
+	const vector int32_t v_zero  = (const vector int32_t) { 0, 0, 0, 0 };
+	const vector int32_t v_isnez = (const vector int32_t) (
+		vec_cmpne(error, v_zero)
 	);
 
 	return vec_and(v_isnez, x);
@@ -209,108 +201,91 @@ predictz_vi32(const vector i32 x, const vector i32 error)
 /**@fn cneg_izaz_vi32
  * @brief conditional negation. if zero then already zero
  *
- * @param x the input vector
- * @param cmp the comparison vector
+ * @param x   - input vector
+ * @param cmp - comparison vector
  *
  * @return cmp < 0 ? -x : x
- *
- * @pre all_zero_vi32(cmp) ? all_zero_vi32(x) : true
 **/
-ALWAYS_INLINE CONST vector i32
-cneg_izaz_vi32(const vector i32 x, const vector i32 cmp)
+CONST
+ALWAYS_INLINE vector int32_t
+cneg_izaz_vi32(const vector int32_t x, const vector int32_t cmp)
 /*@*/
 {
-	const vector i32 v_zero  = (const vector i32) { 0, 0, 0, 0 };
-	const vector i32 v_isltz = (const vector i32) vec_cmplt(cmp, v_zero);
-
-	assert(all_zero_vi32(cmp) ? all_zero_vi32(x) : true);
+	const vector int32_t v_zero  = (const vector int32_t) { 0, 0, 0, 0 };
+	const vector int32_t v_isltz = (const vector int32_t) (
+		vec_cmplt(cmp, v_zero)
+	);
 
 	return vec_sub(vec_xor(x, v_isltz), v_isltz);
 }
 
-#ifndef NDEBUG
-/**@fn all_zero_vi32
- * @brief checks that each item is not zero
- *
- * @param x the input vector
- *
- * @return true or false
- *
- * @note only used in an assertion
-**/
-ALWAYS_INLINE CONST _Bool
-all_zero_vi32(vector i32 x)
-/*@*/
-{
-	const vector i32 v_zero = (const vector i32) { 0, 0, 0, 0 };
-
-	return (_Bool) vec_all_eq(x, v_zero);
-}
-#endif
-
 /**@fn sum_vi32
  * @brief adds together every item in the vector
  *
- * @param x the input vector
+ * @param x - input vector
  *
- * @return the sum of all items in the vector
+ * @return sum of all items in the vector
 **/
-ALWAYS_INLINE CONST i32
-sum_vi32(const vector i32 x)
+CONST
+ALWAYS_INLINE int32_t
+sum_vi32(const vector int32_t x)
 /*@*/
 {
-	const vector i32 v_zero = (const vector i32) { 0, 0, 0, 0 };
+	const vector int32_t v_zero = (const vector int32_t) { 0, 0, 0, 0 };
 
-	return (i32) vec_extract(vec_sums(x, v_zero), 3);
+	return (int32_t) vec_extract(vec_sums(x, v_zero), 3);
 }
 
 /**@fn update_m_hi
  * @brief updates the high half of 'm'
  *
- * @param b_hi the high half of 'b'
+ * @param b_hi - high half of 'b'
  *
- * @return the updated high half of 'm'
+ * @return updated high half of 'm'
 **/
-ALWAYS_INLINE CONST vector i32
-update_m_hi(vector i32 b_hi)
+CONST
+ALWAYS_INLINE vector int32_t
+update_m_hi(vector int32_t b_hi)
 /*@*/
 {
-	const vector u32 v_sra = (const vector u32) {
-		(u32) 30u, (u32) 30u, (u32) 30u, (u32) 30u
+	const vector uint32_t v_sra = (const vector uint32_t) {
+		UINT32_C( 30), UINT32_C( 30), UINT32_C( 30), UINT32_C( 30)
 	};
-	const vector i32 v_or  = (const vector i32) {
-		(i32) 0x1, (i32) 0x1, (i32) 0x1, (i32) 0x1
+	const vector  int32_t v_or  = (const vector  int32_t) {
+		 INT32_C(0x1),  INT32_C(0x1),  INT32_C(0x1),  INT32_C(0x1)
 	};
-	const vector u32 v_sl  = (const vector u32) {
+	const vector uint32_t v_sl  = (const vector uint32_t) {
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-		(u32)  0u, (u32)  1u, (u32)  1u, (u32)  2u
-#else // __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-		(u32)  2u, (u32)  1u, (u32)  1u, (u32)  0u
-#endif
+		UINT32_C(  0), UINT32_C(  1), UINT32_C(  1), UINT32_C(  2)
+#else	/* __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ */
+		UINT32_C(  2), UINT32_C(  1), UINT32_C(  1), UINT32_C(  0)
+#endif	/* __BYTE_ORDER__ */
 	};
 
 	b_hi = vec_sra(b_hi, v_sra);
 	b_hi = vec_or(b_hi, v_or);
+
 	return vec_sl(b_hi, v_sl);
 }
 
 /**@fn update_b_hi
  * @brief updates the high half of 'b'
  *
- * @param b_hi the high half of 'b'
- * @param value input/output value from the filter
+ * @param b_hi  - high half of 'b'
+ * @param value - input/output value from the filter
  *
- * @return the updated high half of 'b'
+ * @return - updated high half of 'b'
 **/
-ALWAYS_INLINE CONST vector i32
-update_b_hi(const vector i32 b_hi, const i32 value)
+CONST
+ALWAYS_INLINE vector int32_t
+update_b_hi(const vector int32_t b_hi, const int32_t value)
 /*@*/
 {
-	const vector i32 v_zero  = (const vector i32) { 0, 0, 0, 0 };
-	const vector i32 v_in7   = vec_sld(b_hi, v_zero,  4u);
-	const vector i32 v_in6   = vec_sld(b_hi, v_zero,  8u);
-	const vector i32 v_in5   = vec_sld(b_hi, v_zero, 12u);
-	const vector i32 v_value = vec_splats(value);
+	const vector int32_t v_zero  = (const vector int32_t) { 0, 0, 0, 0 };
+	const vector int32_t v_in7   = vec_sld(b_hi, v_zero,  4u);
+	const vector int32_t v_in6   = vec_sld(b_hi, v_zero,  8u);
+	const vector int32_t v_in5   = vec_sld(b_hi, v_zero, 12u);
+	const vector int32_t v_value = vec_splats(value);
 
 	return vec_sub(vec_sub(v_value, v_in7), vec_add(v_in5, v_in6));
 }
@@ -319,23 +294,26 @@ update_b_hi(const vector i32 b_hi, const i32 value)
  * @brief updates the low half of 'm' or 'b'
  *   shift 'lo' left by one, then put the leftmost item in 'hi' into 'lo'
  *
- * @param mb_lo the low half
- * @param mb_hi the high half
+ * @param mb_lo - low half
+ * @param mb_hi - high half
  *
- * @return the updated low half
+ * @return updated low half
 **/
-ALWAYS_INLINE CONST vector i32
-update_mb_lo(const vector i32 mb_lo, const vector i32 mb_hi)
+CONST
+ALWAYS_INLINE vector int32_t
+update_mb_lo(const vector int32_t mb_lo, const vector int32_t mb_hi)
 /*@*/
 {
 	return vec_sld(mb_lo, mb_hi, 4u);
 }
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
-// overloading keywords is screwed up (gcc Debian 12.2.0-13)
+/* gcc-12 bug:
+	overloading keywords is screwed up
+*/
 #undef  bool
 #define bool	_Bool
 
-// EOF ///////////////////////////////////////////////////////////////////////
-#endif
+/* EOF //////////////////////////////////////////////////////////////////// */
+#endif	/* H_TTA_CODEC_FILTER_FILTER_PPC_H */

@@ -1,6 +1,6 @@
-#ifndef TTA_FORMATS_H
-#define TTA_FORMATS_H
-//////////////////////////////////////////////////////////////////////////////
+#ifndef H_TTA_FORMATS_H
+#define H_TTA_FORMATS_H
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // formats.h                                                                //
 //                                                                          //
@@ -9,37 +9,43 @@
 // Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 
-#include <stddef.h>	// size_t
-#include <stdio.h>	// off_t
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
 
-#include "../bits.h"
+#include "../libttaR.h"
 
-//////////////////////////////////////////////////////////////////////////////
+#include "./common.h"
 
-#include "formats/guid.h"
-#include "formats/tta.h"
+#include "./formats/guid.h"
+#include "./formats/tta.h"
+#include "./formats/wav.h"
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 enum EncFormat {
 	xENCFMT_TTA1
-	//xENCFMT_TTA2
-	//xENCFMT_MKA_TTA1
-	//xENCFMT_MKA_TTA2
+/*
+	xENCFMT_TTA2
+	xENCFMT_MKA_TTA1
+	xENCFMT_MKA_TTA2
+*/
 };
-#define NUM_ENCFMT		((uint) 1u)
+#define xENCFMT_NMEMB		1u
 #define xENCFMT_NAME_ARRAY	{ "tta1"}
-#define xENCFMT_EXT_ARRAY	{".tta"}
+#define xENCFMT_EXT_ARRAY	{".tta" }
 
 enum DecFormat {
 	DECFMT_RAWPCM,
 	DECFMT_W64,
 	DECFMT_WAV
-	//DECFMT_MKA_PCM
+/*
+	DECFMT_MKA_PCM
+*/
 };
-#define NUM_DECFMT		((uint) 3u)
+#define DECFMT_NMEMB		3u
 #define DECFMT_NAME_ARRAY	{ "raw",  "w64",  "wav"}
 #define DECFMT_EXT_ARRAY	{".raw", ".w64", ".wav"}
 
@@ -64,46 +70,50 @@ enum FileCheck {
 	FILECHECK_UNSUPPORTED_RESOLUTION
 };
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 struct SeekTable {
-	off_t	off;
-	size_t	nmemb;
-	size_t	limit;
+	off_t		off;
+	size_t		nmemb;
+	size_t		limit;
 	/*@only@*/
-	u32	*table;	// little-endian
+	uint32_t	*table;	/* little-endian */
 };
-#define SEEKTABLE_INIT_DEFAULT	((size_t) (512u))	/* ~ 8m54s */
+#define SEEKTABLE_INIT_DEFAULT	SIZE_C(512)	/* ~ 8m54s */
 
-// MAYBE have a Dec/Enc FileStats and a CommonFileStats
+/* ======================================================================== */
+
+/* MAYBE: have a Dec/Enc FileStats and a CommonFileStats */
 struct FileStats {
 	off_t			decpcm_off;
 	size_t			decpcm_size;
-	//
-	off_t			enctta_off;	// end of tta header
+
+	off_t			enctta_off;	/* end of TTA header      */
 	size_t			enctta_size;
-	//
-	size_t			framelen;	// nsamples_peridealframe
-	size_t			buflen;		// framelen * nchan
-	size_t			nsamples_enc;	// for decode
+
+	size_t			framelen;	/* nsamples_peridealframe */
+	size_t			buflen;		/* (framelen * nchan)     */
+	size_t			nsamples_enc;	/* for decode             */
 	enum EncFormat		encfmt  : 8u;
 	enum DecFormat		decfmt  : 8u;
 	enum IntType		inttype : 8u;
 	enum Endian		endian  : 8u;
 	enum LibTTAr_SampleBytes	samplebytes;
-	u16			samplebits;
-	u16			nchan;
-	u32			samplerate;
-	u32			chanmask_wav;
-	//u32			chanmask_tta;
-	u16			wavformat;
-	struct Guid128		wavsubformat;	// Extensible only
+	uint16_t		samplebits;
+	uint16_t		nchan;
+	uint32_t		samplerate;
+/*
+	uint32_t		chanmask_tta;
+*/
+	uint32_t		chanmask_wav;
+	uint16_t		wavformat;
+	struct Guid128		wavsubformat;	/* Extensible only        */
 };
 
 struct EncStats {
 	size_t	nframes;
 	size_t	nsamples_flat;
-	size_t	nsamples_perchan;	// for tta1 header
+	size_t	nsamples_perchan;	/* for TTA1 header        */
 	size_t	nbytes_encoded;
 	double	encodetime;
 };
@@ -116,38 +126,40 @@ struct DecStats {
 	double	decodetime;
 };
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
-// guid.c
+/* guid.c */
 
 #undef buf
-extern COLD char *guid128_format(
-	/*@returned@*/ /*@out@*/ char *restrict buf, size_t,
-	const struct Guid128 *restrict
+COLD
+/*@temp@*/
+BUILD_EXTERN char *guid128_format(
+	/*@returned@*/ /*@out@*/ char *RESTRICT buf, size_t,
+	const struct Guid128 *RESTRICT
 )
 /*@modifies	*buf@*/
 ;
 
-//--------------------------------------------------------------------------//
+/* ------------------------------------------------------------------------ */
 
-// metatags_skip.c
+/* metatags_skip.c */
 
 #undef file
-extern enum FileCheck metatags_skip(FILE *restrict file)
+BUILD_EXTERN enum FileCheck metatags_skip(FILE *RESTRICT file)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
 		file
 @*/
 ;
 
-//--------------------------------------------------------------------------//
+/* ------------------------------------------------------------------------ */
 
-// tta1_check
+/* tta1_check.c */
 
 #undef fstat
 #undef file
-extern enum FileCheck filecheck_tta1(
-	/*@out@*/ struct FileStats *restrict fstat, FILE *restrict file
+BUILD_EXTERN enum FileCheck filecheck_tta1(
+	/*@out@*/ struct FileStats *RESTRICT fstat, FILE *RESTRICT file
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -156,14 +168,17 @@ extern enum FileCheck filecheck_tta1(
 @*/
 ;
 
-//--------------------------------------------------------------------------//
+/* ------------------------------------------------------------------------ */
 
-// tta_seek.c
+/* tta_seek.c */
 
-extern CONST size_t seektable_nframes(size_t, size_t, uint) /*@*/;
+CONST
+BUILD_EXTERN size_t seektable_nframes(size_t, size_t, unsigned int) /*@*/;
 
 #undef st
-extern void seektable_init(/*@out@*/ struct SeekTable *restrict st, size_t)
+BUILD_EXTERN void seektable_init(
+	/*@out@*/ struct SeekTable *RESTRICT st, size_t
+)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -175,8 +190,8 @@ extern void seektable_init(/*@out@*/ struct SeekTable *restrict st, size_t)
 ;
 
 #undef st
-extern HOT void seektable_add(
-	struct SeekTable *restrict st, size_t, const char *restrict
+BUILD_EXTERN HOT void seektable_add(
+	struct SeekTable *RESTRICT st, size_t, const char *RESTRICT
 )
 /*@globals	fileSystem,
 		internalState
@@ -188,35 +203,40 @@ extern HOT void seektable_add(
 ;
 
 #undef st
-extern void seektable_free(const struct SeekTable *restrict st)
+BUILD_EXTERN void seektable_free(const struct SeekTable *RESTRICT st)
 /*@globals	internalState@*/
 /*@modifies	internalState@*/
 /*@releases	st->table@*/
 ;
 
-//--------------------------------------------------------------------------//
+/* ------------------------------------------------------------------------ */
+
+/* tta_seek_check.c */
 
 #undef st
 #undef file
-extern enum FileCheck filecheck_tta_seektable(
-	/*@out@*/ struct SeekTable *restrict st, size_t, FILE *restrict file
+BUILD_EXTERN enum FileCheck filecheck_tta_seektable(
+	/*@out@*/ struct SeekTable *RESTRICT st, size_t, FILE *RESTRICT file
 )
-/*@globals	fileSystem@*/
+/*@globals	fileSystem,
+		internalState
+@*/
 /*@modifies	fileSystem,
+		internalState,
 		*st,
 		*fstat,
 		file
 @*/
 ;
 
-//--------------------------------------------------------------------------//
+/* ------------------------------------------------------------------------ */
 
-// tta_write.c
+/* tta_write.c */
 
 #undef outfile
-extern void prewrite_tta1_header_seektable(
-	FILE *restrict outfile, const struct SeekTable *restrict,
-	const char *restrict
+BUILD_EXTERN void prewrite_tta1_header_seektable(
+	FILE *RESTRICT outfile, const struct SeekTable *RESTRICT,
+	const char *RESTRICT
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -225,8 +245,8 @@ extern void prewrite_tta1_header_seektable(
 ;
 
 #undef outfile
-extern off_t write_tta1_header(
-	FILE *restrict outfile, size_t, const struct FileStats *restrict,
+BUILD_EXTERN off_t write_tta1_header(
+	FILE *RESTRICT outfile, size_t, const struct FileStats *RESTRICT,
 	const char *
 )
 /*@globals	fileSystem@*/
@@ -236,9 +256,9 @@ extern off_t write_tta1_header(
 ;
 
 #undef outfile
-extern void write_tta_seektable(
-	FILE *restrict outfile, const struct SeekTable *restrict,
-	const char *restrict
+BUILD_EXTERN void write_tta_seektable(
+	FILE *RESTRICT outfile, const struct SeekTable *RESTRICT,
+	const char *RESTRICT
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -246,14 +266,14 @@ extern void write_tta_seektable(
 @*/
 ;
 
-//--------------------------------------------------------------------------//
+/* ------------------------------------------------------------------------ */
 
-// w64_check.c
+/* w64_check.c */
 
 #undef fstat
 #undef file
-extern enum FileCheck filecheck_w64(
-	/*@out@*/ struct FileStats *restrict fstat, FILE *restrict file
+BUILD_EXTERN enum FileCheck filecheck_w64(
+	/*@out@*/ struct FileStats *RESTRICT fstat, FILE *RESTRICT file
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -262,12 +282,12 @@ extern enum FileCheck filecheck_w64(
 @*/
 ;
 
-//--------------------------------------------------------------------------//
+/* ------------------------------------------------------------------------ */
 
-// w64_write.c
+/* w64_write.c */
 
 #undef outfile
-extern void prewrite_w64_header(FILE *restrict outfile, const char *)
+BUILD_EXTERN void prewrite_w64_header(FILE *RESTRICT outfile, const char *)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
 		outfile
@@ -275,9 +295,9 @@ extern void prewrite_w64_header(FILE *restrict outfile, const char *)
 ;
 
 #undef outfile
-extern void write_w64_header(
-	FILE *restrict outfile, size_t, const struct FileStats *restrict,
-	const char *restrict
+BUILD_EXTERN void write_w64_header(
+	FILE *RESTRICT outfile, size_t, const struct FileStats *RESTRICT,
+	const char *RESTRICT
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -285,14 +305,14 @@ extern void write_w64_header(
 @*/
 ;
 
-//--------------------------------------------------------------------------//
+/* ------------------------------------------------------------------------ */
 
-// wav_check.c
+/* wav_check.c */
 
 #undef fstat
 #undef file
-extern enum FileCheck filecheck_wav(
-	/*@out@*/ struct FileStats *restrict fstat, FILE *restrict file
+BUILD_EXTERN enum FileCheck filecheck_wav(
+	/*@out@*/ struct FileStats *RESTRICT fstat, FILE *RESTRICT file
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -303,8 +323,8 @@ extern enum FileCheck filecheck_wav(
 
 #undef fstat
 #undef file
-extern enum FileCheck filecheck_wav_read_subchunk_fmt(
-	/*@out@*/ struct FileStats *restrict fstat, FILE *restrict file
+BUILD_EXTERN enum FileCheck filecheck_wav_read_subchunk_fmt(
+	/*@out@*/ struct FileStats *RESTRICT fstat, FILE *RESTRICT file
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -313,12 +333,14 @@ extern enum FileCheck filecheck_wav_read_subchunk_fmt(
 @*/
 ;
 
-//--------------------------------------------------------------------------//
+/* ------------------------------------------------------------------------ */
 
-// wav_write.c
+/* wav_write.c */
 
 #undef outfile
-extern void prewrite_wav_header(FILE *restrict outfile, const char *restrict)
+BUILD_EXTERN void prewrite_wav_header(
+	FILE *RESTRICT outfile, const char *RESTRICT
+)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
 		outfile
@@ -326,9 +348,9 @@ extern void prewrite_wav_header(FILE *restrict outfile, const char *restrict)
 ;
 
 #undef outfile
-extern void write_wav_header(
-	FILE *restrict outfile, size_t, const struct FileStats *restrict,
-	const char *restrict
+BUILD_EXTERN void write_wav_header(
+	FILE *RESTRICT outfile, size_t, const struct FileStats *RESTRICT,
+	const char *RESTRICT
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -337,21 +359,20 @@ extern void write_wav_header(
 ;
 
 #undef body
-extern void fill_waveformatex_body(
-	/*@out@*/ struct RiffSubChunk_WaveFormatEX_Body *restrict body,
-	u16, const struct FileStats *restrict
+BUILD_EXTERN void fill_waveformatex_body(
+	/*@out@*/ struct RiffSubChunk_WaveFormatEX_Body *RESTRICT body,
+	uint16_t, const struct FileStats *RESTRICT
 )
 /*@modifies	*body@*/
 ;
 
 #undef wfx
-extern void fill_waveformatextensible(
-	/*@out@*/
-	struct RiffSubChunk_WaveFormatExtensible_Tail *restrict wfx,
-	const struct FileStats *restrict
+BUILD_EXTERN void fill_waveformatextensible(
+	/*@out@*/ struct RiffSubChunk_WaveFormatExtensible_Tail *RESTRICT wfx,
+	const struct FileStats *RESTRICT
 )
 /*@modifies	*wfx@*/
 ;
 
-// EOF ///////////////////////////////////////////////////////////////////////
-#endif
+/* EOF //////////////////////////////////////////////////////////////////// */
+#endif	/* H_TTA_FORMATS_H */

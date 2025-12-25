@@ -1,4 +1,4 @@
-//////////////////////////////////////////////////////////////////////////////
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // modes/mode_encode.c                                                      //
 //                                                                          //
@@ -7,23 +7,17 @@
 // Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
-
-#ifdef S_SPLINT_S
-#include "../../splint.h"
-#endif
-
-/* ------------------------------------------------------------------------ */
+/////////////////////////////////////////////////////////////////////////// */
 
 #include <assert.h>
 #include <errno.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../bits.h"
-
 #include "../cli.h"
+#include "../common.h"
 #include "../debug.h"
 #include "../formats.h"
 #include "../main.h"
@@ -31,17 +25,18 @@
 #include "../opts.h"
 #include "../system.h"
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 #undef seektable
 #undef estat_out
 #undef outfile
 #undef infile
-extern HOT void encst_loop(
-	struct SeekTable *restrict seektable,
-	/*@out@*/ struct EncStats *restrict estat_out,
-	const struct FileStats *restrict, FILE *restrict outfile,
-	const char *, FILE *restrict infile, const char *
+HOT
+BUILD_EXTERN NOINLINE void encst_loop(
+	struct SeekTable *RESTRICT seektable,
+	/*@out@*/ struct EncStats *RESTRICT estat_out,
+	const struct FileStats *RESTRICT, FILE *RESTRICT outfile,
+	const char *, FILE *RESTRICT infile, const char *
 )
 /*@globals	fileSystem,
 		internalState
@@ -59,11 +54,11 @@ extern HOT void encst_loop(
 #undef estat
 #undef outfile
 #undef infile
-extern void encmt_loop(
-	struct SeekTable *restrict seektable,
-	/*@out@*/ struct EncStats *restrict estat_out,
-	const struct FileStats *restrict fstat, FILE *restrict outfile,
-	const char *, FILE *restrict infile, const char *, uint
+BUILD_EXTERN NOINLINE void encmt_loop(
+	struct SeekTable *RESTRICT seektable,
+	/*@out@*/ struct EncStats *RESTRICT estat_out,
+	const struct FileStats *RESTRICT fstat, FILE *RESTRICT outfile,
+	const char *, FILE *RESTRICT infile, const char *, unsigned int
 )
 /*@globals	fileSystem,
 		internalState
@@ -77,9 +72,9 @@ extern void encmt_loop(
 @*/
 ;
 
-//////////////////////////////////////////////////////////////////////////////
+/* ======================================================================== */
 
-static void enc_loop(const struct OpenedFilesMember *restrict)
+static void enc_loop(const struct OpenedFilesMember *RESTRICT)
 /*@globals	fileSystem,
 		internalState,
 		g_rm_on_sigint
@@ -90,19 +85,22 @@ static void enc_loop(const struct OpenedFilesMember *restrict)
 @*/
 ;
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 /**@fn mode_encode
  * @brief mode for encoding TTA
  *
- * @param optind the index of 'argv'
- * @param argc the argument count from main()
- * @param argv[in out] the argument vector from main()
+ * @param optind - index of 'argv'
+ * @param argc   - argument count from main()
+ * @param argv   - argument vector from main()
  *
- * @return the number of warnings/errors
+ * @return number of warnings/errors
 **/
-int
-mode_encode(const uint optind, const uint argc, char *const *const argv)
+BUILD NOINLINE int
+mode_encode(
+	const unsigned int optind, const unsigned int argc,
+	char *const *const argv
+)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -121,21 +119,21 @@ mode_encode(const uint optind, const uint argc, char *const *const argv)
 
 	timestamp_get(&ts_start);
 
-	// process opts/args
+	/* process opts/args */
 	nerrors_file += optargs_process(
 		&openedfiles, optind, argc, argv, &encode_optdict
 	);
 
-	// get file stats
+	/* get file stats */
 	for ( i = 0; i < openedfiles.nmemb; ++i ){
 		nerrors_file += filestats_get(
 			openedfiles.file[i], MODE_ENCODE
 		);
 	}
 
-	// additional error check(s)
+	/* additional error check(s) */
 	if UNLIKELY (
-	     (openedfiles.nmemb > (size_t) 1u)
+	     (openedfiles.nmemb > SIZE_C(1))
 	    &&
 	     (g_flag.outfile != NULL) && (! g_flag.outfile_is_dir)
 	){
@@ -146,15 +144,15 @@ mode_encode(const uint optind, const uint argc, char *const *const argv)
 		nerrors_file += 1u;
 	} else{;}
 
-	// exit if any errors
+	/* exit if any errors */
 	if UNLIKELY ( nerrors_file != 0 ){
-		if ( nerrors_file > (size_t) 255u ){
-			nerrors_file = (size_t) 255u;
+		if ( nerrors_file > SIZE_C(255) ){
+			nerrors_file = SIZE_C(255);
 		}
 		exit((int) nerrors_file);
 	}
 
-	// encode each file
+	/* encode each file */
 	for ( i = 0; i < openedfiles.nmemb; ++i ){
 		if ( (i != 0) && (! g_flag.quiet) ){
 			(void) fputc('\n', stderr);
@@ -177,8 +175,8 @@ mode_encode(const uint optind, const uint argc, char *const *const argv)
 		}
 	}
 
-	// print multifile stats
-	if ( (! g_flag.quiet) && (openedfiles.nmemb > (size_t) 1u) ){
+	/* print multifile stats */
+	if ( (! g_flag.quiet) && (openedfiles.nmemb > SIZE_C(1)) ){
 		timestamp_get(&ts_finish);
 		errprint_runtime(
 			timestamp_diff(&ts_start, &ts_finish),
@@ -186,7 +184,7 @@ mode_encode(const uint optind, const uint argc, char *const *const argv)
 		);
 	}
 
-	// cleanup
+	/* cleanup */
 	openedfiles_close_free(&openedfiles);
 
 	return (int) g_nwarnings;
@@ -195,10 +193,10 @@ mode_encode(const uint optind, const uint argc, char *const *const argv)
 /**@fn enc_loop
  * @brief prepares for and calls the encode loop function
  *
- * @param ofm[in] the source file struct
+ * @param ofm - source file struct
 **/
 static void
-enc_loop(const struct OpenedFilesMember *const restrict ofm)
+enc_loop(const struct OpenedFilesMember *const RESTRICT ofm)
 /*@globals	fileSystem,
 		internalState,
 		g_rm_on_sigint
@@ -208,62 +206,58 @@ enc_loop(const struct OpenedFilesMember *const restrict ofm)
 		g_rm_on_sigint
 @*/
 {
-	FILE *const restrict infile = ofm->infile;
+	FILE *const RESTRICT   infile = ofm->infile;
 	const char *const infile_name = ofm->infile_name;
-	const struct FileStats *const restrict fstat = &ofm->fstat;
-	//
-	FILE *restrict outfile = NULL;
-	char *const restrict outfile_name = get_outfile_name(
+	const struct FileStats *const RESTRICT fstat = &ofm->fstat;
+	/* * */
+	FILE *RESTRICT outfile = NULL;
+	char *const RESTRICT outfile_name = get_outfile_name(
 		infile_name, get_encfmt_sfx(fstat->encfmt)
 	);
-	//
-	const uint nthreads = (g_nthreads != 0
+	/* * */
+	const unsigned int nthreads = (g_nthreads != 0
 		? g_nthreads : get_nprocessors_onln()
 	);
-	//
+	/* * */
 	struct EncStats estat;
 	struct SeekTable seektable;
 	timestamp_p ts_start, ts_finish;
 	union {	int	d; } result;
 	union {	size_t	z; } tmp;
 
-	// pre-encode stats
+	/* pre-encode stats */
 	if ( ! g_flag.quiet ){
 		errprint_stats_precodec(
 			fstat, infile_name, outfile_name, MODE_ENCODE
 		);
 	}
 
-	// setup seektable
+	/* setup seektable */
 	switch ( fstat->encfmt ){
 	default:
 		assert(false);
 		break;
 	case xENCFMT_TTA1:
-		// seektable at start of file, size calculated in advance
+		/* seektable at start of file, size calculated in advance */
 		tmp.z = seektable_nframes(
 			fstat->decpcm_size, fstat->buflen,
-			(uint) fstat->samplebytes
+			(unsigned int) fstat->samplebytes
 		);
 		seektable_init(&seektable, tmp.z);
 		break;
 	}
-	// TODO handle file of unknown size
-	//else {	// TODO setup tmpfile for writing
-	//	seektable_init(&seektable, 0);
-	//}
+	/* MAYBE: handle file of unknown size */
 
-	// open outfile
+	/* open outfile */
 	outfile = fopen_check(outfile_name, "wb", FATAL);
 	if UNLIKELY ( outfile == NULL ){
 		error_sys(errno, "fopen", outfile_name);
 	}
 	assert(outfile != NULL);
-	//
 	g_rm_on_sigint = outfile_name;
 
-	// save some space for the outfile header and seektable
-	// TODO handle file of unknown size
+	/* save some space for the outfile header and seektable */
+	/* MAYBE: handle file of unknown size */
 	switch ( fstat->encfmt ){
 	default:
 		assert(false);
@@ -275,7 +269,7 @@ enc_loop(const struct OpenedFilesMember *const restrict ofm)
 		break;
 	}
 
-	// seek to start of pcm
+	/* seek to start of PCM */
 	result.d = fseeko(infile, fstat->decpcm_off, SEEK_SET);
 	if UNLIKELY ( result.d != 0 ){
 		error_sys(errno, "fseeko", infile_name);
@@ -285,7 +279,7 @@ enc_loop(const struct OpenedFilesMember *const restrict ofm)
 		timestamp_get(&ts_start);
 	}
 
-	// encode
+	/* encode */
 	switch ( g_flag.threadmode ){
 	default:
 		assert(false);
@@ -310,7 +304,7 @@ encode_multi:
 		break;
 	}
 
-	// write header and seektable
+	/* write header and seektable */
 	switch ( fstat->encfmt ){
 	default:
 		assert(false);
@@ -328,12 +322,11 @@ encode_multi:
 		(void) fputs("C\r", stderr);
 	}
 
-	// close outfile
+	/* close outfile */
 	result.d = fclose(outfile);
 	if UNLIKELY ( result.d != 0 ){
 		error_sys_nf(errno, "fclose", outfile_name);
 	}
-	//
 	g_rm_on_sigint = NULL;
 
 	if ( ! g_flag.quiet ){
@@ -341,16 +334,16 @@ encode_multi:
 		estat.encodetime = timestamp_diff(&ts_start, &ts_finish);
 	}
 
-	// post-encode stats
+	/* post-encode stats */
 	if ( ! g_flag.quiet ){
 		errprint_stats_postcodec(fstat, &estat);
 	}
 
-	// cleanup
+	/* cleanup */
 	free(outfile_name);
 	seektable_free(&seektable);
 
 	return;
 }
 
-// EOF ///////////////////////////////////////////////////////////////////////
+/* EOF //////////////////////////////////////////////////////////////////// */

@@ -1,13 +1,13 @@
 .\" t
 .\"     Title: libttaR_tta_encode
 .\"    Author: Shane Seelig
-.\"      Date: 2025-05-01
-.\"    Source: libttaR 2.0
+.\"      Date: 2025-12-24
+.\"    Source: libttaR 2.1
 .\"  Language: English
 .\"
 .\" ##########################################################################
 
-.TH "LIBTTAr_TTA_ENCODE" "3" "2025\-04\-01" "libttaR 2.0" \
+.TH "LIBTTAr_TTA_ENCODE" "3" "2025\-12\-24" "libttaR 2.1" \
 "LibTTAr Programmer's Manual"
 
 .\" ##########################################################################
@@ -47,10 +47,10 @@ libttaR_tta_encode, libttaR_tta_decode \- a reentrant TTA codec
 
 .SH "DESCRIPTION"
 
-.BR libttaR_tta_encode ()
+.BR libttaR_tta_encode (3)
 encodes a whole or partial TTA frame.
 
-.BR libttaR_tta_decode ()
+.BR libttaR_tta_decode (3)
 decodes a whole or partial TTA frame.
 
 .\" -------------------------------------------------------------------------#
@@ -61,7 +61,7 @@ decodes a whole or partial TTA frame.
 .RS 8
 The destination buffer.
 Needs to be padded with at least
-\fBlibttaR_ttabuf_safety_margin\fR()
+\fBlibttaR_ttabuf_safety_margin\fR(3)
 bytes when encoding.
 .RE
 
@@ -69,7 +69,7 @@ bytes when encoding.
 .RS 8
 The source buffer.
 Needs to be padded with at least
-\fBlibttaR_ttabuf_safety_margin\fR()
+\fBlibttaR_ttabuf_safety_margin\fR(3)
 bytes when decoding.
 .RE
 
@@ -77,9 +77,9 @@ bytes when decoding.
 .RS 8
 The codec's private state.
 The struct is opaque and needs to be allocated and properly aligned
-(malloc() / __BIGGEST_ALIGNMENT__)
+(\fBLIBTTAr_CODECSTATE_PRIV_ALIGN\fR)
 with the size from
-.BR libttaR_codecstate_priv_size ().
+.BR libttaR_codecstate_priv_size (3).
 .RE
 
 *\fIuser\fR
@@ -184,6 +184,8 @@ The target number of TTA bytes from the dest/src buffer to encode/decode.
 ni32_perframe:
 .RS 8
 The number of uncoded int32_t per TTA frame.
+See
+.BR libttaR_nsamples_perframe_tta1 (3).
 .RE
 
 nbytes_tta_perframe:
@@ -223,40 +225,59 @@ unless you know what you are doing.
 
 .nf
 \fBenum LibTTAr_EncRetVal\fR {
-    LIBTTAr_ERV_DONE            = /* =0 */,
-    LIBTTAr_ERV_AGAIN           = /* >0 */,
+    LIBTTAr_ERV_OK_DONE         = /* =0 */,
+    LIBTTAr_ERV_OK_AGAIN        = /* >0 */,
+    LIBTTAr_ERV_FAIL_OVERFLOW   = /* >0 */,
     LIBTTAr_ERV_INVAL_RANGE     = /* <0 */,
     LIBTTAr_ERV_INVAL_TRUNC     = /* <0 */,
     LIBTTAr_ERV_INVAL_BOUNDS    = /* <0 */,
+    LIBTTAr_ERV_INVAL_ALIGN     = /* <0 */,
     LIBTTAr_ERV_MISCONFIG       = /* <0 */
 };
 
 \fBenum LibTTAr_DecRetVal\fR {
-    LIBTTAr_DRV_DONE            = /* =0 */,
-    LIBTTAr_DRV_AGAIN           = /* >0 */,
-    LIBTTAr_DRV_FAIL            = /* >0 */,
+    LIBTTAr_DRV_OK_DONE         = /* =0 */,
+    LIBTTAr_DRV_OK_AGAIN        = /* >0 */,
+    LIBTTAr_DRV_FAIL_DECODE     = /* >0 */,
+    LIBTTAr_DRV_FAIL_OVERFLOW   = /* >0 */,
     LIBTTAr_DRV_INVAL_RANGE     = /* <0 */,
     LIBTTAr_DRV_INVAL_TRUNC     = /* <0 */,
     LIBTTAr_DRV_INVAL_BOUNDS    = /* <0 */,
+    LIBTTAr_DRV_INVAL_ALIGN     = /* <0 */,
     LIBTTAr_DRV_MISCONFIG       = /* <0 */
 };
 .fi
 
-.SH Success (>= 0)
+.\" -------------------------------------------------------------------------#
+
+.SH Success
 
 .RS 4
 
-\fBLIBTTAr_ERV_DONE\fR, \fBLIBTTAr_DRV_DONE\fR
+\fBLIBTTAr_ERV_OK_DONE\fR, \fBLIBTTAr_DRV_OK_DONE\fR
 .RS 8
 The frame finished coding.
 .RE
 
-\fBLIBTTAr_ERV_AGAIN\fR, \fBLIBTTAr_DRV_AGAIN\fR
+\fBLIBTTAr_ERV_OK_AGAIN\fR, \fBLIBTTAr_DRV_OK_AGAIN\fR
 .RS 8
 The frame did not finish coding.
+The buffers and \fImisc\fR values should be adjusted for another call.
 .RE
 
-\fBLIBTTAr_DRV_FAIL\fR
+.RE
+
+.\" -------------------------------------------------------------------------#
+
+.SH Failure
+
+.RS
+
+If one of the following is returned,
+\fIuser\fR and \fIpriv\fR
+are likely in a corrupted, unrecoverable state.
+
+\fBLIBTTAr_DRV_FAIL_DECODE\fR
 .RS 8
 The frame finished decoding, but
 (\fIuser\fR->nbytes_tta_total !\= \fImisc\fR->nbytes_tta_perframe), or
@@ -273,20 +294,23 @@ It should be possible to construct an invalid TTA frame (with a good CRC) that
 could get the decoder to read the "correct" number of bytes.
 .RE
 
+\fBLIBTTAr_ERV_FAIL_OVERFLOW\fR, \fBLIBTTAr_DRV_FAIL_OVERFLOW\fR
+.RS 8
+An integer value (\fIuser\fR size_t) overflowed.
+It would probably be caused by improperly setting the parameters or state.
 .RE
 
-.SH Error (< 0)
+.RE
+
+.\" -------------------------------------------------------------------------#
+
+.SH Error (<0)
 
 .RS 4
 
 \fBLIBTTAr_ERV_INVAL_RANGE\fR, \fBLIBTTAr_DRV_INVAL_RANGE\fR
 .RS 8
 Some \fImisc\fR value is 0 or a bad enum value.
-
-The source code allows the compiler to consider a bad enum value
-to be undefined behavior.
-A cute compiler could cause funny things to happen in such a situation,
-but an error will likely just be returned instead.
 .RE
 
 \fBLIBTTAr_ERV_INVAL_TRUNC\fR, \fBLIBTTAr_DRV_INVAL_TRUNC\fR
@@ -300,9 +324,14 @@ The last sample is truncated.
 Some \fImisc\fR value would cause a bounds issue.
 .RE
 
+\fBLIBTTAr_ERV_INVAL_ALIGN\fR, \fBLIBTTAr_DRV_INVAL_ALIGN\fR
+.RS 8
+A pointer/buffer (\fIpriv\fR) is not properly aligned.
+.RE
+
 \fBLIBTTAr_ERV_MISCONFIG\fR, \fBLIBTTAr_DRV_MISCONFIG\fR
 .RS 8
-The library was misconfigured when built; see \fBlibttaR_test_nchan\fR().
+The library was misconfigured when built; see \fBlibttaR_test_nchan\fR(3).
 .RE
 
 The debug build of the library may abort instead of returning an error.
@@ -321,142 +350,15 @@ Both are MT-Safe.
 
 .\" -------------------------------------------------------------------------#
 
-.SS libttaR/src/cli/modes/mode_encode_loop.c
-.EX
-// may be older code
-static void
-enc_frame_encode(
-        struct EncBuf *const restrict encbuf,
-        /*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
-        /*@out@*/ struct LibTTAr_CodecState_User *const restrict user_out,
-        const enum TTASampleBytes samplebytes, const uint nchan,
-        const size_t ni32_perframe
-)
-/*@globals      fileSystem,
-                internalState
-@*/
-/*@modifies     fileSystem,
-                internalState,
-                encbuf->ttabuf_len,
-                *encbuf->i32buf,
-                encbuf->ttabuf,
-                *encbuf->ttabuf,
-                *priv,
-                *user_out
-@*/
-{
-        enum LibTTAr_EncRetVal status;
-        struct LibTTAr_CodecState_User user = LIBTTAr_CODECSTATE_USER_INIT;
-        struct LibTTAr_EncMisc misc;
-        UNUSED union {  size_t z; } result;
+Read the following functions in the library source code for usage examples.
 
-        assert(encbuf->i32buf != NULL);
+.RS 4
 
-        // convert pcm to i32
-        result.z = libttaR_pcm_read(
-                encbuf->i32buf, encbuf->pcmbuf, ni32_perframe, samplebytes
-        );
-        assert(result.z != 0);
+libttaR/src/cli/modes/mode_encode_loop.c :: enc_frame_encode()
 
-        // encode i32 to tta
-        misc.ni32_perframe = ni32_perframe;
-        misc.samplebytes   = samplebytes;
-        misc.nchan         = nchan;
-        goto loop_entr;
-	do {
-                encbuf_adjust(encbuf, TTABUF_LEN_DEFAULT, nchan);
-loop_entr:
-                misc.dest_len    = encbuf->ttabuf_len - user.nbytes_tta_total;
-                misc.src_len     = encbuf->i32buf_len - user.ni32_total;
-                misc.ni32_target = ni32_perframe - user.ni32_total;
+libttaR/src/cli/modes/mode_decode_loop.c :: dec_frame_decode()
 
-                status = libttaR_tta_encode(
-                        &encbuf->ttabuf[user.nbytes_tta_total],
-                        &encbuf->i32buf[user.ni32_total],
-                        priv, &user, &misc
-                );
-                assert((status == LIBTTAr_ERV_DONE)
-                      ||
-                       (status == LIBTTAr_ERV_AGAIN)
-                );
-        }
-        while ( status == LIBTTAr_ERV_AGAIN );
-
-        *user_out = user;
-        return;
-}
-.EE
-
-.\" -------------------------------------------------------------------------#
-
-.SS libttaR/src/cli/modes/mode_decode_loop.c
-.EX
-// may be older code
-static int
-dec_frame_decode(
-        struct DecBuf *const restrict decbuf,
-        /*@reldef@*/ struct LibTTAr_CodecState_Priv *const restrict priv,
-        /*@out@*/ struct LibTTAr_CodecState_User *const restrict user_out,
-        const enum TTASampleBytes samplebytes, const uint nchan,
-        size_t ni32_perframe, const size_t nbytes_tta_perframe,
-        /*@out@*/ size_t *const restrict nsamples_flat_2pad
-)
-/*@modifies     *decbuf->i32buf,
-                *decbuf->pcmbuf,
-                *priv,
-                *user_out,
-                *nsamples_flat_2pad
-@*/
-{
-        enum LibTTAr_DecRetVal status;
-        struct LibTTAr_CodecState_User user = LIBTTAr_CODECSTATE_USER_INIT;
-        struct LibTTAr_DecMisc misc;
-        size_t pad_target;
-        UNUSED union {  size_t z; } result;
-
-        assert(decbuf->i32buf != NULL);
-
-        // check for truncated sample
-        pad_target     = (ni32_perframe % nchan == 0
-                ? 0 : (size_t) (nchan - (ni32_perframe % nchan))
-        );
-        ni32_perframe += pad_target;
-
-        // decode tta to i32
-        misc.dest_len            = decbuf->i32buf_len;
-        misc.src_len             = decbuf->ttabuf_len;
-        misc.ni32_target         = ni32_perframe;
-        misc.nbytes_tta_target   = nbytes_tta_perframe;
-        misc.ni32_perframe       = ni32_perframe;
-        misc.nbytes_tta_perframe = nbytes_tta_perframe;
-        misc.samplebytes         = samplebytes;
-        misc.nchan               = nchan;
-        //
-        status = libttaR_tta_decode(
-                decbuf->i32buf, decbuf->ttabuf, priv, &user, &misc
-        );
-        // with the way the decoding is setup, _AGAIN shouldn't happen
-        assert((status == LIBTTAr_DRV_DONE)
-              ||
-               (status == LIBTTAr_DRV_FAIL)
-        );
-
-        if UNLIKELY ( status == LIBTTAr_DRV_FAIL ){
-                pad_target     += ni32_perframe - user.ni32_total;
-                user.ni32_total = ni32_perframe;
-        }
-
-        // convert i32 to pcm
-        result.z = libttaR_pcm_write(
-                decbuf->pcmbuf, decbuf->i32buf, user.ni32_total, samplebytes
-        );
-        assert(result.z != 0);
-
-        *user_out           = user;
-        *nsamples_flat_2pad = pad_target;
-        return (int) status;
-}
-.EE
+.RE
 
 .\" ##########################################################################
 

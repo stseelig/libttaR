@@ -1,4 +1,4 @@
-//////////////////////////////////////////////////////////////////////////////
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // modes/mode_decode.c                                                      //
 //                                                                          //
@@ -7,23 +7,17 @@
 // Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
-
-#ifdef S_SPLINT_S
-#include "../../splint.h"
-#endif
-
-/* ------------------------------------------------------------------------ */
+/////////////////////////////////////////////////////////////////////////// */
 
 #include <assert.h>
 #include <errno.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../bits.h"
-
 #include "../cli.h"
+#include "../common.h"
 #include "../debug.h"
 #include "../formats.h"
 #include "../main.h"
@@ -31,16 +25,17 @@
 #include "../opts.h"
 #include "../system.h"
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 #undef dstat_out
 #undef outfile
 #undef infile
-void HOT decst_loop(
-	const struct SeekTable *restrict,
-	/*@out@*/ struct DecStats *restrict dstat_out,
-	const struct FileStats *restrict, FILE *restrict outfile,
-	const char *, FILE *restrict infile, const char *
+HOT
+BUILD_EXTERN NOINLINE void decst_loop(
+	const struct SeekTable *RESTRICT,
+	/*@out@*/ struct DecStats *RESTRICT dstat_out,
+	const struct FileStats *RESTRICT, FILE *RESTRICT outfile,
+	const char *, FILE *RESTRICT infile, const char *
 )
 /*@globals	fileSystem,
 		internalState
@@ -56,11 +51,11 @@ void HOT decst_loop(
 #undef dstat_out
 #undef outfile
 #undef infile
-void decmt_loop(
-	const struct SeekTable *restrict,
-	/*@out@*/ struct DecStats *restrict dstat_out,
-	const struct FileStats *restrict, FILE *restrict outfile,
-	const char *, FILE *restrict infile, const char *, uint
+BUILD_EXTERN NOINLINE void decmt_loop(
+	const struct SeekTable *RESTRICT,
+	/*@out@*/ struct DecStats *RESTRICT dstat_out,
+	const struct FileStats *RESTRICT, FILE *RESTRICT outfile,
+	const char *, FILE *RESTRICT infile, const char *, unsigned int
 )
 /*@globals	fileSystem,
 		internalState
@@ -73,9 +68,9 @@ void decmt_loop(
 @*/
 ;
 
-//////////////////////////////////////////////////////////////////////////////
+/* ======================================================================== */
 
-static void dec_loop(struct OpenedFilesMember *restrict)
+static void dec_loop(struct OpenedFilesMember *RESTRICT)
 /*@globals	fileSystem,
 		internalState,
 		g_rm_on_sigint
@@ -86,19 +81,22 @@ static void dec_loop(struct OpenedFilesMember *restrict)
 @*/
 ;
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 /**@fn mode_decode
  * @brief mode for decoding TTA
  *
- * @param optind the index of 'argv'
- * @param argc the argument count from main()
- * @param argv[in out] the argument vector from main()
+ * @param optind - index of 'argv'
+ * @param argc   - argument count from main()
+ * @param argv   - argument vector from main()
  *
  * @return the number of warnings/errors
 **/
-int
-mode_decode(const uint optind, const uint argc, char *const *const argv)
+BUILD NOINLINE int
+mode_decode(
+	const unsigned int optind, const unsigned int argc,
+	char *const *const argv
+)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -116,21 +114,21 @@ mode_decode(const uint optind, const uint argc, char *const *const argv)
 
 	timestamp_get(&ts_start);
 
-	// process opts/args
+	/* process opts/args */
 	nerrors_file = optargs_process(
 		&openedfiles, optind, argc, argv, &decode_optdict
 	);
 
-	// get file stats
+	/* get file stats */
 	for ( i = 0; i < openedfiles.nmemb; ++i ){
 		nerrors_file += filestats_get(
 			openedfiles.file[i], MODE_DECODE
 		);
 	}
 
-	// additional error check(s)
+	/* additional error check(s) */
 	if UNLIKELY (
-	     (openedfiles.nmemb > (size_t) 1u)
+	     (openedfiles.nmemb > SIZE_C(1))
 	    &&
 	     (g_flag.outfile != NULL) && (! g_flag.outfile_is_dir)
 	){
@@ -141,15 +139,15 @@ mode_decode(const uint optind, const uint argc, char *const *const argv)
 		nerrors_file += 1u;
 	} else{;}
 
-	// exit if any errors
+	/* exit if any errors */
 	if UNLIKELY ( nerrors_file != 0 ){
-		if ( nerrors_file > (size_t) 255u ){
-			nerrors_file = (size_t) 255u;
+		if ( nerrors_file > SIZE_C(255) ){
+			nerrors_file = SIZE_C(255);
 		}
 		exit((int) nerrors_file);
 	}
 
-	// decode each file
+	/* decode each file */
 	for ( i = 0; i < openedfiles.nmemb; ++i ){
 		if ( (i != 0) && (! g_flag.quiet) ){
 			(void) fputc('\n', stderr);
@@ -172,8 +170,8 @@ mode_decode(const uint optind, const uint argc, char *const *const argv)
 		}
 	}
 
-	// print multifile stats
-	if ( (! g_flag.quiet) && (openedfiles.nmemb > (size_t) 1u) ){
+	/* print multifile stats */
+	if ( (! g_flag.quiet) && (openedfiles.nmemb > SIZE_C(1)) ){
 		timestamp_get(&ts_finish);
 		errprint_runtime(
 			timestamp_diff(&ts_start, &ts_finish),
@@ -181,7 +179,7 @@ mode_decode(const uint optind, const uint argc, char *const *const argv)
 		);
 	}
 
-	// cleanup
+	/* cleanup */
 	openedfiles_close_free(&openedfiles);
 
 	return (int) g_nwarnings;
@@ -193,7 +191,7 @@ mode_decode(const uint optind, const uint argc, char *const *const argv)
  * @param ofm[in] the source file struct
 **/
 static void
-dec_loop(struct OpenedFilesMember *const restrict ofm)
+dec_loop(struct OpenedFilesMember *const RESTRICT ofm)
 /*@globals	fileSystem,
 		internalState,
 		g_rm_on_sigint
@@ -203,19 +201,19 @@ dec_loop(struct OpenedFilesMember *const restrict ofm)
 		g_rm_on_sigint
 @*/
 {
-	FILE *const restrict infile = ofm->infile;
+	FILE *const RESTRICT   infile = ofm->infile;
 	const char *const infile_name = ofm->infile_name;
-	struct FileStats *const restrict fstat = &ofm->fstat;
-	//
-	FILE *restrict outfile = NULL;
-	char *const restrict outfile_name = get_outfile_name(
+	struct FileStats *const RESTRICT fstat = &ofm->fstat;
+	/* * */
+	FILE *RESTRICT outfile = NULL;
+	char *const RESTRICT outfile_name = get_outfile_name(
 		infile_name, get_decfmt_sfx(g_flag.decfmt)
 	);
-	//
-	const uint nthreads = (g_nthreads != 0
+	/* * */
+	const unsigned int nthreads = (g_nthreads != 0
 		? g_nthreads : get_nprocessors_onln()
 	);
-	//
+	/* * */
 	struct DecStats dstat;
 	struct SeekTable seektable;
 	bool ignore_seektable = false;
@@ -226,7 +224,6 @@ dec_loop(struct OpenedFilesMember *const restrict ofm)
 	union {	size_t z; } tmp;
 
 	fstat->decfmt = g_flag.decfmt;
-	//
 	switch ( fstat->samplebytes ){
 	default:
 		assert(false);
@@ -239,20 +236,20 @@ dec_loop(struct OpenedFilesMember *const restrict ofm)
 		fstat->inttype = INT_SIGNED;
 		break;
 	}
-	//
-	fstat->endian = xENDIAN_LITTLE;	// wav/w64 only LE
+	fstat->endian = xENDIAN_LITTLE;	/* wav/w64 only LE */
 
-	// pre-decode stats
+	/* pre-decode stats */
 	if ( ! g_flag.quiet ){
 		errprint_stats_precodec(
 			fstat, infile_name, outfile_name, MODE_DECODE
 		);
 	}
 
-	// seek to seektable
-	// already there for TTA1
+	/* seek to seektable
+		- already there for TTA1
+	*/
 
-	// copy/check seektable
+	/* copy/check seektable */
 	tmp.z  = fstat->nsamples_enc + fstat->framelen - 1u;
 	tmp.z /= fstat->framelen;
 	result.fc = filecheck_tta_seektable(&seektable, tmp.z, infile);
@@ -265,18 +262,17 @@ dec_loop(struct OpenedFilesMember *const restrict ofm)
 			exit(result.fc);
 		}
 	}
-	// MAYBE check that the combined seektable entries matches filesize
+	/* MAYBE: check that the seektable entries match the filesize */
 
-	// open outfile
+	/* open outfile */
 	outfile = fopen_check(outfile_name, "wb", FATAL);
 	if UNLIKELY ( outfile == NULL ){
 		error_sys(errno, "fopen", outfile_name);
 	}
 	assert(outfile != NULL);
-	//
 	g_rm_on_sigint = outfile_name;
 
-	// save some space for the outfile header
+	/* save some space for the outfile header */
 	switch ( fstat->decfmt ){
 	default:
 		assert(false);
@@ -291,21 +287,22 @@ dec_loop(struct OpenedFilesMember *const restrict ofm)
 		break;
 	}
 
-	// seek to tta data
-	// already there for TTA1
+	/* seek to TTA data
+		- already there for TTA1
+	*/
 
 	if ( ! g_flag.quiet ){
 		timestamp_get(&ts_start);
 	}
 
-	// decode
+	/* decode */
 	switch ( g_flag.threadmode ){
 	default:
 		assert(false);
 		break;
 	case THREADMODE_UNSET:
 		if ( nthreads > 1u ){
-			goto encode_multi;
+			goto decode_multi;
 		}
 		/*@fallthrough@*/
 	case THREADMODE_SINGLE:
@@ -315,7 +312,7 @@ dec_loop(struct OpenedFilesMember *const restrict ofm)
 		);
 		break;
 	case THREADMODE_MULTI:
-encode_multi:
+decode_multi:
 		decmt_loop(
 			&seektable, &dstat, fstat, outfile, outfile_name,
 			infile, infile_name, nthreads
@@ -331,7 +328,7 @@ encode_multi:
 		);
 	}
 
-	// update header
+	/* update header */
 	switch ( fstat->decfmt ){
 	default:
 		assert(false);
@@ -360,12 +357,11 @@ encode_multi:
 		(void) fputs("C\r", stderr);
 	}
 
-	// close outfile
+	/* close outfile */
 	result.d = fclose(outfile);
 	if UNLIKELY ( result.d != 0 ){
 		error_sys_nf(errno, "fclose", outfile_name);
 	}
-	//
 	g_rm_on_sigint = NULL;
 
 	if ( ! g_flag.quiet ){
@@ -373,16 +369,16 @@ encode_multi:
 		dstat.decodetime = timestamp_diff(&ts_start, &ts_finish);
 	}
 
-	// post-decode stats
+	/* post-decode stats */
 	if ( ! g_flag.quiet ){
 		errprint_stats_postcodec(fstat, (struct EncStats *) &dstat);
 	}
 
-	// cleanup
+	/* cleanup */
 	free(outfile_name);
 	seektable_free(&seektable);
 
 	return;
 }
 
-// EOF ///////////////////////////////////////////////////////////////////////
+/* EOF //////////////////////////////////////////////////////////////////// */

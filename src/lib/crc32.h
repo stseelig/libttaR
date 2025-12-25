@@ -1,42 +1,46 @@
-#ifndef TTA_CODEC_CRC32_H
-#define TTA_CODEC_CRC32_H
-//////////////////////////////////////////////////////////////////////////////
+#ifndef H_TTA_CODEC_CRC32_H
+#define H_TTA_CODEC_CRC32_H
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // codec/crc32.h                                                            //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // Copyright (C) 2007, Aleksander Djuric                                    //
-// Copyright (C) 2023-2024, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 
-#include <limits.h>	// UINT32_MAX
+#include <stdint.h>
 
-#include "../bits.h"
+#include "./common.h"
+#include "./types.h"
 
-#include "common.h"
-
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 #define CRC32_INIT	UINT32_MAX
-#define CRC32_FINI(x)	(~(x))
+#define CRC32_FINI(x_x)	(~(x_x))
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
-/*@unchecked@*/ /*@unused@*/
-extern HIDDEN const u32 crc32_table[256u];
+/*@-redef@*/
+/*@unchecked@*/
+BUILD_HIDDEN
+BUILD_EXTERN const uint32_t crc32_table[256u];
+/*@=redef@*/
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
-// having the variable instead of just having a one line return is important.
-//   otherwise it does (on x86) a xor against memory, which can be much slower
-//   (I think it has to do with dependency chains and pipelining). probably a
-//   compiler bug.
-#define CRC32_CONT_BODY(Xtype) { \
-	register const u32 lookup = crc32_table[((u8) crc) ^ x]; \
-	return (Xtype) ((crc >> 8u) ^ lookup); \
+/* having the variable instead of just having a one line return is important.
+     otherwise it does (on x86) a xor against memory, which can be much slower
+     (I think it has to do with dependency chains and pipelining). probably a
+     compiler bug.
+*/
+#define CRC32_CONT_BODY(x_type) { \
+	register const uint32_t lookup = crc32_table[((uint8_t) crc) ^ x]; \
+	\
+	return (x_type) ((crc >> 8u) ^ lookup); \
 }
 
 /**@fn crc32_cont
@@ -47,11 +51,12 @@ extern HIDDEN const u32 crc32_table[256u];
  *
  * @return the updated CRC
 **/
-ALWAYS_INLINE CONST u32
-crc32_cont(const u8 x, const u32 crc)
+CONST
+ALWAYS_INLINE uint32_t
+crc32_cont(const uint8_t x, const uint32_t crc)
 /*@*/
 {
-	CRC32_CONT_BODY(u32);
+	CRC32_CONT_BODY(uint32_t);
 }
 
 /**@fn crc32_cont_enc
@@ -59,8 +64,9 @@ crc32_cont(const u8 x, const u32 crc)
  *
  * @see crc32_cont()
 **/
-ALWAYS_INLINE CONST crc32_enc
-crc32_cont_enc(const u8 x, const crc32_enc crc)
+CONST
+ALWAYS_INLINE crc32_enc
+crc32_cont_enc(const uint8_t x, const crc32_enc crc)
 /*@*/
 {
 	CRC32_CONT_BODY(crc32_enc);
@@ -71,12 +77,13 @@ crc32_cont_enc(const u8 x, const crc32_enc crc)
  *
  * @see crc32_cont()
 **/
-ALWAYS_INLINE CONST crc32_dec
-crc32_cont_dec(const u8 x, const crc32_dec crc)
+CONST
+ALWAYS_INLINE crc32_dec
+crc32_cont_dec(const uint8_t x, const crc32_dec crc)
 /*@*/
 {
 	CRC32_CONT_BODY(crc32_dec);
 }
 
-// EOF ///////////////////////////////////////////////////////////////////////
-#endif
+/* EOF //////////////////////////////////////////////////////////////////// */
+#endif	/* H_TTA_CODEC_CRC32_H */

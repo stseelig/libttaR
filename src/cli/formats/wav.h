@@ -1,12 +1,12 @@
-#ifndef TTA_FORMATS_WAV_H
-#define TTA_FORMATS_WAV_H
-//////////////////////////////////////////////////////////////////////////////
+#ifndef H_TTA_FORMATS_WAV_H
+#define H_TTA_FORMATS_WAV_H
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // formats/wav.h                                                            //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2024, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -15,97 +15,113 @@
 // https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ksmedia/  //
 //  ns-ksmedia-waveformatextensible                                         //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 
-#include "../../bits.h"
+#include <stdint.h>
 
-#include "guid.h"
+#include "../ascii-literals.h"
+#include "../common.h"
 
-//////////////////////////////////////////////////////////////////////////////
+#include "./guid.h"
 
-#define RIFF_ID_RIFF	((char[]) {'R','I','F','F'})
-#define RIFF_ID_WAVE	((char[]) {'W','A','V','E'})
-#define RIFF_ID_FMT	((char[]) {'f','m','t',' '})
-#define RIFF_ID_DATA	((char[]) {'d','a','t','a'})
+/* //////////////////////////////////////////////////////////////////////// */
 
-#define WAVE_FMT_PCM		((u16) 0x0001u)
-#define WAVE_FMT_EXTENSIBLE	((u16) 0xFFFEu)
-
-#define WAVE_SUBFMT_PCM 	((struct Guid128) { \
-{(u8) 0x01u, (u8) 0x00u, (u8) 0x00u, (u8) 0x00u}, \
-{(u8) 0x00u, (u8) 0x00u}, \
-{(u8) 0x10u, (u8) 0x00u}, \
-{(u8) 0x80u, (u8) 0x00u}, \
-{(u8) 0x00u, (u8) 0xAAu, (u8) 0x00u, (u8) 0x38u, (u8) 0x9Bu, (u8) 0x71u} \
+#define RIFF_ID_RIFF	((uint8_t[4u]) { \
+	ASCII_R_UP, ASCII_I_UP, ASCII_F_UP, ASCII_F_UP \
 })
 
-// differs from TTA layout
-#define WAVE_CHAN_FL		((u32) 0x00000001u)
-#define WAVE_CHAN_FR		((u32) 0x00000002u)
-#define WAVE_CHAN_FC		((u32) 0x00000004u)
-#define WAVE_CHAN_LFE		((u32) 0x00000008u)
-#define WAVE_CHAN_BL		((u32) 0x00000010u)
-#define WAVE_CHAN_BR		((u32) 0x00000020u)
-#define WAVE_CHAN_FLC		((u32) 0x00000040u)
-#define WAVE_CHAN_FRC		((u32) 0x00000080u)
-#define WAVE_CHAN_BC		((u32) 0x00000100u)
-#define WAVE_CHAN_SL		((u32) 0x00000200u)
-#define WAVE_CHAN_SR		((u32) 0x00000400u)
-#define WAVE_CHAN_TC		((u32) 0x00000800u)
-#define WAVE_CHAN_TFL		((u32) 0x00001000u)
-#define WAVE_CHAN_TFC		((u32) 0x00002000u)
-#define WAVE_CHAN_TFR		((u32) 0x00004000u)
-#define WAVE_CHAN_TBL		((u32) 0x00008000u)
-#define WAVE_CHAN_TBC		((u32) 0x00010000u)
-#define WAVE_CHAN_TBR		((u32) 0x00020000u)
+#define RIFF_ID_WAVE	((uint8_t[4u]) { \
+	ASCII_W_UP, ASCII_A_UP, ASCII_V_UP, ASCII_E_UP \
+})
 
-#define NUM_WAVE_CHAN_NAMED	((uint) 18u)
+#define RIFF_ID_FMT	((uint8_t[4u]) { \
+	ASCII_F_LO, ASCII_M_LO, ASCII_T_LO, ASCII_SP \
+})
+
+#define RIFF_ID_DATA	((uint8_t[4u]) { \
+	ASCII_D_LO, ASCII_A_LO, ASCII_T_LO, ASCII_A_LO \
+})
+
+#define WAVE_FMT_PCM		UINT16_C(0x0001)
+#define WAVE_FMT_EXTENSIBLE	UINT16_C(0xFFFE)
+
+#define WAVE_SUBFMT_PCM 	((struct Guid128) { \
+	{ UINT8_C(0x01), UINT8_C(0x00), UINT8_C(0x00), UINT8_C(0x00) }, \
+	{ UINT8_C(0x00), UINT8_C(0x00) }, \
+	{ UINT8_C(0x10), UINT8_C(0x00) }, \
+	{ UINT8_C(0x80), UINT8_C(0x00) }, \
+	{ UINT8_C(0x00), UINT8_C(0xAA), UINT8_C(0x00), UINT8_C(0x38), \
+		UINT8_C(0x9B), UINT8_C(0x71) \
+	} \
+})
+
+/* differs from TTA2 layout */
+#define WAVE_CHAN_FL		UINT32_C(0x00000001)
+#define WAVE_CHAN_FR		UINT32_C(0x00000002)
+#define WAVE_CHAN_FC		UINT32_C(0x00000004)
+#define WAVE_CHAN_LFE		UINT32_C(0x00000008)
+#define WAVE_CHAN_BL		UINT32_C(0x00000010)
+#define WAVE_CHAN_BR		UINT32_C(0x00000020)
+#define WAVE_CHAN_FLC		UINT32_C(0x00000040)
+#define WAVE_CHAN_FRC		UINT32_C(0x00000080)
+#define WAVE_CHAN_BC		UINT32_C(0x00000100)
+#define WAVE_CHAN_SL		UINT32_C(0x00000200)
+#define WAVE_CHAN_SR		UINT32_C(0x00000400)
+#define WAVE_CHAN_TC		UINT32_C(0x00000800)
+#define WAVE_CHAN_TFL		UINT32_C(0x00001000)
+#define WAVE_CHAN_TFC		UINT32_C(0x00002000)
+#define WAVE_CHAN_TFR		UINT32_C(0x00004000)
+#define WAVE_CHAN_TBL		UINT32_C(0x00008000)
+#define WAVE_CHAN_TBC		UINT32_C(0x00010000)
+#define WAVE_CHAN_TBR		UINT32_C(0x00020000)
+
+#define WAVE_CHAN_NAMED_NMEMB	18u
 #define WAVE_CHAN_NAMED_ARRAY	{ \
 	"FL","FR","FC","LFE","BL","BR","FLC","FRC","BC","SL","SR","TC", \
 	"TFL","TFC","TFR","TBL","TBC","TBR" \
 }
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
-// TODO TTA channel mask chunk
+/* MAYBE: custom TTA2 channel mask chunk */
 
-// all ints are little-endian
+/* all ints are little-endian */
 
 struct RiffHeader {
-	char	id[4u];
-	u32	size;	// size of the chunk, not including the header(8)
+	uint8_t		id[4u];
+	uint32_t	size;	/* size of the chunk, inclusive (+8u) */
 } PACKED;
 
 struct RiffChunkHeader_Wave {
-	struct RiffHeader	rh;		// .id = .ascii "RIFF"
-	char			format[4u];	// .ascii "WAVE"
+	struct RiffHeader	rh;		/* .id = .ascii "RIFF"     */
+	uint8_t			format[4u];	/* .ascii "WAVE"           */
 } PACKED;
 
 struct RiffSubChunk_WaveFormatEX_Body {
-	u16	format;		// WAVE_FMT_PCM/EXTENSIBLE
-	u16	nchan;
-	u32	samplerate;
-	u32	byterate;	// hurray for useless fields needed by ffmpeg
-	u16	blockalign;	// nchan * samplebytes; ^^^ :^P
-	u16	samplebits;
+	uint16_t	format;		/* WAVE_FMT_PCM/EXTENSIBLE */
+	uint16_t	nchan;
+	uint32_t	samplerate;
+	uint32_t	byterate;	/* useless fields needed by ffmpeg */
+	uint16_t	blockalign;	/* nchan * samplebytes; ^^^ :^P    */
+	uint16_t	samplebits;
 } PACKED;
 
 struct RiffSubChunk_WaveFormatExtensible_Tail {
-	u16				size;
-	union {	u16 valid_samplebits;
-		u16 nsamples_block;
-		u16 reserved;
-	} 				samples;
-	u32				chanmask;	// WAVE_CHAN
-	struct Guid128			subformat;
+	uint16_t				size;
+	union {	uint16_t valid_samplebits;
+		uint16_t nsamples_block;
+		uint16_t reserved;
+	} 					samples;
+	uint32_t				chanmask; /* WAVE_CHAN */
+	struct Guid128				subformat;
 } PACKED;
 
 struct RiffSubChunk_WaveFormatEX {
-	struct RiffHeader			rh;	// .id = .ascii "fmt "
+	struct RiffHeader			rh; /* .id = .ascii "fmt " */
 	struct RiffSubChunk_WaveFormatEX_Body	body;
 } PACKED;
 
-//--------------------------------------------------------------------------//
+/* ------------------------------------------------------------------------ */
 
 struct RiffHeader_WriteTemplate {
 	struct RiffChunkHeader_Wave			hdr;
@@ -114,5 +130,5 @@ struct RiffHeader_WriteTemplate {
 	struct RiffHeader				data;
 } PACKED;
 
-// EOF ///////////////////////////////////////////////////////////////////////
-#endif
+/* EOF //////////////////////////////////////////////////////////////////// */
+#endif	/* H_TTA_FORMATS_WAV_H */

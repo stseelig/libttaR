@@ -1,4 +1,4 @@
-//////////////////////////////////////////////////////////////////////////////
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // formats/tta_write.c                                                      //
 //                                                                          //
@@ -11,49 +11,53 @@
 //                                                                          //
 //  http://tausoft.org/wiki/True_Audio_Codec_Format                         //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 
 #include <errno.h>
 #include <limits.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
 #include <unistd.h>
 
-#include "../../bits.h"
-#include "../../libttaR.h"	// crc32
+#include "../../libttaR.h"
 
+#include "../byteswap.h"
+#include "../common.h"
 #include "../debug.h"
 #include "../formats.h"
 
-#include "tta.h"
+#include "./tta.h"
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 /**@fn prewrite_tta1_header
  * @brief reserves space for the TTA1 header and seektable
  *
- * @param outfile[in] the destination file
- * @param st[in] the seektable
- * @param outfile_name[in] the name of the destination file (errors)
+ * @param outfile      - destination file
+ * @param st           - seektable
+ * @param outfile_name - name of the destination file (errors)
  *
  * @note MAYBE write a preliminary header instead
 **/
-void
+BUILD void
 prewrite_tta1_header_seektable(
-	FILE *const restrict outfile,
-	const struct SeekTable *const restrict st,
-	const char *const restrict outfile_name
+	FILE *const RESTRICT outfile,
+	const struct SeekTable *const RESTRICT st,
+	const char *const RESTRICT outfile_name
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
 		outfile
 @*/
 {
-	const off_t offset = (off_t) (	// header + seektable + st-crc
+	const off_t offset = (off_t) (	/* header + seektable + st-crc */
 		  sizeof(struct TTA1Header)
-		+ (st->limit * (sizeof *st->table)) + sizeof(u32)
+		+ (st->limit * (sizeof *st->table)) + sizeof(uint32_t)
 	);
+	/* * */
 	union {	int d; } result;
 
 	result.d = fflush(outfile);
@@ -62,7 +66,7 @@ prewrite_tta1_header_seektable(
 	}
 
 	result.d = ftruncate(fileno(outfile), offset);
-	if UNLIKELY ( (result.d != 0) && (errno != EINVAL) ){	// /dev/null
+	if UNLIKELY ( (result.d != 0) && (errno != EINVAL) ){ /* /dev/null */
 		error_sys(errno, "ftruncate", outfile_name);
 	}
 
@@ -77,26 +81,26 @@ prewrite_tta1_header_seektable(
 /**@fn write_tta1_header
  * @brief write a TTA1 header
  *
- * @param outfile[in] the destination file
- * @param nsamples_perchan_total number of samples of 'nchan' channels
- * @param fstat[in] the bloated file stats struct
- * @param outfile_name[in] the name of the destination file (warnings/errors)
+ * @param outfile      - destination file
+ * @param nsamples_perchan_total - number of samples of 'nchan' channels
+ * @param fstat        - bloated file stats struct
+ * @param outfile_name - name of the destination file (warnings/errors)
  *
  * @return the offset of the end of the header
  *
  * @pre outfile should be at correct offset before calling
 **/
-off_t
+BUILD off_t
 write_tta1_header(
-	FILE *const restrict outfile, const size_t nsamples_perchan_total,
-	const struct FileStats *const restrict fstat, const char *outfile_name
+	FILE *const RESTRICT outfile, const size_t nsamples_perchan_total,
+	const struct FileStats *const RESTRICT fstat, const char *outfile_name
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
 		outfile
 @*/
 {
-	struct TTA1Header h;
+	struct TTA1Header hdr;
 	union {	size_t z; } result;
 
 	if UNLIKELY ( nsamples_perchan_total > (size_t) UINT32_MAX ){
@@ -105,22 +109,22 @@ write_tta1_header(
 		);
 	}
 
-	(void) memcpy(&h.preamble, TTA1_PREAMBLE, sizeof h.preamble);
-	h.format	= htole16(WAVE_FMT_PCM);
-	h.nchan		= htole16(fstat->nchan);
-	h.samplebits	= htole16(fstat->samplebits);
-	h.samplerate	= htole32(fstat->samplerate);
-	h.nsamples	= htole32(
+	(void) memcpy(&hdr.preamble, TTA1_PREAMBLE, sizeof hdr.preamble);
+	hdr.format	= byteswap_htole_u16(WAVE_FMT_PCM);
+	hdr.nchan	= byteswap_htole_u16(fstat->nchan);
+	hdr.samplebits	= byteswap_htole_u16(fstat->samplebits);
+	hdr.samplerate	= byteswap_htole_u32(fstat->samplerate);
+	hdr.nsamples	= byteswap_htole_u32(
 		nsamples_perchan_total > (size_t) UINT32_MAX
-			? UINT32_MAX : (u32) nsamples_perchan_total
+			? UINT32_MAX : (uint32_t) nsamples_perchan_total
 	);
-	h.crc		= htole32(libttaR_crc32(
-		(u8 *) &h, (sizeof h) - (sizeof h.crc)
+	hdr.crc		= byteswap_htole_u32(libttaR_crc32(
+		&hdr, (sizeof hdr) - (sizeof hdr.crc)
 	));
 
-	// write
-	result.z = fwrite(&h, sizeof h, (size_t) 1u, outfile);
-	if UNLIKELY ( result.z != (size_t) 1u ){
+	/* write */
+	result.z = fwrite(&hdr, sizeof hdr, SIZE_C(1), outfile);
+	if UNLIKELY ( result.z != SIZE_C(1) ){
 		error_sys(errno, "fwrite", outfile_name);
 	}
 
@@ -130,22 +134,22 @@ write_tta1_header(
 /**@fn write_tta_seektable
  * @brief writes a TTA seektable
  *
- * @param outfile[in] the destination file
- * @param st[in] the seektable struct
- * @param outfile_name[in] the name of the destination file (errors)
+ * @param outfile      - destination file
+ * @param st           - seektable struct
+ * @param outfile_name - name of the destination file (errors)
 **/
-void
+BUILD void
 write_tta_seektable(
-	FILE *const restrict outfile,
-	const struct SeekTable *const restrict st,
-	const char *restrict outfile_name
+	FILE *const RESTRICT outfile,
+	const struct SeekTable *const RESTRICT st,
+	const char *RESTRICT outfile_name
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
 		outfile
 @*/
 {
-	u32 crc;
+	uint32_t crc;	/* little-endian */
 	union {	int	d;
 		size_t	z;
 	} result;
@@ -155,22 +159,21 @@ write_tta_seektable(
 		error_sys(errno, "fseeko", outfile_name);
 	}
 
-	// write seektable
+	/* write seektable */
 	result.z = fwrite(st->table, sizeof *st->table, st->nmemb, outfile);
 	if UNLIKELY ( result.z != st->nmemb ){
 		error_sys(errno, "fwrite", outfile_name);
 	}
 
-	// calc then write seektable crc
-	crc = htole32(libttaR_crc32(
-		(u8 *) st->table, st->nmemb * (sizeof *st->table)
+	/* calc then write seektable CRC */
+	crc = byteswap_htole_u32(libttaR_crc32(
+		st->table, st->nmemb * (sizeof *st->table)
 	));
-	result.z = fwrite(&crc, sizeof crc, (size_t) 1u, outfile);
-	if UNLIKELY ( result.z != (size_t) 1u ){
+	result.z = fwrite(&crc, sizeof crc, SIZE_C(1), outfile);
+	if UNLIKELY ( result.z != SIZE_C(1) ){
 		error_sys(errno, "fwrite", outfile_name);
 	}
-
 	return;
 }
 
-// EOF ///////////////////////////////////////////////////////////////////////
+/* EOF //////////////////////////////////////////////////////////////////// */

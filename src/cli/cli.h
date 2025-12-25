@@ -1,6 +1,6 @@
-#ifndef TTA_CLI_H
-#define TTA_CLI_H
-//////////////////////////////////////////////////////////////////////////////
+#ifndef H_TTA_CLI_H
+#define H_TTA_CLI_H
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // cli.h                                                                    //
 //                                                                          //
@@ -9,46 +9,42 @@
 // Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 
-#ifdef S_SPLINT_S
-#include "../splint.h"
-#endif
+#include <stddef.h>
 
-/* ------------------------------------------------------------------------ */
+#include "./common.h"
+#include "./formats.h"
+#include "./main.h"
 
-#include <stddef.h>	// size_t
+/* //////////////////////////////////////////////////////////////////////// */
 
-#include "formats.h"	// struct FileStats
-#include "main.h"	// enum ProgramMode
+#define	SPINNER_FREQ	SIZE_C(64)
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
-#define	SPINNER_FREQ	((size_t) 64u)
-
-//////////////////////////////////////////////////////////////////////////////
-
-extern void errprint_stats_precodec(
-	const struct FileStats *restrict, const char *restrict,
-	const char *restrict, enum ProgramMode
+BUILD_EXTERN NOINLINE void errprint_stats_precodec(
+	const struct FileStats *RESTRICT, const char *RESTRICT,
+	const char *RESTRICT, enum ProgramMode
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;
 
-extern void errprint_stats_postcodec(
-	const struct FileStats *restrict, const struct EncStats *restrict
+BUILD_EXTERN NOINLINE void errprint_stats_postcodec(
+	const struct FileStats *RESTRICT, const struct EncStats *RESTRICT
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;
 
-extern void errprint_runtime(double, size_t, enum ProgramMode)
+BUILD_EXTERN NOINLINE void errprint_runtime(double, size_t, enum ProgramMode)
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
 ;
 
-extern HOT void errprint_spinner(void)
+HOT
+BUILD_EXTERN void errprint_spinner(void)
 /*@globals	fileSystem,
 		internalState
 @*/
@@ -57,5 +53,5 @@ extern HOT void errprint_spinner(void)
 @*/
 ;
 
-// EOF ///////////////////////////////////////////////////////////////////////
-#endif
+/* EOF //////////////////////////////////////////////////////////////////// */
+#endif	/* H_TTA_CLI_H */

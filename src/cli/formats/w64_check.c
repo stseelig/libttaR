@@ -1,4 +1,4 @@
-//////////////////////////////////////////////////////////////////////////////
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // formats/w64_check.c                                                      //
 //                                                                          //
@@ -7,22 +7,24 @@
 // Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 
+#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
-#include <string.h>	// memcmp
+#include <string.h>
 
-#include "../../bits.h"
-
+#include "../byteswap.h"
+#include "../common.h"
 #include "../formats.h"
 
-#include "w64.h"
+#include "./w64.h"
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 #undef file
 static enum FileCheck filecheck_w64_find_subchunk(
-	FILE *const restrict file, const struct Guid128 *const restrict
+	FILE *const RESTRICT file, const struct Guid128 *const RESTRICT
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -30,22 +32,22 @@ static enum FileCheck filecheck_w64_find_subchunk(
 @*/
 ;
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 /**@fn filecheck_w64
  * @brief checks if a file is a Sony Wave64
  *
- * @param fstat[out] the bloated file stats struct
- * @param file[in] the source file
+ * @param fstat - bloated file stats struct
+ * @param file  - source file
  *
  * @return FILECHECK_OK if file format is Sony Wave64
  *
  * @pre 'file' should be at the appropriate offset before calling
 **/
-enum FileCheck
+BUILD enum FileCheck
 filecheck_w64(
-	/*@out@*/ struct FileStats *const restrict fstat,
-	FILE *const restrict file
+	/*@out@*/ struct FileStats *const RESTRICT fstat,
+	FILE *const RESTRICT file
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -53,18 +55,19 @@ filecheck_w64(
 		file
 @*/
 {
+	const off_t start = ftello(file);
+	/* * */
 	union { struct Riff64Header		rh;
 		struct Riff64ChunkHeader_Wave	wave;
 	} chunk;
-	const off_t start = ftello(file);
 	union {	size_t		z;
 		int		d;
 		enum FileCheck	fc;
 	} result;
 
-	// Riff64 chunk
-	result.z = fread(&chunk.wave, sizeof chunk.wave, (size_t) 1u, file);
-	if ( result.z != (size_t) 1u ){
+	/* Riff64 chunk */
+	result.z = fread(&chunk.wave, sizeof chunk.wave, SIZE_C(1), file);
+	if ( result.z != SIZE_C(1) ){
 		if ( feof(file) != 0 ){
 			return FILECHECK_MALFORMED;
 		}
@@ -79,7 +82,7 @@ filecheck_w64(
 		&chunk.wave.guid, &RIFF64_GUID_WAVE, sizeof chunk.wave.guid
 	     ) != 0)
 	){
-		// reset file stream and return
+		/* reset file stream and return */
 		result.d = fseeko(file, start, SEEK_SET);
 		if ( result.d != 0 ){
 			return FILECHECK_SEEK_ERROR;
@@ -87,7 +90,7 @@ filecheck_w64(
 		return FILECHECK_MISMATCH;
 	}
 
-	// search for format subchunk
+	/* search for format subchunk */
 	result.fc = filecheck_w64_find_subchunk(file, &RIFF64_GUID_FMT);
 	if ( result.fc != FILECHECK_OK ){
 		return result.fc;
@@ -101,13 +104,13 @@ filecheck_w64(
 		return result.fc;
 	}
 
-	// search for data subchunk header
+	/* search for data subchunk header */
 	result.fc = filecheck_w64_find_subchunk(file, &RIFF64_GUID_DATA);
 	if ( result.fc != FILECHECK_OK ){
 		return result.fc;
 	}
-	result.z = fread(&chunk.rh, sizeof chunk.rh, (size_t) 1u, file);
-	if ( result.z != (size_t) 1u ){
+	result.z = fread(&chunk.rh, sizeof chunk.rh, SIZE_C(1), file);
+	if ( result.z != SIZE_C(1) ){
 		if ( feof(file) != 0 ){
 			return FILECHECK_MALFORMED;
 		}
@@ -117,23 +120,23 @@ filecheck_w64(
 	fstat->decfmt      = DECFMT_W64;
 	fstat->decpcm_off  = ftello(file);
 
-	if ( (size_t) letoh64(chunk.rh.size) <= sizeof chunk.rh ){
+	if ( (size_t) byteswap_letoh_u64(chunk.rh.size) <= sizeof chunk.rh ){
 		return FILECHECK_MALFORMED;
 	}
 	fstat->decpcm_size = (size_t) (
-		letoh64(chunk.rh.size) - (sizeof chunk.rh)
+		byteswap_letoh_u64(chunk.rh.size) - (sizeof chunk.rh)
 	);
 
 	return FILECHECK_OK;
 }
 
-//--------------------------------------------------------------------------//
+/* ------------------------------------------------------------------------ */
 
 /**@fn filecheck_w64_find_subchunk
  * @brief searches for a RIFF64 subchunk
  *
- * @param file[in] the source file
- * @param target[in] ID of the subchunk we are searching for
+ * @param file   - source file
+ * @param target - ID of the subchunk we are searching for
  *
  * @return FILECHECK_OK if found
  *
@@ -141,7 +144,7 @@ filecheck_w64(
 **/
 static enum FileCheck
 filecheck_w64_find_subchunk(
-	FILE *const restrict file, const struct Guid128 *const restrict target
+	FILE *const RESTRICT file, const struct Guid128 *const RESTRICT target
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -155,30 +158,31 @@ filecheck_w64_find_subchunk(
 
 	goto loop_entr;
 	do {
-		// seek to end of current subchunk
+		/* seek to end of current subchunk */
 		result.d = fseeko(
-			file, (off_t) (letoh64(rh.size) - (sizeof rh)),
+			file,
+			(off_t) (byteswap_letoh_u64(rh.size) - (sizeof rh)),
 			SEEK_CUR
 		);
 		if ( result.d != 0 ){
 			return FILECHECK_SEEK_ERROR;
 		}
 loop_entr:
-		result.z = fread(&rh, sizeof rh, (size_t) 1u, file);
-		if ( result.z != (size_t) 1u ){
+		result.z = fread(&rh, sizeof rh, SIZE_C(1), file);
+		if ( result.z != SIZE_C(1) ){
 			if ( feof(file) != 0 ){
 				return FILECHECK_MALFORMED;
 			}
 			return FILECHECK_READ_ERROR;
 		}
 
-		if ( letoh64(rh.size) <= sizeof rh ){
+		if ( byteswap_letoh_u64(rh.size) <= sizeof rh ){
 			return FILECHECK_MALFORMED;
 		}
 	}
 	while ( memcmp(&rh.guid, target, sizeof rh.guid) != 0 );
 
-	// seek to start of subchunk before returning
+	/* seek to start of subchunk before returning */
 	result.d = fseeko(file, -((off_t) (sizeof rh)), SEEK_CUR);
 	if ( result.d != 0 ){
 		return FILECHECK_SEEK_ERROR;
@@ -186,4 +190,4 @@ loop_entr:
 	return FILECHECK_OK;
 }
 
-// EOF ///////////////////////////////////////////////////////////////////////
+/* EOF //////////////////////////////////////////////////////////////////// */

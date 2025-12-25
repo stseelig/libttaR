@@ -1,4 +1,4 @@
-//////////////////////////////////////////////////////////////////////////////
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // opts/optsget.c                                                           //
 //                                                                          //
@@ -17,33 +17,28 @@
 //                                                                          //
 //  '--' ends opt processing (filenames only from then on)                  //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
-
-#ifdef S_SPLINT_S
-#include "../../splint.h"
-#endif
-
-/* ------------------------------------------------------------------------ */
+/////////////////////////////////////////////////////////////////////////// */
 
 #include <assert.h>
 #include <errno.h>
 #include <limits.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../bits.h"
-
+#include "../common.h"
 #include "../debug.h"
 #include "../main.h"
 #include "../open.h"
 
-#include "optsget.h"
+#include "./optsget.h"
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 #undef argv
 static int optsget(
-	uint, uint, char *const *argv, const struct OptDict *restrict
+	unsigned int, unsigned int, char *const *argv,
+	const struct OptDict *RESTRICT
 )
 /*@globals	fileSystem,
 		internalState
@@ -55,9 +50,10 @@ static int optsget(
 ;
 
 #undef argv
-/*@-globuse@*/	// called function pointers
+/*@-globuse@*/	/* called function pointers */
 static int shortoptsget(
-	uint, uint, char *const *argv, const struct OptDict *restrict
+	unsigned int, unsigned int, char *const *argv,
+	const struct OptDict *RESTRICT
 )
 /*@globals	fileSystem,
 		internalState
@@ -70,9 +66,10 @@ static int shortoptsget(
 /*@=globuse@*/
 
 #undef argv
-/*@-globuse@*/	// called function pointers
+/*@-globuse@*/	/* called function pointers */
 static int longoptget(
-	uint, uint, char *const *argv, const struct OptDict *restrict
+	unsigned int, unsigned int, char *const *argv,
+	const struct OptDict *RESTRICT
 )
 /*@globals	fileSystem,
 		internalState
@@ -84,23 +81,24 @@ static int longoptget(
 ;
 /*@=globuse@*/
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 /**@fn optargs_process
  * @brief open files and/or process the command line arguments
  *
- * @param of[in out] the opened files struct array
- * @param optind index of 'argv'
- * @param argc the argument count from main()
- * @param argv[in out] the argument vector from main()
- * @param optdict[in] the option dictionary
+ * @param of      - opened files struct array
+ * @param optind  - index of 'argv'
+ * @param argc    - argument count from main()
+ * @param argv    - argument vector from main()
+ * @param optdict - option dictionary
  *
  * @return 0 on success, else number of errors
 **/
-uint
+BUILD NOINLINE unsigned int
 optargs_process(
-	struct OpenedFiles *const restrict of, uint optind, const uint argc,
-	char *const *const argv, const struct OptDict *const restrict optdict
+	struct OpenedFiles *const RESTRICT of, unsigned int optind,
+	const unsigned int argc, char *const *const argv,
+	const struct OptDict *const RESTRICT optdict
 )
 /*@globals	fileSystem,
 		internalState
@@ -111,17 +109,17 @@ optargs_process(
 		**argv
 @*/
 {
-	uint retval = 0;
+	unsigned int retval = 0;
 	int  optrv  = 0;
 
 	while ( optind < argc ){
 		if ( (optrv >= 0) && (argv[optind][0] == '-') ){
-			// opt
+			/* opt */
 			optrv   = optsget(optind, argc, argv, optdict);
 			optind += (optrv >= 0 ? optrv : -optrv);
 		}
-		else {	// filename
-			retval += (uint) (
+		else {	/* filename */
+			retval += (uint8_t) (
 				openedfiles_add(of, argv[optind]) != 0
 			);
 			optind += 1u;
@@ -133,17 +131,17 @@ optargs_process(
 /**@fn optsget
  * @brief process the command line arguments
  *
- * @param optind index of 'argv'
- * @param argc the argument count from main()
- * @param argv[in out] the argument vector from main()
- * @param optdict[in] the option dictionary
+ * @param optind  - index of 'argv'
+ * @param argc    - argument count from main()
+ * @param argv    - argument vector from main()
+ * @param optdict - option dictionary
  *
  * @return number of args used; negative number used on stop processing opts
 **/
 static int
 optsget(
-	const uint optind, const uint argc, char *const *const argv,
-	const struct OptDict *const restrict optdict
+	const unsigned int optind, const unsigned int argc,
+	char *const *const argv, const struct OptDict *const RESTRICT optdict
 )
 /*@globals	fileSystem,
 		internalState
@@ -160,7 +158,7 @@ optsget(
 
 	for ( i = 0; optind + i < argc; i += optrv + 1 ){
 		arg = argv[optind + i];
-		if ( arg[0] != '-' ){	// return at first non-opt
+		if ( arg[0] != '-' ){	/* return at first non-opt */
 			break;
 		}
 		else if ( (arg[0] == '-') && (arg[1u] != '-') ){
@@ -170,7 +168,8 @@ optsget(
 			}
 		}
 		else if ( (arg[0] == '-') && (arg[1u] == '-') ){
-			if ( arg[2u] == '\0' ){	// "--" stops opt processing
+			/* "--" ends opt processing */
+			if ( arg[2u] == '\0' ){
 				return -(i + 1u);
 			}
 			optrv = longoptget(optind + i, argc, argv, optdict);
@@ -184,15 +183,15 @@ optsget(
 	return i;
 }
 
-//--------------------------------------------------------------------------//
+/* ------------------------------------------------------------------------ */
 
 /**@fn shortoptsget
  * @brief process an entire string of short ("-xyz") command line arguments
  *
- * @param optind index of 'argv'
- * @param argc the argument count from main()
- * @param argv[in out] the argument vector from main()
- * @param optdict[in] the option dictionary
+ * @param optind  - index of 'argv'
+ * @param argc    - argument count from main()
+ * @param argv    - argument vector from main()
+ * @param optdict - option dictionary
  *
  * @return number of args used, or if a bad opt, the bad opt negated
  *
@@ -202,8 +201,8 @@ optsget(
 **/
 static int
 shortoptsget(
-	const uint optind, const uint argc, char *const *const argv,
-	const struct OptDict *const restrict optdict
+	const unsigned int optind, const unsigned int argc,
+	char *const *const argv, const struct OptDict *const RESTRICT optdict
 )
 /*@globals	fileSystem,
 		internalState
@@ -214,8 +213,9 @@ shortoptsget(
 @*/
 {
 	const char *const opt = &argv[optind][1u];
+	/* * */
 	int optrv = 0;
-	uint i, j;
+	unsigned int i, j;
 
 	for ( i = 0; opt[i] != '\0'; i += optrv + 1 ){
 		for ( j = 0; j < optdict->nmemb; ++j ){
@@ -225,12 +225,12 @@ shortoptsget(
 					OPTMODE_SHORT
 				);
 				if ( optrv < 0 ){
-					return -optrv;	// args used
+					return -optrv;	/* args used */
 				}
-				goto cont_outer_loop;	// onto next char
+				goto cont_outer_loop;	/* onto next char */
 			}
 		}
-		return (int) -opt[i];	// shortopt not found
+		return (int) -opt[i];	/* shortopt not found */
 cont_outer_loop:
 		;
 	}
@@ -240,17 +240,17 @@ cont_outer_loop:
 /**@fn longoptsget
  * @brief process the long ("--xyz") command line arguments
  *
- * @param optind index of 'argv'
- * @param argc the argument count from main()
- * @param argv[in out] the argument vector from main()
- * @param optdict[in] the option dictionary
+ * @param optind  - index of 'argv'
+ * @param argc    - argument count from main()
+ * @param argv    - argument vector from main()
+ * @param optdict - option dictionary
  *
  * @return number of args used, or -1 on bad opt
 **/
 static int
 longoptget(
-	const uint optind, const uint argc, char *const *const argv,
-	const struct OptDict *const restrict optdict
+	const unsigned int optind, const unsigned int argc,
+	char *const *const argv, const struct OptDict *const RESTRICT optdict
 )
 /*@globals	fileSystem,
 		internalState
@@ -260,11 +260,12 @@ longoptget(
 		**argv
 @*/
 {
-	int optrv = -1;
 	const char *const opt = &argv[optind][2u];
+	/* * */
+	int optrv = -1;
 	const char *subopt;
 	size_t size = SIZE_MAX;
-	uint i;
+	unsigned int i;
 
 	subopt = strchr(opt, '=');
 	if ( subopt != NULL ){
@@ -282,7 +283,7 @@ longoptget(
 	return optrv;
 }
 
-//==========================================================================//
+/* ======================================================================== */
 
 /**@fn optsget_argcheck
  * @brief checks that 'argv' is long enough for the current 'opt'
@@ -294,8 +295,8 @@ longoptget(
 **/
 void
 optsget_argcheck(
-	const uint optind, const uint argc, const uint nargs,
-	const char *const restrict opt
+	const unsigned int optind, const unsigned int argc,
+	const unsigned int nargs, const char *const RESTRICT opt
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem@*/
@@ -308,4 +309,4 @@ optsget_argcheck(
 	return;
 }
 
-// EOF ///////////////////////////////////////////////////////////////////////
+/* EOF //////////////////////////////////////////////////////////////////// */

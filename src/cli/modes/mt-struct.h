@@ -1,63 +1,64 @@
-#ifndef TTA_MODES_MT_STRUCT_H
-#define TTA_MODES_MT_STRUCT_H
-//////////////////////////////////////////////////////////////////////////////
+#ifndef H_TTA_MODES_MT_STRUCT_H
+#define H_TTA_MODES_MT_STRUCT_H
+/* ///////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // modes/mt-struct.h                                                        //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2024-2025, Shane Seelig                                    //
+// Copyright (C) 2023-2025, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////// */
 
 #include <stddef.h>
+#include <stdint.h>
 
-#include "../../bits.h"
-#include "../../libttaR.h"	// struct LibTTAr_CodecState_User
+#include "../../libttaR.h"
 
+#include "../common.h"
 #include "../formats.h"
 
-#include "bufs.h"
-#include "pqueue.h"
-#include "threads.h"
+#include "./bufs.h"
+#include "./pqueue.h"
+#include "./threads.h"
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
-// multi-threaded ver. can deadlock or abort if (framequeue_len <= nthreads)
-#define FRAMEQUEUE_LEN(nthreads)	((uint) (2u*(nthreads)))
+/* multi-thread-ver. can deadlock or abort if (framequeue_len <= nthreads) */
+#define FRAMEQUEUE_LEN(nthreads)	((2u * ((unsigned int) (nthreads))))
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 struct FileStats_EncMT {
-	uint				nchan;
+	unsigned int			nchan;
 	enum LibTTAr_SampleBytes	samplebytes;
 	size_t				nsamples_perframe;
 	size_t				decpcm_size;
 };
 
 struct FileStats_DecMT {
-	uint				nchan;
+	unsigned int			nchan;
 	enum LibTTAr_SampleBytes	samplebytes;
 	size_t				nsamples_perframe;
 	size_t				nsamples_enc;
 };
 
-//==========================================================================//
+/* ======================================================================== */
 
 struct MTPQueue {
 	spinlock_p	lock;
 	struct PQueue	q;
 };
 
-//--------------------------------------------------------------------------//
+/* ------------------------------------------------------------------------ */
 
 struct MTArg_EncIO_Frames {
-	uint				nmemb;
+	unsigned int			nmemb;
 	/*@owned@*/
 	semaphore_p			*navailable;
 
-	// parallel arrays
+	/* parallel arrays */
 	/*@temp@*/
 	semaphore_p			*post_encoder;
 	/*@temp@*/
@@ -66,6 +67,8 @@ struct MTArg_EncIO_Frames {
 	struct EncBuf			*encbuf;
 	/*@temp@*/
 	struct LibTTAr_CodecState_User	*user;
+	/*@temp@*/
+	int8_t				*enc_retval;
 };
 
 struct MTArg_Encoder_Frames {
@@ -73,7 +76,7 @@ struct MTArg_Encoder_Frames {
 	/*@dependent@*/
 	semaphore_p			*navailable;
 
-	// parallel arrays
+	/* parallel arrays */
 	/*@temp@*/
 	semaphore_p			*post_encoder;
 	/*@temp@*/
@@ -82,16 +85,18 @@ struct MTArg_Encoder_Frames {
 	struct EncBuf			*encbuf;
 	/*@temp@*/
 	struct LibTTAr_CodecState_User	*user;
+	/*@temp@*/
+	int8_t				*enc_retval;
 };
 
-//--------------------------------------------------------------------------//
+/* ------------------------------------------------------------------------ */
 
 struct MTArg_DecIO_Frames {
-	uint				nmemb;
+	unsigned int			nmemb;
 	/*@owned@*/
 	semaphore_p			*navailable;
 
-	// parallel arrays
+	/* parallel arrays */
 	/*@temp@*/
 	semaphore_p			*post_decoder;
 	/*@temp@*/
@@ -105,9 +110,9 @@ struct MTArg_DecIO_Frames {
 	/*@temp@*/
 	size_t				*nsamples_flat_2pad;
 	/*@temp@*/
-	ichar				*dec_retval;
+	int8_t				*dec_retval;
 	/*@temp@*/
-	u32				*crc_read;	// little-endian
+	uint32_t			*crc_read;	/* little-endian */
 };
 
 struct MTArg_Decoder_Frames {
@@ -115,7 +120,7 @@ struct MTArg_Decoder_Frames {
 	/*@dependent@*/
 	semaphore_p			*navailable;
 
-	// parallel arrays
+	/* parallel arrays */
 	/*@temp@*/
 	semaphore_p			*post_decoder;
 	/*@temp@*/
@@ -129,19 +134,19 @@ struct MTArg_Decoder_Frames {
 	/*@temp@*/
 	size_t				*nsamples_flat_2pad;
 	/*@temp@*/
-	ichar				*dec_retval;
+	int8_t				*dec_retval;
 };
 
-//--------------------------------------------------------------------------//
+/* ------------------------------------------------------------------------ */
 
 struct MTArg_IO_File {
 	/*@temp@*/
-	FILE		*fh;
+	FILE		*handle;
 	/*@temp@*/
 	const char	*name;
 };
 
-//==========================================================================//
+/* ======================================================================== */
 
 struct MTArg_EncIO {
 	struct MTArg_EncIO_Frames	frames;
@@ -161,7 +166,7 @@ struct MTArg_Encoder {
 	const struct FileStats_EncMT	*fstat;
 };
 
-//--------------------------------------------------------------------------//
+/* ------------------------------------------------------------------------ */
 
 struct MTArg_DecIO {
 	struct MTArg_DecIO_Frames	frames;
@@ -181,26 +186,26 @@ struct MTArg_Decoder {
 	const struct FileStats_DecMT	*fstat;
 };
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 
 #undef fstat_c
 INLINE void encmt_fstat_init(
-	/*@out@*/ struct FileStats_EncMT *restrict fstat_c,
-	const struct FileStats *restrict
+	/*@out@*/ struct FileStats_EncMT *RESTRICT fstat_c,
+	const struct FileStats *RESTRICT
 )
 /*@modifies	*fstat_c@*/
 ;
 
 #undef io
 #undef encoder
-extern void encmt_state_init(
-	/*@out@*/ struct MTArg_EncIO *restrict io,
-	/*@out@*/ struct MTArg_Encoder *restrict encoder,
-	uint, size_t, const FILE *restrict, const char *,
-	const FILE *restrict, const char *, const struct SeekTable *restrict,
-	const struct EncStats *restrict,
-	const struct FileStats_EncMT *restrict
+BUILD_EXTERN void encmt_state_init(
+	/*@out@*/ struct MTArg_EncIO *RESTRICT io,
+	/*@out@*/ struct MTArg_Encoder *RESTRICT encoder,
+	unsigned int, size_t, FILE *RESTRICT, const char *,
+	FILE *RESTRICT, const char *, const struct SeekTable *RESTRICT,
+	const struct EncStats *RESTRICT,
+	const struct FileStats_EncMT *RESTRICT
 )
 /*@globals	fileSystem,
 		internalState
@@ -221,9 +226,9 @@ extern void encmt_state_init(
 
 #undef io
 #undef encoder
-extern void encmt_state_free(
-	struct MTArg_EncIO *restrict io,
-	struct MTArg_Encoder *restrict encoder, uint
+BUILD_EXTERN void encmt_state_free(
+	struct MTArg_EncIO *RESTRICT io,
+	struct MTArg_Encoder *RESTRICT encoder, unsigned int
 )
 /*@globals	internalState@*/
 /*@modifies	internalState,
@@ -239,25 +244,25 @@ extern void encmt_state_free(
 @*/
 ;
 
-//--------------------------------------------------------------------------//
+/* ------------------------------------------------------------------------ */
 
 #undef fstat_c
 INLINE void decmt_fstat_init(
-	/*@out@*/ struct FileStats_DecMT *restrict fstat_c,
-	const struct FileStats *restrict
+	/*@out@*/ struct FileStats_DecMT *RESTRICT fstat_c,
+	const struct FileStats *RESTRICT
 )
 /*@modifies	*fstat_c@*/
 ;
 
 #undef io
 #undef decoder
-extern void decmt_state_init(
-	/*@out@*/ struct MTArg_DecIO *restrict io,
-	/*@out@*/ struct MTArg_Decoder *restrict decoder,
-	uint, size_t, const FILE *restrict, const char *,
-	const FILE *restrict, const char *, const struct SeekTable *restrict,
-	const struct DecStats *restrict,
-	const struct FileStats_DecMT *restrict
+BUILD_EXTERN void decmt_state_init(
+	/*@out@*/ struct MTArg_DecIO *RESTRICT io,
+	/*@out@*/ struct MTArg_Decoder *RESTRICT decoder,
+	unsigned int, size_t, FILE *RESTRICT, const char *,
+	FILE *RESTRICT, const char *, const struct SeekTable *RESTRICT,
+	const struct DecStats *RESTRICT,
+	const struct FileStats_DecMT *RESTRICT
 )
 /*@globals	fileSystem,
 		internalState
@@ -278,9 +283,9 @@ extern void decmt_state_init(
 
 #undef io
 #undef decoder
-extern void decmt_state_free(
-	struct MTArg_DecIO *restrict io,
-	struct MTArg_Decoder *restrict decoder, uint
+BUILD_EXTERN void decmt_state_free(
+	struct MTArg_DecIO *RESTRICT io,
+	struct MTArg_Decoder *RESTRICT decoder, unsigned int
 )
 /*@globals	internalState@*/
 /*@modifies	internalState,
@@ -296,26 +301,27 @@ extern void decmt_state_free(
 @*/
 ;
 
-//////////////////////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////////////// */
 
 /**@fn encmt_fstat_init
  * @brief initializes the compact file stats struct for the multi-threaded
  *   encoder
  *
- * @param fstat_c[out] the compact file stats struct
- * @param fstat[in] the bloated file stats struct
+ * @param fstat_c - compact file stats struct
+ * @param fstat   - bloated file stats struct
 **/
 INLINE void
 encmt_fstat_init(
-	/*@out@*/ struct FileStats_EncMT *restrict fstat_c,
-	const struct FileStats *restrict fstat
+	/*@out@*/ struct FileStats_EncMT *RESTRICT fstat_c,
+	const struct FileStats *RESTRICT fstat
 )
 /*@modifies	*fstat_c@*/
 {
-	fstat_c->nchan			= (uint) fstat->nchan;
+	fstat_c->nchan			= (unsigned int) fstat->nchan;
 	fstat_c->samplebytes		= fstat->samplebytes;
 	fstat_c->nsamples_perframe	= fstat->framelen;
 	fstat_c->decpcm_size		= fstat->decpcm_size;
+
 	return;
 }
 
@@ -323,22 +329,22 @@ encmt_fstat_init(
  * @brief initializes the compact file stats struct for the multi-threaded
  *   decoder
  *
- * @param fstat_c[out] the compact file stats struct
- * @param fstat[in] the bloated file stats struct
+ * @see encmt_fstat_init()
 **/
 INLINE void
 decmt_fstat_init(
-	/*@out@*/ struct FileStats_DecMT *restrict fstat_c,
-	const struct FileStats *restrict fstat
+	/*@out@*/ struct FileStats_DecMT *RESTRICT fstat_c,
+	const struct FileStats *RESTRICT fstat
 )
 /*@modifies	*fstat_c@*/
 {
-	fstat_c->nchan			= (uint) fstat->nchan;
+	fstat_c->nchan			= (unsigned int) fstat->nchan;
 	fstat_c->samplebytes		= fstat->samplebytes;
 	fstat_c->nsamples_perframe	= fstat->framelen;
 	fstat_c->nsamples_enc		= fstat->nsamples_enc;
+
 	return;
 }
 
-// EOF ///////////////////////////////////////////////////////////////////////
-#endif
+/* EOF //////////////////////////////////////////////////////////////////// */
+#endif	/* H_TTA_MODES_MT_STRUCT_H */
