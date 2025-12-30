@@ -17,6 +17,7 @@
 #include <stdint.h>
 
 #include "./common.h"
+#include "./overflow.h"
 #include "./types.h"
 
 /* //////////////////////////////////////////////////////////////////////// */
@@ -124,6 +125,7 @@ ALWAYS_INLINE int32_t tta_prefilter_dec(uint32_t) /*@*/;
  * @param nchan       - number of audio channels
  *
  * @return safety margin
+ * @retval 0 - (nchan == 0) or overflow
 **/
 CONST
 ALWAYS_INLINE size_t
@@ -132,16 +134,26 @@ get_safety_margin(
 )
 /*@*/
 {
+	size_t margin;
+	int overflow;
+
 	SAMPLEBYTES_RANGE_ASSERT(samplebytes);
 
 	switch ( samplebytes ){
 	case LIBTTAr_SAMPLEBYTES_1:
 	case LIBTTAr_SAMPLEBYTES_2:
-		return (size_t) (nchan * TTABUF_SAFETY_MARGIN_1_2);
+		margin = TTABUF_SAFETY_MARGIN_1_2;
+		break;
 	case LIBTTAr_SAMPLEBYTES_3:
-		return (size_t) (nchan * TTABUF_SAFETY_MARGIN_3);
+		margin = TTABUF_SAFETY_MARGIN_3;
+		break;
+	default:
+		UNREACHABLE;
 	}
-	UNREACHABLE;
+
+	overflow = mul_usize_overflow(&margin, margin, (size_t) nchan);
+
+	return (overflow == 0 ? margin : 0);
 }
 
 /**@fn get_predict_k
@@ -284,6 +296,8 @@ tta_predict1(const int32_t x, const bitcnt k)
  *
  * @return interleaved value
  *
+ * @note the function only needs to work for 24-bit integers, so there should
+ *   be no need to handle INT32_MIN in the branchless version
  * @note https://en.wikipedia.org/wiki/Golomb_coding#Overview#\
  *     Use%20with%20signed%20integers
 **/

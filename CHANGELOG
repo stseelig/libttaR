@@ -1,7 +1,13 @@
 
 # libttaR ####################################################################
 
-2.1.0 (2025-12-24):-----------------------------------------------------------
+2.1.1 (2025-12-30):-----------------------------------------------------------
+
+	- additional safety-margin overflow checks in ttabuf_safety_margin()
+    and tta_encode()/tta_decode()
+		- overflow would likely only be possible on 32-bit systems
+
+2.1.0 (2025-12-24):===========================================================
 
 	- added some overflow checks to several of the functions
 	- added undefined behavior checks to tta_encode()/tta_decode()

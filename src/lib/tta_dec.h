@@ -72,7 +72,7 @@
 	|| \
 	 (ni32_perframe == 0) || (nbytes_tta_perframe == 0) \
 	|| \
-	 (nchan == 0) \
+	 (nchan == 0) || (safety_margin == 0) \
 )
 
 #define TTADEC_PARAMCHECK_1_INVAL_TRUNC ( \

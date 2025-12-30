@@ -24,7 +24,7 @@
  * @param nchan       - number of audio channels
  *
  * @return size of safety margin
- * @retval 0 - bad value (0 or out of range enum)
+ * @retval 0 - bad value (0 or out of range enum) or overflow
  *
  * @note read the manpage for more info
 **/

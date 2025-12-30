@@ -67,7 +67,7 @@
 	|| \
 	 (ni32_target == 0) || (ni32_perframe == 0) \
 	|| \
-	 (nchan == 0) \
+	 (nchan == 0) || (safety_margin == 0) \
 )
 
 #define TTAENC_PARAMCHECK_1_INVAL_TRUNC ( \

@@ -1,13 +1,13 @@
 .\" t
 .\"     Title: libttaR_tta_encode
 .\"    Author: Shane Seelig
-.\"      Date: 2025-12-24
-.\"    Source: libttaR 2.1
+.\"      Date: 2025-12-30
+.\"    Source: libttaR 2.1.1
 .\"  Language: English
 .\"
 .\" ##########################################################################
 
-.TH "LIBTTAr_TTA_ENCODE" "3" "2025\-12\-24" "libttaR 2.1" \
+.TH "LIBTTAr_TTA_ENCODE" "3" "2025\-12\-30" "libttaR 2.1.1" \
 "LibTTAr Programmer's Manual"
 
 .\" ##########################################################################
@@ -311,6 +311,9 @@ It would probably be caused by improperly setting the parameters or state.
 \fBLIBTTAr_ERV_INVAL_RANGE\fR, \fBLIBTTAr_DRV_INVAL_RANGE\fR
 .RS 8
 Some \fImisc\fR value is 0 or a bad enum value.
+On a (likely) 32-bit system, this could be returned if
+\fImisc\fR->nchan is too large.
+(\fBlibttaR_ttabuf_safety_margin\fR(3) overflow)
 .RE
 
 \fBLIBTTAr_ERV_INVAL_TRUNC\fR, \fBLIBTTAr_DRV_INVAL_TRUNC\fR
