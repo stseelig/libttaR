@@ -33,6 +33,7 @@ libttaR_test_nchan(const unsigned int nchan)
 	switch ( nchan ){
 
 #ifndef LIBTTAr_OPT_DISABLE_MCH
+
 	case 0:
 		break;
 	default:
