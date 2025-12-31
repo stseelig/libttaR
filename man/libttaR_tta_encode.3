@@ -1,7 +1,7 @@
 .\" t
 .\"     Title: libttaR_tta_encode
 .\"    Author: Shane Seelig
-.\"      Date: 2025-12-30
+.\"      Date: 2025-12-31
 .\"    Source: libttaR 2.1.1
 .\"  Language: English
 .\"
@@ -38,7 +38,7 @@ libttaR_tta_encode, libttaR_tta_decode \- a reentrant TTA codec
 .BI "const uint8_t *restrict " src ",
 .BI "struct LibTTAr_CodecState_Priv *restrict " priv ",
 .BI "struct LibTTAr_CodecState_User *restrict " user ",
-.BI "const struct LibTTAr_EncMisc *restrict " misc "
+.BI "const struct LibTTAr_DecMisc *restrict " misc "
 .RE
 .BI ");"
 .fi
@@ -71,6 +71,11 @@ The source buffer.
 Needs to be padded with at least
 \fBlibttaR_ttabuf_safety_margin\fR(3)
 bytes when decoding.
+
+When encoding, the int32_t PCM data must be within the range of an integer
+that matches \fImisc\fR->samplebytes (8, 16, or 24-bit).
+See
+.BR libttaR_pcm_read (3).
 .RE
 
 *\fIpriv\fR
@@ -102,7 +107,8 @@ before the first call for a new frame.
 
 ncalls_codec:
 .RS 8
-The number of successful calls to the codec function.
+The number of completed calls to the codec function.
+(OK or FAIL; errors will return before processing data.)
 .RE
 
 crc:
@@ -178,19 +184,19 @@ Must be evenly divisible by \fImisc\fR->nchan.
 
 nbytes_tta_target:
 .RS 8
-The target number of TTA bytes from the dest/src buffer to encode/decode.
+The target number of TTA bytes from the src buffer to decode.
 .RE
 
 ni32_perframe:
 .RS 8
-The number of uncoded int32_t per TTA frame.
+The total number of uncoded int32_t per TTA frame.
 See
 .BR libttaR_nsamples_perframe_tta1 (3).
 .RE
 
 nbytes_tta_perframe:
 .RS 8
-The number of encoded bytes in the current TTA frame.
+The total number of encoded bytes in the current TTA frame.
 .RE
 
 samplebytes:
@@ -306,14 +312,16 @@ It would probably be caused by improperly setting the parameters or state.
 
 .SH Error (<0)
 
+If an error is returned, then no data was processed.
+
 .RS 4
 
 \fBLIBTTAr_ERV_INVAL_RANGE\fR, \fBLIBTTAr_DRV_INVAL_RANGE\fR
 .RS 8
 Some \fImisc\fR value is 0 or a bad enum value.
 On a (likely) 32-bit system, this could be returned if
-\fImisc\fR->nchan is too large.
-(\fBlibttaR_ttabuf_safety_margin\fR(3) overflow)
+\fImisc\fR->nchan is too large
+(\fBlibttaR_ttabuf_safety_margin\fR(3) overflow).
 .RE
 
 \fBLIBTTAr_ERV_INVAL_TRUNC\fR, \fBLIBTTAr_DRV_INVAL_TRUNC\fR
@@ -334,7 +342,7 @@ A pointer/buffer (\fIpriv\fR) is not properly aligned.
 
 \fBLIBTTAr_ERV_MISCONFIG\fR, \fBLIBTTAr_DRV_MISCONFIG\fR
 .RS 8
-The library was misconfigured when built; see \fBlibttaR_test_nchan\fR(3).
+The library was misconfigured when built. See \fBlibttaR_test_nchan\fR(3).
 .RE
 
 The debug build of the library may abort instead of returning an error.
