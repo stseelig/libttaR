@@ -7,7 +7,7 @@
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
 // Copyright (C) 2007, Aleksander Djuric                                    //
-// Copyright (C) 2023-2025, Shane Seelig                                    //
+// Copyright (C) 2023-2026, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 /////////////////////////////////////////////////////////////////////////// */
@@ -55,6 +55,13 @@ BUILD_EXTERN const bitcnt_dec tbcnt8_table[256u];
 #endif	/* USE_TBCNT8_TABLE */
 
 /*@=redef@*/
+
+/* //////////////////////////////////////////////////////////////////////// */
+
+enum WriteCacheMode {
+	WRITECACHE_BYTES	= 0u,
+	WRITECACHE_FLUSH	= 7u
+};
 
 /* //////////////////////////////////////////////////////////////////////// */
 
@@ -197,7 +204,8 @@ ALWAYS_INLINE void rice24_cache_binary(
 #undef crc
 ALWAYS_INLINE size_t rice24_write_cache(
 	/*@reldef@*/ uint8_t *RESTRICT dest, size_t, cache64 *RESTRICT cache,
-	bitcnt_enc *RESTRICT count, crc32_enc *RESTRICT crc, bitcnt_enc
+	bitcnt_enc *RESTRICT count, crc32_enc *RESTRICT crc,
+	enum WriteCacheMode
 )
 /*@modifies	*dest,
 		*cache,
@@ -646,9 +654,9 @@ rice24_encode_cacheflush(
 	assert(*count <= (bitcnt_enc) 63u);
 
 	nbytes_enc = rice24_write_cache(
-		dest, nbytes_enc, cache, count, &crc, (bitcnt_enc) 7u
+		dest, nbytes_enc, cache, count, &crc, WRITECACHE_FLUSH
 	);
-	*count = 0u;
+	*count = 0;
 
 	*crc_inout = (uint32_t) crc;
 	return nbytes_enc;
@@ -687,12 +695,13 @@ rice24_write_unary(
 	assert(*count <= (bitcnt_enc) 63u);
 
 	goto loop_entr;
+	PRAGMA_NOUNROLL
 	do {	unary  -= 32u;
 		*cache |= ((cache64) UINT32_MAX) << *count;
 		*count |= 0x20u;	/* += 32u; (*count <= 0x07u) */
 loop_entr:
 		nbytes_enc = rice24_write_cache(
-			dest, nbytes_enc, cache, count, crc, 0
+			dest, nbytes_enc, cache, count, crc, WRITECACHE_BYTES
 		);
 		assert(*count <= (bitcnt_enc) 7u);
 	}
@@ -733,7 +742,7 @@ rice24_write_unary_zero(
 	assert(*count <= (bitcnt_enc) 63u);
 
 	nbytes_enc = rice24_write_cache(
-		dest, nbytes_enc, cache, count, crc, 0
+		dest, nbytes_enc, cache, count, crc, WRITECACHE_BYTES
 	);
 	assert(*count <= (bitcnt_enc)  7u);
 
@@ -781,6 +790,7 @@ rice24_cache_binary(
  * @param cache      - bitcache
  * @param count      - number of active bits in the 'cache'
  * @param crc        - current CRC
+ * @param mode       - mode of operation; only write full bytes or flush it
  *
  * @return number of bytes written to 'dest' + 'nbytes_enc'
  *
@@ -790,7 +800,7 @@ ALWAYS_INLINE size_t
 rice24_write_cache(
 	/*@reldef@*/ uint8_t *const RESTRICT dest, size_t nbytes_enc,
 	cache64 *const RESTRICT cache, bitcnt_enc *const RESTRICT count,
-	crc32_enc *const RESTRICT crc, const bitcnt_enc extra
+	crc32_enc *const RESTRICT crc, const enum WriteCacheMode mode
 )
 /*@modifies	*dest,
 		*cache,
@@ -799,9 +809,10 @@ rice24_write_cache(
 @*/
 {
 	assert(*count <= (bitcnt_enc) 63u);
-	assert((extra == (bitcnt_enc)  0u) || (extra == (bitcnt_enc)  7u));
 
-	*count += extra;
+	*count += mode;
+
+	PRAGMA_UNROLL(2u)
 	while PROBABLE ( *count >= (bitcnt_enc) 8u, 0.9 ){
 		dest[nbytes_enc++] = rice24_crc32_enc((uint8_t) *cache, crc);
 		*cache >>= 8u;
@@ -947,6 +958,7 @@ rice24_read_unary(
 	nbits  = (bitcnt_dec) TBCNT8(*cache);
 	*unary = (rice24_dec) nbits;
 	if IMPROBABLE ( nbits == *count, 0.25 ){
+		PRAGMA_NOUNROLL
 		do {	inbyte  = rice24_crc32_dec(src[nbytes_dec++], crc);
 			nbits   = (bitcnt_dec) TBCNT8(inbyte);
 			*unary += nbits;
@@ -1000,6 +1012,7 @@ rice24_read_binary(
 	assert(bin_k   <= (bitcnt_dec) 24u);
 	assert(*count  <= (bitcnt_dec)  7u);
 
+	PRAGMA_NOUNROLL
 	while PROBABLE ( *count < bin_k, 0.9 ){
 		inbyte  = rice24_crc32_dec(src[nbytes_dec++], crc);
 		*cache |= ((cache32) inbyte) << *count;

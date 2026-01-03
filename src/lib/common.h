@@ -6,7 +6,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2025, Shane Seelig                                    //
+// Copyright (C) 2023-2026, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 /////////////////////////////////////////////////////////////////////////// */
@@ -321,6 +321,29 @@
  || (!defined(HAS_BUILTIN_CTZ32) && !defined(HAS_BUILTIN_CTZ64))
 #define USE_TBCNT8_TABLE
 #endif	/* USE_TBCNT8_TABLE */
+
+/* //////////////////////////////////////////////////////////////////////// */
+
+#define X_STRINGIFY(x_x)	#x_x
+#define STRINGIFY(x_x)		X_STRINGIFY(x_x)
+
+/* ======================================================================== */
+
+#if defined(__clang__)
+#define PRAGMA_UNROLL(x_x)	_Pragma(STRINGIFY(unroll(x_x)))
+#elif defined(__GNUC__)
+#define PRAGMA_UNROLL(x_x)	_Pragma(STRINGIFY(GCC unroll(x_x)))
+#else
+#define PRAGMA_UNROLL(x_x)
+#endif	/* PRAGMA_UNROLL */
+
+#if defined(__clang__)
+#define PRAGMA_NOUNROLL		_Pragma("nounroll")
+#elif defined(__GNUC__)
+#define PRAGMA_NOUNROLL		_Pragma("GCC unroll(0)")
+#else
+#define PRAGMA_NOUNROLL
+#endif	/* PRAGMA_NOUNROLL */
 
 /* //////////////////////////////////////////////////////////////////////// */
 
