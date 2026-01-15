@@ -78,19 +78,6 @@ ALWAYS_INLINE size_t get_rice24_dec_max(enum LibTTAr_SampleBytes) /*@*/;
 
 /* ------------------------------------------------------------------------ */
 
-CONST
-ALWAYS_INLINE uint_fast32_t binexp32(bitcnt) /*@*/;
-
-#ifndef LIBTTAr_OPT_PREFER_LOOKUP_TABLES
-CONST
-ALWAYS_INLINE uint_fast32_t lsmask32(bitcnt) /*@*/;
-#else
-CONST
-ALWAYS_INLINE uint32_t lsmask32(bitcnt) /*@*/;
-#endif	/* LIBTTAr_OPT_PREFER_LOOKUP_TABLES */
-
-/* ------------------------------------------------------------------------ */
-
 #undef crc
 ALWAYS_INLINE uint8_t rice24_crc32_enc(uint8_t, crc32_enc *RESTRICT crc)
 /*@modifies	*crc@*/
@@ -345,52 +332,32 @@ get_rice24_dec_max(const enum LibTTAr_SampleBytes samplebytes)
 
 /* ======================================================================== */
 
-/**@fn binexp32
+/**@fn BINEXP32
  * @brief binary exponentiation 32-bit (2**'k')
  *
  * @param k - bit number
  *
  * @return a 32-bit mask with only the 'k'th bit set
+ *
+ * @pre (k < 32u)
 **/
-CONST
-ALWAYS_INLINE uint_fast32_t
-binexp32(const bitcnt k)
-/*@*/
-{
-	assert(k <= (bitcnt) 31u);
+#define BINEXP32(x_k)	(UINT32_C(0x1) << (x_k))
 
-	return (uint_fast32_t) (((uint_fast32_t) 0x1u) << k);
-}
-
-/**@fn lsmask32
+/**@fn LSMASK32
  * @brief least significant mask 32-bit
  *
  * @param k - number of bits in the mask
  *
  * @return a mask with 'k' low bits set
  *
+ * @pre (k < 32u)
+ *
  * @note affected by LIBTTAr_OPT_PREFER_LOOKUP_TABLES
 **/
 #ifndef LIBTTAr_OPT_PREFER_LOOKUP_TABLES
-CONST
-ALWAYS_INLINE uint_fast32_t
-lsmask32(const bitcnt k)
-/*@*/
-{
-	assert(k <= (bitcnt) 31u);
-
-	return (uint_fast32_t) ((((uint_fast32_t) 0x1u) << k) - 1u);
-}
-#else	/* defined(LIBTTAr_OPT_PREFER_LOOKUP_TABLES) */
-CONST
-ALWAYS_INLINE uint32_t
-lsmask32(const bitcnt k)
-/*@*/
-{
-	assert(k <= (bitcnt) 31u);
-
-	return lsmask32_table[k];
-}
+#define LSMASK32(x_k)	(BINEXP32((x_k)) - 1u)
+#else
+#define LSMASK32(x_k)	lsmask32_table[(x_k)]
 #endif	/* LIBTTAr_OPT_PREFER_LOOKUP_TABLES */
 
 /**@fn BZHI32
@@ -402,22 +369,12 @@ lsmask32(const bitcnt k)
  *
  * @return 'x' zero'd from the 'k'th bit to the most significant bit
  *
+ * @pre (k < 32u)
+ *
  * @note both clang and gcc understand this.
 **/
-#ifdef NDEBUG
-#define BZHI32(x_x, x_k)	((x_x) & lsmask32((bitcnt) (x_k)))
-#else
-CONST
-ALWAYS_INLINE uint_fast32_t
-X_BZHI32(const uint_fast32_t x, const bitcnt k)
-/*@*/
-{
-	assert(k <= (bitcnt) 31u);
-
-	return x & lsmask32(k);
-}
-#define BZHI32(x_x, x_k)	X_BZHI32((uint_fast32_t) (x_x), (x_k))
-#endif	/* BZHI32 */
+/* the (bitcnt) cast is important */
+#define BZHI32(x_x, x_k)	((x_x) & LSMASK32((bitcnt) (x_k)))
 
 /**@fn TBCNT8
  * @brief trailing bit count 8-bit
@@ -429,27 +386,15 @@ X_BZHI32(const uint_fast32_t x, const bitcnt k)
 **/
 #ifndef USE_TBCNT8_TABLE
 #if defined(HAS_BUILTIN_CTZ32)
-#define X_TBCNT8(x_x)		BUILTIN_CTZ32(~((uint32_t) (x_x)))
+#define TBCNT8(x_x)		BUILTIN_CTZ32(~((uint32_t) (x_x)))
 #elif defined(HAS_BUILTIN_CTZ64)
-#define X_TBCNT8(x_x)		BUILTIN_CTZ64(~((uint64_t) (x_x)))
+#define TBCNT8(x_x)		BUILTIN_CTZ64(~((uint64_t) (x_x)))
 #else
 #error "TBCNT8"
 #endif	/* BUILTIN_CTZ32 || BUILTIN_CTZ64 */
 #else	/* defined(USE_TBCNT8_TABLE) */
-#define X_TBCNT8(x_x)		tbcnt8_table[(x_x)]
+#define TBCNT8(x_x)		tbcnt8_table[(x_x)]
 #endif	/* USE_TBCNT8_TABLE */
-
-#ifdef NDEBUG
-#define TBCNT8(x_x)		X_TBCNT8(x_x)
-#else
-CONST
-ALWAYS_INLINE bitcnt
-TBCNT8(const uint8_t x)
-/*@*/
-{
-	return (bitcnt) X_TBCNT8(x);
-}
-#endif	/* TBCNT8 */
 
 /* ======================================================================== */
 
@@ -586,7 +531,7 @@ rice24_encode(
 		rice24_update_enc(sum0, k0, (x_value), test0); \
 	}
 	#define RICE24_ENCODE_STATE_1(x_value) { \
-		(x_value) -= binexp32((bitcnt) bin_k); \
+		(x_value) -= BINEXP32(bin_k); \
 		bin_k      = *k1; \
 		test1      = &binexp32p4_table[*k1]; \
 		rice24_update_enc(sum1, k1, (x_value), test1); \
@@ -607,17 +552,14 @@ rice24_encode(
 		rice24_cache_binary(binary, bin_k, cache, count); \
 	}
 
-	/* value + state */
 	RICE24_ENCODE_STATE_0(value);
-	if PROBABLE ( value >= binexp32((bitcnt) bin_k), 0.575 ){
+	if PROBABLE ( value >= BINEXP32(bin_k), 0.575 ){
 		RICE24_ENCODE_STATE_1(value);
 
-		/* unary + binary */
 		RICE24_ENCODE_UNARY((rice24_enc) ((value >> bin_k) + 1u));
 		RICE24_ENCODE_BINARY((rice24_enc) BZHI32(value, bin_k));
 	}
-	else {	/* unary-zero + binary */
-		RICE24_ENCODE_UNARY_ZERO;
+	else {	RICE24_ENCODE_UNARY_ZERO;
 		RICE24_ENCODE_BINARY((rice24_enc) BZHI32(value, bin_k));
 	}
 	return nbytes_enc;
@@ -707,7 +649,7 @@ loop_entr:
 	}
 	while UNLIKELY ( unary >= (rice24_enc) 32u );
 
-	*cache |= ((cache64) lsmask32((bitcnt) unary)) << *count;
+	*cache |= ((cache64) LSMASK32((bitcnt) unary)) << *count;
 	*count += (bitcnt_enc) (unary + 1u);	/* + terminator */
 
 	assert(*count <= (bitcnt_enc) 39u);
@@ -881,23 +823,20 @@ rice24_decode(
 	}
 	#define RICE24_DECODE_STATE_1(x_value) { \
 		rice24_update_dec(sum1, k1, (x_value), test1); \
-		(x_value) += binexp32((bitcnt) *k0); \
+		(x_value) += BINEXP32(*k0); \
 	}
 	#define RICE24_DECODE_STATE_0(x_value) { \
 		rice24_update_dec(sum0, k0, (x_value), test0); \
 	}
 
-	/* unary */
 	RICE24_DECODE_UNARY(&unary);
 	if PROBABLE ( unary != 0, 0.575 ){
 		bin_k  = *k1;
 		test1  = &binexp32p4_table[*k1];
 		test0  = &binexp32p4_table[*k0];
 
-		/* binary */
 		RICE24_DECODE_BINARY(&binary);
 
-		/* value + state */
 		*value = (uint32_t) (((unary - 1u) << bin_k) + binary);
 		RICE24_DECODE_STATE_1(*value);
 		RICE24_DECODE_STATE_0(*value);
@@ -905,10 +844,8 @@ rice24_decode(
 	else {	bin_k  = *k0;
 		test0  = &binexp32p4_table[*k0];
 
-		/* binary */
 		RICE24_DECODE_BINARY(&binary);
 
-		/* value + state */
 		*value = (uint32_t) binary;
 		RICE24_DECODE_STATE_0(*value);
 	}

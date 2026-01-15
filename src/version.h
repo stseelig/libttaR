@@ -14,9 +14,9 @@
 #define LIB_VERSION_NUM		2u
 #define LIB_VERSION_NUM_MAJOR	1u
 #define LIB_VERSION_NUM_MINOR	1u
-#define LIB_VERSION_NUM_REVIS	1u
+#define LIB_VERSION_NUM_REVIS	2u
 #define LIB_VERSION_STR_EXTRA	""
-#define LIB_VERSION_STR_DATE	"2026-01-03"
+#define LIB_VERSION_STR_DATE	"2026-01-15"
 #define LIB_COPYRIGHT_STR	\
 	"Copyright (C) 2007, Aleksander Djuric;" \
 	"Copyright (C) 2023-2026, Shane Seelig"
