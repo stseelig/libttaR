@@ -351,8 +351,6 @@ get_rice24_dec_max(const enum LibTTAr_SampleBytes samplebytes)
  * @return a mask with 'k' low bits set
  *
  * @pre (k < 32u)
- *
- * @note affected by LIBTTAr_OPT_PREFER_LOOKUP_TABLES
 **/
 #ifndef LIBTTAr_OPT_PREFER_LOOKUP_TABLES
 #define LSMASK32(x_k)	(BINEXP32((x_k)) - 1u)
@@ -362,7 +360,6 @@ get_rice24_dec_max(const enum LibTTAr_SampleBytes samplebytes)
 
 /**@fn BZHI32
  * @brief (bit-manip) zero high bits by index 32-bit
- *   macro'd because of fast types (almost like in TBCNT8)
  *
  * @param x - input value
  * @param k - bit index
@@ -378,7 +375,6 @@ get_rice24_dec_max(const enum LibTTAr_SampleBytes samplebytes)
 
 /**@fn TBCNT8
  * @brief trailing bit count 8-bit
- *   macro'd because fast types were causing extra casts with inline functions
  *
  * @param x - value to count
  *
