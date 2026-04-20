@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2025, Shane Seelig                                    //
+// Copyright (C) 2023-2026, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 /////////////////////////////////////////////////////////////////////////// */
@@ -127,7 +127,7 @@ mode_encode(
 	/* get file stats */
 	for ( i = 0; i < openedfiles.nmemb; ++i ){
 		nerrors_file += filestats_get(
-			openedfiles.file[i], MODE_ENCODE
+			openedfiles.file[i], MODE_ENCODE, INPUTMODE_FILE
 		);
 	}
 
@@ -250,9 +250,6 @@ enc_loop(const struct OpenedFilesMember *const RESTRICT ofm)
 
 	/* open outfile */
 	outfile = fopen_check(outfile_name, "wb", FATAL);
-	if UNLIKELY ( outfile == NULL ){
-		error_sys(errno, "fopen", outfile_name);
-	}
 	assert(outfile != NULL);
 	g_rm_on_sigint = outfile_name;
 

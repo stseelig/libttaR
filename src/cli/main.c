@@ -97,6 +97,8 @@ BUILD uint8_t g_nwarnings = 0;
 /*@-fullinitblock@*/
 /*@checkmod@*/
 BUILD struct GlobalFlags g_flag = {
+	.outfile    = NULL,
+	.inputmode  = INPUTMODE_UNSET,
 	.threadmode = THREADMODE_UNSET,
 	.decfmt     = DECFMT_W64
 };

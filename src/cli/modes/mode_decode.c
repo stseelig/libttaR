@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2025, Shane Seelig                                    //
+// Copyright (C) 2023-2026, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 /////////////////////////////////////////////////////////////////////////// */
@@ -119,10 +119,16 @@ mode_decode(
 		&openedfiles, optind, argc, argv, &decode_optdict
 	);
 
+	if ( g_flag.inputmode == INPUTMODE_STDIN ){
+		nerrors_file += openedfiles_add(
+			&openedfiles, "[stdin]", INPUTMODE_STDIN
+		);
+	}
+
 	/* get file stats */
 	for ( i = 0; i < openedfiles.nmemb; ++i ){
 		nerrors_file += filestats_get(
-			openedfiles.file[i], MODE_DECODE
+			openedfiles.file[i], MODE_DECODE, g_flag.inputmode
 		);
 	}
 
@@ -265,12 +271,12 @@ dec_loop(struct OpenedFilesMember *const RESTRICT ofm)
 	/* MAYBE: check that the seektable entries match the filesize */
 
 	/* open outfile */
-	outfile = fopen_check(outfile_name, "wb", FATAL);
-	if UNLIKELY ( outfile == NULL ){
-		error_sys(errno, "fopen", outfile_name);
+	if ( ! g_flag.outfile_is_stdout ){
+		outfile = fopen_check(outfile_name, "wb", FATAL);
+		assert(outfile != NULL);
+		g_rm_on_sigint = outfile_name;
 	}
-	assert(outfile != NULL);
-	g_rm_on_sigint = outfile_name;
+	else {	outfile = stdout; }
 
 	/* save some space for the outfile header */
 	switch ( fstat->decfmt ){
@@ -358,11 +364,13 @@ decode_multi:
 	}
 
 	/* close outfile */
-	result.d = fclose(outfile);
-	if UNLIKELY ( result.d != 0 ){
-		error_sys_nf(errno, "fclose", outfile_name);
+	if ( ! g_flag.outfile_is_stdout ){
+		result.d = fclose(outfile);
+		if UNLIKELY ( result.d != 0 ){
+			error_sys_nf(errno, "fclose", outfile_name);
+		}
+		g_rm_on_sigint = NULL;
 	}
-	g_rm_on_sigint = NULL;
 
 	if ( ! g_flag.quiet ){
 		timestamp_get(&ts_finish);

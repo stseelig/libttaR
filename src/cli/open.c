@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2025, Shane Seelig                                    //
+// Copyright (C) 2023-2026, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 /////////////////////////////////////////////////////////////////////////// */
@@ -45,7 +45,7 @@ static int try_fdlimit(void)
 #undef file
 static enum FileCheck filecheck_codecfmt(
 	struct FileStats *RESTRICT fstat, FILE *RESTRICT file,
-	const char *RESTRICT, enum ProgramMode
+	const char *RESTRICT, enum ProgramMode, const enum InputMode
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -149,7 +149,8 @@ try_fdlimit(void)
 BUILD NOINLINE int
 openedfiles_add(
 	struct OpenedFiles *const RESTRICT of,
-	/*@dependent@*/ char *const RESTRICT name
+	/*@dependent@*/ char *const RESTRICT name,
+	const enum InputMode inputmode
 )
 /*@globals	fileSystem,
 		internalState
@@ -171,10 +172,20 @@ openedfiles_add(
 	 added = &of->file[of->nmemb - 1u];
 	*added = calloc_check(SIZE_C(1), sizeof **added);
 
-	(*added)->infile = fopen_check(name, "rb", NONFATAL);
-	if ( (*added)->infile == NULL ){
-		retval = errno;
+	switch ( inputmode ){
+	case INPUTMODE_FILE:
+		(*added)->infile = fopen_check(name, "rb", NONFATAL);
+		if ( (*added)->infile == NULL ){
+			retval = errno;
+		}
+		break;
+	case INPUTMODE_STDIN:
+		(*added)->infile = stdin;
+		break;
+	default:
+		assert(false);
 	}
+
 	(*added)->infile_name = name;
 
 	return retval;
@@ -217,15 +228,16 @@ openedfiles_close_free(struct OpenedFiles *const RESTRICT of)
 /**@fn filestats_get
  * @brief gets/set the file stats of an opened file
  *
- * @param ofm  - opened files struct array member
- * @param mode - encode or decode
+ * @param ofm       - opened files struct array member
+ * @param mode      - encode or decode
+ * @param inputmode - file or stdin
  *
  * @return 0 on success, else number of errors
 **/
 BUILD NOINLINE unsigned int
 filestats_get(
 	struct OpenedFilesMember *const RESTRICT ofm,
-	const enum ProgramMode mode
+	const enum ProgramMode mode, const enum InputMode inputmode
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -254,7 +266,8 @@ filestats_get(
 		ofm->fstat.decpcm_size = (size_t) ftello(ofm->infile);
 	}
 	else {	result.fc = filecheck_codecfmt(
-			&ofm->fstat, ofm->infile, ofm->infile_name, mode
+			&ofm->fstat, ofm->infile, ofm->infile_name, mode,
+			inputmode
 		);
 		if ( result.fc != FILECHECK_OK ){
 			return 1u;
@@ -299,10 +312,11 @@ filestats_get(
 /**@fn filecheck_codecfmt
  * @brief checks if the 'file' is a supported format
  *
- * @param fstat    - bloated file stats struct
- * @param file     - source file
- * @param filename - the name of the source file (errors)
- * @param mode     - encode or decode
+ * @param fstat     - bloated file stats struct
+ * @param file      - source file
+ * @param filename  - the name of the source file (errors)
+ * @param mode      - encode or decode
+ * @param inputmode - file or stdin
  *
  * @return FILECHECK_OK on success
 **/
@@ -310,7 +324,7 @@ static enum FileCheck
 filecheck_codecfmt(
 	/*@out@*/ struct FileStats *const RESTRICT fstat,
 	FILE *const RESTRICT file, const char *const RESTRICT filename,
-	const enum ProgramMode mode
+	const enum ProgramMode mode, const enum InputMode inputmode
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,
@@ -320,10 +334,12 @@ filecheck_codecfmt(
 {
 	union {	enum FileCheck	fc; } result;
 
-	/* seek past any metadata on the input file */
-	result.fc = metatags_skip(file);
-	if ( result.fc != FILECHECK_MISMATCH ){
-		goto end_error;
+	if ( inputmode != INPUTMODE_STDIN ){
+		/* seek past any metadata on the input file */
+		result.fc = metatags_skip(file);
+		if ( result.fc != FILECHECK_MISMATCH ){
+			goto end_error;
+		}
 	}
 
 	switch ( mode ){

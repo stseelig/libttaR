@@ -6,7 +6,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2025, Shane Seelig                                    //
+// Copyright (C) 2023-2026, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 /////////////////////////////////////////////////////////////////////////// */
@@ -50,7 +50,8 @@ BUILD_EXTERN FILE *fopen_check(
 #undef of
 BUILD_EXTERN NOINLINE int openedfiles_add(
 	struct OpenedFiles *const RESTRICT of,
-	/*@dependent@*/ char *const RESTRICT
+	/*@dependent@*/ char *const RESTRICT,
+	const enum InputMode
 )
 /*@globals	fileSystem,
 		internalState
@@ -79,7 +80,8 @@ openedfiles_close_free(struct OpenedFiles *const RESTRICT of)
 
 #undef ofm
 BUILD_EXTERN NOINLINE unsigned int filestats_get(
-	struct OpenedFilesMember *const RESTRICT ofm, const enum ProgramMode
+	struct OpenedFilesMember *const RESTRICT ofm, const enum ProgramMode,
+	const enum InputMode
 )
 /*@globals	fileSystem@*/
 /*@modifies	fileSystem,

@@ -6,7 +6,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2025, Shane Seelig                                    //
+// Copyright (C) 2023-2026, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 /////////////////////////////////////////////////////////////////////////// */
@@ -25,8 +25,14 @@ enum ProgramMode {
 	MODE_DECODE
 };
 
+enum InputMode {
+	INPUTMODE_UNSET = 0,
+	INPUTMODE_FILE,
+	INPUTMODE_STDIN
+};
+
 enum ThreadMode {
-	THREADMODE_UNSET,
+	THREADMODE_UNSET = 0,
 	THREADMODE_SINGLE,
 	THREADMODE_MULTI
 };
@@ -36,10 +42,12 @@ enum ThreadMode {
 struct GlobalFlags {
 	/*@dependent@*/ /*@null@*/
 	char		*outfile;		/* from argv */
+	bool		 outfile_is_stdout;
 	bool		 outfile_is_dir;
 	bool		 quiet;
 	bool		 delete_src;
 	bool		 rawpcm;
+	enum InputMode	 inputmode:8u;
 	enum ThreadMode	 threadmode:8u;
 	enum DecFormat	 decfmt:8u;
 };

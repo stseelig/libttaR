@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2025, Shane Seelig                                    //
+// Copyright (C) 2023-2026, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -101,10 +101,12 @@ optargs_process(
 	const struct OptDict *const RESTRICT optdict
 )
 /*@globals	fileSystem,
-		internalState
+		internalState,
+		g_flag
 @*/
 /*@modifies	fileSystem,
 		internalState,
+		g_flag.inputmode,
 		*of,
 		**argv
 @*/
@@ -119,8 +121,26 @@ optargs_process(
 			optind += (optrv >= 0 ? optrv : -optrv);
 		}
 		else {	/* filename */
+
+			switch ( g_flag.inputmode ){
+			case INPUTMODE_UNSET:
+				g_flag.inputmode = INPUTMODE_FILE;
+				break;
+			case INPUTMODE_FILE:
+				break;
+			case INPUTMODE_STDIN:
+				error_tta("%s (%u): "
+					"input mode already set to 'stdin'",
+					argv[optind], optind
+				);
+			default:
+				assert(false);
+			}
+
 			retval += (uint8_t) (
-				openedfiles_add(of, argv[optind]) != 0
+				openedfiles_add(
+					of, argv[optind], g_flag.inputmode
+				) != 0
 			);
 			optind += 1u;
 		}

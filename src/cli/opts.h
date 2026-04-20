@@ -6,7 +6,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2025, Shane Seelig                                    //
+// Copyright (C) 2023-2026, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 /////////////////////////////////////////////////////////////////////////// */
@@ -39,10 +39,12 @@ BUILD_EXTERN NOINLINE unsigned int optargs_process(
 	char *const *argv, const struct OptDict *RESTRICT
 )
 /*@globals	fileSystem,
-		internalState
+		internalState,
+		g_flag
 @*/
 /*@modifies	fileSystem,
 		internalState,
+		g_flag.inputmode,
 		*of,
 		**argv
 @*/

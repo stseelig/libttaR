@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2025, Shane Seelig                                    //
+// Copyright (C) 2023-2026, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 /////////////////////////////////////////////////////////////////////////// */
@@ -41,6 +41,35 @@ static int opt_decode_format(
 ;
 
 static int
+opt_decode_stdin(
+	unsigned int, unsigned int, unsigned int, char *const *, enum OptMode
+)
+/*@globals	fileSystem,
+		internalState,
+		g_flag
+@*/
+/*@modifies	fileSystem,
+		internalState,
+		g_flag.inputmode
+@*/
+;
+
+static int
+opt_decode_stdout(
+	unsigned int, unsigned int, unsigned int, char *const *, enum OptMode
+)
+/*@globals	fileSystem,
+		internalState,
+		g_flag
+@*/
+/*@modifies	fileSystem,
+		internalState,
+		g_flag.outfile,
+		g_flag.outfile_is_stdout
+@*/
+;
+
+static int
 opt_decode_help(
 	unsigned int, unsigned int, unsigned int, char *const *, enum OptMode
 )
@@ -50,7 +79,7 @@ opt_decode_help(
 
 /* //////////////////////////////////////////////////////////////////////// */
 
-#define DECODE_OPTDICT_NMEMB	8u
+#define DECODE_OPTDICT_NMEMB	10u
 
 /**@var decode_optdict_longopt
  * @brief array of longopts
@@ -64,6 +93,8 @@ static const char *decode_optdict_longopt[DECODE_OPTDICT_NMEMB] = {
 	"outfile",
 	"quiet",
 	"threads",
+	"stdin",
+	"stdout",
 	"help"
 };
 
@@ -79,6 +110,8 @@ static const int decode_optdict_shortopt[DECODE_OPTDICT_NMEMB] = {
 	'o',	/* outfile         */
 	'q',	/* quiet           */
 	't',	/* threads         */
+	-1 ,	/* stdin           */
+	-1 ,	/* stdout          */
 	'?'	/* help            */
 };
 
@@ -94,6 +127,8 @@ static optdict_fnptr decode_optdict_fn[DECODE_OPTDICT_NMEMB] = {
 	opt_common_outfile,
 	opt_common_quiet,
 	opt_common_threads,
+	opt_decode_stdin,
+	opt_decode_stdout,
 	opt_decode_help,
 };
 
@@ -167,7 +202,9 @@ opt_decode_format(
 		(void) strtok(opt, "=");
 		subopt = strtok(NULL, "");
 		if UNLIKELY ( subopt == NULL ){
-			error_tta("%s: missing argument", "--format");
+			error_tta("%s (%u): missing argument",
+				"--format", optind0
+			);
 		}
 		retval = 0;
 		break;
@@ -180,13 +217,91 @@ opt_decode_format(
 			break;
 		}
 		else if UNLIKELY ( i == DECFMT_NMEMB - 1u ){
-			error_tta("%s: bad argument: %s",
+			error_tta("%s (%u): bad argument: %s",
 				mode == OPTMODE_SHORT ? "-f" : "--format",
-				subopt
+				optind0, subopt
 			);
 		} else{;}
 	}
 	return retval;
+}
+
+/**@fn opt_decode_stdin
+ * @brief sets the "standard input" as the infile
+ *
+ * @param optind0 - unused
+ * @param optind1 - unused
+ * @param argc    - unused
+ * @param argv    - unused
+ * @param mode    - unused
+ *
+ * @return 0
+**/
+static int
+opt_decode_stdin(
+	const unsigned int optind0, UNUSED const unsigned int optind1,
+	UNUSED const unsigned int argc, UNUSED char *const *const argv,
+	UNUSED const enum OptMode mode
+)
+/*@globals	fileSystem,
+		internalState,
+		g_flag
+@*/
+/*@modifies	fileSystem,
+		internalState,
+		g_flag.inputmode
+@*/
+{
+	if ( g_flag.inputmode != INPUTMODE_UNSET ){
+		error_tta(
+			"%s (%u): input mode already set", "--stdin", optind0
+		);
+	}
+
+	g_flag.inputmode = INPUTMODE_STDIN;
+
+	return 0;
+}
+
+/**@fn opt_decode_stdout
+ * @brief sets the "standard output" as the outfile
+ *
+ * @param optind0 - index of  'argv'
+ * @param optind1 - unused
+ * @param argc    - unused
+ * @param argv    - unused
+ * @param mode    - unused
+ *
+ * @return 0
+**/
+static int
+opt_decode_stdout(
+	const unsigned int optind0, UNUSED const unsigned int optind1,
+	UNUSED const unsigned int argc, UNUSED char *const *const argv,
+	UNUSED const enum OptMode mode
+)
+/*@globals	fileSystem,
+		internalState,
+		g_flag
+@*/
+/*@modifies	fileSystem,
+		internalState,
+		g_flag.outfile,
+		g_flag.outfile_is_stdout
+@*/
+{
+	if UNLIKELY ( g_flag.outfile != NULL ){
+		error_tta(
+			"%s (%u): outfile already set", "--stdout", optind0
+		);
+	}
+
+	/*@-readonlytrans@*/ /*@-observertrans@*/
+	g_flag.outfile		 = "[stdout]";
+	/*@=readonlytrans@*/ /*@=observertrans@*/
+	g_flag.outfile_is_stdout = true;
+
+	return 0;
 }
 
 /**@fn opt_decode_help

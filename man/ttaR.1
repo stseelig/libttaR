@@ -1,13 +1,13 @@
 .\" t
 .\"     Title: ttaR
 .\"    Author: Shane Seelig
-.\"      Date: 2024-11-18
-.\"    Source: ttaR 1.1
+.\"      Date: 2026-04-20
+.\"    Source: ttaR 1.1.12
 .\"  Language: English
 .\"
 .\" ##########################################################################
 
-.TH "TTAr" "1" "2024\-06\-01" "ttaR 1.1"
+.TH "TTAr" "1" "2026\-04\-20" "ttaR 1.1.12"
 
 .\" ##########################################################################
 
@@ -144,6 +144,20 @@ Outfile format.
 .RS 4
 FMT   : raw, w64, wav
 .RE
+.RE
+
+\fB \-\-stdin\fR
+.RS 4
+Set the standard input (stdin) to be the infile.
+
+This option will disable checking for metadata tags
+at the beginning of the file;
+ie., it assumes that there are no tags at the beginning of the file.
+.RE
+
+\fB \-\-stdout\fR
+.RS 4
+Set the standard output (stdout) to be the outfile.
 .RE
 
 .RE

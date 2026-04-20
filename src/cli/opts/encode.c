@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2025, Shane Seelig                                    //
+// Copyright (C) 2023-2026, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 /////////////////////////////////////////////////////////////////////////// */
@@ -187,7 +187,9 @@ opt_encode_rawpcm(
 	/* format */
 	subopt = strtok(NULL, ",");
 	if UNLIKELY ( subopt == NULL ){
-		error_tta("%s: missing %s field", "--rawpcm", "format");
+		error_tta("%s (%u): missing %s field",
+			"--rawpcm", optind0, "format"
+		);
 	}
 	assert(subopt != NULL);
 
@@ -205,19 +207,24 @@ opt_encode_rawpcm(
 		f_rpstat.samplebits = UINT16_C(24);
 		f_rpstat.endian     = xENDIAN_LITTLE;
 	}
-	else {	error_tta("%s: unsupported format: %s", "--rawpcm", subopt); }
+	else {	error_tta("%s (%u): unsupported format: %s",
+			"--rawpcm", optind0, subopt
+		);
+	}
 
 	/* samplerate */
 	subopt = strtok(NULL, ",");
 	if UNLIKELY ( subopt == NULL ){
-		error_tta("%s: missing %s field", "--rawpcm", "samplerate");
+		error_tta("%s (%u) : missing %s field",
+			"--rawpcm", optind0, "samplerate"
+		);
 	}
 	assert(subopt != NULL);
 
 	tmp.ll = atoll(subopt);
 	if UNLIKELY ( (tmp.ll <= 0) || (tmp.ll > (long long) UINT32_MAX) ){
-		error_tta("%s: %s out of range: %lld",
-			"--rawpcm", "samplerate", tmp.ll
+		error_tta("%s (%u): %s out of range: %lld",
+			"--rawpcm", optind0, "samplerate", tmp.ll
 		);
 	}
 	f_rpstat.samplerate = (uint32_t) tmp.ll;
@@ -225,14 +232,16 @@ opt_encode_rawpcm(
 	/* nchan */
 	subopt = strtok(NULL, ",");
 	if UNLIKELY ( subopt == NULL ){
-		error_tta("%s: missing %s field", "--rawpcm", "nchan");
+		error_tta("%s (%u): missing %s field",
+			"--rawpcm", optind0, "nchan"
+		);
 	}
 	assert(subopt != NULL);
 
 	tmp.ll = atoll(subopt);
 	if UNLIKELY ( (tmp.ll <= 0) || (tmp.ll > (long long) UINT16_MAX) ){
-		error_tta("%s: %s out of range: %lld",
-			"--rawpcm", "nchan", tmp.ll
+		error_tta("%s (%u): %s out of range: %lld",
+			"--rawpcm", optind0, "nchan", tmp.ll
 		);
 	}
 	f_rpstat.nchan = (uint16_t) tmp.ll;

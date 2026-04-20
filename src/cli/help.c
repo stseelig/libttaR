@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2025, Shane Seelig                                    //
+// Copyright (C) 2023-2026, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 /////////////////////////////////////////////////////////////////////////// */
@@ -116,7 +116,10 @@ static const char help_mode_usage1[] = {
 #define OPT_DECODE_FORMAT \
 "\t"    "-f, --format=FMT\t\t"          "outfile format\n" \
 "\t\t"          "FMT: raw, [*] w64, wav\n"
-
+#define OPT_DECODE_STDIN \
+"\t"	"    --stdin\t\t\t"		"set 'stdin' as the infile\n"
+#define OPT_DECODE_STDOUT \
+"\t"	"    --stdout\t\t\t"		"set 'stdout' as the outfile\n"
 
 /*@unchecked@*/
 static const char help_mode_opts_encode[] = {
@@ -145,6 +148,8 @@ OPT_COMMON_DELETE_SRC
 OPT_DECODE_FORMAT
 OPT_COMMON_OUTFILE
 OPT_COMMON_QUIET
+OPT_DECODE_STDIN
+OPT_DECODE_STDOUT
 OPT_COMMON_THREADS
 };
 

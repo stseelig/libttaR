@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2025, Shane Seelig                                    //
+// Copyright (C) 2023-2026, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 /////////////////////////////////////////////////////////////////////////// */
@@ -184,7 +184,9 @@ opt_common_threads(
 		(void) strtok(opt, "=");
 		subopt = strtok(NULL, "");
 		if UNLIKELY ( subopt == NULL ){
-			error_tta("%s: missing argument", "--threads");
+			error_tta("%s (%u): missing argument",
+				"--threads", optind0
+			);
 		}
 		retval = 0;
 		break;
@@ -193,8 +195,8 @@ opt_common_threads(
 
 	result.d = atoi(subopt);
 	if UNLIKELY ( result.d <= 0 ){
-		error_tta("%s: argument out of range: %d", "--threads",
-			result.d
+		error_tta("%s (%u): argument out of range: %d",
+			"--threads", optind0, result.d
 		);
 	}
 
@@ -237,6 +239,12 @@ opt_common_outfile(
 	int retval   = 0;
 	char *subopt = NULL;
 
+	if UNLIKELY ( g_flag.outfile != NULL ){
+		error_tta("%s (%u): outfile already set",
+			mode == OPTMODE_SHORT ? "-o" : "--output", optind0
+		);
+	}
+
 	switch ( mode ){
 	default:
 		assert(false);
@@ -255,7 +263,9 @@ opt_common_outfile(
 		(void) strtok(opt, "=");
 		subopt = strtok(NULL, "");
 		if UNLIKELY ( subopt == NULL ){
-			error_tta("%s: missing argument", "--outfile");
+			error_tta("%s (%u): missing argument",
+				"--outfile", optind0
+			);
 		}
 		retval = 0;
 		break;
