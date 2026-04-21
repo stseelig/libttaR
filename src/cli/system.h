@@ -6,7 +6,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2025, Shane Seelig                                    //
+// Copyright (C) 2023-2026, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
@@ -17,6 +17,7 @@
 /////////////////////////////////////////////////////////////////////////// */
 
 #include "./common.h"
+#include "./debug.h"
 
 /* //////////////////////////////////////////////////////////////////////// */
 
@@ -48,11 +49,23 @@ INLINE void signals_setup(void)
 /*@modifies	internalState@*/
 ;
 
+/**@fn setmode_stdin_binary
+ * @brief changes 'stdin' from text mode to binary mode for windows
+ *
+ * @param fatality - fatal or nonfatal
+ *
+ * @return 0 on success, else the 'errno'
+**/
+ALWAYS_INLINE int
+setmode_stdin_binary(const enum Fatality)
+/* depends */
+;
+
 #undef dest
 /**@fn timestamp_get
  * @brief gets a timestamp in seconds/nanoseconds (clock_gettime wrapper)
  *
- * @param dest -timestamp destination
+ * @param dest - timestamp destination
 **/
 ALWAYS_INLINE void timestamp_get(/*@out@*/ timestamp_p *RESTRICT dest)
 /*@globals	internalState@*/

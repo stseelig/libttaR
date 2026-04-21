@@ -121,7 +121,11 @@ mode_decode(
 
 	if ( g_flag.inputmode == INPUTMODE_STDIN ){
 		nerrors_file += openedfiles_add(
-			&openedfiles, "[stdin]", INPUTMODE_STDIN
+			&openedfiles,
+			/*@-readonlytrans@*/ /*@-observertrans@*/
+			"[stdin]",
+			/*@=readonlytrans@*/ /*@=observertrans@*/
+			INPUTMODE_STDIN
 		);
 	}
 

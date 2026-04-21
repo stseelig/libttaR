@@ -252,7 +252,7 @@ opt_decode_stdin(
 		g_flag.inputmode
 @*/
 {
-	if ( g_flag.inputmode != INPUTMODE_UNSET ){
+	if UNLIKELY ( g_flag.inputmode != INPUTMODE_UNSET ){
 		error_tta(
 			"%s (%u): input mode already set", "--stdin", optind0
 		);

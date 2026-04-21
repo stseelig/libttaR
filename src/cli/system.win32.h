@@ -6,7 +6,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2025, Shane Seelig                                    //
+// Copyright (C) 2023-2026, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 /////////////////////////////////////////////////////////////////////////// */
@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <fcntl.h>
 #include <io.h>
 #include <windows.h>
 
@@ -141,6 +142,30 @@ errwrite_action_end(const int result)
 	(void) _write(STD_ERROR_HANDLE, str, size);
 
 	return;
+}
+
+/* ======================================================================== */
+
+/**@see "system.h" **/
+ALWAYS_INLINE int
+setmode_stdin_binary(const enum Fatality fatality)
+/*@globals	fileSystem,
+		internalState
+@*/
+/*@modifies	fileSystem,
+		internalState
+@*/
+{
+	int retval = 0;
+	int err;
+
+	err = setmode(_fileno(stdin), _O_BINARY);
+	if UNLIKELY ( err == -1 ){
+		print_error_sys(errno, "_setmode", "[stdin]", fatality);
+		retval = errno;
+	}
+
+	return retval;
 }
 
 /* ======================================================================== */

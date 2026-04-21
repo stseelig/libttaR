@@ -6,7 +6,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2025, Shane Seelig                                    //
+// Copyright (C) 2023-2026, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 /////////////////////////////////////////////////////////////////////////// */
@@ -171,6 +171,16 @@ errwrite_action_end(const int result)
 	(void) write(STDERR_FILENO, str, size);
 
 	return;
+}
+
+/* ======================================================================== */
+
+/**@see "system.h" **/
+ALWAYS_INLINE int
+setmode_stdin_binary(UNUSED const enum Fatality fatality)
+/*@*/
+{
+	return 0;
 }
 
 /* ======================================================================== */
