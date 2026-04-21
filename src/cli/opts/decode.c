@@ -18,6 +18,7 @@
 #include "../formats.h"
 #include "../help.h"
 #include "../main.h"
+#include "../system.h"
 
 #include "./common.h"
 #include "./optsget.h"
