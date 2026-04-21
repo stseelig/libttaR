@@ -61,6 +61,18 @@ setmode_stdin_binary(const enum Fatality)
 /* depends */
 ;
 
+/**@fn setmode_stdout_binary
+ * @brief changes 'stdout' from text mode to binary mode for windows
+ *
+ * @param fatality - fatal or nonfatal
+ *
+ * @return 0 on success, else the 'errno'
+**/
+ALWAYS_INLINE int
+setmode_stdout_binary(const enum Fatality)
+/* depends */
+;
+
 #undef dest
 /**@fn timestamp_get
  * @brief gets a timestamp in seconds/nanoseconds (clock_gettime wrapper)

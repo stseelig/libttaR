@@ -229,7 +229,7 @@ opt_decode_format(
 /**@fn opt_decode_stdin
  * @brief sets the "standard input" as the infile
  *
- * @param optind0 - unused
+ * @param optind0 - index of  'argv'
  * @param optind1 - unused
  * @param argc    - unused
  * @param argv    - unused
@@ -257,6 +257,8 @@ opt_decode_stdin(
 			"%s (%u): input mode already set", "--stdin", optind0
 		);
 	}
+
+	(void) setmode_stdin_binary(FATAL);
 
 	g_flag.inputmode = INPUTMODE_STDIN;
 
@@ -295,6 +297,8 @@ opt_decode_stdout(
 			"%s (%u): outfile already set", "--stdout", optind0
 		);
 	}
+
+	(void) setmode_stdout_binary(FATAL);
 
 	/*@-readonlytrans@*/ /*@-observertrans@*/
 	g_flag.outfile		 = "[stdout]";

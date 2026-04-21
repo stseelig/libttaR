@@ -168,6 +168,28 @@ setmode_stdin_binary(const enum Fatality fatality)
 	return retval;
 }
 
+/**@see "system.h" **/
+ALWAYS_INLINE int
+setmode_stdout_binary(const enum Fatality fatality)
+/*@globals	fileSystem,
+		internalState
+@*/
+/*@modifies	fileSystem,
+		internalState
+@*/
+{
+	int retval = 0;
+	int err;
+
+	err = setmode(_fileno(stdout), _O_BINARY);
+	if UNLIKELY ( err == -1 ){
+		print_error_sys(errno, "_setmode", "[stdout]", fatality);
+		retval = errno;
+	}
+
+	return retval;
+}
+
 /* ======================================================================== */
 
 /**@see "system.h" **/

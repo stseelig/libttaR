@@ -183,6 +183,14 @@ setmode_stdin_binary(UNUSED const enum Fatality fatality)
 	return 0;
 }
 
+/**@see "system.h" **/
+ALWAYS_INLINE int
+setmode_stdout_binary(UNUSED const enum Fatality fatality)
+/*@*/
+{
+	return 0;
+}
+
 /* ======================================================================== */
 
 /**@see "system.h" **/

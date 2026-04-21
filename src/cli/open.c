@@ -165,7 +165,6 @@ openedfiles_add(
 {
 	int retval = 0;
 	struct OpenedFilesMember **added;
-	int err;
 
 	of->nmemb += 1u;
 	of->file   = realloc_check(of->file, of->nmemb * (sizeof *of->file));
@@ -181,10 +180,6 @@ openedfiles_add(
 		}
 		break;
 	case INPUTMODE_STDIN:
-		err = setmode_stdin_binary(NONFATAL);
-		if UNLIKELY ( err != 0 ){
-			retval = err;
-		}
 		(*added)->infile = stdin;
 		break;
 	default:
