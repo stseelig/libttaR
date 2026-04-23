@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2025, Shane Seelig                                    //
+// Copyright (C) 2023-2026, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 /////////////////////////////////////////////////////////////////////////// */
@@ -195,7 +195,7 @@ encst_loop(
 	union { unsigned int u; } tmp;
 
 	/* setup */
-	memset(&estat, 0x00, sizeof estat);
+	(void) memset(&estat, 0x00, sizeof estat);
 	encbuf_init(
 		&encbuf, buflen, TTABUF_LEN_DEFAULT, nchan, samplebytes,
 		CBM_SINGLE_THREADED
@@ -322,7 +322,7 @@ encmt_loop(
 	assert(nthreads > 0);
 
 	/* setup/init */
-	memset(&estat, 0x00, sizeof estat);
+	(void) memset(&estat, 0x00, sizeof estat);
 	encmt_fstat_init(&fstat_c, fstat);
 	encmt_state_init(
 		&io_state, &encoder_state, framequeue_len, samplebuf_len,
@@ -567,7 +567,7 @@ enc_frame_zeropad(
 	const unsigned int retval = nchan - diff;
 	const size_t       idx    = (size_t) (nmemb_read * samplebytes);
 
-	memset(&pcmbuf[idx], 0x00, (size_t) (retval * samplebytes));
+	(void) memset(&pcmbuf[idx], 0x00, (size_t) (retval * samplebytes));
 
 	return retval;
 }

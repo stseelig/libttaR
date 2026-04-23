@@ -180,7 +180,7 @@ opt_encode_rawpcm(
 	char *subopt;
 	union {	long long ll; } tmp;
 
-	memset(&f_rpstat, 0x00, sizeof f_rpstat);
+	(void) memset(&f_rpstat, 0x00, sizeof f_rpstat);
 
 	(void) strtok(opt, "=");
 

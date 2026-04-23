@@ -6,7 +6,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2025, Shane Seelig                                    //
+// Copyright (C) 2023-2026, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 /////////////////////////////////////////////////////////////////////////// */
@@ -287,14 +287,6 @@ BUILD_EXTERN enum FileCheck filecheck_w64(
 /* w64_write.c */
 
 #undef outfile
-BUILD_EXTERN void prewrite_w64_header(FILE *RESTRICT outfile, const char *)
-/*@globals	fileSystem@*/
-/*@modifies	fileSystem,
-		outfile
-@*/
-;
-
-#undef outfile
 BUILD_EXTERN void write_w64_header(
 	FILE *RESTRICT outfile, size_t, const struct FileStats *RESTRICT,
 	const char *RESTRICT
@@ -336,16 +328,6 @@ BUILD_EXTERN enum FileCheck filecheck_wav_read_subchunk_fmt(
 /* ------------------------------------------------------------------------ */
 
 /* wav_write.c */
-
-#undef outfile
-BUILD_EXTERN void prewrite_wav_header(
-	FILE *RESTRICT outfile, const char *RESTRICT
-)
-/*@globals	fileSystem@*/
-/*@modifies	fileSystem,
-		outfile
-@*/
-;
 
 #undef outfile
 BUILD_EXTERN void write_wav_header(

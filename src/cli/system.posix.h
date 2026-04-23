@@ -64,7 +64,7 @@ signals_setup(void)
 
 	UNUSED union {	int d; } result;
 
-	memset(&sigact, 0x00, sizeof sigact);
+	(void) memset(&sigact, 0x00, sizeof sigact);
 	sigact.sa_handler = sighand_cleanup_exit;
 	result.d = sigfillset(&sigact.sa_mask);
 	assert(result.d == 0);

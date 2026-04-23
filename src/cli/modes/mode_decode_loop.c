@@ -4,7 +4,7 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// Copyright (C) 2023-2025, Shane Seelig                                    //
+// Copyright (C) 2023-2026, Shane Seelig                                    //
 // SPDX-License-Identifier: GPL-3.0-or-later                                //
 //                                                                          //
 /////////////////////////////////////////////////////////////////////////// */
@@ -191,7 +191,7 @@ decst_loop(
 	} result;
 
 	/* setup */
-	memset(&dstat, 0x00, sizeof dstat);
+	(void) memset(&dstat, 0x00, sizeof dstat);
 	decbuf_init(
 		&decbuf, buflen, TTABUF_LEN_DEFAULT, nchan, samplebytes,
 		CBM_SINGLE_THREADED
@@ -334,7 +334,7 @@ decmt_loop(
 	assert(nthreads > 0);
 
 	/* setup/init */
-	memset(&dstat, 0x00, sizeof dstat);
+	(void) memset(&dstat, 0x00, sizeof dstat);
 	decmt_fstat_init(&fstat_c, fstat);
 	decmt_state_init(
 		&io_state, &decoder_state, framequeue_len, samplebuf_len,
@@ -586,7 +586,7 @@ dec_frame_zeropad(
 	);
 	const size_t padsize = (size_t) (nsamples_flat_2pad * samplebytes);
 
-	memset(&pcmbuf[idx], 0x00, padsize);
+	(void) memset(&pcmbuf[idx], 0x00, padsize);
 
 	return;
 }

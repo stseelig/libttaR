@@ -110,7 +110,7 @@ mode_decode(
 		size_t i;
 		union {	int d; } result;
 
-	memset(&openedfiles, 0x00, sizeof openedfiles);
+	(void) memset(&openedfiles, 0x00, sizeof openedfiles);
 
 	timestamp_get(&ts_start);
 
@@ -282,7 +282,9 @@ dec_loop(struct OpenedFilesMember *const RESTRICT ofm)
 	}
 	else {	outfile = stdout; }
 
-	/* save some space for the outfile header */
+	/* write the outfile header */
+	tmp.z  = fstat->nsamples_enc;
+	tmp.z *= (size_t) (fstat->samplebytes * fstat->nchan);
 	switch ( fstat->decfmt ){
 	default:
 		assert(false);
@@ -290,10 +292,10 @@ dec_loop(struct OpenedFilesMember *const RESTRICT ofm)
 	case DECFMT_RAWPCM:
 		break;
 	case DECFMT_WAV:
-		prewrite_wav_header(outfile, outfile_name);
+		write_wav_header(outfile, tmp.z, fstat, outfile_name);
 		break;
 	case DECFMT_W64:
-		prewrite_w64_header(outfile, outfile_name);
+		write_w64_header(outfile, tmp.z, fstat, outfile_name);
 		break;
 	}
 
@@ -338,30 +340,31 @@ decode_multi:
 		);
 	}
 
-	/* update header */
-	switch ( fstat->decfmt ){
-	default:
-		assert(false);
-		break;
-	case DECFMT_RAWPCM:
-		break;
-	case DECFMT_W64:
-		rewind(outfile);
-		write_w64_header(
-			outfile,
-			(size_t) (dstat.nsamples_flat * fstat->samplebytes),
-			fstat, outfile_name
-		);
-		break;
-	case DECFMT_WAV:
-		rewind(outfile);
-		write_wav_header(
-			outfile,
-			(size_t) (dstat.nsamples_flat * fstat->samplebytes),
-			fstat, outfile_name
-		);
-		break;
+#if 0	/* probably unneccessary */
+	if ( ! g_flag.outfile_is_stdout ){
+		/* rewrite the outfile header (in case of some error) */
+		tmp.z = (size_t) (dstat.nsamples_flat * fstat->samplebytes);
+		switch ( fstat->decfmt ){
+		default:
+			assert(false);
+			break;
+		case DECFMT_RAWPCM:
+			break;
+		case DECFMT_W64:
+			rewind(outfile);
+			write_w64_header(
+				outfile, tmp.z, fstat, outfile_name
+			);
+			break;
+		case DECFMT_WAV:
+			rewind(outfile);
+			write_wav_header(
+				outfile, tmp.z, fstat, outfile_name
+			);
+			break;
+		}
 	}
+#endif	/* 0 */
 
 	if ( ! g_flag.quiet ){
 		(void) fputs("C\r", stderr);

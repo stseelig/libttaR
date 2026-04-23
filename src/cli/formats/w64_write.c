@@ -27,45 +27,6 @@
 
 /* //////////////////////////////////////////////////////////////////////// */
 
-/**@fn prewrite_w64_header
- * @brief reserves space for the Sony Wave64 header
- *
- * @param outfile      - destination file
- * @param outfile_name - name of the destination file (errors)
- *
- * @note MAYBE write a preliminary header instead
-**/
-BUILD void
-prewrite_w64_header(
-	FILE *const RESTRICT outfile, const char *const RESTRICT outfile_name
-)
-/*@globals	fileSystem@*/
-/*@modifies	fileSystem,
-		outfile
-@*/
-{
-	union {	int d; } result;
-
-	result.d = fflush(outfile);
-	if UNLIKELY ( result.d != 0 ){
-		error_sys(errno, "fflush", outfile_name);
-	}
-
-	result.d = ftruncate(
-		fileno(outfile),
-		(off_t) sizeof(struct Riff64Header_WriteTemplate)
-	);
-	if UNLIKELY ( (result.d != 0) && (errno != EINVAL) ){ /* /dev/null */
-		error_sys(errno, "ftruncate", outfile_name);
-	}
-
-	result.d = fseeko(outfile, 0, SEEK_END);
-	if UNLIKELY ( result.d != 0 ){
-		error_sys(errno, "fseeko", outfile_name);
-	}
-	return;
-}
-
 /**@fn write_w64_header
  * @brief write a Sony Wave64 header
  *

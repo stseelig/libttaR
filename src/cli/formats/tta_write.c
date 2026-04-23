@@ -39,9 +39,8 @@
  * @param outfile      - destination file
  * @param st           - seektable
  * @param outfile_name - name of the destination file (errors)
- *
- * @note MAYBE write a preliminary header instead
 **/
+/* MAYBE: write a preliminary header instead */
 BUILD void
 prewrite_tta1_header_seektable(
 	FILE *const RESTRICT outfile,

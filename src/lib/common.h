@@ -295,7 +295,7 @@
 #else
 #pragma message "compiler does not have a builtin 'memset'"
 #include <string.h>
-#define MEMSET(s, c, n)		memset((s), (c), (n))
+#define MEMSET(s, c, n)		((void) memset((s), (c), (n)))
 #endif	/* MEMSET */
 
 /* ------------------------------------------------------------------------ */

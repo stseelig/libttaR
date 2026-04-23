@@ -115,7 +115,7 @@ mode_encode(
 	size_t i;
 	union {	int d; } result;
 
-	memset(&openedfiles, 0x00, sizeof openedfiles);
+	(void) memset(&openedfiles, 0x00, sizeof openedfiles);
 
 	timestamp_get(&ts_start);
 
