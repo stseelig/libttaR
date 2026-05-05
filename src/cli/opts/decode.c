@@ -259,7 +259,7 @@ opt_decode_stdin(
 		);
 	}
 
-	(void) setmode_stream_binary(stdin, FATAL, "stdin");
+	(void) setmode_stream_binary(stdin, FATAL, "[stdin]");
 
 	g_flag.inputmode = INPUTMODE_STDIN;
 
