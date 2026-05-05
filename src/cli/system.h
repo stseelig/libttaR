@@ -49,28 +49,29 @@ INLINE void signals_setup(void)
 /*@modifies	internalState@*/
 ;
 
-/**@fn setmode_stdin_binary
- * @brief changes 'stdin' from text mode to binary mode for windows
+#undef stream
+#undef fatality
+#undef name
+/**@fn setmode_stream_binary
+ * @brief changes stdin/stdout from text mode to binary mode for windows
  *
+ * @param stream   - the FILE
  * @param fatality - fatal or nonfatal
+ * @param name     - name of the FILE
  *
  * @return 0 on success, else the 'errno'
 **/
-ALWAYS_INLINE int
-setmode_stdin_binary(const enum Fatality)
-/* depends */
-;
-
-/**@fn setmode_stdout_binary
- * @brief changes 'stdout' from text mode to binary mode for windows
- *
- * @param fatality - fatal or nonfatal
- *
- * @return 0 on success, else the 'errno'
-**/
-ALWAYS_INLINE int
-setmode_stdout_binary(const enum Fatality)
-/* depends */
+ALWAYS_INLINE int setmode_stream_binary(
+	FILE *restrict stream, enum Fatality fatality,
+	const char *restrict name
+)
+/*@globals	fileSystem,
+		internalState
+@*/
+/*@modifies	fileSystem,
+		internalState,
+		*stream
+@*/
 ;
 
 #undef dest

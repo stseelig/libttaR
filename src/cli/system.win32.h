@@ -82,7 +82,7 @@ sighand_cleanup_exit(const int signum)
 	const char intro2[]  = T_DEFAULT " ";
 	const char outro[]   = T_PURPLE "!" T_RESET "\n";
 	/* * */
-	union {	int d; } result;
+	int err;
 
 	(void) _write(STD_ERROR_HANDLE, intro0, (sizeof intro0) - 1u);
 	(void) _write(STD_ERROR_HANDLE, g_progname, strlen(g_progname));
@@ -93,11 +93,11 @@ sighand_cleanup_exit(const int signum)
 	/* remove any incomplete file(s) */
 	if ( g_rm_on_sigint != NULL ){
 		errwrite_action_start();
-		result.d = _unlink(g_rm_on_sigint);
-		if ( (result.d != 0) && (errno == EACCES) ){ /* /dev/null */
-			result.d = 0;
+		err = _unlink(g_rm_on_sigint);
+		if ( (err != 0) && (errno == EACCES) ){ /* /dev/null */
+			err = 0;
 		}
-		errwrite_action_end(result.d);
+		errwrite_action_end(err);
 	}
 
 	(void) _write(STD_ERROR_HANDLE, outro, (sizeof outro) - 1u);
@@ -148,42 +148,24 @@ errwrite_action_end(const int result)
 
 /**@see "system.h" **/
 ALWAYS_INLINE int
-setmode_stdin_binary(const enum Fatality fatality)
+setmode_stream_binary(
+	FILE *const restrict stream, const enum Fatality fatality,
+	const char *const restrict name
+)
 /*@globals	fileSystem,
 		internalState
 @*/
 /*@modifies	fileSystem,
-		internalState
+		internalState,
+		*stream
 @*/
 {
 	int retval = 0;
 	int err;
 
-	err = _setmode(_fileno(stdin), _O_BINARY);
+	err = _setmode(_fileno(stream), _O_BINARY);
 	if UNLIKELY ( err == -1 ){
-		print_error_sys(errno, "_setmode", "[stdin]", fatality);
-		retval = errno;
-	}
-
-	return retval;
-}
-
-/**@see "system.h" **/
-ALWAYS_INLINE int
-setmode_stdout_binary(const enum Fatality fatality)
-/*@globals	fileSystem,
-		internalState
-@*/
-/*@modifies	fileSystem,
-		internalState
-@*/
-{
-	int retval = 0;
-	int err;
-
-	err = _setmode(_fileno(stdout), _O_BINARY);
-	if UNLIKELY ( err == -1 ){
-		print_error_sys(errno, "_setmode", "[stdout]", fatality);
+		print_error_sys(errno, "_setmode", name, fatality);
 		retval = errno;
 	}
 
@@ -194,12 +176,12 @@ setmode_stdout_binary(const enum Fatality fatality)
 
 /**@see "system.h" **/
 ALWAYS_INLINE void
-timestamp_get(/*@out@*/ timestamp_p *const RESTRICT out)
+timestamp_get(/*@out@*/ timestamp_p *const RESTRICT dest)
 /*@globals	internalState@*/
 {
-	UNUSED const BOOL rv = QueryPerformanceCounter(out);
+	UNUSED const BOOL rv = QueryPerformanceCounter(dest);
 
-	assert(rv == 0);
+	assert(rv != 0);
 
 	return;
 }
@@ -263,11 +245,11 @@ fdlimit_check(void)
 		internalState
 @*/
 {
-	union {	int d; } result;
+	int curr = _getmaxstdio();
 
-	do {	result.d = _setmaxstdio(2 * _getmaxstdio());
+	do {	curr = _setmaxstdio(curr < INT_MAX / 2 ? 2 * curr : INT_MAX);
 	}
-	while ( result.d > 0 );
+	while ( (curr > 0) && (curr < INT_MAX) );
 
 	return;
 }
@@ -298,10 +280,10 @@ strerror_ts(
 )
 /*@modifies	*buf@*/
 {
-	union {	errno_t e; } result;
+	errno_t err;
 
-	result.e = strerror_s(buf, buflen, errnum);
-	if ( result.e != 0 ){
+	err = strerror_s(buf, buflen, errnum);
+	if ( err != 0 ){
 		buf[0] = '\0';
 	}
 	return buf;

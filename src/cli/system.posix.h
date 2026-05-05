@@ -62,23 +62,23 @@ signals_setup(void)
 {
 	struct sigaction sigact;
 
-	UNUSED union {	int d; } result;
+	UNUSED int err;
 
 	(void) memset(&sigact, 0x00, sizeof sigact);
 	sigact.sa_handler = sighand_cleanup_exit;
-	result.d = sigfillset(&sigact.sa_mask);
-	assert(result.d == 0);
+	err = sigfillset(&sigact.sa_mask);
+	assert(err == 0);
 
-	result.d = sigaction(SIGABRT, &sigact, NULL);
-	assert(result.d == 0);
-	result.d = sigaction(SIGHUP , &sigact, NULL);
-	assert(result.d == 0);
-	result.d = sigaction(SIGINT , &sigact, NULL);
-	assert(result.d == 0);
-	result.d = sigaction(SIGQUIT, &sigact, NULL);
-	assert(result.d == 0);
-	result.d = sigaction(SIGTERM, &sigact, NULL);
-	assert(result.d == 0);
+	err = sigaction(SIGABRT, &sigact, NULL);
+	assert(err == 0);
+	err = sigaction(SIGHUP , &sigact, NULL);
+	assert(err == 0);
+	err = sigaction(SIGINT , &sigact, NULL);
+	assert(err == 0);
+	err = sigaction(SIGQUIT, &sigact, NULL);
+	assert(err == 0);
+	err = sigaction(SIGTERM, &sigact, NULL);
+	assert(err == 0);
 
 	return;
 }
@@ -105,7 +105,7 @@ sighand_cleanup_exit(const int signum)
 	const char intro2[]       = T_DEFAULT " ";
 	const char outro[]        = T_PURPLE "!" T_RESET "\n";
 	/* * */
-	union {	int d; } result;
+	int err;
 
 	(void) write(STDERR_FILENO, intro0, (sizeof intro0) - 1u);
 	(void) write(STDERR_FILENO, g_progname, strlen(g_progname));
@@ -116,11 +116,11 @@ sighand_cleanup_exit(const int signum)
 	/* remove any incomplete file(s) */
 	if ( g_rm_on_sigint != NULL ){
 		errwrite_action_start();
-		result.d = unlink(g_rm_on_sigint);
-		if ( (result.d != 0) && (errno == EACCES) ){ /* /dev/null */
-			result.d = 0;
+		err = unlink(g_rm_on_sigint);
+		if ( (err != 0) && (errno == EACCES) ){ /* /dev/null */
+			err = 0;
 		}
-		errwrite_action_end(result.d);
+		errwrite_action_end(err);
 	}
 
 	(void) write(STDERR_FILENO, outro, (sizeof outro) - 1u);
@@ -177,15 +177,11 @@ errwrite_action_end(const int result)
 
 /**@see "system.h" **/
 ALWAYS_INLINE int
-setmode_stdin_binary(UNUSED const enum Fatality fatality)
-/*@*/
-{
-	return 0;
-}
-
-/**@see "system.h" **/
-ALWAYS_INLINE int
-setmode_stdout_binary(UNUSED const enum Fatality fatality)
+setmode_stream_binary(
+	UNUSED FILE *const restrict stream,
+	UNUSED const enum Fatality fatality,
+	UNUSED const char *const restrict name
+)
 /*@*/
 {
 	return 0;
@@ -195,12 +191,12 @@ setmode_stdout_binary(UNUSED const enum Fatality fatality)
 
 /**@see "system.h" **/
 ALWAYS_INLINE void
-timestamp_get(/*@out@*/ timestamp_p *const RESTRICT out)
+timestamp_get(/*@out@*/ timestamp_p *const RESTRICT dest)
 /*@globals	internalState@*/
 {
-	UNUSED const int rv = clock_gettime(CLOCK_MONOTONIC, out);
+	UNUSED const int err = clock_gettime(CLOCK_MONOTONIC, dest);
 
-	assert(rv == 0);
+	assert(err == 0);
 
 	return;
 }
@@ -262,17 +258,17 @@ fdlimit_check(void)
 @*/
 {
 	struct rlimit limit;
-	union {	int d; } result;
+	int err;
 
-	result.d = getrlimit((int) RLIMIT_NOFILE, &limit);
-	if UNLIKELY ( result.d != 0 ){
+	err = getrlimit((int) RLIMIT_NOFILE, &limit);
+	if UNLIKELY ( err != 0 ){
 		error_sys(errno, "getrlimit", NULL);
 	}
 
 	limit.rlim_cur = limit.rlim_max;
 
-	result.d = setrlimit((int) RLIMIT_NOFILE, &limit);
-	if UNLIKELY ( result.d != 0 ){
+	err = setrlimit((int) RLIMIT_NOFILE, &limit);
+	if UNLIKELY ( err != 0 ){
 		error_sys(errno, "setrlimit", NULL);
 	}
 	return;
@@ -299,11 +295,11 @@ strerror_ts(
 )
 /*@modifies	*buf@*/
 {
-	union {	int d; } result;
+	int err;
 
 	/* XSI-compliant version returns an int */
-	result.d = strerror_r(errnum, buf, buflen);
-	if ( result.d != 0 ){
+	err = strerror_r(errnum, buf, buflen);
+	if ( err != 0 ){
 		buf[0] = '\0';
 	}
 	return buf;

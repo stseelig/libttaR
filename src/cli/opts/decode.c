@@ -259,7 +259,7 @@ opt_decode_stdin(
 		);
 	}
 
-	(void) setmode_stdin_binary(FATAL);
+	(void) setmode_stream_binary(stdin, FATAL, "stdin");
 
 	g_flag.inputmode = INPUTMODE_STDIN;
 
@@ -299,7 +299,7 @@ opt_decode_stdout(
 		);
 	}
 
-	(void) setmode_stdout_binary(FATAL);
+	(void) setmode_stream_binary(stdout, FATAL, "[stdout]");
 
 	/*@-readonlytrans@*/ /*@-observertrans@*/
 	g_flag.outfile		 = "[stdout]";
